@@ -1,0 +1,119 @@
+digraph {
+    otr4j [label="OTRv4 support"]
+    extra [label="\"Extra\" features"]
+    otrv4_identifiers [label="OTRv4 protocol identifiers"]
+    otrv4_message_parsing [label="Message parsing for OTRv4"]
+    crypto_datatypes [label="Cryptographic data types"]
+    otrv4DH [label="DH (OTRv4 params)"]
+    ed448_crypto_primitives [label="ED448-Goldilocks\ncryptographic primitives",style=filled,color=orange]
+    serialization [label="Serialization of data types"]
+    interactive_DAKE [label="Interactive DAKE"]
+    DAKE_message_identity [label="DAKE message: \"Identity\""]
+    DAKE_message_auth_r [label="DAKE message: \"Auth R\""]
+    DAKE_message_auth_i [label="DAKE message: \"Auth I\""]
+    encoding_decoding [label="Encoding/Decoding of data types"]
+    ring_signatures [label="Ring Signatures"]
+    remapping_tlv_types [label="Remapping TLV types in case of OTRv4"]
+    key_management [label="Key management"]
+    key_derivation_functions [label="Key Derivation Functions",style=filled,color=green]
+    session_management [label="Session management"]
+    session_expiration [label="Session expiration"]
+    user_profile [label="User profile"]
+    user_profile_validation [label="User profile validation"]
+    user_profile_expiration [label="User profile: expiration"]
+    user_profile_signature_verification [label="User profile:\nsignature verification"]
+    user_profile_signatures [label="User profile signatures"]
+    offline_support [label="Support for off-line contacts"]
+    noninteractive_DAKE [label="Non-interactive DAKE"]
+    otrv4_extra_symmetric_key [label="Extra symmetric key\nfrom OTRv4 shared secrets"]
+    introduce_OTR_errorno_notation [label="Parsing OTR Error codes"]
+    public_keys [label="Public keys"]
+    fingerprints [label="Fingerprints",style=filled,color=orange]
+    shared_prekeys [label="Shared Pre-Keys"]
+    expiration_timer [label="Expiration timer"]
+    secure_key_deletion [label="Secure key deletion"]
+    Double_Ratchet [label="Double Ratchet"]
+    calculate_message_keys [label="Calculate message keys"]
+    shared_secrets [label="Shared secrets"]
+    brace_key [label="Brace key"]
+    secretK [label="Secret K"]
+    protocol_state_machine [label="Protocol state machine"]
+    attach_encrypted_message_during_DAKE [label="Attach encrypted message during DAKE"]
+    otrv4_SMP [label="OTRv4 SMP"]
+    shake256 [label="SHAKE-256",style=filled,color=green]
+
+    otr4j -> serialization
+    otr4j -> otrv4_identifiers
+    otr4j -> otrv4_message_parsing
+    otr4j -> remapping_tlv_types
+    otr4j -> interactive_DAKE
+    otr4j -> key_management
+    otr4j -> session_management
+    otr4j -> user_profile
+    otr4j -> protocol_state_machine
+    otr4j -> otrv4_SMP
+    extra -> offline_support
+    extra -> otrv4_extra_symmetric_key
+    extra -> introduce_OTR_errorno_notation
+    extra -> attach_encrypted_message_during_DAKE
+    otrv4_message_parsing -> otrv4_whitespace_tag
+    otrv4_message_parsing -> otrv4_query_message
+    serialization -> crypto_datatypes
+    serialization -> encoding_decoding
+    encoding_decoding -> ed448_crypto_primitives
+    crypto_datatypes -> ed448_crypto_primitives
+    crypto_datatypes -> ring_signatures
+    crypto_datatypes -> public_keys
+    crypto_datatypes -> shared_prekeys
+    crypto_datatypes -> fingerprints
+    fingerprints -> shake256
+    ring_signatures -> ed448_crypto_primitives
+    ring_signatures -> key_derivation_functions
+    offline_support -> noninteractive_DAKE
+    interactive_DAKE -> DAKE_message_identity
+    interactive_DAKE -> DAKE_message_auth_r
+    interactive_DAKE -> DAKE_message_auth_i
+    DAKE_message_identity -> user_profile
+    DAKE_message_identity -> key_management
+    DAKE_message_identity -> ECDH
+    DAKE_message_identity -> otrv4DH
+    DAKE_message_identity -> serialization
+    DAKE_message_auth_r -> user_profile
+    DAKE_message_auth_r -> ECDH
+    DAKE_message_auth_r -> otrv4DH
+    DAKE_message_auth_r -> key_derivation_functions
+    DAKE_message_auth_r -> ring_signatures
+    DAKE_message_auth_r -> serialization
+    DAKE_message_auth_i -> key_derivation_functions
+    DAKE_message_auth_i -> serialization
+    DAKE_message_auth_i -> ring_signatures
+    noninteractive_DAKE -> ed448_crypto_primitives
+    noninteractive_DAKE -> ECDH
+    noninteractive_DAKE -> otrv4DH
+    key_management -> Double_Ratchet
+    key_management -> shared_secrets
+    ECDH -> ed448_crypto_primitives
+    shared_secrets -> otrv4DH
+    shared_secrets -> ECDH
+    shared_secrets -> brace_key
+    shared_secrets -> secretK
+    secretK -> ECDH
+    secretK -> brace_key
+    otrv4_extra_symmetric_key -> secretK
+    key_management -> calculate_message_keys
+    calculate_message_keys -> key_derivation_functions
+    key_derivation_functions -> shake256
+    session_management -> session_expiration
+    session_management -> key_management
+    session_expiration -> remapping_tlv_types
+    session_expiration -> secure_key_deletion
+    session_expiration -> protocol_state_machine
+    session_expiration -> expiration_timer
+    user_profile -> ed448_crypto_primitives
+    user_profile -> serialization
+    user_profile -> user_profile_signatures
+    user_profile -> user_profile_validation
+    user_profile_validation -> user_profile_signature_verification
+    user_profile_signature_verification -> user_profile_signatures
+    user_profile_validation -> user_profile_expiration
+}
