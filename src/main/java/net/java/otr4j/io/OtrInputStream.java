@@ -63,6 +63,7 @@ public final class OtrInputStream extends FilterInputStream implements
      *             the exact amount of requested bytes could not be read from
      *             the stream.
      */
+    @Nonnull
     private byte[] checkedRead(final int length) throws IOException {
         if (length == 0) {
             return ZERO_BYTES;
@@ -113,14 +114,17 @@ public final class OtrInputStream extends FilterInputStream implements
         return readNumber(TYPE_LEN_SHORT);
     }
 
+    @Nonnull
     public byte[] readCtr() throws IOException {
         return checkedRead(TYPE_LEN_CTR);
     }
 
+    @Nonnull
     public byte[] readMac() throws IOException {
         return checkedRead(TYPE_LEN_MAC);
     }
 
+    @Nonnull
     public BigInteger readBigInt() throws IOException {
         final byte[] b = readData();
         return new BigInteger(1, b);
@@ -142,6 +146,7 @@ public final class OtrInputStream extends FilterInputStream implements
      * case of data with length > {@link Integer#MAX_VALUE}, as this is
      * currently unsupported by otr4j.
      */
+    @Nonnull
     public byte[] readData() throws IOException {
         final int dataLen = readNumber(DATA_LEN);
         checkDataLength(dataLen);
@@ -183,16 +188,19 @@ public final class OtrInputStream extends FilterInputStream implements
      * @throws OtrCryptoException Throws exception in case of illegal DH public
      * key.
      */
+    @Nonnull
     public DHPublicKey readDHPublicKey() throws IOException, OtrCryptoException {
         final BigInteger gyMpi = readBigInt();
         return OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(gyMpi));
     }
 
+    @Nonnull
     public byte[] readTlvData() throws IOException {
         final int len = readNumber(TYPE_LEN_SHORT);
         return checkedRead(len);
     }
 
+    @Nonnull
     public byte[] readSignature(@Nonnull final PublicKey pubKey) throws IOException {
         if (!pubKey.getAlgorithm().equals("DSA")) {
             throw new UnsupportedOperationException("Unsupported public key instance type encountered. Cannot read signature.");
@@ -211,6 +219,7 @@ public final class OtrInputStream extends FilterInputStream implements
      * message content.
      * @throws UnsupportedTypeException In case of unsupported public key type.
      */
+    @Nonnull
     public SignatureX readMysteriousX() throws IOException, OtrCryptoException, UnsupportedTypeException {
         final PublicKey pubKey = readPublicKey();
         final int dhKeyID = readInt();
