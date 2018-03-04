@@ -25,10 +25,6 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
 
     public final DHPublicKey dhPublicKey;
 
-    public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey) {
-        this(protocolVersion, dhPublicKey, 0, 0);
-    }
-
     public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey, final int senderInstance, final int receiverInstance) {
         super(protocolVersion, senderInstance, receiverInstance);
         this.dhPublicKey = Objects.requireNonNull(dhPublicKey);
