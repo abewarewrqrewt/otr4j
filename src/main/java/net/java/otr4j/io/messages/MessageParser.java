@@ -14,16 +14,16 @@ import static net.java.otr4j.io.messages.DataMessage.MESSAGE_DATA;
 import static net.java.otr4j.io.messages.RevealSignatureMessage.MESSAGE_REVEALSIG;
 import static net.java.otr4j.io.messages.SignatureMessage.MESSAGE_SIGNATURE;
 
-public final class MessageFactory {
+public final class MessageParser {
 
-    private static final MessageFactory INSTANCE = new MessageFactory();
+    private static final MessageParser INSTANCE = new MessageParser();
 
-    private MessageFactory() {
+    private MessageParser() {
         // Not allowed to instantiate singleton.
     }
 
     @Nonnull
-    public static MessageFactory instance() {
+    public static MessageParser instance() {
         return INSTANCE;
     }
 

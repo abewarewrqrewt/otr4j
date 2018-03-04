@@ -12,7 +12,7 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.MessageFactory;
+import net.java.otr4j.io.messages.MessageParser;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
@@ -324,7 +324,7 @@ public final class SerializationUtils {
                 final ByteArrayInputStream bin = new ByteArrayInputStream(
                     decode(content.substring(0, content.length() - 1).getBytes(ASCII)));
                 try (final OtrInputStream otr = new OtrInputStream(bin)) {
-                    return MessageFactory.instance().read(otr);
+                    return MessageParser.instance().read(otr);
                 }
             }
         }
