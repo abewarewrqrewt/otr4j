@@ -18,6 +18,8 @@ import javax.annotation.Nonnull;
  */
 public final class PlainTextMessage extends QueryMessage {
 
+    private static final int MESSAGE_PLAINTEXT = 0x102;
+
     public final String cleanText;
 
     public PlainTextMessage(@Nonnull final Set<Integer> versions,
@@ -28,7 +30,7 @@ public final class PlainTextMessage extends QueryMessage {
 
     @Override
     public int getType() {
-        return Message.MESSAGE_PLAINTEXT;
+        return MESSAGE_PLAINTEXT;
     }
 
     @Override

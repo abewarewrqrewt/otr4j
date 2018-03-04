@@ -7,12 +7,8 @@
 
 package net.java.otr4j.io.messages;
 
+// TODO In future we should move the message type integers outside the message type class hierarchy. These are only really necessary for (de)serialization.
 public interface Message {
-
-    // Unencoded message types
-    int MESSAGE_ERROR = 0xff;
-    int MESSAGE_QUERY = 0x100;
-    int MESSAGE_PLAINTEXT = 0x102;
 
     // Encoded message types
     int MESSAGE_DH_COMMIT = 0x02;

@@ -18,6 +18,8 @@ import javax.annotation.Nonnull;
  */
 public final class ErrorMessage implements Message {
 
+    private static final int MESSAGE_ERROR = 0xff;
+
     public final String error;
 
     public ErrorMessage(@Nonnull final String error) {
@@ -26,7 +28,7 @@ public final class ErrorMessage implements Message {
 
     @Override
     public int getType() {
-        return Message.MESSAGE_ERROR;
+        return MESSAGE_ERROR;
     }
 
     @Override
