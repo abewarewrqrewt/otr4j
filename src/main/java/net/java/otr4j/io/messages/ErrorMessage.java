@@ -18,17 +18,10 @@ import javax.annotation.Nonnull;
  */
 public final class ErrorMessage implements Message {
 
-    private static final int MESSAGE_ERROR = 0xff;
-
     public final String error;
 
     public ErrorMessage(@Nonnull final String error) {
         this.error = Objects.requireNonNull(error);
-    }
-
-    @Override
-    public int getType() {
-        return MESSAGE_ERROR;
     }
 
     @Override

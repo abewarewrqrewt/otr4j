@@ -148,7 +148,7 @@ public class IOTest {
 		byte[] revealedKey = new byte[] { 1, 2, 3, 4 };
 
 		RevealSignatureMessage source = new RevealSignatureMessage(
-				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey);
+				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, 0, 0);
 
 		String base64 = SerializationUtils.toString(source);
 		RevealSignatureMessage result = (RevealSignatureMessage) SerializationUtils

@@ -18,17 +18,10 @@ import javax.annotation.Nonnull;
  */
 public class QueryMessage implements Message {
 
-    private static final int MESSAGE_QUERY = 0x100;
-
     public final Set<Integer> versions;
 
     public QueryMessage(@Nonnull final Set<Integer> versions) {
         this.versions = Objects.requireNonNull(versions);
-    }
-
-    @Override
-    public int getType() {
-        return MESSAGE_QUERY;
     }
 
     @Override

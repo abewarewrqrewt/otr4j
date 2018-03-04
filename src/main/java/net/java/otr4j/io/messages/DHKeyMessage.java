@@ -7,6 +7,9 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrOutputStream;
+
+import java.io.IOException;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -18,6 +21,8 @@ import javax.crypto.interfaces.DHPublicKey;
  */
 public final class DHKeyMessage extends AbstractEncodedMessage {
 
+    static final int MESSAGE_DHKEY = 0x0a;
+
     public final DHPublicKey dhPublicKey;
 
     public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey) {
@@ -27,11 +32,6 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
     public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey, final int senderInstance, final int receiverInstance) {
         super(protocolVersion, senderInstance, receiverInstance);
         this.dhPublicKey = Objects.requireNonNull(dhPublicKey);
-    }
-
-    @Override
-    public int getType() {
-        return Message.MESSAGE_DHKEY;
     }
 
     @Override
@@ -63,5 +63,16 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+        super.write(writer);
+        writer.writeDHPublicKey(this.dhPublicKey);
+    }
+
+    @Override
+    public int getType() {
+        return MESSAGE_DHKEY;
     }
 }
