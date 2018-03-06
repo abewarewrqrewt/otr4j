@@ -14,19 +14,41 @@ import static net.java.otr4j.io.messages.DataMessage.MESSAGE_DATA;
 import static net.java.otr4j.io.messages.RevealSignatureMessage.MESSAGE_REVEALSIG;
 import static net.java.otr4j.io.messages.SignatureMessage.MESSAGE_SIGNATURE;
 
-public final class MessageParser {
+/**
+ * Parser for OTR encoded message types.
+ */
+public final class EncodedMessageParser {
 
-    private static final MessageParser INSTANCE = new MessageParser();
+    private static final EncodedMessageParser INSTANCE = new EncodedMessageParser();
 
-    private MessageParser() {
+    private EncodedMessageParser() {
         // Not allowed to instantiate singleton.
     }
 
+    /**
+     * Instance of the Encoded Message Parser.
+     *
+     * @return Returns instance.
+     */
     @Nonnull
-    public static MessageParser instance() {
+    public static EncodedMessageParser instance() {
         return INSTANCE;
     }
 
+    /**
+     * Read an OTR-encoded message from the provided input stream.
+     * <p>
+     * The encoded message bytes are read from the input stream, interpreted and a composed in-memory message object is
+     * constructed and returned. Any validation data that might be contained in this message is NOT processed. Message
+     * received from the parser can therefore not yet be trusted on their content.
+     *
+     * @param input OTR input stream
+     * @return Returns an OTR-encoded message as in-memory object.
+     * @throws IOException        In case of issues during reading of the message bytes. (For example, missing bytes or
+     *                            unexpected values.)
+     * @throws OtrCryptoException In case of issues during reconstruction of cryptographic components of a message. (For
+     *                            example, a bad public key.)
+     */
     @Nonnull
     public AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
         final int protocolVersion = input.readShort();
@@ -53,6 +75,8 @@ public final class MessageParser {
                 final byte[] encryptedMessage = input.readData();
                 final byte[] mac = input.readMac();
                 final byte[] oldMacKeys = input.readData();
+                // The data message can only be validated where the current session keys are accessible. MAC validation
+                // therefore happens in a later stage. For now we return an unvalidated data message instance.
                 return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
                     encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
             case MESSAGE_DH_COMMIT:
