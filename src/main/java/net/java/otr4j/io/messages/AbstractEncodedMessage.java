@@ -26,8 +26,7 @@ public abstract class AbstractEncodedMessage implements Message {
 
     public final int receiverInstanceTag;
 
-    public AbstractEncodedMessage(final int protocolVersion, final int senderInstanceTag,
-                                  final int recipientInstanceTag) {
+    AbstractEncodedMessage(final int protocolVersion, final int senderInstanceTag, final int recipientInstanceTag) {
         this.protocolVersion = protocolVersion;
         this.senderInstanceTag = senderInstanceTag;
         this.receiverInstanceTag = recipientInstanceTag;
