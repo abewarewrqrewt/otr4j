@@ -15,7 +15,8 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 
 /**
- * 
+ * OTRv2 AKE DH-Key message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */

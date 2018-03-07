@@ -17,7 +17,8 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 
 /**
- * 
+ * OTRv2 encrypted data message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */

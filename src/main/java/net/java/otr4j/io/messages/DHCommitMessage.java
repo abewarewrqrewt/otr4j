@@ -15,7 +15,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
- * 
+ * OTRv2 AKE DH-Commit message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */

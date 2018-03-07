@@ -15,6 +15,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
+ * OTRv2 AKE Signature message.
  *
  * @author George Politis
  * @author Danny van Heumen

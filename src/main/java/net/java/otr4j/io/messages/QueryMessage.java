@@ -12,7 +12,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 /**
- * 
+ * OTRv2 OTR query message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */

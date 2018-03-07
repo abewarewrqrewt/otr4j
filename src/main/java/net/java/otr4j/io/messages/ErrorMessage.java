@@ -11,7 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
- * Type that represents an OTR error message.
+ * OTRv2 OTR error message.
  *
  * @author George Politis
  * @author Danny van Heumen
