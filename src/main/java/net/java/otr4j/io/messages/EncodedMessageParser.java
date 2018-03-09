@@ -7,6 +7,7 @@ import net.java.otr4j.io.OtrInputStream;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.IOException;
+import java.net.ProtocolException;
 
 import static net.java.otr4j.io.messages.DHCommitMessage.MESSAGE_DH_COMMIT;
 import static net.java.otr4j.io.messages.DHKeyMessage.MESSAGE_DHKEY;
@@ -53,7 +54,7 @@ public final class EncodedMessageParser {
     public AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
         final int protocolVersion = input.readShort();
         if (!Session.OTRv.ALL.contains(protocolVersion)) {
-            throw new IOException("Unsupported protocol version " + protocolVersion);
+            throw new ProtocolException("Unsupported protocol version " + protocolVersion);
         }
         final int messageType = input.readByte();
         final int senderInstanceTag;
@@ -103,7 +104,7 @@ public final class EncodedMessageParser {
             default:
                 // NOTE by gp: aren't we being a little too harsh here? Passing the message as a plaintext
                 // message to the host application shouldn't hurt anybody.
-                throw new IOException("Illegal message type.");
+                throw new ProtocolException("Illegal message type.");
         }
     }
 }

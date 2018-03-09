@@ -15,8 +15,10 @@ import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
+import static java.util.Arrays.copyOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 // TODO Need to add tests for parsing various type of encoded messages.
 public class EncodedMessageParserTest {
@@ -56,5 +58,26 @@ public class EncodedMessageParserTest {
         final OtrInputStream otrInput = new OtrInputStream(input);
         final AbstractEncodedMessage parsedM = EncodedMessageParser.instance().read(otrInput);
         assertEquals(m, parsedM);
+    }
+
+    @Test
+    public void testConstructAndParsePartialDHKeyMessage() throws IOException {
+        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
+        // Prepare output message to parse.
+        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        final OtrOutputStream otrOutput = new OtrOutputStream(output);
+        m.write(otrOutput);
+        final byte[] message = output.toByteArray();
+        final EncodedMessageParser parser = EncodedMessageParser.instance();
+        for (int i = 0; i < message.length; i++) {
+            final byte[] partial = copyOf(message, i);
+            try (final OtrInputStream partialStream = new OtrInputStream(new ByteArrayInputStream(partial))) {
+                parser.read(partialStream);
+                fail("Expected exception due to parsing an incomplete message.");
+            } catch (final ProtocolException | OtrCryptoException expected) {
+                // Expected behavior for partial messages being parsed.
+            }
+        }
     }
 }
