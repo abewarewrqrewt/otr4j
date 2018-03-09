@@ -238,7 +238,7 @@ public final class SerializationUtils {
             try (final OtrOutputStream s = new OtrOutputStream(o)) {
                 ((AbstractEncodedMessage) m).write(s);
             } catch (final IOException ex) {
-                throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
+                throw new IllegalStateException("Unexpected error: failed to write message to ByteArrayOutputStream.", ex);
             }
             writer.write(SerializationConstants.HEAD_ENCODED);
             writer.write(new String(encode(o.toByteArray()), ASCII));
