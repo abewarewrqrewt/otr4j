@@ -23,6 +23,8 @@ import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.SignatureX;
 
+import net.java.otr4j.profile.UserProfile;
+import nl.dannyvanheumen.joldilocks.Point;
 import org.bouncycastle.util.BigIntegers;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
@@ -154,5 +156,14 @@ public final class OtrOutputStream extends FilterOutputStream implements
         writeDHPublicKey(t.nextDH);
         writeCtr(t.ctr);
         writeData(t.encryptedMessage);
+    }
+
+    public void writePoint(@Nonnull final Point p) throws IOException {
+        writeData(p.encode());
+    }
+
+    public void writeUserProfile(@Nonnull final UserProfile userProfile) {
+        // FIXME implement writing user profile
+        throw new UnsupportedOperationException("TODO implement writing user profile");
     }
 }
