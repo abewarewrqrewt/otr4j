@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
-import static nl.dannyvanheumen.joldilocks.Ed448.Q;
+import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**
@@ -102,6 +102,6 @@ public final class OtrCryptoEngine4 {
         kdf1(hashedD, 0, d, HASH_TO_SCALAR_LENGTH_BYTES);
         final BigInteger h = decodeLittleEndian(hashedD);
         //    Return h (mod q)
-        return h.mod(Q);
+        return h.mod(primeOrder());
     }
 }
