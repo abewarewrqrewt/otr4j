@@ -100,7 +100,7 @@ public interface OtrEngineHost extends SmpEngineHost {
     int getMaxFragmentSize(@Nonnull SessionID sessionID);
 
     /**
-     * Request local key pair from Engine Host.
+     * Request local key pair from Engine Host. (OTRv2/OTRv3)
      *
      * @param sessionID the session ID
      * @return Returns the local key pair.

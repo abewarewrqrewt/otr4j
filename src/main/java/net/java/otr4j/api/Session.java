@@ -20,9 +20,12 @@ public interface Session {
 
     interface OTRv {
 
+        int ONE = 1;
         int TWO = 2;
         int THREE = 3;
+        int FOUR = 4;
 
+        // TODO 'ALL' should indicate all supported versions, not all existing versions.
         Set<Integer> ALL = Collections.unmodifiableSet(
                 new HashSet<>(Arrays.asList(TWO, THREE)));
     }
