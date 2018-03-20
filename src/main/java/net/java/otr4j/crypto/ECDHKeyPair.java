@@ -9,7 +9,9 @@ import java.security.SecureRandom;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.util.ByteArrays.clear;
+import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
+import static nl.dannyvanheumen.joldilocks.Points.checkIdentity;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**
@@ -67,5 +69,20 @@ public final class ECDHKeyPair {
     @Nonnull
     public Point getPublicKey() {
         return publicKey;
+    }
+
+    /**
+     * Generate the ECDH shared secret for other party's public key.
+     *
+     * @param otherPublicKey The other party's public key.
+     * @return Returns the shared secret point.
+     */
+    public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws OtrCryptoException {
+        final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
+        // TODO is 'checkIdentity' method sufficient to discover all illegal public keys?
+        if (checkIdentity(sharedSecret)) {
+            throw new OtrCryptoException("Illegal ECDH public key.");
+        }
+        return sharedSecret;
     }
 }
