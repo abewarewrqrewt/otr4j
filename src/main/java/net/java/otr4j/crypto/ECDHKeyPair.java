@@ -1,5 +1,6 @@
 package net.java.otr4j.crypto;
 
+import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -19,12 +20,20 @@ import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
  */
 public final class ECDHKeyPair {
 
+    /**
+     * Length of the secret key in bytes.
+     */
     private static final int LENGTH_SECRET_KEY_BYTES = 57;
+
+    /**
+     * Context c, used in signing.
+     */
+    private static final byte[] SIGNING_CONTEXT_C = new byte[0];
 
     private final BigInteger secretKey;
     private final Point publicKey;
 
-    private ECDHKeyPair(@Nonnull final BigInteger secretKey) {
+    ECDHKeyPair(@Nonnull final BigInteger secretKey) {
         this.secretKey = requireNonNull(secretKey);
         this.publicKey = multiplyByBase(secretKey);
     }
@@ -68,7 +77,34 @@ public final class ECDHKeyPair {
      */
     @Nonnull
     public Point getPublicKey() {
-        return publicKey;
+        return this.publicKey;
+    }
+
+    /**
+     * Sign provided message using the secret key that is maintained inside this key pair.
+     *
+     * @param message The message to be signed.
+     * @return Returns the signature for the provided message.
+     */
+    @Nonnull
+    public byte[] sign(@Nonnull final byte[] message) {
+        return Ed448.sign(this.secretKey, SIGNING_CONTEXT_C, message);
+    }
+
+    /**
+     * Verify a message given public key and signature.
+     *
+     * @param publicKey The public key to verify the signature.
+     * @param message   The message to be verified.
+     * @param signature The signature with which to verify the message.
+     * @throws OtrCryptoException In case message verification fails.
+     */
+    public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature) throws OtrCryptoException {
+        try {
+            Ed448.verify(SIGNING_CONTEXT_C, publicKey, message, signature);
+        } catch (final Ed448.SignatureVerificationFailedException e) {
+            throw new OtrCryptoException("Signature verification failed.", e);
+        }
     }
 
     /**

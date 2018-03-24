@@ -58,32 +58,32 @@ public class DHKeyPairTest {
     @Test
     public void testVerifyPublicKey() throws OtrCryptoException {
         final DHKeyPair keypair = DHKeyPair.generate(RANDOM);
-        DHKeyPair.verify(keypair.getPublicKey());
+        DHKeyPair.verifyPublicKey(keypair.getPublicKey());
     }
 
     @Test(expected = NullPointerException.class)
     public void testVerifyNull() throws OtrCryptoException {
-        DHKeyPair.verify(null);
+        DHKeyPair.verifyPublicKey(null);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testVerifyIllegalPublicKeyTooLow() throws OtrCryptoException {
-        DHKeyPair.verify(ONE);
+        DHKeyPair.verifyPublicKey(ONE);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testVerifyIllegalPublicKeyTooHigh() throws OtrCryptoException {
-        DHKeyPair.verify(MODULUS);
+        DHKeyPair.verifyPublicKey(MODULUS);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testVerifyIllegalPublicKeyTooHigh2() throws OtrCryptoException {
-        DHKeyPair.verify(MODULUS.subtract(ONE));
+        DHKeyPair.verifyPublicKey(MODULUS.subtract(ONE));
     }
 
     @Test
     public void testVerifyPublicKeyLowerBound() throws OtrCryptoException {
-        DHKeyPair.verify(TWO);
+        DHKeyPair.verifyPublicKey(TWO);
     }
 
     @Test(expected = NullPointerException.class)

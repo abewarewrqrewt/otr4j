@@ -102,7 +102,7 @@ public final class DHKeyPair {
      * @param publicKey The DH public key.
      * @throws OtrCryptoException For invalid DH public keys.
      */
-    public static void verify(@Nonnull final BigInteger publicKey) throws OtrCryptoException {
+    public static void verifyPublicKey(@Nonnull final BigInteger publicKey) throws OtrCryptoException {
         if (!checkPublicKey(publicKey)) {
             throw new OtrCryptoException("Invalid DH public key.");
         }

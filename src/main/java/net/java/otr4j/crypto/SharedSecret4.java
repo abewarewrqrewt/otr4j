@@ -117,7 +117,7 @@ public final class SharedSecret4 {
             kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_BRACE_KEY, this.braceKey),
                 BRACE_KEY_LENGTH_BYTES);
         }
-        // FIXME need to do root key derivation now?
+        deriveNextRootKey();
     }
 
     /**
@@ -143,7 +143,12 @@ public final class SharedSecret4 {
             // "Derive and securely overwrite brace_key = KDF_1(0x03 || brace_key, 32)."
             kdf1(this.braceKey, 0, concatenate(new byte[]{0x03}, this.braceKey), BRACE_KEY_LENGTH_BYTES);
         }
-        // FIXME need to do root key derivation now?
+        deriveNextRootKey();
+    }
+
+    private void deriveNextRootKey() {
+        // FIXME implement next root key derivation.
+        throw new UnsupportedOperationException("To be implemented.");
     }
 
     /**

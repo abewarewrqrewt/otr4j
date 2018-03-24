@@ -16,16 +16,6 @@ import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 public final class UserProfile {
 
     /**
-     * Flag f, used in signing.
-     */
-    private static final byte SIGNING_FLAG_F = 0;
-
-    /**
-     * Context c, used in signing.
-     */
-    private static final byte[] SIGNING_CONTEXT_C = new byte[0];
-
-    /**
      * Public key of the long-term Ed448 keypair.
      */
     private final Point longTermPublicKey;
