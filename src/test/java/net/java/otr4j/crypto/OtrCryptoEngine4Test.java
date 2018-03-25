@@ -3,10 +3,12 @@ package net.java.otr4j.crypto;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateEdDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf2;
@@ -14,12 +16,15 @@ import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @SuppressWarnings("ConstantConditions")
 public class OtrCryptoEngine4Test {
 
     // This was previously a defined constant in KDF_2
     private static final int KDF_2_LENGTH_BYTES = 64;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test(expected = NullPointerException.class)
     public void testFingerprintNullDestination() {
@@ -170,5 +175,15 @@ public class OtrCryptoEngine4Test {
     public void testHashToScalar() {
         final BigInteger expected = new BigInteger("140888660286710823522416977182523334012318579212723175722386145079376311038285857705111942117343322765056189818196599612200095406328505", 10);
         assertEquals(expected, hashToScalar("helloworld".getBytes(US_ASCII)));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testGenerateEdDSAKeyPairNull() {
+        generateEdDSAKeyPair(null);
+    }
+
+    @Test
+    public void testGenerateEdDSAKeyPair() {
+        assertNotNull(generateEdDSAKeyPair(RANDOM));
     }
 }

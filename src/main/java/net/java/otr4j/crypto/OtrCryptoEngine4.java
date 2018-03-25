@@ -1,10 +1,13 @@
 package net.java.otr4j.crypto;
 
+import nl.dannyvanheumen.joldilocks.Ed448;
+import nl.dannyvanheumen.joldilocks.KeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
@@ -29,6 +32,11 @@ public final class OtrCryptoEngine4 {
      * Length of HashToScalar array of bytes.
      */
     private static final int HASH_TO_SCALAR_LENGTH_BYTES = 64;
+
+    /**
+     * Length of the random input data for generating a EdDSA key pair in bytes.
+     */
+    private static final int EDDSA_KEY_PAIR_RANDOM_INPUT_LENGTH_BYTES = 57;
 
     /**
      * Prefix used in key derivation functions.
@@ -104,5 +112,19 @@ public final class OtrCryptoEngine4 {
         final BigInteger h = decodeLittleEndian(hashedD);
         //    Return h (mod q)
         return h.mod(primeOrder());
+    }
+
+    /**
+     * Generate a EdDSA (long-term) key pair. The key pair itself will be requested from the Engine host. This method is
+     * there for convenience, to be used by Engine host implementations.
+     *
+     * @param random Source of secure random data.
+     * @return Returns the generated key pair.
+     */
+    @Nonnull
+    public static KeyPair generateEdDSAKeyPair(@Nonnull final SecureRandom random) {
+        final byte[] data = new byte[EDDSA_KEY_PAIR_RANDOM_INPUT_LENGTH_BYTES];
+        random.nextBytes(data);
+        return Ed448.generate(data);
     }
 }
