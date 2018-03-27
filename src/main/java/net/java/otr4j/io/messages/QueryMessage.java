@@ -12,7 +12,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 /**
- * 
+ * OTRv2 OTR query message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */
@@ -22,11 +23,6 @@ public class QueryMessage implements Message {
 
     public QueryMessage(@Nonnull final Set<Integer> versions) {
         this.versions = Objects.requireNonNull(versions);
-    }
-
-    @Override
-    public int getType() {
-        return Message.MESSAGE_QUERY;
     }
 
     @Override

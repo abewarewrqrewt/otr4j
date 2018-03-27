@@ -7,18 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.crypto.interfaces.DHPublicKey;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
@@ -31,13 +19,30 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationConstants;
-import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.crypto.interfaces.DHPublicKey;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static net.java.otr4j.io.SerializationUtils.Content;
+import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
+import static net.java.otr4j.io.SerializationUtils.extractContents;
+import static net.java.otr4j.io.SerializationUtils.toByteArray;
 
 /**
  * Message state in case an encrypted session is established.
@@ -165,7 +170,7 @@ final class StateEncrypted extends AbstractState {
         // Verify received MAC with a locally calculated MAC.
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
 
-        final byte[] serializedT = SerializationUtils.toByteArray(data.getT());
+        final byte[] serializedT = toByteArray(data.getT());
         final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(serializedT,
                 matchingKeys.receivingMAC(), SerializationConstants.TYPE_LEN_MAC);
         if (!Arrays.equals(computedMAC, data.mac)) {
@@ -202,7 +207,7 @@ final class StateEncrypted extends AbstractState {
         }
 
         // Extract and process TLVs.
-        final SerializationUtils.Content content = SerializationUtils.extractContents(dmc);
+        final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             switch (tlv.getType()) {
@@ -274,7 +279,7 @@ final class StateEncrypted extends AbstractState {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         if (msgText.length() > 0) {
             try {
-                out.write(SerializationUtils.convertTextToBytes(msgText));
+                out.write(convertTextToBytes(msgText));
             } catch (IOException e) {
                 throw new OtrException(e);
             }
@@ -306,26 +311,20 @@ final class StateEncrypted extends AbstractState {
         final DHPublicKey nextDH = (DHPublicKey) mostRecentKeys.getLocalKeyPair().getPublic();
 
         // Calculate T.
-        final MysteriousT t
-                = new MysteriousT(this.protocolVersion,
-                        context.getSenderInstanceTag().getValue(),
-                        context.getReceiverInstanceTag().getValue(),
-                        0, senderKeyID, recipientKeyID, nextDH, ctr,
-                        encryptedMsg);
+        final MysteriousT t = new MysteriousT(this.protocolVersion, context.getSenderInstanceTag().getValue(),
+            context.getReceiverInstanceTag().getValue(), 0, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMsg);
 
         // Calculate T hash.
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
 
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
-        final byte[] serializedT = SerializationUtils.toByteArray(t);
-        final byte[] mac = OtrCryptoEngine.sha1Hmac(serializedT, sendingMACKey,
-                SerializationConstants.TYPE_LEN_MAC);
+        final byte[] serializedT = toByteArray(t);
+        final byte[] mac = OtrCryptoEngine.sha1Hmac(serializedT, sendingMACKey, SerializationConstants.TYPE_LEN_MAC);
 
         // Get old MAC keys to be revealed.
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();
-        return new DataMessage(t, mac, oldKeys,
-                context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue());
+        return new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag().getValue(),
+            context.getReceiverInstanceTag().getValue());
     }
 
     @Override

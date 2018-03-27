@@ -7,6 +7,12 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.Session;
+import net.java.otr4j.io.OtrOutputStream;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+
 /**
  * 
  * @author George Politis
@@ -20,16 +26,7 @@ public abstract class AbstractEncodedMessage implements Message {
 
     public final int receiverInstanceTag;
 
-    public AbstractEncodedMessage(final int protocolVersion) {
-        this(protocolVersion, 0);
-    }
-
-    public AbstractEncodedMessage(final int protocolVersion, final int senderInstanceTag) {
-        this(protocolVersion, senderInstanceTag, 0);
-    }
-
-    public AbstractEncodedMessage(final int protocolVersion,
-            final int senderInstanceTag, final int recipientInstanceTag) {
+    AbstractEncodedMessage(final int protocolVersion, final int senderInstanceTag, final int recipientInstanceTag) {
         this.protocolVersion = protocolVersion;
         this.senderInstanceTag = senderInstanceTag;
         this.receiverInstanceTag = recipientInstanceTag;
@@ -67,4 +64,16 @@ public abstract class AbstractEncodedMessage implements Message {
         }
         return true;
     }
+
+    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+        // Start writing common header of encoded messages.
+        writer.writeShort(this.protocolVersion);
+        writer.writeByte(getType());
+        if (this.protocolVersion == Session.OTRv.THREE) {
+            writer.writeInt(this.senderInstanceTag);
+            writer.writeInt(this.receiverInstanceTag);
+        }
+    }
+
+    public abstract int getType();
 }

@@ -7,26 +7,26 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrOutputStream;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
- * 
+ * OTRv2 AKE Reveal Signature message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */
-public final class RevealSignatureMessage extends SignatureMessage {
+public final class RevealSignatureMessage extends AbstractEncodedMessage {
+
+    static final int MESSAGE_REVEALSIG = 0x11;
 
     public final byte[] revealedKey;
-
-    public RevealSignatureMessage(final int protocolVersion,
-            @Nonnull final byte[] xEncrypted,
-            @Nonnull final byte[] xEncryptedMAC,
-            @Nonnull final byte[] revealedKey) {
-        super(protocolVersion, xEncrypted, xEncryptedMAC);
-        this.revealedKey = Objects.requireNonNull(revealedKey);
-    }
+    public final byte[] xEncrypted;
+    public final byte[] xEncryptedMAC;
 
     public RevealSignatureMessage(final int protocolVersion,
             @Nonnull final byte[] xEncrypted,
@@ -34,13 +34,10 @@ public final class RevealSignatureMessage extends SignatureMessage {
             @Nonnull final byte[] revealedKey,
             final int senderInstance,
             final int receiverInstance) {
-        super(protocolVersion, xEncrypted, xEncryptedMAC, senderInstance, receiverInstance);
+        super(protocolVersion, senderInstance, receiverInstance);
+        this.xEncrypted = Objects.requireNonNull(xEncrypted);
+        this.xEncryptedMAC = Objects.requireNonNull(xEncryptedMAC);
         this.revealedKey = Objects.requireNonNull(revealedKey);
-    }
-
-    @Override
-    public int getType() {
-        return Message.MESSAGE_REVEALSIG;
     }
 
     @Override
@@ -67,5 +64,18 @@ public final class RevealSignatureMessage extends SignatureMessage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+        super.write(writer);
+        writer.writeData(this.revealedKey);
+        writer.writeData(this.xEncrypted);
+        writer.writeMac(this.xEncryptedMAC);
+    }
+
+    @Override
+    public int getType() {
+        return MESSAGE_REVEALSIG;
     }
 }

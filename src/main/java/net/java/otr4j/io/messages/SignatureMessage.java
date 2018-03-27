@@ -7,25 +7,25 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrOutputStream;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
+ * OTRv2 AKE Signature message.
  *
  * @author George Politis
  * @author Danny van Heumen
  */
-public class SignatureMessage extends AbstractEncodedMessage {
+public final class SignatureMessage extends AbstractEncodedMessage {
+
+    static final int MESSAGE_SIGNATURE = 0x12;
 
     public final byte[] xEncrypted;
     public final byte[] xEncryptedMAC;
-
-    public SignatureMessage(final int protocolVersion,
-            @Nonnull final byte[] xEncrypted,
-            @Nonnull final byte[] xEncryptedMAC) {
-        this(protocolVersion, xEncrypted, xEncryptedMAC, 0, 0);
-    }
 
     public SignatureMessage(final int protocolVersion,
             @Nonnull final byte[] xEncrypted,
@@ -35,11 +35,6 @@ public class SignatureMessage extends AbstractEncodedMessage {
         super(protocolVersion, senderInstance, receiverInstance);
         this.xEncrypted = Objects.requireNonNull(xEncrypted);
         this.xEncryptedMAC = Objects.requireNonNull(xEncryptedMAC);
-    }
-
-    @Override
-    public int getType() {
-        return Message.MESSAGE_SIGNATURE;
     }
 
     @Override
@@ -70,5 +65,17 @@ public class SignatureMessage extends AbstractEncodedMessage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+        super.write(writer);
+        writer.writeData(this.xEncrypted);
+        writer.writeMac(this.xEncryptedMAC);
+    }
+
+    @Override
+    public int getType() {
+        return MESSAGE_SIGNATURE;
     }
 }

@@ -7,6 +7,9 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrOutputStream;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -14,11 +17,14 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 
 /**
- * 
+ * OTRv2 encrypted data message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */
 public final class DataMessage extends AbstractEncodedMessage {
+
+    static final int MESSAGE_DATA = 0x03;
 
     public final int flags;
     public final int senderKeyID;
@@ -28,12 +34,6 @@ public final class DataMessage extends AbstractEncodedMessage {
     public final byte[] encryptedMessage;
     public final byte[] mac;
     public final byte[] oldMACKeys;
-
-    public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac,
-            @Nonnull final byte[] oldMacKeys) {
-        this(t.protocolVersion, t.flags, t.senderKeyID, t.recipientKeyID,
-                t.nextDH, t.ctr, t.encryptedMessage, mac, oldMacKeys, 0, 0);
-    }
 
     public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac,
             @Nonnull final byte[] oldMacKeys, final int senderInstanceTag,
@@ -57,11 +57,6 @@ public final class DataMessage extends AbstractEncodedMessage {
         this.encryptedMessage = Objects.requireNonNull(encryptedMessage);
         this.mac = Objects.requireNonNull(mac);
         this.oldMACKeys = Objects.requireNonNull(oldMacKeys);
-    }
-
-    @Override
-    public int getType() {
-        return Message.MESSAGE_DATA;
     }
 
     public MysteriousT getT() {
@@ -126,5 +121,23 @@ public final class DataMessage extends AbstractEncodedMessage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+        super.write(writer);
+        writer.writeByte(this.flags);
+        writer.writeInt(this.senderKeyID);
+        writer.writeInt(this.recipientKeyID);
+        writer.writeDHPublicKey(this.nextDH);
+        writer.writeCtr(this.ctr);
+        writer.writeData(this.encryptedMessage);
+        writer.writeMac(this.mac);
+        writer.writeData(this.oldMACKeys);
+    }
+
+    @Override
+    public int getType() {
+        return MESSAGE_DATA;
     }
 }

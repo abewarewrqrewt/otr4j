@@ -497,7 +497,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return session.transformReceiving(msgText);
         }
 
-        logger.log(Level.INFO, "Received message with type {0}", m.getType());
+        logger.log(Level.INFO, "Received message with type {0}", m.getClass());
         if (m instanceof DataMessage) {
             return handleDataMessage((DataMessage) m);
         } else if (m instanceof ErrorMessage) {

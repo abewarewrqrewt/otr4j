@@ -11,7 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
- * Type that represents an OTR error message.
+ * OTRv2 OTR error message.
  *
  * @author George Politis
  * @author Danny van Heumen
@@ -22,11 +22,6 @@ public final class ErrorMessage implements Message {
 
     public ErrorMessage(@Nonnull final String error) {
         this.error = Objects.requireNonNull(error);
-    }
-
-    @Override
-    public int getType() {
-        return Message.MESSAGE_ERROR;
     }
 
     @Override

@@ -24,8 +24,7 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[i];
             r.nextBytes(fakeEncrypted);
             r.nextBytes(fakeEncryptedMAC);
-            current = new SignatureMessage(OTRv.THREE, fakeEncrypted,
-                    fakeEncryptedMAC);
+            current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
             assertFalse(current.equals(null));
             assertFalse(current.equals(previous));
@@ -37,8 +36,7 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[100];
             Arrays.fill(fakeEncrypted, (byte) i);
             Arrays.fill(fakeEncryptedMAC, (byte) i);
-            current = new SignatureMessage(OTRv.THREE, fakeEncrypted,
-                    fakeEncryptedMAC);
+            current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
             assertFalse(current.hashCode() == previous.hashCode());
             previous = current;
@@ -56,12 +54,10 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[i];
             r.nextBytes(fakeEncrypted);
             r.nextBytes(fakeEncryptedMAC);
-            SignatureMessage sm = new SignatureMessage(OTRv.THREE,
-                    fakeEncrypted, fakeEncryptedMAC);
+            SignatureMessage sm = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(sm);
             assertFalse(sm.equals(null));
-            SignatureMessage sm2 = new SignatureMessage(OTRv.THREE,
-                    fakeEncrypted, fakeEncryptedMAC);
+            SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(sm2);
             assertTrue(sm.equals(sm2));
             assertFalse(sm.equals(previous));
@@ -71,8 +67,7 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[1000];
             Arrays.fill(fakeEncrypted, (byte) i);
             Arrays.fill(fakeEncryptedMAC, (byte) i);
-            SignatureMessage current = new SignatureMessage(OTRv.THREE,
-                    fakeEncrypted, fakeEncryptedMAC);
+            SignatureMessage current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
             assertFalse(current.equals(null));
             assertFalse(current.equals(previous));

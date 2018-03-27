@@ -7,11 +7,18 @@
 
 package net.java.otr4j.io.messages;
 
+import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
 import java.util.Arrays;
 
-import javax.crypto.interfaces.DHPublicKey;
+import static net.java.otr4j.io.messages.DataMessage.MESSAGE_DATA;
 
+/**
+ * MysteriousT represents the T_a composite as described in "Exchanging Data" section.
+ */
+// TODO Check if we can merge MysteriousT and DataMessage. MysteriousT is described in the "Exchanging Data" section as T_a. It's basically a DataMessage except without MAC as it still has to be calculated from serialized MysteriousT content.
 public final class MysteriousT {
+
     // Fields.
     public final int protocolVersion;
     public final int senderInstanceTag;
@@ -26,14 +33,14 @@ public final class MysteriousT {
 
     // Ctor.
     public MysteriousT(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
-            final int flags, final int senderKeyID,
-            final int recipientKeyID, final DHPublicKey nextDH, final byte[] ctr,
-            final byte[] encryptedMessage) {
+                       final int flags, final int senderKeyID, final int recipientKeyID,
+                       @Nonnull final DHPublicKey nextDH, @Nonnull final byte[] ctr,
+                       @Nonnull final byte[] encryptedMessage) {
 
         this.protocolVersion = protocolVersion;
         this.senderInstanceTag = senderInstanceTag;
         this.receiverInstanceTag = receiverInstanceTag;
-        this.messageType = AbstractEncodedMessage.MESSAGE_DATA;
+        this.messageType = MESSAGE_DATA;
         this.flags = flags;
         this.senderKeyID = senderKeyID;
         this.recipientKeyID = recipientKeyID;
@@ -51,7 +58,7 @@ public final class MysteriousT {
         result = prime * result + Arrays.hashCode(encryptedMessage);
         result = prime * result + flags;
         result = prime * result + messageType;
-        result = prime * result + ((nextDH == null) ? 0 : nextDH.hashCode());
+        result = prime * result + nextDH.hashCode();
         result = prime * result + protocolVersion;
         result = prime * result + recipientKeyID;
         result = prime * result + senderKeyID;
@@ -84,11 +91,7 @@ public final class MysteriousT {
         if (messageType != other.messageType) {
             return false;
         }
-        if (nextDH == null) {
-            if (other.nextDH != null) {
-                return false;
-            }
-        } else if (!nextDH.equals(other.nextDH)) {
+        if (!nextDH.equals(other.nextDH)) {
             return false;
         }
         if (protocolVersion != other.protocolVersion) {
@@ -103,10 +106,7 @@ public final class MysteriousT {
         if (senderInstanceTag != other.senderInstanceTag) {
             return false;
         }
-        if (receiverInstanceTag != other.receiverInstanceTag) {
-            return false;
-        }
-        return true;
+        return receiverInstanceTag == other.receiverInstanceTag;
     }
 
 }

@@ -6,6 +6,21 @@
  */
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
+import net.java.otr4j.io.messages.ErrorMessage;
+import net.java.otr4j.io.messages.Message;
+import net.java.otr4j.io.messages.EncodedMessageParser;
+import net.java.otr4j.io.messages.MysteriousT;
+import net.java.otr4j.io.messages.PlainTextMessage;
+import net.java.otr4j.io.messages.QueryMessage;
+import net.java.otr4j.io.messages.SignatureM;
+import net.java.otr4j.io.messages.SignatureX;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,28 +40,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.crypto.interfaces.DHPublicKey;
-
-import org.bouncycastle.util.encoders.Base64;
-
-import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.DHCommitMessage;
-import net.java.otr4j.io.messages.DHKeyMessage;
-import net.java.otr4j.io.messages.DataMessage;
-import net.java.otr4j.io.messages.ErrorMessage;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.MysteriousT;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.io.messages.RevealSignatureMessage;
-import net.java.otr4j.io.messages.SignatureM;
-import net.java.otr4j.io.messages.SignatureMessage;
-import net.java.otr4j.io.messages.SignatureX;
+import static org.bouncycastle.util.encoders.Base64.decode;
+import static org.bouncycastle.util.encoders.Base64.encode;
 
 /**
  * @author George Politis
@@ -241,71 +236,12 @@ public final class SerializationUtils {
         } else if (m instanceof AbstractEncodedMessage) {
             final ByteArrayOutputStream o = new ByteArrayOutputStream();
             try (final OtrOutputStream s = new OtrOutputStream(o)) {
-
-                if (m instanceof DHKeyMessage) {
-                    final DHKeyMessage dhkey = (DHKeyMessage) m;
-                    s.writeShort(dhkey.protocolVersion);
-                    s.writeByte(dhkey.getType());
-                    if (dhkey.protocolVersion == OTRv.THREE) {
-                        s.writeInt(dhkey.senderInstanceTag);
-                        s.writeInt(dhkey.receiverInstanceTag);
-                    }
-                    s.writeDHPublicKey(dhkey.dhPublicKey);
-                } else if (m instanceof RevealSignatureMessage) {
-                    final RevealSignatureMessage revealsig = (RevealSignatureMessage) m;
-                    s.writeShort(revealsig.protocolVersion);
-                    s.writeByte(revealsig.getType());
-                    if (revealsig.protocolVersion == OTRv.THREE) {
-                        s.writeInt(revealsig.senderInstanceTag);
-                        s.writeInt(revealsig.receiverInstanceTag);
-                    }
-                    s.writeData(revealsig.revealedKey);
-                    s.writeData(revealsig.xEncrypted);
-                    s.writeMac(revealsig.xEncryptedMAC);
-                } else if (m instanceof SignatureMessage) {
-                    final SignatureMessage sig = (SignatureMessage) m;
-                    s.writeShort(sig.protocolVersion);
-                    s.writeByte(sig.getType());
-                    if (sig.protocolVersion == OTRv.THREE) {
-                        s.writeInt(sig.senderInstanceTag);
-                        s.writeInt(sig.receiverInstanceTag);
-                    }
-                    s.writeData(sig.xEncrypted);
-                    s.writeMac(sig.xEncryptedMAC);
-                } else if (m instanceof DHCommitMessage) {
-                    final DHCommitMessage dhcommit = (DHCommitMessage) m;
-                    s.writeShort(dhcommit.protocolVersion);
-                    s.writeByte(dhcommit.getType());
-                    if (dhcommit.protocolVersion == OTRv.THREE) {
-                        s.writeInt(dhcommit.senderInstanceTag);
-                        s.writeInt(dhcommit.receiverInstanceTag);
-                    }
-                    s.writeData(dhcommit.dhPublicKeyEncrypted);
-                    s.writeData(dhcommit.dhPublicKeyHash);
-                } else if (m instanceof DataMessage) {
-                    final DataMessage data = (DataMessage) m;
-                    s.writeShort(data.protocolVersion);
-                    s.writeByte(data.getType());
-                    if (data.protocolVersion == OTRv.THREE) {
-                        s.writeInt(data.senderInstanceTag);
-                        s.writeInt(data.receiverInstanceTag);
-                    }
-                    s.writeByte(data.flags);
-                    s.writeInt(data.senderKeyID);
-                    s.writeInt(data.recipientKeyID);
-                    s.writeDHPublicKey(data.nextDH);
-                    s.writeCtr(data.ctr);
-                    s.writeData(data.encryptedMessage);
-                    s.writeMac(data.mac);
-                    s.writeData(data.oldMACKeys);
-                } else {
-                    throw new UnsupportedOperationException("Unsupported encoded message type: " + m.getClass().getName());
-                }
+                ((AbstractEncodedMessage) m).write(s);
             } catch (final IOException ex) {
                 throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
             }
             writer.write(SerializationConstants.HEAD_ENCODED);
-            writer.write(new String(Base64.encode(o.toByteArray()), ASCII));
+            writer.write(new String(encode(o.toByteArray()), ASCII));
             writer.write(".");
         } else {
             throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());
@@ -385,65 +321,10 @@ public final class SerializationUtils {
                  * Otr4j doesn't strip this point before passing the content to the base64 decoder.
                  * So in order to decode the content string we have to get rid of the '.' first.
                  */
-                final ByteArrayInputStream bin = new ByteArrayInputStream(Base64
-                        .decode(content.substring(0, content.length() - 1).getBytes(ASCII)));
-                // We have an encoded message.
+                final ByteArrayInputStream bin = new ByteArrayInputStream(
+                    decode(content.substring(0, content.length() - 1).getBytes(ASCII)));
                 try (final OtrInputStream otr = new OtrInputStream(bin)) {
-                    final int protocolVersion = otr.readShort();
-                    if (!OTRv.ALL.contains(protocolVersion)) {
-                        throw new IOException("Unsupported protocol version "
-                                + protocolVersion);
-                    }
-                    final int messageType = otr.readByte();
-                    int senderInstanceTag = 0;
-                    int recipientInstanceTag = 0;
-                    if (protocolVersion == OTRv.THREE) {
-                        senderInstanceTag = otr.readInt();
-                        recipientInstanceTag = otr.readInt();
-                    }
-                    switch (messageType) {
-                        case AbstractEncodedMessage.MESSAGE_DATA:
-                            final int flags = otr.readByte();
-                            final int senderKeyID = otr.readInt();
-                            final int recipientKeyID = otr.readInt();
-                            final DHPublicKey nextDH = otr.readDHPublicKey();
-                            final byte[] ctr = otr.readCtr();
-                            final byte[] encryptedMessage = otr.readData();
-                            final byte[] mac = otr.readMac();
-                            final byte[] oldMacKeys = otr.readData();
-                            return new DataMessage(protocolVersion, flags, senderKeyID,
-                                    recipientKeyID, nextDH, ctr, encryptedMessage, mac,
-                                    oldMacKeys, senderInstanceTag, recipientInstanceTag);
-                        case AbstractEncodedMessage.MESSAGE_DH_COMMIT:
-                            final byte[] dhPublicKeyEncrypted = otr.readData();
-                            final byte[] dhPublicKeyHash = otr.readData();
-                            return new DHCommitMessage(protocolVersion,
-                                    dhPublicKeyHash, dhPublicKeyEncrypted,
-                                    senderInstanceTag, recipientInstanceTag);
-                        case AbstractEncodedMessage.MESSAGE_DHKEY:
-                            final DHPublicKey dhPublicKey = otr.readDHPublicKey();
-                            return new DHKeyMessage(protocolVersion, dhPublicKey,
-                                    senderInstanceTag, recipientInstanceTag);
-                        case AbstractEncodedMessage.MESSAGE_REVEALSIG: {
-                            final byte[] revealedKey = otr.readData();
-                            final byte[] xEncrypted = otr.readData();
-                            final byte[] xEncryptedMac = otr.readMac();
-                            return new RevealSignatureMessage(protocolVersion,
-                                    xEncrypted, xEncryptedMac, revealedKey,
-                                    senderInstanceTag, recipientInstanceTag);
-                        }
-                        case AbstractEncodedMessage.MESSAGE_SIGNATURE: {
-                            final byte[] xEncryted = otr.readData();
-                            final byte[] xEncryptedMac = otr.readMac();
-                            return new SignatureMessage(protocolVersion,
-                                    xEncryted, xEncryptedMac, senderInstanceTag,
-                                    recipientInstanceTag);
-                        }
-                        default:
-                            // NOTE by gp: aren't we being a little too harsh here? Passing the message as a plaintext
-                            // message to the host application shouldn't hurt anybody.
-                            throw new IOException("Illegal message type.");
-                    }
+                    return EncodedMessageParser.instance().read(otr);
                 }
             }
         }

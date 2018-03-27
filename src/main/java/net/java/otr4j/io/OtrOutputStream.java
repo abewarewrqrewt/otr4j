@@ -25,6 +25,7 @@ import net.java.otr4j.io.messages.SignatureX;
 
 import org.bouncycastle.util.BigIntegers;
 
+// TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
 public final class OtrOutputStream extends FilterOutputStream implements
         SerializationConstants {
 
@@ -148,7 +149,6 @@ public final class OtrOutputStream extends FilterOutputStream implements
             writeInt(t.receiverInstanceTag);
         }
         writeByte(t.flags);
-
         writeInt(t.senderKeyID);
         writeInt(t.recipientKeyID);
         writeDHPublicKey(t.nextDH);

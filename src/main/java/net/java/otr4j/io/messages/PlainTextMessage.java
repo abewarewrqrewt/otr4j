@@ -27,11 +27,6 @@ public final class PlainTextMessage extends QueryMessage {
     }
 
     @Override
-    public int getType() {
-        return Message.MESSAGE_PLAINTEXT;
-    }
-
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
