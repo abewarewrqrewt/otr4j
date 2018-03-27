@@ -4,7 +4,7 @@ digraph {
     otrv4_identifiers [label="OTRv4 protocol identifiers"]
     otrv4_message_parsing [label="Message parsing for OTRv4"]
     crypto_datatypes [label="Cryptographic data types"]
-    otrv4DH [label="DH (OTRv4 params)"]
+    otrv4DH [label="DH (OTRv4 params)",style=filled,color=orange]
     ed448_crypto_primitives [label="ED448-Goldilocks\ncryptographic primitives",style=filled,color=orange]
     serialization [label="Serialization of data types"]
     interactive_DAKE [label="Interactive DAKE"]
