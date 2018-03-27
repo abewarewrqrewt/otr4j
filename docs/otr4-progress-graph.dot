@@ -41,6 +41,9 @@ digraph {
     attach_encrypted_message_during_DAKE [label="Attach encrypted message during DAKE"]
     otrv4_SMP [label="OTRv4 SMP"]
     shake256 [label="SHAKE-256",style=filled,color=green]
+    otrv4_fragmentation [label="OTRv4 fragmentation",tooltip="Changes to the format due to support for out-of-order messages."]
+    prekey_profile [label="Prekey profile"]
+    prekey_server [label="Prekey server",tooltip="Server that stores Prekey profiles."]
 
     otr4j -> serialization
     otr4j -> otrv4_identifiers
@@ -52,14 +55,18 @@ digraph {
     otr4j -> user_profile
     otr4j -> protocol_state_machine
     otr4j -> otrv4_SMP
+    otr4j -> prekey_profile
     extra -> offline_support
     extra -> otrv4_extra_symmetric_key
     extra -> introduce_OTR_errorno_notation
     extra -> attach_encrypted_message_during_DAKE
+    extra -> prekey_server
     otrv4_message_parsing -> otrv4_whitespace_tag
     otrv4_message_parsing -> otrv4_query_message
+    otrv4_message_parsing -> otrv4_fragmentation
     serialization -> crypto_datatypes
     serialization -> encoding_decoding
+    serialization -> otrv4_fragmentation
     encoding_decoding -> ed448_crypto_primitives
     crypto_datatypes -> ed448_crypto_primitives
     crypto_datatypes -> ring_signatures
