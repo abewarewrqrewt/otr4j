@@ -9,7 +9,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf2;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
@@ -17,9 +16,6 @@ import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("ConstantConditions")
 public class OtrCryptoEngine4Test {
-
-    // This was previously a defined constant in KDF_2
-    private static final int KDF_2_LENGTH_BYTES = 64;
 
     @Test(expected = NullPointerException.class)
     public void testFingerprintNullDestination() {
@@ -109,58 +105,7 @@ public class OtrCryptoEngine4Test {
         kdf1(dst, 1, input, 32);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testKdf2NullDestination() {
-        final byte[] input = "someinput".getBytes(US_ASCII);
-        kdf2(null, 0, input, KDF_2_LENGTH_BYTES);
-    }
 
-    @Test(expected = NullPointerException.class)
-    public void testKdf2NullInput() {
-        final byte[] dst = new byte[100];
-        kdf2(dst, 0, null, KDF_2_LENGTH_BYTES);
-    }
-
-    @Test(expected = ArrayIndexOutOfBoundsException.class)
-    public void testKdf2DestinationTooSmall() {
-        final byte[] input = "helloworld".getBytes(US_ASCII);
-        kdf2(new byte[1], 0, input, KDF_2_LENGTH_BYTES);
-    }
-
-    @Test
-    public void testKdf2DestinationTooLarge() {
-        final byte[] input = "helloworld".getBytes(US_ASCII);
-        final byte[] expected = new byte[] {5, -103, -33, -123, 1, -120, -63, -109, 59, 56, -36, 116, -73, -26, -105, 43, -64, 84, 35, 79, 1, -51, 127, -98, -114, 46, -116, -60, 10, -53, 20, -99, -119, 77, -101, 61, -127, 73, -54, -2, 127, -8, -107, 38, 87, 108, 125, -122, 38, 66, 74, -125, -56, 37, 34, -44, -72, 18, 15, -50, -54, 127, 115, 25, 0};
-        final byte[] dst = new byte[KDF_2_LENGTH_BYTES + 1];
-        kdf2(dst, 0, input, KDF_2_LENGTH_BYTES);
-        assertArrayEquals(expected, dst);
-    }
-
-    @Test
-    public void testKdf2DestinationTooLargeWithOffset() {
-        final byte[] input = "helloworld".getBytes(US_ASCII);
-        final byte[] expected = new byte[] {0, 5, -103, -33, -123, 1, -120, -63, -109, 59, 56, -36, 116, -73, -26, -105, 43, -64, 84, 35, 79, 1, -51, 127, -98, -114, 46, -116, -60, 10, -53, 20, -99, -119, 77, -101, 61, -127, 73, -54, -2, 127, -8, -107, 38, 87, 108, 125, -122, 38, 66, 74, -125, -56, 37, 34, -44, -72, 18, 15, -50, -54, 127, 115, 25};
-        final byte[] dst = new byte[KDF_2_LENGTH_BYTES + 1];
-        kdf2(dst, 1, input, KDF_2_LENGTH_BYTES);
-        assertArrayEquals(expected, dst);
-    }
-
-    @Test
-    public void testKdf2() {
-        final byte[] input = "helloworld".getBytes(US_ASCII);
-        final byte[] expected = new byte[] {5, -103, -33, -123, 1, -120, -63, -109, 59, 56, -36, 116, -73, -26, -105, 43, -64, 84, 35, 79, 1, -51, 127, -98, -114, 46, -116, -60, 10, -53, 20, -99, -119, 77, -101, 61, -127, 73, -54, -2, 127, -8, -107, 38, 87, 108, 125, -122, 38, 66, 74, -125, -56, 37, 34, -44, -72, 18, 15, -50, -54, 127, 115, 25};
-        final byte[] dst = new byte[KDF_2_LENGTH_BYTES];
-        kdf2(dst, 0, input, KDF_2_LENGTH_BYTES);
-        assertArrayEquals(expected, dst);
-    }
-
-    @Test(expected = ArrayIndexOutOfBoundsException.class)
-    public void testKdf2WithOffsetTooSmall() {
-        final byte[] input = "helloworld".getBytes(US_ASCII);
-        final byte[] dst = new byte[KDF_2_LENGTH_BYTES];
-        kdf2(dst, 1, input, KDF_2_LENGTH_BYTES);
-    }
-    
     @Test(expected = NullPointerException.class)
     public void testHashToScalarNullBytes() {
         hashToScalar(null);
