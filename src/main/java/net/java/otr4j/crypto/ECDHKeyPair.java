@@ -115,7 +115,7 @@ public final class ECDHKeyPair {
      */
     public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws OtrCryptoException {
         final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
-        // TODO is 'checkIdentity' method sufficient to discover all illegal public keys?
+        // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.
         if (checkIdentity(sharedSecret)) {
             throw new OtrCryptoException("Illegal ECDH public key.");
         }

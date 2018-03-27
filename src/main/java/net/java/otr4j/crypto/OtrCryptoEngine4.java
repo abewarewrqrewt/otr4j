@@ -90,6 +90,7 @@ public final class OtrCryptoEngine4 {
      * @param offset The offset position to start writing to the destination byte array.
      * @param input  The input data to KDF_2.
      */
+    // FIXME 'kdf2' is now exactly SHAKE-256, hence 'kdf2' is removed from the spec. We should do the same.
     public static void kdf2(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(input, 0, input.length);
