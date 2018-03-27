@@ -10,7 +10,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf2;
-import static nl.dannyvanheumen.joldilocks.Ed448.P;
+import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +45,7 @@ public class OtrCryptoEngine4Test {
     public void testFingerprintDestinationTooLarge() {
         final byte[] expected = new byte[]{-69, -21, 118, -79, 110, -32, -77, -4, 19, -103, -110, -55, 46, -56, 30, -71, -32, -2, 49, -100, -45, 81, -94, -49, 116, 95, 61, 12, 72, 57, 100, 112, -7, -82, -18, 111, 107, 99, 16, -94, -57, -100, -126, -114, 117, -89, 24, -10, 67, 22, -96, -57, -103, 73, -128, 31, 0};
         final byte[] dst = new byte[57];
-        fingerprint(dst, P);
+        fingerprint(dst, basePoint());
         assertArrayEquals(expected, dst);
     }
 
@@ -53,7 +53,7 @@ public class OtrCryptoEngine4Test {
     public void testFingerprint() {
         final byte[] expected = new byte[]{-69, -21, 118, -79, 110, -32, -77, -4, 19, -103, -110, -55, 46, -56, 30, -71, -32, -2, 49, -100, -45, 81, -94, -49, 116, 95, 61, 12, 72, 57, 100, 112, -7, -82, -18, 111, 107, 99, 16, -94, -57, -100, -126, -114, 117, -89, 24, -10, 67, 22, -96, -57, -103, 73, -128, 31};
         final byte[] dst = new byte[FINGERPRINT_LENGTH_BYTES];
-        fingerprint(dst, P);
+        fingerprint(dst, basePoint());
         assertArrayEquals(expected, dst);
     }
 
