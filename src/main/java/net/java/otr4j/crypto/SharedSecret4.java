@@ -8,7 +8,6 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
@@ -16,17 +15,16 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * The Shared Secret mechanism used in OTRv4.
  */
 // TODO consider what we would need to do to reuse the same memory more. Right now we replace one reference by another, but we rely on the instances being cleaned up by the GC.
-public final class SharedSecret4 {
+final class SharedSecret4 {
 
-    private static final int MK_ENC_LENGTH_BYTES = 32;
-    private static final int MK_MAC_LENGTH_BYTES = 64;
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
+    private static final int SSID_LENGTH_BYTES = 8;
 
     private static final byte[] USAGE_ID_BRACE_KEY_FROM_DH = new byte[]{0x02};
     private static final byte[] USAGE_ID_BRACE_KEY_FROM_BRACE_KEY = new byte[]{0x03};
-    private static final byte[] USAGE_ID_ENC = new byte[]{0x24};
-    private static final byte[] USAGE_ID_MAC = new byte[]{0x25};
+    private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x04};
+    private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
 
     /**
      * Secure random source.
@@ -39,8 +37,15 @@ public final class SharedSecret4 {
     private DHKeyPair dhKeyPair;
 
     /**
+     * Other party's DH public key.
+     */
+    private BigInteger theirDHPublicKey;
+
+    /**
      * Shared key by DH key exchange.
      */
+    // FIXME consider preinitializing and finalizing with fixed byte array, constantly overwriting array content.
+    // FIXME check if we need to persist this as field, or if we can treat it only as a local variable.
     private byte[] k_dh;
 
     /**
@@ -50,8 +55,14 @@ public final class SharedSecret4 {
     private ECDHKeyPair ecdhKeyPair;
 
     /**
+     * Other party's ECDH public key.
+     */
+    private Point theirECDHPublicKey;
+
+    /**
      * Shared key by ECDH key exchange.
      */
+    // FIXME consider preinitializing and finalizing with fixed byte array, constantly overwriting array content.
     private byte[] k_ecdh;
 
     /**
@@ -61,129 +72,112 @@ public final class SharedSecret4 {
     private final byte[] braceKey = new byte[BRACE_KEY_LENGTH_BYTES];
 
     /**
-     * The Mixed shared secret is the final shared secret derived from both the brace key and ECDH shared secrets:
+     * The Mixed shared secret 'K' is the final shared secret derived from both the brace key and ECDH shared secrets:
      * 'KDF_1(0x04 || K_ecdh || brace_key, 64)'.
      */
-//    private final byte[] k = new byte[K_LENGTH_BYTES];
+    private final byte[] k = new byte[K_LENGTH_BYTES];
 
     /**
-     * The ratchet ID.
+     * The SSID (session ID) that is derived from the Mixed shared secret key.
      */
-    private int i = 0;
+    private final byte[] ssid = new byte[SSID_LENGTH_BYTES];
 
-    /**
-     * The sending message ID.
-     */
-    private int j = 0;
-
-    /**
-     * The receiver message ID.
-     */
-    private int k = 0;
-
-    /**
-     * The number of messages in the previous ratchet.
-     */
-    private int pn = 0;
-
-    private SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair dh, @Nonnull final ECDHKeyPair ecdh) {
+    SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair dh, @Nonnull final ECDHKeyPair ecdh) {
         this.random = requireNonNull(random);
         this.dhKeyPair = requireNonNull(dh);
+        this.theirDHPublicKey = null;
         this.k_dh = null;
         this.ecdhKeyPair = requireNonNull(ecdh);
+        this.theirECDHPublicKey = null;
         this.k_ecdh = null;
     }
 
     /**
-     * Rotate the sender key.
+     * Get mixed shared secret K.
      *
-     * @param otherDH   The other party's DH public key.
-     * @param otherECDH The other party's ECDH public key.
+     * @return Mixed shared secret K.
      */
-    public void rotateSenderKey(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
-        this.j = 0;
+    byte[] getK() {
+        requireInitialization();
+        return this.k.clone();
+    }
+
+    /**
+     * Get the current SSID (Session ID).
+     *
+     * @return Session ID a.k.a. SSID
+     */
+    byte[] getSSID() {
+        requireInitialization();
+        return this.ssid.clone();
+    }
+
+    /**
+     * Rotate our key pairs in the shared secret.
+     *
+     * @param ratchetIteration The ratchet iteration a.k.a. 'i'.
+     * @throws OtrCryptoException Thrown in case of failures generating the new cryptographic material.
+     */
+    void rotateOurKeys(final int ratchetIteration) throws OtrCryptoException {
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
-        this.k_ecdh = this.ecdhKeyPair.generateSharedSecret(otherECDH).encode();
-        if (i % 3 == 0) {
-            // "Generate the new DH key pair and assign it to our_dh = generateDH() (by securely replacing the old
-            // value)."
+        regenerateECDHSharedSecret();
+        if (ratchetIteration % 3 == 0) {
             this.dhKeyPair = DHKeyPair.generate(this.random);
-            // "Calculate k_dh = DH(our_dh.secret, their_dh)."
-            this.k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(otherDH));
-            // "Calculate a brace_key = KDF_1(0x02 || k_dh, 32)."
-            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, this.k_dh), BRACE_KEY_LENGTH_BYTES);
-        } else {
-            // "Derive and securely overwrite brace_key = KDF_1(0x03 || brace_key, 32)."
-            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_BRACE_KEY, this.braceKey),
-                BRACE_KEY_LENGTH_BYTES);
         }
-        deriveNextRootKey();
+        regenerateBraceKey(ratchetIteration);
+        regenerateMixedSharedSecret();
+        regenerateSSID();
     }
 
     /**
-     * Rotate the receiver key.
+     * Rotate their public keys in the shared secret.
      *
-     * @param otherDH   The other party's DH public key.
-     * @param otherECDH The other party's ECDH public key.
+     * @param ratchetIteration   The ratchet iteration a.k.a. 'i'.
+     * @param theirECDHPublicKey Their ECDH public key.
+     * @param theirDHPublicKey   Their DH public key.
+     * @throws OtrCryptoException THrown in case of failures generating the new cryptograhic material.
      */
-    public void rotateReceiverKey(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
-        this.k = 0;
-        this.k_ecdh = this.ecdhKeyPair.generateSharedSecret(otherECDH).encode();
-        // FIXME need to securely delete our ECDH secret key as we do not need it anymore.
-        if (i % 3 == 0) {
-            // "Retrieve the DH key ('Public DH key') from the received data message and assign it to their_dh."
-            // "Calculate k_dh = DH(our_dh.secret, their_dh)."
-            this.k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(otherDH));
-            // "Calculate a brace_key = KDF_1(0x02 || k_dh, 32)."
-            kdf1(this.braceKey, 0, concatenate(new byte[]{0x02}, this.k_dh), BRACE_KEY_LENGTH_BYTES);
-            // "Securely delete our_dh.secret and k_dh."
-            // FIXME need to securely delete our_dh.secret and k_dh.
-
-        } else {
-            // "Derive and securely overwrite brace_key = KDF_1(0x03 || brace_key, 32)."
-            kdf1(this.braceKey, 0, concatenate(new byte[]{0x03}, this.braceKey), BRACE_KEY_LENGTH_BYTES);
-        }
-        deriveNextRootKey();
+    void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
+                @Nonnull final BigInteger theirDHPublicKey) throws OtrCryptoException {
+        // FIXME verify requirements of public key before accepting it.
+        this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
+        regenerateECDHSharedSecret();
+        // FIXME we probably do not receive a new DH public key on every message. Hence we need to conditionally rotate DH public keys only on specific iterations.
+        this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
+        regenerateBraceKey(ratchetIteration);
+        // FIXME securely delete our_ecdh.secret.
+        regenerateMixedSharedSecret();
+        regenerateSSID();
     }
 
-    private void deriveNextRootKey() {
-        // FIXME implement next root key derivation.
-        throw new UnsupportedOperationException("To be implemented.");
+    private void regenerateECDHSharedSecret() throws OtrCryptoException {
+        this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encodeTo(this.k_ecdh, 0);
+    }
+
+    private void regenerateBraceKey(final int ratchetIteration) {
+        if (ratchetIteration % 3 == 0) {
+            this.k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
+            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, this.k_dh), BRACE_KEY_LENGTH_BYTES);
+            // FIXME securely delete our_dh.secret, k_dh.
+        } else {
+            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_BRACE_KEY, this.braceKey), BRACE_KEY_LENGTH_BYTES);
+        }
+    }
+
+    private void regenerateMixedSharedSecret() {
+        kdf1(this.k, 0, concatenate(USAGE_ID_MIXED_SHARED_SECRET, this.k_ecdh, this.braceKey), K_LENGTH_BYTES);
+    }
+
+    private void regenerateSSID() {
+        kdf1(this.ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, this.k), SSID_LENGTH_BYTES);
     }
 
     /**
-     * Encryption and MAC keys derived from chain key.
+     * Method for verifying that SharedSecret4 is initialized before permitting use of this method.
      */
-    // TODO should we clear the fields at some point due to them containing sensitive material?
-    private static final class Keys {
-
-        private final byte[] mkEnc;
-        private final byte[] mkMac;
-
-        /**
-         * Construct Keys instance.
-         *
-         * @param mkEnc message key for encryption
-         * @param mkMac message key for message authentication
-         */
-        private Keys(@Nonnull final byte[] mkEnc, @Nonnull final byte[] mkMac) {
-            this.mkEnc= requireLengthExactly(MK_ENC_LENGTH_BYTES, mkEnc);
-            this.mkMac = requireLengthExactly(MK_MAC_LENGTH_BYTES, mkMac);
-        }
-
-        /**
-         * Generate a Keys instance using provided chain key.
-         *
-         * @param chainKey The chain key
-         * @return Returns a Keys instance containing generated keys.
-         */
-        @Nonnull
-        static Keys generate(@Nonnull final byte[] chainKey) {
-            final byte[] mkEnc = new byte[MK_ENC_LENGTH_BYTES];
-            kdf1(mkEnc, 0, concatenate(USAGE_ID_ENC, chainKey), MK_ENC_LENGTH_BYTES);
-            final byte[] mkMac = new byte[MK_MAC_LENGTH_BYTES];
-            kdf1(mkMac, 0, concatenate(USAGE_ID_MAC, mkEnc), MK_MAC_LENGTH_BYTES);
-            return new Keys(mkEnc, mkMac);
+    private void requireInitialization() {
+        if (this.theirDHPublicKey == null || this.k_dh == null || this.theirECDHPublicKey == null || this.k_ecdh == null) {
+            throw new IllegalStateException("Instance has not been initialized with other party's public key material. Please rotate session keys before first acquiring key material.");
         }
     }
 }
