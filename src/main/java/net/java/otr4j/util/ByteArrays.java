@@ -2,8 +2,6 @@ package net.java.otr4j.util;
 
 import javax.annotation.Nonnull;
 
-import static java.util.Arrays.fill;
-
 /**
  * Utility methods for byte arrays.
  */
@@ -27,15 +25,5 @@ public final class ByteArrays {
             throw new IllegalArgumentException("Illegal array length");
         }
         return bytes;
-    }
-
-    /**
-     * Clear zeroes all bytes in the array.
-     *
-     * @param array the byte array to be cleared.
-     */
-    // FIXME deprecate and use BC Arrays.clear method.
-    public static void clear(@Nonnull final byte[] array) {
-        fill(array, (byte) 0x00);
     }
 }

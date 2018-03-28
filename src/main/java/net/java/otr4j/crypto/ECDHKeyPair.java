@@ -9,11 +9,11 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.util.ByteArrays.clear;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static nl.dannyvanheumen.joldilocks.Points.checkIdentity;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
+import static org.bouncycastle.util.Arrays.clear;
 
 /**
  * ECDH keypair based on Ed448-Goldilocks.
