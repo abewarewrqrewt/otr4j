@@ -46,6 +46,7 @@ public final class ECDHKeyPair {
      * @param random SecureRandom instance
      * @return Returns ECDH keypair.
      */
+    @Nonnull
     public static ECDHKeyPair generate(@Nonnull final SecureRandom random) {
         //  - pick a random value r (57 bytes)
         //  - generate 'h' = KDF_1(0x01 || r, 57).
@@ -113,6 +114,7 @@ public final class ECDHKeyPair {
      * @param otherPublicKey The other party's public key.
      * @return Returns the shared secret point.
      */
+    @Nonnull
     public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws OtrCryptoException {
         final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
         // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.

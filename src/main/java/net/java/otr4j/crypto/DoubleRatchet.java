@@ -4,6 +4,7 @@ import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
@@ -11,7 +12,7 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 
-// FIXME consider modifying the code such that this.rootKey is initialized with k_mixed. That way we can simplify the rest of the logic in the class.
+// TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
 final class DoubleRatchet {
 
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
@@ -19,6 +20,8 @@ final class DoubleRatchet {
 
     private static final byte[] USAGE_ID_ROOT_KEY = new byte[]{0x21};
     private static final byte[] USAGE_ID_CHAIN_KEY = new byte[]{0x22};
+
+    private final SecureRandom random;
 
     private final SharedSecret4 sharedSecret;
 
@@ -31,7 +34,7 @@ final class DoubleRatchet {
     /**
      * The ratchet ID.
      */
-    // FIXME when should i be incremented?
+    // FIXME when should i be incremented? (On every rotation?)
     private int i = 0;
 
     /**
@@ -49,7 +52,8 @@ final class DoubleRatchet {
      */
     private int pn = 0;
 
-    DoubleRatchet(@Nonnull final SharedSecret4 sharedSecret) {
+    DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret) {
+        this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
     }
 
@@ -60,13 +64,13 @@ final class DoubleRatchet {
         this.j = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
-        this.sharedSecret.rotateOurKeys(this.i);
+        this.sharedSecret.rotateOurKeys(this.i, ECDHKeyPair.generate(this.random), DHKeyPair.generate(this.random));
         final byte[] newK = this.sharedSecret.getK();
         kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
         kdf1(this.sendingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, previousRootKey, newK),
             CHAIN_KEY_LENGTH_BYTES);
-        clear(previousRootKey);
         clear(newK);
+        clear(previousRootKey);
     }
 
     /**
@@ -78,12 +82,14 @@ final class DoubleRatchet {
     void rotateReceiverKey(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
         this.k = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
+        final byte[] previousRootKey = this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
         this.sharedSecret.rotateTheirKeys(this.i, otherECDH, otherDH);
         final byte[] newK = this.sharedSecret.getK();
-        kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, this.rootKey, newK), ROOT_KEY_LENGTH_BYTES);
-        kdf1(this.receivingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, this.rootKey, newK),
+        kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
+        kdf1(this.receivingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, previousRootKey, newK),
             CHAIN_KEY_LENGTH_BYTES);
         clear(newK);
+        clear(previousRootKey);
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
@@ -114,12 +120,12 @@ final class DoubleRatchet {
         /**
          * Construct Keys instance.
          *
-         * @param mkEnc message key for encryption
-         * @param mkMac message key for message authentication
+         * @param encrypt message key for encryption
+         * @param mac message key for message authentication
          */
-        private MessageKeys(@Nonnull final byte[] mkEnc, @Nonnull final byte[] mkMac) {
-            this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, mkEnc);
-            this.mac = requireLengthExactly(MK_MAC_LENGTH_BYTES, mkMac);
+        private MessageKeys(@Nonnull final byte[] encrypt, @Nonnull final byte[] mac) {
+            this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
+            this.mac = requireLengthExactly(MK_MAC_LENGTH_BYTES, mac);
         }
 
         /**
@@ -129,7 +135,7 @@ final class DoubleRatchet {
          * @return Returns a Keys instance containing generated keys.
          */
         @Nonnull
-        static MessageKeys generate(@Nonnull final byte[] chainKey) {
+        private static MessageKeys generate(@Nonnull final byte[] chainKey) {
             final byte[] encrypt = new byte[MK_ENC_LENGTH_BYTES];
             kdf1(encrypt, 0, concatenate(USAGE_ID_ENC, chainKey), MK_ENC_LENGTH_BYTES);
             final byte[] mac = new byte[MK_MAC_LENGTH_BYTES];
