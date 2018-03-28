@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 // FIXME consider modifying the code such that this.rootKey is initialized with k_mixed. That way we can simplify the rest of the logic in the class.
@@ -60,10 +61,12 @@ final class DoubleRatchet {
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
         this.sharedSecret.rotateOurKeys(this.i);
-        kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, previousRootKey, this.sharedSecret.getK()),
-            ROOT_KEY_LENGTH_BYTES);
-        kdf1(this.sendingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, previousRootKey, this.sharedSecret.getK()),
+        final byte[] newK = this.sharedSecret.getK();
+        kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
+        kdf1(this.sendingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, previousRootKey, newK),
             CHAIN_KEY_LENGTH_BYTES);
+        clear(previousRootKey);
+        clear(newK);
     }
 
     /**
@@ -76,10 +79,11 @@ final class DoubleRatchet {
         this.k = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         this.sharedSecret.rotateTheirKeys(this.i, otherECDH, otherDH);
-        kdf1(this.receivingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, this.rootKey, this.sharedSecret.getK()),
+        final byte[] newK = this.sharedSecret.getK();
+        kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, this.rootKey, newK), ROOT_KEY_LENGTH_BYTES);
+        kdf1(this.receivingChainKey, 0, concatenate(USAGE_ID_CHAIN_KEY, this.rootKey, newK),
             CHAIN_KEY_LENGTH_BYTES);
-        kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, this.rootKey, this.sharedSecret.getK()),
-            ROOT_KEY_LENGTH_BYTES);
+        clear(newK);
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.

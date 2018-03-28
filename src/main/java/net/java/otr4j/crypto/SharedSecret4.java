@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
@@ -15,8 +16,10 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * The Shared Secret mechanism used in OTRv4.
  */
 // TODO consider what we would need to do to reuse the same memory more. Right now we replace one reference by another, but we rely on the instances being cleaned up by the GC.
+// FIXME investigate what we need to clean additionally for Point and BigInteger calculations where we use temporary instances during computation.
 final class SharedSecret4 {
 
+    private static final int ECDH_SHARED_SECRETLENGTH_BYTES = 57;
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
     private static final int SSID_LENGTH_BYTES = 8;
@@ -42,13 +45,6 @@ final class SharedSecret4 {
     private BigInteger theirDHPublicKey;
 
     /**
-     * Shared key by DH key exchange.
-     */
-    // FIXME consider preinitializing and finalizing with fixed byte array, constantly overwriting array content.
-    // FIXME check if we need to persist this as field, or if we can treat it only as a local variable.
-    private byte[] k_dh;
-
-    /**
      * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
      * {@link nl.dannyvanheumen.joldilocks.Point}.
      */
@@ -62,8 +58,7 @@ final class SharedSecret4 {
     /**
      * Shared key by ECDH key exchange.
      */
-    // FIXME consider preinitializing and finalizing with fixed byte array, constantly overwriting array content.
-    private byte[] k_ecdh;
+    private final byte[] k_ecdh = new byte[ECDH_SHARED_SECRETLENGTH_BYTES];
 
     /**
      * Either a hash of the shared DH key: 'KDF_1(0x02 || k_dh, 32)' (every third DH ratchet) or a hash of the previous
@@ -86,10 +81,8 @@ final class SharedSecret4 {
         this.random = requireNonNull(random);
         this.dhKeyPair = requireNonNull(dh);
         this.theirDHPublicKey = null;
-        this.k_dh = null;
         this.ecdhKeyPair = requireNonNull(ecdh);
         this.theirECDHPublicKey = null;
-        this.k_ecdh = null;
     }
 
     /**
@@ -138,7 +131,7 @@ final class SharedSecret4 {
      * @throws OtrCryptoException THrown in case of failures generating the new cryptograhic material.
      */
     void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
-                @Nonnull final BigInteger theirDHPublicKey) throws OtrCryptoException {
+                         @Nonnull final BigInteger theirDHPublicKey) throws OtrCryptoException {
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         regenerateECDHSharedSecret();
@@ -156,11 +149,13 @@ final class SharedSecret4 {
 
     private void regenerateBraceKey(final int ratchetIteration) {
         if (ratchetIteration % 3 == 0) {
-            this.k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
-            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, this.k_dh), BRACE_KEY_LENGTH_BYTES);
-            // FIXME securely delete our_dh.secret, k_dh.
+            final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
+            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, k_dh), BRACE_KEY_LENGTH_BYTES);
+            clear(k_dh);
+            // FIXME securely delete our_dh.secret.
         } else {
-            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_BRACE_KEY, this.braceKey), BRACE_KEY_LENGTH_BYTES);
+            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_BRACE_KEY, this.braceKey),
+                BRACE_KEY_LENGTH_BYTES);
         }
     }
 
@@ -176,7 +171,7 @@ final class SharedSecret4 {
      * Method for verifying that SharedSecret4 is initialized before permitting use of this method.
      */
     private void requireInitialization() {
-        if (this.theirDHPublicKey == null || this.k_dh == null || this.theirECDHPublicKey == null || this.k_ecdh == null) {
+        if (this.theirDHPublicKey == null || this.theirECDHPublicKey == null || this.k_ecdh == null) {
             throw new IllegalStateException("Instance has not been initialized with other party's public key material. Please rotate session keys before first acquiring key material.");
         }
     }

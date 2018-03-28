@@ -34,6 +34,7 @@ public final class ByteArrays {
      *
      * @param array the byte array to be cleared.
      */
+    // FIXME deprecate and use BC Arrays.clear method.
     public static void clear(@Nonnull final byte[] array) {
         fill(array, (byte) 0x00);
     }
