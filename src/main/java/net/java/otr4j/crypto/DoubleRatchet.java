@@ -105,27 +105,34 @@ final class DoubleRatchet {
     /**
      * Encryption and MAC keys derived from chain key.
      */
+    // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
     // TODO should we clear the fields at some point due to them containing sensitive material?
     static final class MessageKeys {
 
         private static final byte[] USAGE_ID_ENC = new byte[]{0x24};
         private static final byte[] USAGE_ID_MAC = new byte[]{0x25};
+        private static final byte[] USAGE_ID_EXTRA_SYMMETRIC_KEY = new byte[]{0x26, (byte) 0xff};
 
         private static final int MK_ENC_LENGTH_BYTES = 32;
         private static final int MK_MAC_LENGTH_BYTES = 64;
+        private static final int EXTRA_SYMMETRIC_KEY_LENGTH_BYTES = 32;
 
         private final byte[] encrypt;
         private final byte[] mac;
+        private final byte[] extraSymmetricKey;
 
         /**
          * Construct Keys instance.
          *
-         * @param encrypt message key for encryption
-         * @param mac message key for message authentication
+         * @param encrypt           message key for encryption
+         * @param mac               message key for message authentication
+         * @param extraSymmetricKey extra symmetric key
          */
-        private MessageKeys(@Nonnull final byte[] encrypt, @Nonnull final byte[] mac) {
+        private MessageKeys(@Nonnull final byte[] encrypt, @Nonnull final byte[] mac,
+                            @Nonnull final byte[] extraSymmetricKey) {
             this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
             this.mac = requireLengthExactly(MK_MAC_LENGTH_BYTES, mac);
+            this.extraSymmetricKey = requireLengthExactly(EXTRA_SYMMETRIC_KEY_LENGTH_BYTES, extraSymmetricKey);
         }
 
         /**
@@ -140,7 +147,10 @@ final class DoubleRatchet {
             kdf1(encrypt, 0, concatenate(USAGE_ID_ENC, chainKey), MK_ENC_LENGTH_BYTES);
             final byte[] mac = new byte[MK_MAC_LENGTH_BYTES];
             kdf1(mac, 0, concatenate(USAGE_ID_MAC, encrypt), MK_MAC_LENGTH_BYTES);
-            return new MessageKeys(encrypt, mac);
+            final byte[] extraSymmetricKey = new byte[EXTRA_SYMMETRIC_KEY_LENGTH_BYTES];
+            kdf1(extraSymmetricKey, 0, concatenate(USAGE_ID_EXTRA_SYMMETRIC_KEY, chainKey),
+                EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
+            return new MessageKeys(encrypt, mac, extraSymmetricKey);
         }
     }
 }
