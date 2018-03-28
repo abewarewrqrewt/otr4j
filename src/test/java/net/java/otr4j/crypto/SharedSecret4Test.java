@@ -90,6 +90,47 @@ public class SharedSecret4Test {
     }
 
     @Test
+    public void testRotateTheirKeys() throws OtrCryptoException {
+        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final byte[] firstK = ss.getK();
+        final byte[] firstSSID = ss.getSSID();
+        // Rotate our key pairs.
+        final BigInteger theirDHPublicKey= DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        ss.rotateTheirKeys(1, theirECDHPublicKey, theirDHPublicKey);
+        // Ensure that k and ssid actually change after rotation.
+        assertFalse(Arrays.equals(firstK, ss.getK()));
+        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRotateTheirKeysNullECDH() throws OtrCryptoException {
+        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final BigInteger theirNextPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        ss.rotateTheirKeys(1, null, theirNextPublicKey);
+    }
+
+    @Test
+    public void testRotateTheirKeysNullDHNonThirdIteration() throws OtrCryptoException {
+        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final byte[] firstK = ss.getK();
+        final byte[] firstSSID = ss.getSSID();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        // Rotate their public keys.
+        ss.rotateTheirKeys(1, theirECDHPublicKey, null);
+        // Ensure that k and ssid actually change after rotation.
+        assertFalse(Arrays.equals(firstK, ss.getK()));
+        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRotateTheirKeysNullDHThirdIteration() throws OtrCryptoException {
+        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        ss.rotateTheirKeys(3, theirECDHPublicKey, null);
+    }
+
+    @Test
     public void testGetKNotModifiable() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();

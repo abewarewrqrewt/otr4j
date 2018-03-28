@@ -3,6 +3,7 @@ package net.java.otr4j.crypto;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
@@ -109,7 +110,7 @@ final class SharedSecret4 {
      */
     // FIXME is a DHKeyPair always expected/required?
     void rotateOurKeys(final int ratchetIteration, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-                       @Nonnull final DHKeyPair ourDHKeyPair) throws OtrCryptoException {
+                       @Nullable final DHKeyPair ourDHKeyPair) throws OtrCryptoException {
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         if (ratchetIteration % 3 == 0) {
             this.dhKeyPair = requireNonNull(ourDHKeyPair);
@@ -127,11 +128,13 @@ final class SharedSecret4 {
      * @throws OtrCryptoException THrown in case of failures generating the new cryptograhic material.
      */
     void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
-                         @Nonnull final BigInteger theirDHPublicKey) throws OtrCryptoException {
+                         @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
-        // FIXME we probably do not receive a new DH public key on every message. Hence we need to conditionally rotate DH public keys only on specific iterations.
-        this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
+        if (ratchetIteration % 3 == 0) {
+            // FIXME we probably do not receive a new DH public key on every message. Hence we need to conditionally rotate DH public keys only on specific iterations.
+            this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
+        }
         // FIXME securely delete our_ecdh.secret.
         regenerateK(ratchetIteration);
         regenerateSSID();
