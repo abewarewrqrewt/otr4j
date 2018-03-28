@@ -13,6 +13,7 @@ import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
+// TODO Currently we do not keep track of used MACs for later reveal.
 final class DoubleRatchet {
 
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
