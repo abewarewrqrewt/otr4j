@@ -91,7 +91,7 @@ final class SharedSecret4 {
      * @return Mixed shared secret K.
      */
     byte[] getK() {
-        requireInitialization();
+        requireRotation();
         return this.k.clone();
     }
 
@@ -101,7 +101,7 @@ final class SharedSecret4 {
      * @return Session ID a.k.a. SSID
      */
     byte[] getSSID() {
-        requireInitialization();
+        requireRotation();
         return this.ssid.clone();
     }
 
@@ -170,7 +170,7 @@ final class SharedSecret4 {
     /**
      * Method for verifying that SharedSecret4 is initialized before permitting use of this method.
      */
-    private void requireInitialization() {
+    private void requireRotation() {
         if (this.theirDHPublicKey == null || this.theirECDHPublicKey == null || this.k_ecdh == null) {
             throw new IllegalStateException("Instance has not been initialized with other party's public key material. Please rotate session keys before first acquiring key material.");
         }
