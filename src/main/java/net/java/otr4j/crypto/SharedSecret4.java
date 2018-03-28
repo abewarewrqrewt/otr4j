@@ -49,22 +49,26 @@ final class SharedSecret4 {
     /**
      * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
      */
+    @Nonnull
     private DHKeyPair dhKeyPair;
 
     /**
      * Other party's DH public key.
      */
+    @Nonnull
     private BigInteger theirDHPublicKey;
 
     /**
      * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
      * {@link nl.dannyvanheumen.joldilocks.Point}.
      */
+    @Nonnull
     private ECDHKeyPair ecdhKeyPair;
 
     /**
      * Other party's ECDH public key.
      */
+    @Nonnull
     private Point theirECDHPublicKey;
 
     SharedSecret4(@Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final ECDHKeyPair ourECDHKeyPair,
