@@ -35,27 +35,6 @@ final class SharedSecret4 {
     private final SecureRandom random;
 
     /**
-     * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
-     */
-    private DHKeyPair dhKeyPair;
-
-    /**
-     * Other party's DH public key.
-     */
-    private BigInteger theirDHPublicKey;
-
-    /**
-     * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
-     * {@link nl.dannyvanheumen.joldilocks.Point}.
-     */
-    private ECDHKeyPair ecdhKeyPair;
-
-    /**
-     * Other party's ECDH public key.
-     */
-    private Point theirECDHPublicKey;
-
-    /**
      * Shared key by ECDH key exchange.
      */
     private final byte[] k_ecdh = new byte[ECDH_SHARED_SECRETLENGTH_BYTES];
@@ -76,6 +55,27 @@ final class SharedSecret4 {
      * The SSID (session ID) that is derived from the Mixed shared secret key.
      */
     private final byte[] ssid = new byte[SSID_LENGTH_BYTES];
+
+    /**
+     * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
+     */
+    private DHKeyPair dhKeyPair;
+
+    /**
+     * Other party's DH public key.
+     */
+    private BigInteger theirDHPublicKey;
+
+    /**
+     * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
+     * {@link nl.dannyvanheumen.joldilocks.Point}.
+     */
+    private ECDHKeyPair ecdhKeyPair;
+
+    /**
+     * Other party's ECDH public key.
+     */
+    private Point theirECDHPublicKey;
 
     SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair dh, @Nonnull final ECDHKeyPair ecdh) {
         this.random = requireNonNull(random);
