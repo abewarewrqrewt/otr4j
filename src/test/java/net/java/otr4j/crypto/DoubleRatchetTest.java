@@ -10,6 +10,7 @@ import java.util.Arrays;
 import static org.bouncycastle.util.Arrays.fill;
 import static org.junit.Assert.*;
 
+@SuppressWarnings("ConstantConditions")
 public class DoubleRatchetTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -55,8 +56,9 @@ public class DoubleRatchetTest {
         assertArrayEquals("Repeatedly generating SSIDs would expect to deliver the same result as long as ratchet has not progressed.",
             ratchet.generateSSID(), ratchet.generateSSID());
     }
+
     @Test
-    public void testGetSSIDNotModifiable() throws OtrCryptoException {
+    public void testGetSSIDNotModifiable() {
         final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
         final byte[] firstSSID = ratchet.generateSSID();
         fill(firstSSID, (byte) 0xff);
@@ -64,4 +66,83 @@ public class DoubleRatchetTest {
         assertFalse(Arrays.equals(firstSSID, secondSSID));
     }
 
+    @Test
+    public void testGenerateReceivingMessageKeys() {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet.MessageKeys keys = ratchet.generateReceivingKeys();
+        assertNotNull(keys);
+        assertNotNull(keys.getEncrypt());
+        assertNotNull(keys.getMac());
+        assertNotNull(keys.getExtraSymmetricKey());
+    }
+
+    @Test
+    public void testRotateSenderKeysDoesNotProduceNullReceiverKeys() throws OtrCryptoException {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        ratchet.rotateSenderKeys();
+        final DoubleRatchet.MessageKeys keys = ratchet.generateReceivingKeys();
+        assertNotNull(keys);
+        assertNotNull(keys.getEncrypt());
+        assertNotNull(keys.getMac());
+        assertNotNull(keys.getExtraSymmetricKey());
+    }
+
+    @Test
+    public void testGenerateSendingMessageKeys() {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet.MessageKeys keys = ratchet.generateSendingKeys();
+        assertNotNull(keys);
+        assertNotNull(keys.getEncrypt());
+        assertNotNull(keys.getMac());
+        assertNotNull(keys.getExtraSymmetricKey());
+    }
+
+    @Test
+    public void testRotateSenderKeysDoesNotProduceNullSenderKeys() throws OtrCryptoException {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        ratchet.rotateSenderKeys();
+        final DoubleRatchet.MessageKeys keys = ratchet.generateSendingKeys();
+        assertNotNull(keys);
+        assertNotNull(keys.getEncrypt());
+        assertNotNull(keys.getMac());
+        assertNotNull(keys.getExtraSymmetricKey());
+    }
+
+    @Test
+    public void testRotateSenderKeysConfirmReceiverKeysPreserved() throws OtrCryptoException {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final byte[] initialSSID = ratchet.generateSSID();
+        final DoubleRatchet.MessageKeys initialSendingKeys = ratchet.generateSendingKeys();
+        final DoubleRatchet.MessageKeys initialReceivingKeys = ratchet.generateReceivingKeys();
+        ratchet.rotateSenderKeys();
+        final byte[] nextSSID = ratchet.generateSSID();
+        assertFalse(Arrays.equals(initialSSID, nextSSID));
+        final DoubleRatchet.MessageKeys nextSendingKeys = ratchet.generateSendingKeys();
+        assertFalse(Arrays.equals(initialSendingKeys.getEncrypt(), nextSendingKeys.getEncrypt()));
+        assertFalse(Arrays.equals(initialSendingKeys.getMac(), nextSendingKeys.getMac()));
+        assertFalse(Arrays.equals(initialSendingKeys.getExtraSymmetricKey(), nextSendingKeys.getExtraSymmetricKey()));
+        final DoubleRatchet.MessageKeys nextReceivingKeys = ratchet.generateReceivingKeys();
+        assertArrayEquals(initialReceivingKeys.getEncrypt(), nextReceivingKeys.getEncrypt());
+        assertArrayEquals(initialReceivingKeys.getMac(), nextReceivingKeys.getMac());
+        assertArrayEquals(initialReceivingKeys.getExtraSymmetricKey(), nextReceivingKeys.getExtraSymmetricKey());
+    }
+
+    @Test
+    public void testRotateReceiverKeysConfirmSenderKeysPreserved() throws OtrCryptoException {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final byte[] initialSSID = ratchet.generateSSID();
+        final DoubleRatchet.MessageKeys initialSendingKeys = ratchet.generateSendingKeys();
+        final DoubleRatchet.MessageKeys initialReceivingKeys = ratchet.generateReceivingKeys();
+        ratchet.rotateReceiverKeys(THEIR_NEXT_DH_PUBLIC_KEY, THEIR_NEXT_ECDH_PUBLIC_KEY);
+        final byte[] nextSSID = ratchet.generateSSID();
+        assertFalse(Arrays.equals(initialSSID, nextSSID));
+        final DoubleRatchet.MessageKeys nextSendingKeys = ratchet.generateSendingKeys();
+        assertArrayEquals(initialSendingKeys.getEncrypt(), nextSendingKeys.getEncrypt());
+        assertArrayEquals(initialSendingKeys.getMac(), nextSendingKeys.getMac());
+        assertArrayEquals(initialSendingKeys.getExtraSymmetricKey(), nextSendingKeys.getExtraSymmetricKey());
+        final DoubleRatchet.MessageKeys nextReceivingKeys = ratchet.generateReceivingKeys();
+        assertFalse(Arrays.equals(initialReceivingKeys.getEncrypt(), nextReceivingKeys.getEncrypt()));
+        assertFalse(Arrays.equals(initialReceivingKeys.getMac(), nextReceivingKeys.getMac()));
+        assertFalse(Arrays.equals(initialReceivingKeys.getExtraSymmetricKey(), nextReceivingKeys.getExtraSymmetricKey()));
+    }
 }

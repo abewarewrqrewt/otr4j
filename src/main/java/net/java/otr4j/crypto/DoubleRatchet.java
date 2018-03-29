@@ -63,7 +63,7 @@ final class DoubleRatchet {
     /**
      * Rotate the sender key.
      */
-    void rotateSenderKey() throws OtrCryptoException {
+    void rotateSenderKeys() throws OtrCryptoException {
         this.j = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = derivePreviousRootKey();
@@ -82,7 +82,7 @@ final class DoubleRatchet {
      * @param otherDH   The other party's DH public key.
      * @param otherECDH The other party's ECDH public key.
      */
-    void rotateReceiverKey(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
+    void rotateReceiverKeys(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
         this.k = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = derivePreviousRootKey();
@@ -109,8 +109,8 @@ final class DoubleRatchet {
     MessageKeys generateSendingKeys() {
         return MessageKeys.generate(this.sendingChainKey);
     }
-    // FIXME consider removing the generate method and moving key generation to the rotate method.
 
+    // FIXME consider removing the generate method and moving key generation to the rotate method.
     MessageKeys generateReceivingKeys() {
         return MessageKeys.generate(this.receivingChainKey);
     }
@@ -164,6 +164,21 @@ final class DoubleRatchet {
             kdf1(extraSymmetricKey, 0, concatenate(USAGE_ID_EXTRA_SYMMETRIC_KEY, chainKey),
                 EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
             return new MessageKeys(encrypt, mac, extraSymmetricKey);
+        }
+
+        @Nonnull
+        byte[] getEncrypt() {
+            return encrypt;
+        }
+
+        @Nonnull
+        byte[] getMac() {
+            return mac;
+        }
+
+        @Nonnull
+        byte[] getExtraSymmetricKey() {
+            return extraSymmetricKey;
         }
     }
 }
