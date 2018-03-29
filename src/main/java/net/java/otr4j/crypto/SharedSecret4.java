@@ -23,12 +23,10 @@ final class SharedSecret4 {
 
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
-    private static final int SSID_LENGTH_BYTES = 8;
 
     private static final byte[] USAGE_ID_BRACE_KEY_FROM_DH = new byte[]{0x02};
     private static final byte[] USAGE_ID_BRACE_KEY_FROM_BRACE_KEY = new byte[]{0x03};
     private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x04};
-    private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
 
     /**
      * Either a hash of the shared DH key: 'KDF_1(0x02 || k_dh, 32)' (every third DH ratchet) or a hash of the previous
@@ -41,11 +39,6 @@ final class SharedSecret4 {
      * 'KDF_1(0x04 || K_ecdh || brace_key, 64)'.
      */
     private final byte[] k = new byte[K_LENGTH_BYTES];
-
-    /**
-     * The SSID (session ID) that is derived from the Mixed shared secret key.
-     */
-    private final byte[] ssid = new byte[SSID_LENGTH_BYTES];
 
     /**
      * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
@@ -81,7 +74,6 @@ final class SharedSecret4 {
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         regenerateK(0);
-        regenerateSSID();
     }
 
     /**
@@ -91,15 +83,6 @@ final class SharedSecret4 {
      */
     byte[] getK() {
         return this.k.clone();
-    }
-
-    /**
-     * Get the current SSID (Session ID).
-     *
-     * @return Session ID a.k.a. SSID
-     */
-    byte[] getSSID() {
-        return this.ssid.clone();
     }
 
     /**
@@ -116,7 +99,6 @@ final class SharedSecret4 {
             this.dhKeyPair = requireNonNull(ourDHKeyPair);
         }
         regenerateK(ratchetIteration);
-        regenerateSSID();
     }
 
     /**
@@ -125,7 +107,7 @@ final class SharedSecret4 {
      * @param ratchetIteration   The ratchet iteration a.k.a. 'i'.
      * @param theirECDHPublicKey Their ECDH public key.
      * @param theirDHPublicKey   Their DH public key.
-     * @throws OtrCryptoException THrown in case of failures generating the new cryptograhic material.
+     * @throws OtrCryptoException Thrown in case of failures generating the new cryptographic material.
      */
     void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
                          @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
@@ -137,7 +119,6 @@ final class SharedSecret4 {
         }
         // FIXME securely delete our_ecdh.secret.
         regenerateK(ratchetIteration);
-        regenerateSSID();
     }
 
     private void regenerateK(final int ratchetIteration) throws OtrCryptoException {
@@ -153,9 +134,5 @@ final class SharedSecret4 {
         }
         kdf1(this.k, 0, concatenate(USAGE_ID_MIXED_SHARED_SECRET, k_ecdh, this.braceKey), K_LENGTH_BYTES);
         clear(k_ecdh);
-    }
-
-    private void regenerateSSID() {
-        kdf1(this.ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, this.k), SSID_LENGTH_BYTES);
     }
 }

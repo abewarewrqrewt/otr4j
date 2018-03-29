@@ -65,12 +65,10 @@ public class SharedSecret4Test {
     public void testRotateOurKeys() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        final byte[] firstSSID = ss.getSSID();
         // Rotate our key pairs.
         ss.rotateOurKeys(1, ourNextECDHKeyPair, ourNextDHKeyPair);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
-        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
     }
 
     @Test(expected = NullPointerException.class)
@@ -83,12 +81,10 @@ public class SharedSecret4Test {
     public void testRotateOurKeysNullDHOnNonThirdIteration() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        final byte[] firstSSID = ss.getSSID();
         // DH key pair is not used on any non-third iteration.
         ss.rotateOurKeys(1, ourNextECDHKeyPair, null);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
-        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
     }
 
     @Test(expected = NullPointerException.class)
@@ -101,12 +97,10 @@ public class SharedSecret4Test {
     public void testRotateTheirKeys() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        final byte[] firstSSID = ss.getSSID();
         // Rotate our key pairs.
         ss.rotateTheirKeys(1, theirNextECDHPublicKey, theirNextDHPublicKey);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
-        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
     }
 
     @Test(expected = NullPointerException.class)
@@ -119,12 +113,10 @@ public class SharedSecret4Test {
     public void testRotateTheirKeysNullDHNonThirdIteration() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        final byte[] firstSSID = ss.getSSID();
         // Rotate their public keys.
         ss.rotateTheirKeys(1, theirNextECDHPublicKey, null);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
-        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
     }
 
     @Test(expected = NullPointerException.class)
@@ -143,34 +135,20 @@ public class SharedSecret4Test {
         assertFalse(Arrays.equals(firstK, secondK));
     }
 
-    @Test
-    public void testGetSSIDNotModifiable() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        ss.rotateTheirKeys(0, theirNextECDHPublicKey, theirNextDHPublicKey);
-        final byte[] firstSSID = ss.getSSID();
-        fill(firstSSID, (byte) 0xff);
-        final byte[] secondSSID = ss.getSSID();
-        assertFalse(Arrays.equals(firstSSID, secondSSID));
-    }
-
     // FIXME This notes that it is possible to go back to an earlier ratchet state by providing the same public keys again, ... within reason for a short while. Is this by design?
     @Test
     public void testRotateSamePublicKeysEveryThirdIteration() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        final byte[] firstSSID = ss.getSSID();
         ss.rotateTheirKeys(0, theirECDHPublicKey, theirDHPublicKey);
         assertArrayEquals(firstK, ss.getK());
-        assertArrayEquals(firstSSID, ss.getSSID());
     }
 
     @Test
     public void testRotateSamePublicKeysEveryNonThirdIteration() throws OtrCryptoException {
         final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        final byte[] firstSSID = ss.getSSID();
         ss.rotateTheirKeys(1, theirECDHPublicKey, null);
         assertFalse(Arrays.equals(firstK, ss.getK()));
-        assertFalse(Arrays.equals(firstSSID, ss.getSSID()));
     }
 }

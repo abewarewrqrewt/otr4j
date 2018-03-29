@@ -16,9 +16,11 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // TODO Currently we do not keep track of used MACs for later reveal.
 final class DoubleRatchet {
 
+    private static final int SSID_LENGTH_BYTES = 8;
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
     private static final int CHAIN_KEY_LENGTH_BYTES = 64;
 
+    private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
     private static final byte[] USAGE_ID_ROOT_KEY = new byte[]{0x21};
     private static final byte[] USAGE_ID_CHAIN_KEY = new byte[]{0x22};
 
@@ -64,7 +66,7 @@ final class DoubleRatchet {
     void rotateSenderKey() throws OtrCryptoException {
         this.j = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
-        final byte[] previousRootKey = this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
+        final byte[] previousRootKey = derivePreviousRootKey();
         this.sharedSecret.rotateOurKeys(this.i, ECDHKeyPair.generate(this.random), DHKeyPair.generate(this.random));
         final byte[] newK = this.sharedSecret.getK();
         kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
@@ -83,7 +85,7 @@ final class DoubleRatchet {
     void rotateReceiverKey(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
         this.k = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
-        final byte[] previousRootKey = this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
+        final byte[] previousRootKey = derivePreviousRootKey();
         this.sharedSecret.rotateTheirKeys(this.i, otherECDH, otherDH);
         final byte[] newK = this.sharedSecret.getK();
         kdf1(this.rootKey, 0, concatenate(USAGE_ID_ROOT_KEY, previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
@@ -93,12 +95,22 @@ final class DoubleRatchet {
         clear(previousRootKey);
     }
 
+    private byte[] derivePreviousRootKey() {
+        return this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
+    }
+
+    byte[] generateSSID() {
+        final byte[] ssid = new byte[SSID_LENGTH_BYTES];
+        kdf1(ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, this.sharedSecret.getK()), SSID_LENGTH_BYTES);
+        return ssid;
+    }
+
     // FIXME consider removing the generate method and moving key generation to the rotate method.
     MessageKeys generateSendingKeys() {
         return MessageKeys.generate(this.sendingChainKey);
     }
-
     // FIXME consider removing the generate method and moving key generation to the rotate method.
+
     MessageKeys generateReceivingKeys() {
         return MessageKeys.generate(this.receivingChainKey);
     }
