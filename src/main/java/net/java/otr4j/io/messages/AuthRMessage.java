@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.profile.UserProfile;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -24,14 +25,16 @@ final class AuthRMessage extends AbstractEncodedMessage {
 
     private final BigInteger a;
 
-    // FIXME add sigma (ring signature)
+    private final OtrCryptoEngine4.Sigma sigma;
 
     AuthRMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
-                 @Nonnull final UserProfile userProfile, @Nonnull final Point x, @Nonnull final BigInteger a) {
+                 @Nonnull final UserProfile userProfile, @Nonnull final Point x, @Nonnull final BigInteger a,
+                 @Nonnull final OtrCryptoEngine4.Sigma sigma) {
         super(requireAtLeast(4, protocolVersion), senderInstance, recipientInstance);
         this.userProfile = requireNonNull(userProfile);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
+        this.sigma = requireNonNull(sigma);
     }
 
     @Override
@@ -40,7 +43,7 @@ final class AuthRMessage extends AbstractEncodedMessage {
         writer.writeUserProfile(this.userProfile);
         writer.writePoint(this.x);
         writer.writeBigInt(this.a);
-        // FIXME serialize sigma
+        this.sigma.writeTo(writer);
     }
 
     @Override
