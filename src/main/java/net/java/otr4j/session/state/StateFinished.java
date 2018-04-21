@@ -20,11 +20,13 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
+import net.java.otr4j.session.ake.SecurityParameters4;
 
 /**
  * Message state FINISHED. This message state is initiated through events
@@ -106,6 +108,11 @@ final class StateFinished extends AbstractState {
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
         context.setState(new StateEncrypted(context, params));
+    }
+
+    @Override
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        context.setState(new StateEncrypted4(context, params));
     }
 
     @Override

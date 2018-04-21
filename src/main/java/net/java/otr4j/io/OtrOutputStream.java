@@ -7,6 +7,16 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.io.messages.MysteriousT;
+import net.java.otr4j.io.messages.SignatureM;
+import net.java.otr4j.io.messages.SignatureX;
+import net.java.otr4j.profile.UserProfile;
+import nl.dannyvanheumen.joldilocks.Point;
+import org.bouncycastle.util.BigIntegers;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.crypto.interfaces.DHPublicKey;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,18 +24,9 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import javax.crypto.interfaces.DHPublicKey;
-
-import net.java.otr4j.io.messages.SignatureM;
-import net.java.otr4j.io.messages.MysteriousT;
-import net.java.otr4j.io.messages.SignatureX;
-
-import net.java.otr4j.profile.UserProfile;
-import nl.dannyvanheumen.joldilocks.Point;
-import org.bouncycastle.util.BigIntegers;
+import static net.java.otr4j.io.SerializationUtils.UTF8;
+import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
 public final class OtrOutputStream extends FilterOutputStream implements
@@ -69,6 +70,16 @@ public final class OtrOutputStream extends FilterOutputStream implements
     public void writeShort(final int s) throws IOException {
         writeNumber(s, TYPE_LEN_SHORT);
 
+    }
+
+    // FIXME write unit tests for writeLong.
+    public void writeLong(final long value) throws IOException {
+        final byte[] b = new byte[TYPE_LEN_LONG];
+        for (int i = 0; i < TYPE_LEN_LONG; i++) {
+            final int offset = (b.length - 1 - i) * 8;
+            b[i] = (byte) ((value >>> offset) & 0xFF);
+        }
+        write(b);
     }
 
     public void writeMac(@Nonnull final byte[] mac) throws IOException {
@@ -162,8 +173,28 @@ public final class OtrOutputStream extends FilterOutputStream implements
         writeData(p.encode());
     }
 
-    public void writeUserProfile(@Nonnull final UserProfile userProfile) {
-        // FIXME implement writing user profile
+    /**
+     * Write User Profile to stream.
+     *
+     * @param profile the user profile to serialize.
+     * @throws IOException Thrown in case of failure to serialize a part of the user profile.
+     */
+    // FIXME write unit tests.
+    public void writeUserProfile(@Nonnull final UserProfile profile) throws IOException {
+        writeInt(profile.getIdentifier());
+        writeInt(profile.getInstanceTag());
+        writePoint(profile.getLongTermPublicKey());
+        byte[] versions = new byte[0];
+        for (final int version : profile.getVersions()) {
+            if (version < 0 || version > 9) {
+                throw new IllegalStateException("Negative and double-digit version numbers are not supported.");
+            }
+            versions = concatenate(versions, Integer.toString(version).getBytes(UTF8));
+        }
+        writeData(versions);
+        writeLong(profile.getExpirationUnixTime());
+        writeData(profile.getTransitionalSignature());
+        writeData(profile.getProfileSignature());
         throw new UnsupportedOperationException("TODO implement writing user profile");
     }
 }

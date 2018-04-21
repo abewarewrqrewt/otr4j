@@ -12,26 +12,31 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
 /**
  * OTRv4 Interactive DAKE Auth I Message.
  */
-final class AuthIMessage extends AbstractEncodedMessage {
+public final class AuthIMessage extends AbstractEncodedMessage {
 
     private static final int MESSAGE_AUTH_I = 0x88;
 
     private final OtrCryptoEngine4.Sigma sigma;
 
-    AuthIMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
+    public AuthIMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
                  @Nonnull final OtrCryptoEngine4.Sigma sigma) {
         super(requireAtLeast(4, protocolVersion), senderInstance, recipientInstance);
         this.sigma = requireNonNull(sigma);
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
-        super.write(writer);
-        this.sigma.writeTo(writer);
+    public int getType() {
+        return MESSAGE_AUTH_I;
+    }
+
+    @Nonnull
+    public OtrCryptoEngine4.Sigma getSigma() {
+        return sigma;
     }
 
     @Override
-    public int getType() {
-        return MESSAGE_AUTH_I;
+    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+        super.write(writer);
+        this.sigma.writeTo(writer);
     }
 }

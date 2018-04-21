@@ -23,6 +23,7 @@ public interface SerializationConstants {
     int TYPE_LEN_BYTE = 1;
     int TYPE_LEN_SHORT = 2;
     int TYPE_LEN_INT = 4;
+    int TYPE_LEN_LONG = 8;
     int TYPE_LEN_MAC = 20;
     int TYPE_LEN_CTR = 8;
 

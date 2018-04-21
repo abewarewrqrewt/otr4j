@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import static net.java.otr4j.crypto.ECDHKeyPair.generate;
 import static nl.dannyvanheumen.joldilocks.Ed448.sign;
@@ -20,8 +19,13 @@ public class ECDHKeyPairTest {
     private static final BigInteger sk = new BigInteger("201813413369092340303433879563900627958148970380718420601528361290790948759469372234812322817714647596845093618167700052967566766936416", 10);
 
     @Test(expected = NullPointerException.class)
-    public void testGenerateNull() {
-        generate(null);
+    public void testGenerateNullSecureRandom() {
+        generate((SecureRandom) null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testGenerateNullBytes() {
+        generate((byte[]) null);
     }
 
     @Test

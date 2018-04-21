@@ -77,6 +77,19 @@ public final class OtrCryptoEngine4 {
     }
 
     /**
+     * KDF_1 key derivation function. ({@link #kdf1(byte[], int, byte[], int)} for more details.)
+     *
+     * @param input      Input data.
+     * @param outputSize Expected output size.
+     * @return Returns byte-array with KDF_1 result.
+     */
+    public static byte[] kdf1(@Nonnull final byte[] input, final int outputSize) {
+        final byte[] result = new byte[outputSize];
+        kdf1(result, 0, input, outputSize);
+        return result;
+    }
+
+    /**
      * KDF_1 key derivation function.
      * <p>
      * "KDF_1(usageID || values, output_size) = SHAKE-256("OTRv4" || usageID || values, size)"
@@ -146,17 +159,15 @@ public final class OtrCryptoEngine4 {
      * Ring signature generation. (RSig)
      *
      * @param random A secure random instance.
-     * @param A1 Public key that corresponds to signature.
-     * @param a1 Private key used for signing the message.
+     * @param keypair ECDH key pair that corresponds to signature.
      * @param A2 Other public key to be included in the signature.
      * @param A3 Other public key to be included in the signature.
      * @param m  The message for which the signature should be generated.
      */
     @Nonnull
-    public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final Point A1,
-                                 @Nonnull final BigInteger a1, @Nonnull final Point A2, @Nonnull final Point A3,
-                                 @Nonnull final byte[] m) {
-        if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
+    public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final ECDHKeyPair keypair,
+                                 @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
+        if (!Ed448.contains(keypair.getPublicKey()) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Valid points need to be on the curve.");
         }
         final BigInteger q = primeOrder();
@@ -178,7 +189,7 @@ public final class OtrCryptoEngine4 {
             buffer.write(USAGE_ID_RING_SIGNATURE);
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
-            A1.encodeTo(buffer);
+            keypair.getPublicKey().encodeTo(buffer);
             A2.encodeTo(buffer);
             A3.encodeTo(buffer);
             T1.encodeTo(buffer);
@@ -192,7 +203,7 @@ public final class OtrCryptoEngine4 {
         // "Compute c1 = c - c2 - c3 (mod q)."
         final BigInteger c1 = c.subtract(c2).subtract(c3).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final BigInteger r1 = t1.subtract(c1.multiply(a1)).mod(q);
+        final BigInteger r1 = t1.subtract(c1.multiply(keypair.getSecretKey())).mod(q);
         // "Send sigma = (c1, r1, c2, r2, c3, r3)."
         return new Sigma(c1, r1, c2, r2, c3, r3);
     }

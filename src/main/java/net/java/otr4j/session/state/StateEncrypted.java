@@ -13,10 +13,10 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.OtrPolicyUtil;
 import net.java.otr4j.api.Session;
-import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.messages.DataMessage;
@@ -25,6 +25,7 @@ import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
+import net.java.otr4j.session.ake.SecurityParameters4;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,11 +34,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
@@ -52,15 +51,7 @@ import static net.java.otr4j.io.SerializationUtils.toByteArray;
  *
  * @author Danny van Heumen
  */
-final class StateEncrypted extends AbstractState {
-
-    @SuppressWarnings("NonConstantLogger")
-    private final Logger logger;
-
-    /**
-     * Session ID.
-     */
-    private final SessionID sessionId;
+final class StateEncrypted extends AbstractStateEncrypted {
 
     /**
      * Active version of the protocol in use in this encrypted session.
@@ -82,34 +73,21 @@ final class StateEncrypted extends AbstractState {
      */
     private final SessionKeyManager sessionKeyManager;
 
-    /**
-     * OTR engine host.
-     */
-    private final OtrEngineHost host;
-
     StateEncrypted(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
-        this.sessionId = context.getSessionID();
-        this.logger = Logger.getLogger(sessionId.getAccountID() + "-->" + sessionId.getUserID());
+        super(context.getSessionID(), context.getHost());
         if (params.getVersion() > 3) {
             throw new UnsupportedOperationException("Unsupported protocol version specified.");
         }
         this.protocolVersion = params.getVersion();
         this.smpTlvHandler = new SmpTlvHandler(this, context, params.getS());
         this.remotePublicKey = params.getRemoteLongTermPublicKey();
-        this.sessionKeyManager = new SessionKeyManager(context.secureRandom(),
-                params.getLocalDHKeyPair(), params.getRemoteDHPublicKey());
-        this.host = context.getHost();
+        this.sessionKeyManager = new SessionKeyManager(context.secureRandom(), params.getLocalDHKeyPair(),
+            params.getRemoteDHPublicKey());
     }
 
     @Override
     public int getVersion() {
         return this.protocolVersion;
-    }
-
-    @Override
-    @Nonnull
-    public SessionID getSessionID() {
-        return this.sessionId;
     }
 
     @Override
@@ -144,8 +122,7 @@ final class StateEncrypted extends AbstractState {
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was
         // received unencrypted.
-        OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(),
-                sessionId, plainTextMessage.cleanText);
+        OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(), this.sessionID, plainTextMessage.cleanText);
         return plainTextMessage.cleanText;
     }
     
@@ -161,8 +138,8 @@ final class StateEncrypted extends AbstractState {
                     data.senderKeyID);
         } catch(final SessionKeyManager.SessionKeyUnavailableException ex) {
             logger.finest("No matching keys found.");
-            OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
-            final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+            OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
+            final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
             context.injectMessage(new ErrorMessage(replymsg));
             return null;
         }
@@ -175,8 +152,8 @@ final class StateEncrypted extends AbstractState {
                 matchingKeys.receivingMAC(), SerializationConstants.TYPE_LEN_MAC);
         if (!Arrays.equals(computedMAC, data.mac)) {
             logger.finest("MAC verification failed, ignoring message");
-            OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
-            final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+            OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
+            final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
             context.injectMessage(new ErrorMessage(replymsg));
             return null;
         }
@@ -192,7 +169,7 @@ final class StateEncrypted extends AbstractState {
                     lengthenedReceivingCtr, data.encryptedMessage);
         } catch (final SessionKey.ReceivingCounterValidationFailed ex) {
             logger.log(Level.WARNING, "Receiving ctr value failed validation, ignoring message: {0}", ex.getMessage());
-            OtrEngineHostUtil.showError(host, sessionId, "Counter value of received message failed validation.");
+            OtrEngineHostUtil.showError(host, this.sessionID, "Counter value of received message failed validation.");
             context.injectMessage(new ErrorMessage("Message's counter value failed validation."));
             return null;
         }
@@ -215,7 +192,7 @@ final class StateEncrypted extends AbstractState {
                     // nothing to do here, just ignore the padding
                     break;
                 case TLV.DISCONNECTED: // TLV1
-                    context.setState(new StateFinished(this.sessionId));
+                    context.setState(new StateFinished(this.sessionID));
                     break;
                 case TLV.SMP1Q: //TLV7
                     this.smpTlvHandler.processTlvSMP1Q(tlv);
@@ -237,8 +214,8 @@ final class StateEncrypted extends AbstractState {
                     break;
                 case TLV.USE_EXTRA_SYMMETRIC_KEY:
                     final byte[] key = matchingKeys.extraSymmetricKey();
-                    OtrEngineHostUtil.extraSymmetricKeyDiscovered(this.host,
-                            this.sessionId, content.message, key, tlv.getValue());
+                    OtrEngineHostUtil.extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key,
+                        tlv.getValue());
                     break;
                 default:
                     logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
@@ -266,7 +243,7 @@ final class StateEncrypted extends AbstractState {
     @Nonnull
     public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
+                new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
 
         // Get encryption keys.
         final SessionKey encryptionKeys = this.sessionKeyManager.getEncryptionSessionKeys();
@@ -333,16 +310,8 @@ final class StateEncrypted extends AbstractState {
     }
 
     @Override
-    public void end(@Nonnull final Context context) throws OtrException {
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY);
-        final DataMessage m = transformSending(context, "", Collections.singletonList(disconnectTlv));
-        try {
-            context.injectMessage(m);
-        } finally {
-            // Transitionig to PLAINTEXT state should not depend on host. Ensure
-            // we transition to PLAINTEXT even if we have problems injecting the
-            // message into the transport.
-            context.setState(new StatePlaintext(this.sessionId));
-        }
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        // FIXME determine if we should be allowed to transition from one encrypted messaging state to another. Added benefit here is that we effectively upgrade the connection, however do we trust this?
+        throw new UnsupportedOperationException("To be implemented.");
     }
 }

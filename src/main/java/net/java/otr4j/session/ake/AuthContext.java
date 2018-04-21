@@ -13,6 +13,8 @@ import java.security.SecureRandom;
 import javax.annotation.Nonnull;
 
 import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.profile.UserProfile;
 
 /**
  * Context required for authentication state implementations.
@@ -29,7 +31,7 @@ public interface AuthContext {
     void setState(@Nonnull AuthState state);
 
     /**
-     * Transition to a message state ENCRYPTED based on the provided parameters.
+     * Transition to message state ENCRYPTED based on the provided parameters. (OTRv2/OTRv3)
      *
      * @param params Instance containing all parameters that are negotiated
      * during the AKE that are relevant to setting up and maintaining the
@@ -38,6 +40,13 @@ public interface AuthContext {
      * ENCRYPTED message state fails.
      */
     void secure(@Nonnull SecurityParameters params) throws InteractionFailedException;
+
+    /**
+     * Transition to message state ENCRYPTED based on the provided parameters. (OTRv4)
+     *
+     * @param params The security parameters as negotiated in the key exchange.
+     */
+    void secure(@Nonnull SecurityParameters4 params) throws OtrCryptoException;
 
     /**
      * Access to SecureRandom instance.
@@ -70,6 +79,14 @@ public interface AuthContext {
      */
     @Nonnull
     InstanceTag getReceiverInstanceTag();
+
+    /**
+     * User profile for the client.
+     *
+     * @return Returns the user profile for this client.
+     */
+    @Nonnull
+    UserProfile getUserProfile();
 
     /**
      * InteractionFailedException indicates an error happened while interacting

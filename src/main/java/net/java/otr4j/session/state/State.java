@@ -16,11 +16,13 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
+import net.java.otr4j.session.ake.SecurityParameters4;
 
 public interface State {
 
@@ -115,14 +117,24 @@ public interface State {
     void handleErrorMessage(@Nonnull Context context, @Nonnull ErrorMessage errorMessage) throws OtrException;
 
     /**
-     * Call to secure a session after a successful Authentication was performed.
+     * Call to secure a session after a successful Authentication was performed. (OTRv2/OTRv3)
      *
      * @param context The session context.
-     * @param params The security parameters that are needed to set up and
-     * maintain the encrypted message state.
+     * @param params  The security parameters that are needed to set up and
+     *                maintain the encrypted message state.
      * @throws OtrException In case an exception occurs.
      */
-    void secure(@Nonnull Context context, @Nonnull final SecurityParameters params) throws OtrException;
+    void secure(@Nonnull Context context, @Nonnull SecurityParameters params) throws OtrException;
+
+    /**
+     * Call to secure a session after a successful Authentication was performed. (OTRv4)
+     *
+     * @param context The session context.
+     * @param params  The security parameters (OTRv4) that are needed to set up and maintain the encrypted message
+     *                state.
+     * @throws OtrCryptoException In case security parameters contain illegal values.
+     */
+    void secure(@Nonnull Context context, @Nonnull SecurityParameters4 params) throws OtrCryptoException;
 
     /**
      * Call to end encrypted session, if any.

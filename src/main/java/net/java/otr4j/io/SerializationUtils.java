@@ -10,14 +10,15 @@ import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
+import net.java.otr4j.io.messages.EncodedMessageParser;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.EncodedMessageParser;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
+import net.java.otr4j.profile.UserProfile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -93,76 +94,77 @@ public final class SerializationUtils {
 
     // Mysterious X IO.
     @Nonnull
-    public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws IOException, OtrCryptoException, UnsupportedTypeException {
-        final ByteArrayInputStream in = new ByteArrayInputStream(b);
-        try (final OtrInputStream ois = new OtrInputStream(in)) {
+    public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws IOException, OtrCryptoException,
+        UnsupportedTypeException {
+        try (final ByteArrayInputStream in = new ByteArrayInputStream(b);
+             final OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readMysteriousX();
         }
     }
 
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureX x) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream oos = new OtrOutputStream(out)) {
             oos.writeMysteriousX(x);
+            return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
-        return out.toByteArray();
     }
 
     // Mysterious M IO.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureM m) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream oos = new OtrOutputStream(out)) {
             oos.writeMysteriousX(m);
+            return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
-        return out.toByteArray();
     }
 
     // Mysterious T IO.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final MysteriousT t) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream oos = new OtrOutputStream(out)) {
             oos.writeMysteriousT(t);
+            return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
-        return out.toByteArray();
     }
 
     // Basic IO.
     @Nonnull
     public static byte[] writeData(@Nullable final byte[] b) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream oos = new OtrOutputStream(out)) {
             oos.writeData(b);
+            return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
-        return out.toByteArray();
     }
 
     // BigInteger IO.
     @Nonnull
     public static byte[] writeMpi(@Nonnull final BigInteger bigInt) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream oos = new OtrOutputStream(out)) {
             oos.writeBigInt(bigInt);
+            return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
-        return out.toByteArray();
     }
 
     @Nonnull
     public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException {
-        final ByteArrayInputStream in = new ByteArrayInputStream(b);
-        try (final OtrInputStream ois = new OtrInputStream(in)) {
+        try (final ByteArrayInputStream in = new ByteArrayInputStream(b);
+             final OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readBigInt();
         }
     }
@@ -170,13 +172,25 @@ public final class SerializationUtils {
     // Public Key IO.
     @Nonnull
     public static byte[] writePublicKey(@Nonnull final PublicKey pubKey) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream oos = new OtrOutputStream(out)) {
             oos.writePublicKey(pubKey);
+            return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
-        return out.toByteArray();
+    }
+
+    // FIXME write unit tests for writeUserProfile utility.
+    @Nonnull
+    public static byte[] writeUserProfile(@Nonnull final UserProfile profile) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream otrOut = new OtrOutputStream(out)) {
+            otrOut.writeUserProfile(profile);
+            return out.toByteArray();
+        } catch (final IOException e) {
+            throw new IllegalStateException("Unexpected failure while serializing user profile.", e);
+        }
     }
 
     // Message IO.
@@ -460,6 +474,37 @@ public final class SerializationUtils {
         private Content(@Nonnull final String message, @Nonnull final List<TLV> tlvs) {
             this.message = Objects.requireNonNull(message);
             this.tlvs = Objects.requireNonNull(tlvs);
+        }
+    }
+
+    /**
+     * Generate the shared session state that is used in verification the session consistency.
+     *
+     * @param senderInstanceTag   The sender instance tag.
+     * @param receiverInstanceTag The receiver instance tag.
+     * @param queryMessage        The query message.
+     * @param senderContactID     The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
+     * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
+     * @return Returns generate Phi value.
+     */
+    // FIXME write unit tests.
+    @Nonnull
+    public static byte[] generatePhi(final long senderInstanceTag, final long receiverInstanceTag,
+                                     @Nonnull final String queryMessage, @Nonnull final String senderContactID,
+                                     @Nonnull final String receiverContactID) {
+        final byte[] queryBytes = queryMessage.getBytes(UTF8);
+        final byte[] senderIDBytes = senderContactID.getBytes(UTF8);
+        final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final OtrOutputStream otrout = new OtrOutputStream(out)) {
+            // FIXME write sender instance tag
+            // FIXME write receiver instance tag
+            otrout.writeData(queryBytes);
+            otrout.writeData(senderIDBytes);
+            otrout.writeData(receiverIDBytes);
+            return out.toByteArray();
+        } catch (final IOException e) {
+            throw new IllegalStateException("Failed to generate Phi.", e);
         }
     }
 }

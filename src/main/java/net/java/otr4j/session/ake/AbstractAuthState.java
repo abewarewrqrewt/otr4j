@@ -7,17 +7,22 @@
 
 package net.java.otr4j.session.ake;
 
-import java.security.KeyPair;
-import java.util.logging.Logger;
-
-import javax.annotation.Nonnull;
-import javax.crypto.interfaces.DHPublicKey;
-
 import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.SerializationUtils;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
+import net.java.otr4j.io.messages.IdentityMessage;
+import net.java.otr4j.profile.UserProfile;
+
+import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
+import java.security.KeyPair;
+import java.util.logging.Logger;
 
 /**
  * Abstract AuthState implementation that provides authentication initiation
@@ -31,11 +36,20 @@ abstract class AbstractAuthState implements AuthState {
 
     @Nonnull
     @Override
-    public DHCommitMessage initiate(@Nonnull final AuthContext context, final int version,
-            @Nonnull final InstanceTag receiverTag) {
-        if (version < 2 || version > 3) {
+    public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
+                                           @Nonnull final InstanceTag receiverTag) {
+        // TODO use constants for comparing versions?
+        if (version < 2 || version > 4) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
         }
+        if (version == 2 || version == 3) {
+            return initiateVersion3(context, version, receiverTag);
+        }
+        return initiateVersion4(context, receiverTag);
+    }
+
+    @Nonnull
+    private DHCommitMessage initiateVersion3(@Nonnull final AuthContext context, final int version, @Nonnull final InstanceTag receiverTag) {
         // OTR: "Choose a random value x (at least 320 bits)"
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
@@ -68,5 +82,19 @@ abstract class AbstractAuthState implements AuthState {
         LOGGER.finest("Sending DH commit message.");
         context.setState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
+    }
+
+    @Nonnull
+    private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag) {
+        final ECDHKeyPair y = ECDHKeyPair.generate(context.secureRandom());
+        final DHKeyPair b = DHKeyPair.generate(context.secureRandom());
+        // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
+        final int senderTagValue = context.getSenderInstanceTag().getValue();
+        final int receiverTagValue = receiverTag.getValue();
+        final UserProfile profile = context.getUserProfile();
+        final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, profile,
+            y.getPublicKey(), b.getPublicKey());
+        context.setState(new StateAwaitingAuthR(y, b));
+        return message;
     }
 }

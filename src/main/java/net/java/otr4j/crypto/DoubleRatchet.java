@@ -14,7 +14,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
 // TODO Currently we do not keep track of used MACs for later reveal.
-final class DoubleRatchet {
+public final class DoubleRatchet {
 
     private static final int SSID_LENGTH_BYTES = 8;
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
@@ -55,7 +55,7 @@ final class DoubleRatchet {
      */
     private int pn = 0;
 
-    DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret) {
+    public DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret) {
         this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
     }
@@ -63,7 +63,7 @@ final class DoubleRatchet {
     /**
      * Rotate the sender key.
      */
-    void rotateSenderKeys() throws OtrCryptoException {
+    public void rotateSenderKeys() throws OtrCryptoException {
         this.j = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = derivePreviousRootKey();
@@ -82,7 +82,7 @@ final class DoubleRatchet {
      * @param otherDH   The other party's DH public key.
      * @param otherECDH The other party's ECDH public key.
      */
-    void rotateReceiverKeys(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
+    public void rotateReceiverKeys(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
         this.k = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = derivePreviousRootKey();
@@ -99,7 +99,7 @@ final class DoubleRatchet {
         return this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
     }
 
-    byte[] generateSSID() {
+    public byte[] generateSSID() {
         final byte[] ssid = new byte[SSID_LENGTH_BYTES];
         kdf1(ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, this.sharedSecret.getK()), SSID_LENGTH_BYTES);
         return ssid;

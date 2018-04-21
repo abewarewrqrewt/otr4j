@@ -50,9 +50,11 @@ import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
+import net.java.otr4j.profile.UserProfile;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
+import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.ake.StateInitial;
 import net.java.otr4j.session.state.Context;
 import net.java.otr4j.session.state.IncorrectStateException;
@@ -302,9 +304,9 @@ final class SessionImpl implements Session, Context, AuthContext {
             throw new InteractionFailedException(ex);
         }
         if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
-            throw new IllegalStateException("Session failed to transition to ENCRYPTED.");
+            throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
         }
-        logger.info("Session secured. Message state transitioned to ENCRYPTED.");
+        logger.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
         if (this.masterSession.outgoingSession.sessionState.getStatus() == SessionStatus.PLAINTEXT) {
             // This behavior is adopted to preserve behavior between otr4j
             // before refactoring and after. Originally, the master session
@@ -313,6 +315,19 @@ final class SessionImpl implements Session, Context, AuthContext {
             // we have secured the session, we also switch to that session such
             // that subsequently sent messages are already encrypted, even if
             // the client does not explicitly switch.
+            logger.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
+            this.masterSession.setOutgoingSession(this.receiverTag);
+        }
+    }
+
+    @Override
+    public void secure(@Nonnull final SecurityParameters4 s) throws OtrCryptoException {
+        this.sessionState.secure(this, s);
+        if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
+            throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
+        }
+        logger.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
+        if (this.masterSession.outgoingSession.sessionState.getStatus() == SessionStatus.PLAINTEXT) {
             logger.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
             this.masterSession.setOutgoingSession(this.receiverTag);
         }
@@ -592,8 +607,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         return fallback;
     }
 
-    private String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage)
-            throws OtrException {
+    private String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a plaintext message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
@@ -825,6 +839,13 @@ final class SessionImpl implements Session, Context, AuthContext {
         return this.host.getLocalKeyPair(this.sessionState.getSessionID());
     }
 
+    @Nonnull
+    @Override
+    public UserProfile getUserProfile() {
+        // FIXME delegate request to OtrEngineHost.
+        throw new UnsupportedOperationException("To be implemented");
+    }
+
     @Override
     @Nonnull
     public InstanceTag getSenderInstanceTag() {
@@ -966,7 +987,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @return Returns DH commit message as response to AKE query.
      * @throws OtrException In case of invalid/unsupported OTR protocol version.
      */
-    private DHCommitMessage respondAuth(final int version,
+    private AbstractEncodedMessage respondAuth(final int version,
             @Nonnull final InstanceTag receiverTag) throws OtrException {
         if (!OTRv.ALL.contains(version)) {
             throw new OtrException("Only allowed versions are: 2, 3");

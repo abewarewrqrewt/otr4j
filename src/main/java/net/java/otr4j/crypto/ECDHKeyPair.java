@@ -9,6 +9,7 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static nl.dannyvanheumen.joldilocks.Points.checkIdentity;
@@ -23,7 +24,7 @@ public final class ECDHKeyPair {
     /**
      * Length of the secret key in bytes.
      */
-    private static final int LENGTH_SECRET_KEY_BYTES = 57;
+    static final int LENGTH_SECRET_KEY_BYTES = 57;
 
     /**
      * Context c, used in signing.
@@ -52,6 +53,19 @@ public final class ECDHKeyPair {
         //  - generate 'h' = KDF_1(0x01 || r, 57).
         final byte[] r = new byte[LENGTH_SECRET_KEY_BYTES + 1];
         random.nextBytes(r);
+        return generate(r);
+    }
+
+    /**
+     * Generate an ECDH key pair based on provided random value.
+     *
+     * @param r The secure random data. (Requires byte-array of 58 bytes. The first byte will be overwritten in the
+     *         process.)
+     * @return Returns the generated ECDH key pair.
+     */
+    @Nonnull
+    public static ECDHKeyPair generate(@Nonnull final byte[] r) {
+        requireLengthExactly(LENGTH_SECRET_KEY_BYTES + 1, r);
         r[0] = 0x01;
         final byte[] h = new byte[57];
         kdf1(h, 0, r, LENGTH_SECRET_KEY_BYTES);
@@ -79,6 +93,19 @@ public final class ECDHKeyPair {
     @Nonnull
     public Point getPublicKey() {
         return this.publicKey;
+    }
+
+    /**
+     * Get secret key.
+     * <p>
+     * The secret key is intentionally not made public. It should only be used in a package-local logic such that we can
+     * prevent unintended exposures of secret data.
+     *
+     * @return Returns the secret key.
+     */
+    @Nonnull
+    BigInteger getSecretKey() {
+        return this.secretKey;
     }
 
     /**

@@ -1,5 +1,6 @@
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.session.ake.SecurityParameters4;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -7,6 +8,8 @@ import javax.annotation.Nullable;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
+import static net.java.otr4j.crypto.ECDHKeyPair.LENGTH_SECRET_KEY_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -19,7 +22,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 // FIXME investigate what we need to clean additionally for Point and BigInteger calculations where we use temporary instances during computation.
 // FIXME use of concatenate(...) to concat byte arrays, but intermediate result is not cleared.
 // FIXME write tests for testing key rotation.
-final class SharedSecret4 {
+public final class SharedSecret4 {
 
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
@@ -27,6 +30,8 @@ final class SharedSecret4 {
     private static final byte[] USAGE_ID_BRACE_KEY_FROM_DH = new byte[]{0x02};
     private static final byte[] USAGE_ID_BRACE_KEY_FROM_BRACE_KEY = new byte[]{0x03};
     private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x04};
+    private static final byte[] USAGE_ID_COMMON_ECDH_RANDOM_DATA = new byte[]{0x19};
+    private static final byte[] USAGE_ID_COMMON_DH_RANDOM_DATA = new byte[]{0x20};
 
     /**
      * Either a hash of the shared DH key: 'KDF_1(0x02 || k_dh, 32)' (every third DH ratchet) or a hash of the previous
@@ -74,6 +79,44 @@ final class SharedSecret4 {
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         regenerateK(0);
+    }
+
+    /**
+     * Derive initial shared secret from security parameters as they are received from the DAKE.
+     *
+     * @param params The security parameters.
+     * @return Returns the initialized shared secrets instance.
+     * @throws OtrCryptoException Throws in case of illegal values for shared secrets.
+     */
+    // FIXME review secure deletions as described by section "Interactive DAKE Overview".
+    @Nonnull
+    public static SharedSecret4 initialize(@Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        final SharedSecret4 exchangeSecrets = new SharedSecret4(params.getDhKeyPair(), params.getEcdhKeyPair(),
+            params.getA(), params.getX());
+        final byte[] k = exchangeSecrets.getK();
+        // Generate common shared secret using Bob's information stored in security parameters.
+        final ECDHKeyPair initialECDHKeyPair;
+        {
+            final byte[] r = new byte[LENGTH_SECRET_KEY_BYTES + 1];
+            kdf1(r, 1, concatenate(USAGE_ID_COMMON_ECDH_RANDOM_DATA, k), LENGTH_SECRET_KEY_BYTES);
+            initialECDHKeyPair = ECDHKeyPair.generate(r);
+        }
+        // Generate common shared secret using Bob's information stored in security parameters.
+        final DHKeyPair initialDHKeyPair;
+        {
+            final byte[] r = new byte[DH_PRIVATE_KEY_LENGTH_BYTES];
+            kdf1(r, 0, concatenate(USAGE_ID_COMMON_DH_RANDOM_DATA, k), DH_PRIVATE_KEY_LENGTH_BYTES);
+            initialDHKeyPair = DHKeyPair.generate(r);
+        }
+        switch (params.getInitializationComponent()) {
+            case OURS:
+                return new SharedSecret4(initialDHKeyPair, initialECDHKeyPair, params.getA(), params.getX());
+            case THEIRS:
+                return new SharedSecret4(params.getDhKeyPair(), params.getEcdhKeyPair(),
+                    initialDHKeyPair.getPublicKey(), initialECDHKeyPair.getPublicKey());
+            default:
+                throw new UnsupportedOperationException("Unsupported component. Shared secret cannot be generated.");
+        }
     }
 
     /**

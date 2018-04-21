@@ -7,16 +7,14 @@
 
 package net.java.otr4j.session.ake;
 
-import java.io.IOException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.UnsupportedTypeException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.DHCommitMessage;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
 
 /**
  * Interface for the AKE states.
@@ -41,7 +39,7 @@ public interface AuthState {
      * @return Returns DHCommitMessage with which we can initiate an AKE.
      */
     @Nonnull
-    DHCommitMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag);
+    AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag);
 
     /**
      * Handle AKE message.

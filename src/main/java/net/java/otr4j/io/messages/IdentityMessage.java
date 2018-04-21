@@ -16,17 +16,17 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
  *
  * The identity message is used to send initial identity information upon establishing a new session.
  */
-final class IdentityMessage extends AbstractEncodedMessage {
+public final class IdentityMessage extends AbstractEncodedMessage {
 
     // OTRv4 Encoded message types
-    private static final int MESSAGE_IDENTITY = 0x08;
+    static final int MESSAGE_IDENTITY = 0x08;
 
     private final UserProfile userProfile;
     private final Point y;
     private final BigInteger b;
 
     // FIXME need to do additional validation for values being injected in constructor?
-    IdentityMessage(final int protocolVersion, final int senderInstance, final int receiverInstance,
+    public IdentityMessage(final int protocolVersion, final int senderInstance, final int receiverInstance,
                     @Nonnull final UserProfile userProfile, @Nonnull final Point y, @Nonnull final BigInteger b) {
         super(requireAtLeast(4, protocolVersion), senderInstance, receiverInstance);
         this.userProfile = requireNonNull(userProfile);
@@ -35,15 +35,30 @@ final class IdentityMessage extends AbstractEncodedMessage {
     }
 
     @Override
+    public int getType() {
+        return MESSAGE_IDENTITY;
+    }
+
+    @Nonnull
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
+
+    @Nonnull
+    public Point getY() {
+        return y;
+    }
+
+    @Nonnull
+    public BigInteger getB() {
+        return b;
+    }
+
+    @Override
     public void write(@Nonnull final OtrOutputStream writer) throws IOException {
         super.write(writer);
         writer.writeUserProfile(this.userProfile);
         writer.writePoint(this.y);
         writer.writeBigInt(this.b);
-    }
-
-    @Override
-    public int getType() {
-        return MESSAGE_IDENTITY;
     }
 }
