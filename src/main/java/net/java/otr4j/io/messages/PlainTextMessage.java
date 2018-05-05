@@ -7,9 +7,10 @@
 
 package net.java.otr4j.io.messages;
 
-import java.util.Objects;
-import java.util.Set;
 import javax.annotation.Nonnull;
+import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * 
@@ -18,12 +19,17 @@ import javax.annotation.Nonnull;
  */
 public final class PlainTextMessage extends QueryMessage {
 
-    public final String cleanText;
+    private final String cleanText;
 
-    public PlainTextMessage(@Nonnull final Set<Integer> versions,
+    public PlainTextMessage(@Nonnull final String tag, @Nonnull final Set<Integer> versions,
             @Nonnull final String cleanText) {
-        super(versions);
-        this.cleanText = Objects.requireNonNull(cleanText);
+        super(tag, versions);
+        this.cleanText = requireNonNull(cleanText);
+    }
+
+    @Nonnull
+    public String getCleanText() {
+        return cleanText;
     }
 
     @Override

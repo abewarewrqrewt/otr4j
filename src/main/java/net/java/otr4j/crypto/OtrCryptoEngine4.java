@@ -198,7 +198,7 @@ public final class OtrCryptoEngine4 {
             buffer.write(m);
             c = hashToScalar(buffer.toByteArray());
         } catch (final IOException e) {
-            throw new IllegalStateException("Failed to write base point to buffer.", e);
+            throw new IllegalStateException("Failed to write point to buffer.", e);
         }
         // "Compute c1 = c - c2 - c3 (mod q)."
         final BigInteger c1 = c.subtract(c2).subtract(c3).mod(q);
@@ -215,7 +215,7 @@ public final class OtrCryptoEngine4 {
         // FIXME verify if and what kind of pruning is needed to guarantee valid value
         final BigInteger value = decodeLittleEndian(data);
         assert ZERO.compareTo(value) <= 0 && primeOrder().compareTo(value) > 0
-            : "Generated scalar value should always be less valid, i.e. greater or equal to zero and smaller than prime order.";
+            : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
         return value;
     }
 

@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * OTRv2 OTR query message.
  *
@@ -19,10 +21,28 @@ import javax.annotation.Nonnull;
  */
 public class QueryMessage implements Message {
 
-    public final Set<Integer> versions;
+    private final Set<Integer> versions;
+    private final String tag;
 
-    public QueryMessage(@Nonnull final Set<Integer> versions) {
-        this.versions = Objects.requireNonNull(versions);
+    /**
+     * Construct a query message instance.
+     *
+     * @param tag      The original tag of the query message in its original textual representation.
+     * @param versions The versions included in the query message.
+     */
+    public QueryMessage(@Nonnull final String tag, @Nonnull final Set<Integer> versions) {
+        this.tag = requireNonNull(tag);
+        this.versions = requireNonNull(versions);
+    }
+
+    @Nonnull
+    public Set<Integer> getVersions() {
+        return versions;
+    }
+
+    @Nonnull
+    public String getTag() {
+        return tag;
     }
 
     @Override
@@ -44,9 +64,6 @@ public class QueryMessage implements Message {
             return false;
         }
         final QueryMessage other = (QueryMessage) obj;
-        if (!Objects.equals(this.versions, other.versions)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.versions, other.versions);
     }
 }

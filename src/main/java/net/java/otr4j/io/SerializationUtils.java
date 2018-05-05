@@ -36,11 +36,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static net.java.otr4j.io.SerializationConstants.ERROR_PREFIX;
+import static net.java.otr4j.io.SerializationConstants.HEAD;
+import static net.java.otr4j.io.SerializationConstants.HEAD_ENCODED;
+import static net.java.otr4j.io.SerializationConstants.HEAD_ERROR;
+import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_Q;
+import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_V;
 import static org.bouncycastle.util.encoders.Base64.decode;
 import static org.bouncycastle.util.encoders.Base64.encode;
 
@@ -201,20 +208,20 @@ public final class SerializationUtils {
             // We avoid writing the header until we know for sure we need it. We
             // know for sure that plaintext messages do not need it. We may not
             // need it for a query message if the versions list is empty.
-            writer.write(SerializationConstants.HEAD);
+            writer.write(HEAD);
         }
 
         if (m instanceof ErrorMessage) {
             final ErrorMessage error = (ErrorMessage) m;
-            writer.write(SerializationConstants.HEAD_ERROR);
-            writer.write(SerializationConstants.ERROR_PREFIX);
+            writer.write(HEAD_ERROR);
+            writer.write(ERROR_PREFIX);
             writer.write(error.error);
         } else if (m instanceof PlainTextMessage) {
             final PlainTextMessage plaintxt = (PlainTextMessage) m;
-            writer.write(plaintxt.cleanText);
-            if (!plaintxt.versions.isEmpty()) {
+            writer.write(plaintxt.getCleanText());
+            if (!plaintxt.getVersions().isEmpty()) {
                 writer.write(" \t  \t\t\t\t \t \t \t  ");
-                for (final int version : plaintxt.versions) {
+                for (final int version : plaintxt.getVersions()) {
                     if (version == OTRv.TWO) {
                         writer.write("  \t\t  \t ");
                     }
@@ -225,13 +232,13 @@ public final class SerializationUtils {
             }
         } else if (m instanceof QueryMessage) {
             final QueryMessage query = (QueryMessage) m;
-            if (query.versions.size() == 1 && query.versions.contains(1)) {
+            if (query.getVersions().size() == 1 && query.getVersions().contains(1)) {
                 throw new UnsupportedOperationException("OTR v1 is no longer supported. Support in the library has been removed, so the query message should not contain a version 1 entry.");
             }
-            if (query.versions.size() > 0) {
-                writer.write(SerializationConstants.HEAD);
-                writer.write(SerializationConstants.HEAD_QUERY_V);
-                final ArrayList<Integer> versions = new ArrayList<>(query.versions);
+            if (query.getVersions().size() > 0) {
+                writer.write(HEAD);
+                writer.write(HEAD_QUERY_V);
+                final ArrayList<Integer> versions = new ArrayList<>(query.getVersions());
                 Collections.sort(versions);
                 for (final int version : versions) {
                     // As all versions still present in the versions list
@@ -245,7 +252,7 @@ public final class SerializationUtils {
                     }
                     writer.write(NUMBERINDEX.charAt(version));
                 }
-                writer.write(SerializationConstants.HEAD_QUERY_Q);
+                writer.write(HEAD_QUERY_Q);
             }
         } else if (m instanceof AbstractEncodedMessage) {
             final ByteArrayOutputStream o = new ByteArrayOutputStream();
@@ -254,7 +261,7 @@ public final class SerializationUtils {
             } catch (final IOException ex) {
                 throw new IllegalStateException("Unexpected error: failed to write message to ByteArrayOutputStream.", ex);
             }
-            writer.write(SerializationConstants.HEAD_ENCODED);
+            writer.write(HEAD_ENCODED);
             writer.write(new String(encode(o.toByteArray()), ASCII));
             writer.write(".");
         } else {
@@ -280,49 +287,38 @@ public final class SerializationUtils {
             return null;
         }
 
-        final int idxHead = s.indexOf(SerializationConstants.HEAD);
+        final int idxHead = s.indexOf(HEAD);
         if (idxHead > -1) {
             // Message **contains** the string "?OTR". Check to see if it is an error message, a query message or a data
             // message.
 
-            final char contentType = s.charAt(idxHead + SerializationConstants.HEAD.length());
-            String content = s
-                    .substring(idxHead + SerializationConstants.HEAD.length() + 1);
+            final char contentType = s.charAt(idxHead + HEAD.length());
+            final int idxHeaderBody = idxHead + HEAD.length() + 1;
+            final String content = s.substring(idxHeaderBody);
 
-            if (contentType == SerializationConstants.HEAD_ERROR
-                    && content.startsWith(SerializationConstants.ERROR_PREFIX)) {
+            if (contentType == HEAD_ERROR && content.startsWith(ERROR_PREFIX)) {
                 // Error tag found.
-                content = content.substring(idxHead + SerializationConstants.ERROR_PREFIX
-                        .length());
-                return new ErrorMessage(content);
-            } else if (contentType == SerializationConstants.HEAD_QUERY_V
-                    || contentType == SerializationConstants.HEAD_QUERY_Q) {
+                return new ErrorMessage(content.substring(idxHead + ERROR_PREFIX.length()));
+            } else if (contentType == HEAD_QUERY_V || contentType == HEAD_QUERY_Q) {
+                // TODO This code assumes the closing '?' for the query string exists. This may not always be the case.
                 // Query tag found.
                 final String versionString;
-                if (SerializationConstants.HEAD_QUERY_Q == contentType
-                        && content.length() > 0 && content.charAt(0) == 'v') {
-                    // OTR v1 query tag format. However, we do not active
+                if (HEAD_QUERY_Q == contentType && content.length() > 0 && content.charAt(0) == 'v') {
+                    // OTR v1 + ... query tag format. However, we do not active
                     // support OTRv1 anymore. Therefore the logic only supports
                     // skipping over the OTRv1 tags in order to reach OTR v2 and
                     // v3 version tags.
                     versionString = content.substring(1, content.indexOf('?'));
-                } else if (SerializationConstants.HEAD_QUERY_V == contentType) {
+                } else if (HEAD_QUERY_V == contentType) {
                     // OTR v2+ query tag format.
                     versionString = content.substring(0, content.indexOf('?'));
                 } else {
-                    versionString = "";
+                    // OTR v1 ONLY query tags will be caught in this else clause and is unsupported.
+                    return new QueryMessage("", Collections.<Integer>emptySet());
                 }
-                final HashSet<Integer> versions = new HashSet<>();
-                final StringReader sr = new StringReader(versionString);
-                int c;
-                while ((c = sr.read()) != -1) {
-                    final int idx = NUMBERINDEX.indexOf(c);
-                    if (idx > -1) {
-                        versions.add(idx);
-                    }
-                }
-                return new QueryMessage(versions);
-            } else if (idxHead == 0 && contentType == SerializationConstants.HEAD_ENCODED) {
+                final Set<Integer> versions = parseVersionString(versionString);
+                return new QueryMessage(s.substring(idxHead, s.indexOf('?', idxHeaderBody)), versions);
+            } else if (idxHead == 0 && contentType == HEAD_ENCODED) {
                 // Data message found.
 
                 if (content.charAt(content.length() - 1) != '.') {
@@ -369,7 +365,23 @@ public final class SerializationUtils {
         if (v3) {
             versions.add(OTRv.THREE);
         }
-        return new PlainTextMessage(versions, cleanText);
+        return new PlainTextMessage(matcher.group(), versions, cleanText);
+    }
+
+    private static Set<Integer> parseVersionString(@Nonnull final String versionString) {
+        final HashSet<Integer> versions = new HashSet<>();
+        try (final StringReader sr = new StringReader(versionString)) {
+            int c;
+            while ((c = sr.read()) != -1) {
+                final int idx = NUMBERINDEX.indexOf(c);
+                if (idx > -1) {
+                    versions.add(idx);
+                }
+            }
+        } catch (final IOException e) {
+            throw new IllegalStateException("Unexpected failure from StringReader.", e);
+        }
+        return versions;
     }
 
     @Nonnull
@@ -417,8 +429,8 @@ public final class SerializationUtils {
      * @return returns true if content is OTR encoded, or false otherwise
      */
     public static boolean otrEncoded(@Nonnull final String content) {
-        return content.startsWith(SerializationConstants.HEAD
-                + SerializationConstants.HEAD_ENCODED);
+        return content.startsWith(HEAD
+                + HEAD_ENCODED);
     }
 
     /**

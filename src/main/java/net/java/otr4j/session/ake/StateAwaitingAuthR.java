@@ -9,6 +9,7 @@ import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.profile.UserProfile;
+import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 
@@ -42,6 +43,8 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final UserProfile theirUserProfile = message.getUserProfile();
         // FIXME initialize a2 and a3 according to specs
         final byte[] t;
+        final Point a2;
+        final Point a3;
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), this.ecdhKeyPair, a2, a3, t);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
         context.setState(StateInitial.instance());

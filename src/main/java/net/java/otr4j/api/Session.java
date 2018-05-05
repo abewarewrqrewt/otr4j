@@ -27,7 +27,7 @@ public interface Session {
 
         // TODO 'ALL' should indicate all supported versions, not all existing versions.
         Set<Integer> ALL = Collections.unmodifiableSet(
-                new HashSet<>(Arrays.asList(TWO, THREE)));
+                new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
     }
 
     /* Methods that provide session information. */
@@ -162,6 +162,7 @@ public interface Session {
      * or false in case of failure to set. Failure happens in case receiver
      * instance cannot be found.
      */
+    // TODO modify method signature to return void. (boolean is returned but never checked anyways)
     boolean setOutgoingSession(@Nonnull final InstanceTag tag);
 
     /**

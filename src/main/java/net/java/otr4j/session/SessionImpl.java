@@ -545,10 +545,10 @@ final class SessionImpl implements Session, Context, AuthContext {
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
 
         final OtrPolicy policy = getSessionPolicy();
-        if (queryMessage.versions.contains(OTRv.THREE) && policy.getAllowV3()) {
+        if (queryMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG));
-        } else if (queryMessage.versions.contains(OTRv.TWO) && policy.getAllowV2()) {
+        } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(OTRv.TWO, InstanceTag.ZERO_TAG));
         } else {
@@ -612,7 +612,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         logger.log(Level.FINEST, "{0} received a plaintext message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
         final String messagetext = this.sessionState.handlePlainTextMessage(this, plainTextMessage);
-        if (plainTextMessage.versions.isEmpty()) {
+        if (plainTextMessage.getVersions().isEmpty()) {
             logger.finest("Received plaintext message without the whitespace tag.");
         } else {
             logger.finest("Received plaintext message with the whitespace tag.");
@@ -628,7 +628,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return;
         }
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
-        if (plainTextMessage.versions.contains(Session.OTRv.THREE)
+        if (plainTextMessage.getVersions().contains(Session.OTRv.THREE)
                 && policy.getAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
@@ -636,7 +636,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
-        } else if (plainTextMessage.versions.contains(Session.OTRv.TWO)
+        } else if (plainTextMessage.getVersions().contains(Session.OTRv.TWO)
                 && policy.getAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
@@ -754,9 +754,11 @@ final class SessionImpl implements Session, Context, AuthContext {
         final OtrPolicy policy = this.getSessionPolicy();
         final Set<Integer> allowedVersions = OtrPolicyUtil.allowedVersions(policy);
         if (allowedVersions.isEmpty()) {
+            // TODO consider making this an OtrException as this is reasonably possible with configuration.
             throw new IllegalStateException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }
-        injectMessage(new QueryMessage(allowedVersions));
+        // FIXME It's a bit of a work-around to add an empty string just because the serialization code doesn't use it.
+        injectMessage(new QueryMessage("", allowedVersions));
     }
 
     /**
@@ -987,6 +989,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @return Returns DH commit message as response to AKE query.
      * @throws OtrException In case of invalid/unsupported OTR protocol version.
      */
+    @Nonnull
     private AbstractEncodedMessage respondAuth(final int version,
             @Nonnull final InstanceTag receiverTag) throws OtrException {
         if (!OTRv.ALL.contains(version)) {
