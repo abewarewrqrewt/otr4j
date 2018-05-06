@@ -8,8 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.UnsupportedTypeException;
+import net.java.otr4j.api.OtrException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
@@ -36,10 +35,12 @@ public interface AuthState {
      * @param version Initiate AKE using protocol version.
      * @param receiverTag The receiver's instance tag. This tag may not always
      * be known at this time, therefore providing ZERO TAG is also valid.
+     * @param queryTag The query tag that was originally received.
      * @return Returns DHCommitMessage with which we can initiate an AKE.
      */
     @Nonnull
-    AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag);
+    AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag,
+                                    @Nonnull final String queryTag);
 
     /**
      * Handle AKE message.
@@ -52,18 +53,14 @@ public interface AuthState {
      * @throws IOException Throws exception in case of bad message content.
      * (Note that an AbstractEncodedMessage instance is provided, so failures
      * should only occur based on bad message content.)
-     * @throws OtrCryptoException Throws OtrCryptoException in case of
-     * unexpected situations during message processing, such as validation
-     * exceptions.
+     * @throws OtrException Throws OtrException in case of unexpected situations during message processing, such as
+     * verification and validation exceptions.
      * @throws AuthContext.InteractionFailedException Thrown in case of failure
      * while interacting with the provided AKE context.
-     * @throws UnsupportedTypeException Thrown in case we receive messages that
-     * contain types that are unknown to this OTR implementation. Types such as,
-     * for example, a public key type.
      */
     @Nullable
     AbstractEncodedMessage handle(@Nonnull AuthContext context, @Nonnull AbstractEncodedMessage message)
-            throws IOException, OtrCryptoException, AuthContext.InteractionFailedException, UnsupportedTypeException;
+            throws IOException, OtrException, AuthContext.InteractionFailedException;
 
     /**
      * Get active protocol version in AKE negotiation.

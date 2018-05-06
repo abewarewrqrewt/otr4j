@@ -26,8 +26,7 @@ public interface Session {
         int FOUR = 4;
 
         // TODO 'ALL' should indicate all supported versions, not all existing versions.
-        Set<Integer> ALL = Collections.unmodifiableSet(
-                new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
+        Set<Integer> ALL = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
     }
 
     /* Methods that provide session information. */

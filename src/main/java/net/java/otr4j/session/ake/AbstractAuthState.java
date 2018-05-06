@@ -37,7 +37,7 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
-                                           @Nonnull final InstanceTag receiverTag) {
+                                           @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
         // TODO use constants for comparing versions?
         if (version < 2 || version > 4) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
@@ -45,7 +45,7 @@ abstract class AbstractAuthState implements AuthState {
         if (version == 2 || version == 3) {
             return initiateVersion3(context, version, receiverTag);
         }
-        return initiateVersion4(context, receiverTag);
+        return initiateVersion4(context, receiverTag, queryTag);
     }
 
     @Nonnull
@@ -85,7 +85,8 @@ abstract class AbstractAuthState implements AuthState {
     }
 
     @Nonnull
-    private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag) {
+    private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag,
+                                             @Nonnull final String queryTag) {
         final ECDHKeyPair y = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair b = DHKeyPair.generate(context.secureRandom());
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
@@ -94,7 +95,7 @@ abstract class AbstractAuthState implements AuthState {
         final UserProfile profile = context.getUserProfile();
         final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, profile,
             y.getPublicKey(), b.getPublicKey());
-        context.setState(new StateAwaitingAuthR(y, b));
+        context.setState(new StateAwaitingAuthR(y, b, queryTag));
         return message;
     }
 }

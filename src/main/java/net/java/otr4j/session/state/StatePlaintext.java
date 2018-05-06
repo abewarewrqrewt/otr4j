@@ -100,9 +100,9 @@ public final class StatePlaintext extends AbstractState {
         // warn him that the message was received unencrypted.
         if (context.getSessionPolicy().getRequireEncryption()) {
             OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(),
-                    this.sessionId, plainTextMessage.cleanText);
+                    this.sessionId, plainTextMessage.getCleanText());
         }
-        return plainTextMessage.cleanText;
+        return plainTextMessage.getCleanText();
     }
 
     @Override
@@ -122,7 +122,7 @@ public final class StatePlaintext extends AbstractState {
                 || context.getOfferStatus() == OfferStatus.rejected) {
             // As we do not want to send a specially crafted whitespace tag
             // message, just return the original message text to be sent.
-            return new PlainTextMessage(Collections.<Integer>emptySet(), msgText);
+            return new PlainTextMessage("", Collections.<Integer>emptySet(), msgText);
         }
         // Continue with crafting a special whitespace message tag and embedding
         // it into the original message.
@@ -132,7 +132,8 @@ public final class StatePlaintext extends AbstractState {
             // At this point, reaching this state is considered a bug.
             throw new IllegalStateException("The current OTR policy does not allow any supported version of OTR. The software should either enable some protocol version or disable sending whitespace tags.");
         }
-        final PlainTextMessage m = new PlainTextMessage(versions, msgText);
+        // FIXME verify if we can indeed construct PlainTextMessage with empty string
+        final PlainTextMessage m = new PlainTextMessage("", versions, msgText);
         context.setOfferStatusSent();
         return m;
     }

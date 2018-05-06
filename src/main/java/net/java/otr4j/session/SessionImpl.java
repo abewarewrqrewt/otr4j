@@ -547,10 +547,10 @@ final class SessionImpl implements Session, Context, AuthContext {
         final OtrPolicy policy = getSessionPolicy();
         if (queryMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG));
+            injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG, queryMessage.getTag()));
         } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(OTRv.TWO, InstanceTag.ZERO_TAG));
+            injectMessage(respondAuth(OTRv.TWO, InstanceTag.ZERO_TAG, queryMessage.getTag()));
         } else {
             logger.info("Query message received, but none of the versions are acceptable. They are either excluded by policy or through lack of support.");
         }
@@ -632,7 +632,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 && policy.getAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(Session.OTRv.THREE, InstanceTag.ZERO_TAG));
+                injectMessage(respondAuth(Session.OTRv.THREE, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
@@ -640,7 +640,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 && policy.getAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(Session.OTRv.TWO, InstanceTag.ZERO_TAG));
+                injectMessage(respondAuth(Session.OTRv.TWO, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }
@@ -800,7 +800,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (version == 0) {
             startSession();
         } else {
-            injectMessage(respondAuth(version, this.receiverTag));
+            // FIXME should query tag be empty in this case?
+            injectMessage(respondAuth(version, this.receiverTag, ""));
         }
     }
 
@@ -990,8 +991,8 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @throws OtrException In case of invalid/unsupported OTR protocol version.
      */
     @Nonnull
-    private AbstractEncodedMessage respondAuth(final int version,
-            @Nonnull final InstanceTag receiverTag) throws OtrException {
+    private AbstractEncodedMessage respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
+                                               @Nonnull final String queryTag) throws OtrException {
         if (!OTRv.ALL.contains(version)) {
             throw new OtrException("Only allowed versions are: 2, 3");
         }
@@ -1001,7 +1002,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // D-H Key responses to a D-H Commit message without receiver instance
         // tag. (This is due to the subtle workings of the implementation.)
         logger.finest("Responding to Query Message with D-H Commit message.");
-        return this.masterSession.authState.initiate(this.masterSession, version, receiverTag);
+        return this.masterSession.authState.initiate(this.masterSession, version, receiverTag, queryTag);
     }
 
     /**

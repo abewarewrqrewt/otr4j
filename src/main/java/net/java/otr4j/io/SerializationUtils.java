@@ -494,7 +494,7 @@ public final class SerializationUtils {
      *
      * @param senderInstanceTag   The sender instance tag.
      * @param receiverInstanceTag The receiver instance tag.
-     * @param queryMessage        The query message.
+     * @param queryTag            The query message.
      * @param senderContactID     The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
      * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
      * @return Returns generate Phi value.
@@ -502,16 +502,16 @@ public final class SerializationUtils {
     // FIXME write unit tests.
     @Nonnull
     public static byte[] generatePhi(final long senderInstanceTag, final long receiverInstanceTag,
-                                     @Nonnull final String queryMessage, @Nonnull final String senderContactID,
+                                     @Nonnull final String queryTag, @Nonnull final String senderContactID,
                                      @Nonnull final String receiverContactID) {
-        final byte[] queryBytes = queryMessage.getBytes(UTF8);
+        final byte[] queryTagBytes = queryTag.getBytes(UTF8);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
              final OtrOutputStream otrout = new OtrOutputStream(out)) {
             // FIXME write sender instance tag
             // FIXME write receiver instance tag
-            otrout.writeData(queryBytes);
+            otrout.writeData(queryTagBytes);
             otrout.writeData(senderIDBytes);
             otrout.writeData(receiverIDBytes);
             return out.toByteArray();

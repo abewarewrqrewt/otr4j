@@ -19,12 +19,15 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 
 final class StateAwaitingAuthR extends AbstractAuthState {
 
+    private final String queryTag;
     private final ECDHKeyPair ecdhKeyPair;
     private final DHKeyPair dhKeyPair;
 
-    StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair) {
+    StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
+                       @Nonnull final String queryTag) {
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
+        this.queryTag = requireNonNull(queryTag);
     }
 
     @Override
@@ -43,6 +46,9 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final UserProfile theirUserProfile = message.getUserProfile();
         // FIXME initialize a2 and a3 according to specs
         final byte[] t;
+        {
+            // FIXME export and reuse logic for reconstructing variable t.
+        }
         final Point a2;
         final Point a3;
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), this.ecdhKeyPair, a2, a3, t);

@@ -7,13 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import java.security.PublicKey;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
@@ -27,6 +20,12 @@ import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.security.PublicKey;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Message state FINISHED. This message state is initiated through events
@@ -84,8 +83,8 @@ final class StateFinished extends AbstractState {
         // Display the message to the user, but warn him that the message was
         // received unencrypted.
         OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(),
-                sessionId, plainTextMessage.cleanText);
-        return plainTextMessage.cleanText;
+                sessionId, plainTextMessage.getCleanText());
+        return plainTextMessage.getCleanText();
     }
 
     @Override
@@ -100,7 +99,7 @@ final class StateFinished extends AbstractState {
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) {
         OtrEngineHostUtil.finishedSessionMessage(context.getHost(), sessionId, msgText);
         return null;
     }

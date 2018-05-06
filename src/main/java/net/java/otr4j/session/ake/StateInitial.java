@@ -7,22 +7,24 @@
 
 package net.java.otr4j.session.ake;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.UserProfiles;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
+import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.logging.Level;
@@ -78,16 +80,23 @@ public final class StateInitial extends AbstractAuthState {
 
     @Nullable
     @Override
-    public DHKeyMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) {
-        if (!(message instanceof DHCommitMessage)) {
-            // OTR: "Ignore the message."
-            LOGGER.log(Level.INFO, "We only expect to receive a DH Commit message. Ignoring message with messagetype: {0}", message.getType());
-            return null;
-        }
-        if (message.protocolVersion < 2 || message.protocolVersion > 3) {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
+        throws ProtocolException, OtrCryptoException, UserProfiles.InvalidUserProfileException {
+
+        if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
         }
-        return handleDHCommitMessage(context, (DHCommitMessage) message);
+        if ((message.protocolVersion == Session.OTRv.TWO || message.protocolVersion == Session.OTRv.THREE)
+            && message instanceof DHCommitMessage) {
+            return handleDHCommitMessage(context, (DHCommitMessage) message);
+        }
+        if (message.protocolVersion == Session.OTRv.FOUR && message instanceof IdentityMessage) {
+            return handleIdentityMessage(context, (IdentityMessage) message);
+        }
+        // OTR: "Ignore the message."
+        LOGGER.log(Level.INFO, "We only expect to receive a DH Commit message or an Identity message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+            message.getType());
+        return null;
     }
 
     @Override
@@ -111,8 +120,9 @@ public final class StateInitial extends AbstractAuthState {
 
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
-    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context,
-                                               @Nonnull final IdentityMessage message) throws OtrException {
+    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
+        throws ProtocolException, OtrCryptoException, UserProfiles.InvalidUserProfileException {
+
         verify(message);
         final UserProfile profile = context.getUserProfile();
         final SecureRandom secureRandom = context.secureRandom();

@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 
+import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -69,7 +70,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-            throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException {
+        throws OtrException, AuthContext.InteractionFailedException, IOException {
+
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
         }
@@ -81,7 +83,11 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             LOGGER.log(Level.INFO, "Ignoring DHKey message.");
             return null;
         } else if (message instanceof RevealSignatureMessage) {
-            return handleRevealSignatureMessage(context, (RevealSignatureMessage) message);
+            try {
+                return handleRevealSignatureMessage(context, (RevealSignatureMessage) message);
+            } catch (final UnsupportedTypeException e) {
+                throw new OtrException("Unsupported type of signature encountered.", e);
+            }
         } else {
             LOGGER.log(Level.FINEST, "Only expected message types are DHKeyMessage and RevealSignatureMessage. Ignoring message with type: {0}", message.getType());
             return null;

@@ -19,6 +19,7 @@ import static java.util.Objects.requireNonNull;
  * @author George Politis
  * @author Danny van Heumen
  */
+// FIXME QueryMessage not constructed in way where tag is relevant for serialization. Consider restructuring this such that work is fully predictable.
 public class QueryMessage implements Message {
 
     private final Set<Integer> versions;
