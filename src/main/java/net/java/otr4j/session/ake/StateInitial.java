@@ -18,6 +18,7 @@ import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
+import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.UserProfile;
 import net.java.otr4j.profile.UserProfiles;
 
@@ -30,13 +31,8 @@ import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
-import static net.java.otr4j.io.SerializationUtils.generatePhi;
-import static net.java.otr4j.io.SerializationUtils.writeMpi;
-import static net.java.otr4j.io.SerializationUtils.writeUserProfile;
 import static net.java.otr4j.io.messages.IdentityMessages.verify;
-import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
  * Initial AKE state, a.k.a. NONE. (Singleton)
@@ -46,16 +42,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
 public final class StateInitial extends AbstractAuthState {
 
     private static final Logger LOGGER = Logger.getLogger(StateInitial.class.getName());
-
-    private static final byte[] USAGE_ID_BOBS_PROFILE = new byte[]{0x06};
-
-    private static final byte[] USAGE_ID_ALICES_PROFILE = new byte[]{0x07};
-
-    private static final byte[] USAGE_ID_PHI_DERIVATIVE = new byte[]{0x08};
-
-    private static final int USER_PROFILE_DERIVATIVE_LENGTH_BYTES = 64;
-
-    private static final int PHI_DERIVATIVE_LENGTH_BYTES = 64;
 
     /**
      * Singleton instance.
@@ -128,27 +114,10 @@ public final class StateInitial extends AbstractAuthState {
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
-        final byte[] t;
-        {
-            final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE,
-                writeUserProfile(message.getUserProfile())), USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
-            final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, writeUserProfile(profile)),
-                USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
-            final byte[] yEncoded = message.getY().encode();
-            final byte[] xEncoded = x.getPublicKey().encode();
-            final byte[] bEncoded = writeMpi(message.getB());
-            final byte[] aEncoded = writeMpi(a.getPublicKey());
-            // FIXME need to acquire query string, contact IDs.
-            final String queryString;
-            final String senderContactID;
-            final String receiverContactID;
-            final byte[] phi = generatePhi(context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue(), queryString, senderContactID, receiverContactID);
-            final byte[] sharedSessionDerivative = kdf1(concatenate(USAGE_ID_PHI_DERIVATIVE, phi),
-                PHI_DERIVATIVE_LENGTH_BYTES);
-            t = concatenate(new byte[][]{new byte[]{0x00}, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
-                bEncoded, aEncoded, sharedSessionDerivative});
-        }
+        final String queryTag, senderContactID, receiverContactID;
+        final byte[] t = MysteriousT4.encode(profile, message.getUserProfile(), x.getPublicKey(), message.getY(),
+            a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
+            queryTag, senderContactID, receiverContactID);
         // FIXME we cannot yet set the exact order of public keys: H_b, H_a, Y
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, x, message.getUserProfile().getLongTermPublicKey(),
             message.getY(), t);

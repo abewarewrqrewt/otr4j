@@ -14,10 +14,10 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
- * 
  * @author George Politis
  * @author Danny van Heumen
  */
+// FIXME extract "encodeable" property such that it can be reused for smaller subparts of the OTR encoded message.
 public abstract class AbstractEncodedMessage implements Message {
 
     public final int protocolVersion;
@@ -69,6 +69,7 @@ public abstract class AbstractEncodedMessage implements Message {
         // Start writing common header of encoded messages.
         writer.writeShort(this.protocolVersion);
         writer.writeByte(getType());
+        // FIXME need to upgrade version to support OTRv4.
         if (this.protocolVersion == Session.OTRv.THREE) {
             writer.writeInt(this.senderInstanceTag);
             writer.writeInt(this.receiverInstanceTag);

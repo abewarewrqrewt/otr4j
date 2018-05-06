@@ -1,5 +1,6 @@
 package net.java.otr4j.session.ake;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
@@ -8,6 +9,7 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
+import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.UserProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -40,21 +42,20 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     }
 
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message) throws OtrCryptoException {
-        final int receiverTagValue = context.getReceiverInstanceTag().getValue();
-        final int senderTagValue = context.getSenderInstanceTag().getValue();
+        final InstanceTag receiverTag = context.getReceiverInstanceTag();
+        final InstanceTag senderTag = context.getSenderInstanceTag();
         final UserProfile ourUserProfile = context.getUserProfile();
-        final UserProfile theirUserProfile = message.getUserProfile();
+        final String senderContactID, receiverContactID;
+        final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
+            this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
+            this.queryTag, senderContactID, receiverContactID);
         // FIXME initialize a2 and a3 according to specs
-        final byte[] t;
-        {
-            // FIXME export and reuse logic for reconstructing variable t.
-        }
         final Point a2;
         final Point a3;
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), this.ecdhKeyPair, a2, a3, t);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
         context.setState(StateInitial.instance());
-        return new AuthIMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, sigma);
+        return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);
     }
 
     @Override
