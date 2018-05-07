@@ -3,6 +3,7 @@ package net.java.otr4j.profile;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
 import nl.dannyvanheumen.joldilocks.Ed448;
 
 import javax.annotation.Nonnull;
@@ -10,6 +11,7 @@ import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.util.Date;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.io.SerializationUtils.writeUserProfile;
 import static org.bouncycastle.util.Arrays.concatenate;
 
@@ -41,7 +43,9 @@ public final class UserProfiles {
      *
      * @param profile user profile to be verified.
      */
-    public static void validate(@Nonnull final UserProfile profile) throws InvalidUserProfileException {
+    public static void validate(@Nonnull final UserProfile profile) throws InvalidUserProfileException,
+        OtrCryptoException {
+
         // Verify that the User Profile has not expired.
         final Date now = new Date();
         final Date expirationDate = new Date(profile.getExpirationUnixTime());
@@ -50,12 +54,10 @@ public final class UserProfiles {
         }
         // Verify that the Versions field contains the character "4".
         if (!profile.getVersions().contains(Session.OTRv.FOUR)) {
-            throw new InvalidUserProfileException("OTR version 4 is not included in list of acceptable user profiles.");
+            throw new InvalidUserProfileException("OTR version 4 is not included in user profile list of accepted OTR protocol versions.");
         }
         // Validate that the Public Shared Prekey and the Ed448 Public Key are on the curve Ed448-Goldilocks.
-        if (!Ed448.contains(profile.getLongTermPublicKey())) {
-            throw new InvalidUserProfileException("Illegal long-term public key included in the user profile.");
-        }
+        verifyEdDSAPublicKey(profile.getLongTermPublicKey());
         // If the Transitional Signature is present, verify its validity using the OTRv3 DSA key.
         // FIXME implement transition signature verification, if present.
         // Verify that the User Profile signature is valid.

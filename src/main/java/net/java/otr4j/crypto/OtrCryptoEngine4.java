@@ -156,6 +156,19 @@ public final class OtrCryptoEngine4 {
     }
 
     /**
+     * Verify Point instance as EdDSA public key.
+     *
+     * @param point EdDSA public key, represented as Point.
+     * @throws OtrCryptoException Thrown in case point is illegal, i.e. does not lie on the Ed448-Goldilocks curve.
+     */
+    // FIXME write unit tests.
+    public static void verifyEdDSAPublicKey(@Nonnull final Point point) throws OtrCryptoException {
+        if (!Ed448.contains(point)) {
+            throw new OtrCryptoException("Illegal public key.");
+        }
+    }
+
+    /**
      * Ring signature generation. (RSig)
      *
      * @param random A secure random instance.

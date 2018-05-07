@@ -15,8 +15,8 @@ public final class IdentityMessages {
         // No need to instantiate utility class.
     }
 
-    public static void verify(@Nonnull final IdentityMessage message) throws ProtocolException,
-        UserProfiles.InvalidUserProfileException, OtrCryptoException {
+    public static void verify(@Nonnull final IdentityMessage message) throws ProtocolException, OtrCryptoException,
+        UserProfiles.InvalidUserProfileException {
 
         if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {
             throw new IllegalStateException("Identity message should not have any other type than 0x08.");

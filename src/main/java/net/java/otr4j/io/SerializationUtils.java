@@ -314,6 +314,7 @@ public final class SerializationUtils {
                     versionString = content.substring(0, content.indexOf('?'));
                 } else {
                     // OTR v1 ONLY query tags will be caught in this else clause and is unsupported.
+                    // FIXME Consider if we even want to return a QueryMessage here. The only accepted versions are unsupported version, hence we can just as well return null.
                     return new QueryMessage("", Collections.<Integer>emptySet());
                 }
                 final Set<Integer> versions = parseVersionString(versionString);

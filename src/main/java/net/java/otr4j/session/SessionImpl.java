@@ -7,24 +7,6 @@
 
 package net.java.otr4j.session;
 
-import java.io.IOException;
-import java.net.ProtocolException;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
@@ -41,7 +23,6 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.SerializationUtils;
-import net.java.otr4j.io.UnsupportedTypeException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
@@ -61,6 +42,23 @@ import net.java.otr4j.session.state.IncorrectStateException;
 import net.java.otr4j.session.state.SmpTlvHandler;
 import net.java.otr4j.session.state.State;
 import net.java.otr4j.session.state.StatePlaintext;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.ProtocolException;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the OTR session.
@@ -538,8 +536,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
     }
 
-    private void handleQueryMessage(@Nonnull final QueryMessage queryMessage)
-            throws OtrException {
+    private void handleQueryMessage(@Nonnull final QueryMessage queryMessage) throws OtrException {
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a query message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
@@ -684,13 +681,13 @@ final class SessionImpl implements Session, Context, AuthContext {
             logger.log(Level.FINEST, "Ignoring message. Bad message content / incomplete message received.", ex);
             return null;
         } catch (final OtrCryptoException ex) {
-            logger.log(Level.FINEST, "Ignoring message. Exception while processing message, likely due to verification failure.", ex);
+            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to cryptographic verification failure.", ex);
             return null;
         } catch (final InteractionFailedException ex) {
             logger.log(Level.WARNING, "Failed to transition to ENCRYPTED message state.", ex);
             return null;
-        } catch (final UnsupportedTypeException ex) {
-            logger.log(Level.INFO, "Unsupported type in AKE message: {0}", ex.getMessage());
+        } catch (final OtrException ex) {
+            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to non-cryptographic error.", ex);
             return null;
         }
     }
@@ -800,7 +797,6 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (version == 0) {
             startSession();
         } else {
-            // FIXME should query tag be empty in this case?
             injectMessage(respondAuth(version, this.receiverTag, ""));
         }
     }
