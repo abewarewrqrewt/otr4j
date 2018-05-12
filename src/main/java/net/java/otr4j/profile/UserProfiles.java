@@ -18,6 +18,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
 /**
  * Utility class for user profiles.
  */
+// FIXME rename class to ClientProfiles
 public final class UserProfiles {
 
     private UserProfiles() {

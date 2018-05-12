@@ -12,6 +12,7 @@ import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
 // TODO Ensure that shared pre-key expires at same time as user profile.
 // FIXME Should we also allow versions 4 AND 3 when no transitional signature (OTRv3 long term public key) is provided?
+// FIXME rename class to ClientProfile.
 public final class UserProfile {
 
     /**
