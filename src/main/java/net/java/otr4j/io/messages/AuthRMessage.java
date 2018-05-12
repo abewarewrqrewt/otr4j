@@ -18,7 +18,7 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
  */
 public final class AuthRMessage extends AbstractEncodedMessage {
 
-    private static final int MESSAGE_AUTH_R = 0x91;
+    static final int MESSAGE_AUTH_R = 0x91;
 
     private final UserProfile userProfile;
 

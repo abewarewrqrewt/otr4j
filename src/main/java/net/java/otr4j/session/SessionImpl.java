@@ -832,6 +832,18 @@ final class SessionImpl implements Session, Context, AuthContext {
         return this.host.getSessionPolicy(this.sessionState.getSessionID());
     }
 
+    @Nonnull
+    @Override
+    public String getLocalAccountID() {
+        return getSessionID().getAccountID();
+    }
+
+    @Nonnull
+    @Override
+    public String getRemoteAccountID() {
+        return getSessionID().getUserID();
+    }
+
     @Override
     @Nonnull
     public KeyPair getLocalKeyPair() {

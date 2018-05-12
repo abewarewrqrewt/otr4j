@@ -11,12 +11,13 @@ import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.UserProfiles;
 
 import javax.annotation.Nonnull;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
+import static net.java.otr4j.io.messages.AuthRMessages.verify;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 
 /**
@@ -25,22 +26,6 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 final class StateAwaitingAuthR extends AbstractAuthState {
 
     private final String queryTag;
-
-    /**
-     * This is the sender's contact ID.
-     * <p>
-     * As AUTH_R receiver we need to verify 'sigma'. The other party is the sender of the 'sigma' value, hence the
-     * sender contact ID.
-     */
-    private final String theirContactID;
-
-    /**
-     * This is the receiver's contact ID
-     * <p>
-     * As AUTH_R receiver we need to verify 'sigma'. 'sigma' contains the phi (shared session state). Hence we are the
-     * receiving end in this process.
-     */
-    private final String ourContactID;
 
     /**
      * Our ECDH key pair.
@@ -57,17 +42,14 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
-                       @Nonnull final String queryTag, @Nonnull final String theirContactID,
-                       @Nonnull final String ourContactID) {
+                       @Nonnull final String queryTag) {
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
         this.queryTag = requireNonNull(queryTag);
-        this.theirContactID = requireNonNull(theirContactID);
-        this.ourContactID = requireNonNull(ourContactID);
     }
 
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
         if (!(message instanceof AuthRMessage)) {
             // FIXME what to do if unexpected message arrives?
             throw new IllegalStateException("Unexpected message received.");
@@ -75,30 +57,21 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         return handleAuthRMessage(context, (AuthRMessage) message);
     }
 
-    private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message) throws OtrCryptoException {
-        // FIXME not sure if sender/receiver here are correctly identified.
+    private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
+        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final UserProfile ourUserProfile = context.getUserProfile();
-        // FIXME still need to verify contents of message for validity.
-        {
-            final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
-                this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
-                this.queryTag, this.theirContactID, this.ourContactID);
-            // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
-            ringVerify(context.getUserProfile().getLongTermPublicKey(), message.getUserProfile().getLongTermPublicKey(),
-                this.ecdhKeyPair.getPublicKey(), message.getSigma(), t);
-        }
+        verify(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
+            context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
         context.setState(StateInitial.instance());
-        final OtrCryptoEngine4.Sigma sigma;
-        {
-            final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
-                this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
-                this.queryTag, this.ourContactID, this.theirContactID);
-            sigma = ringSign(context.secureRandom(), this.ecdhKeyPair,
-                message.getUserProfile().getLongTermPublicKey(), message.getX(), t);
-        }
+        final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
+            this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
+            this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
+        final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), this.ecdhKeyPair,
+            message.getUserProfile().getLongTermPublicKey(), message.getX(), t);
         // FIXME sender and receiver are probably swapped for the "sending AUTH_I message" use case.
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);
     }

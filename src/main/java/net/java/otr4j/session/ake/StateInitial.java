@@ -25,7 +25,6 @@ import net.java.otr4j.profile.UserProfiles;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
-import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.logging.Level;
@@ -67,7 +66,7 @@ public final class StateInitial extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws ProtocolException, OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
 
         if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
@@ -107,17 +106,17 @@ public final class StateInitial extends AbstractAuthState {
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws ProtocolException, OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
 
         verify(message);
         final UserProfile profile = context.getUserProfile();
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
-        final String queryTag, senderContactID, receiverContactID;
+        final String queryTag;
         final byte[] t = MysteriousT4.encode(profile, message.getUserProfile(), x.getPublicKey(), message.getY(),
             a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
-            queryTag, senderContactID, receiverContactID);
+            queryTag);
         // FIXME we cannot yet set the exact order of public keys: H_b, H_a, Y
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, x, message.getUserProfile().getLongTermPublicKey(),
             message.getY(), t);

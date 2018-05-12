@@ -37,8 +37,7 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
-                                           @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag,
-                                           @Nonnull final String theirContactID, @Nonnull final String ourContactID) {
+                                           @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
         // TODO use constants for comparing versions?
         if (version < Session.OTRv.TWO || version > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
@@ -46,7 +45,7 @@ abstract class AbstractAuthState implements AuthState {
         if (version == Session.OTRv.TWO || version == Session.OTRv.THREE) {
             return initiateVersion3(context, version, receiverTag);
         }
-        return initiateVersion4(context, receiverTag, queryTag, theirContactID, ourContactID);
+        return initiateVersion4(context, receiverTag, queryTag);
     }
 
     @Nonnull
@@ -87,8 +86,7 @@ abstract class AbstractAuthState implements AuthState {
 
     @Nonnull
     private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag,
-                                             @Nonnull final String queryTag, @Nonnull final String theirContactID,
-                                             @Nonnull final String ourContactID) {
+                                             @Nonnull final String queryTag) {
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
@@ -97,7 +95,7 @@ abstract class AbstractAuthState implements AuthState {
         final UserProfile profile = context.getUserProfile();
         final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, profile,
             ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, theirContactID, ourContactID));
+        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag));
         return message;
     }
 }

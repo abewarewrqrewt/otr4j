@@ -57,6 +57,26 @@ public interface AuthContext {
     SecureRandom secureRandom();
 
     /**
+     * Get the account ID of the local user.
+     * <p>
+     * Note that this account ID has to meet the requirements specified in OTRv4 spec.
+     *
+     * @return Returns the account ID of the local user.
+     */
+    @Nonnull
+    String getLocalAccountID();
+
+    /**
+     * Get the account ID of the remote user.
+     * <p>
+     * Note that this account ID has to meet the requirements specified in OTRv4 spec.
+     *
+     * @return Returns the account ID of the remote user.
+     */
+    @Nonnull
+    String getRemoteAccountID();
+
+    /**
      * Access to long-term key pair.
      *
      * @return Returns long-term key pair.
