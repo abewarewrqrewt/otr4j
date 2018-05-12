@@ -25,6 +25,10 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
  */
 final class StateAwaitingAuthR extends AbstractAuthState {
 
+    /**
+     * The query tag that triggered this AKE. The query tag is part of the shared session state common knowledge that is
+     * verified.
+     */
     private final String queryTag;
 
     /**
@@ -66,7 +70,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         verify(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
-        context.setState(StateInitial.instance());
+        context.setState(StateInitial.empty());
         final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
             this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());

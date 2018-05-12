@@ -50,6 +50,7 @@ public final class EncodedMessageParser {
      * @throws OtrCryptoException In case of issues during reconstruction of cryptographic components of a message. (For
      *                            example, a bad public key.)
      */
+    // FIXME convert to static method, there is no reason why this needs to be be an instance method.
     @Nonnull
     public AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
         final int protocolVersion = input.readShort();

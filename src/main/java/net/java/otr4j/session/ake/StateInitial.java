@@ -30,11 +30,15 @@ import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.IdentityMessages.verify;
 
 /**
- * Initial AKE state, a.k.a. NONE. (Singleton)
+ * Initial AKE state, a.k.a. NONE.
+ * <p>
+ * StateInitial can be initialized with a query tag in case such a tag was sent. Initially one would probably want to
+ * use {@link #EMPTY} instance as no tag was sent yet.
  *
  * @author Danny van Heumen
  */
@@ -43,14 +47,14 @@ public final class StateInitial extends AbstractAuthState {
     private static final Logger LOGGER = Logger.getLogger(StateInitial.class.getName());
 
     /**
-     * Singleton instance.
+     * Instance with empty-string query tag, provided for convenience as any new AKE would start in this state.
      */
-    private static final StateInitial INSTANCE = new StateInitial();
+    private static final StateInitial EMPTY = new StateInitial("");
 
-    private StateInitial() {
-        // Singleton, we only need to instantiate a single instance that can
-        // then be reused in all sessions. Given that this is the initial state
-        // we have no state on an AKE negotiation yet.
+    private final String queryTag;
+
+    public StateInitial(@Nonnull final String queryTag) {
+        this.queryTag = requireNonNull(queryTag);
     }
 
     /**
@@ -59,8 +63,8 @@ public final class StateInitial extends AbstractAuthState {
      * @return Returns the singleton instance.
      */
     @Nonnull
-    public static StateInitial instance() {
-        return INSTANCE;
+    public static StateInitial empty() {
+        return EMPTY;
     }
 
     @Nullable
@@ -113,17 +117,16 @@ public final class StateInitial extends AbstractAuthState {
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
-        final String queryTag;
         final byte[] t = MysteriousT4.encode(profile, message.getUserProfile(), x.getPublicKey(), message.getY(),
             a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
-            queryTag);
+            this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
         // FIXME we cannot yet set the exact order of public keys: H_b, H_a, Y
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, x, message.getUserProfile().getLongTermPublicKey(),
             message.getY(), t);
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getUserProfile(), x.getPublicKey(), a.getPublicKey(),
             sigma);
-        context.setState(new StateAwaitingAuthI(x, a));
+        context.setState(new StateAwaitingAuthI(queryTag, x, a));
         return authRMessage;
     }
 }

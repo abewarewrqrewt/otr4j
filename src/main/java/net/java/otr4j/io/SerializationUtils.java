@@ -366,7 +366,7 @@ public final class SerializationUtils {
         if (v3) {
             versions.add(OTRv.THREE);
         }
-        return new PlainTextMessage(matcher.group(), versions, cleanText);
+        return new PlainTextMessage(matcher.matches() ? matcher.group() : "", versions, cleanText);
     }
 
     private static Set<Integer> parseVersionString(@Nonnull final String versionString) {

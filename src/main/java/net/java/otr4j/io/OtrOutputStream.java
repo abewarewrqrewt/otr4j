@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static org.bouncycastle.util.Arrays.concatenate;
 
@@ -33,7 +34,7 @@ public final class OtrOutputStream extends FilterOutputStream implements
         SerializationConstants {
 
     public OtrOutputStream(@Nonnull final OutputStream out) {
-        super(out);
+        super(requireNonNull(out));
     }
 
     private void writeNumber(final int value, final int length) throws IOException {

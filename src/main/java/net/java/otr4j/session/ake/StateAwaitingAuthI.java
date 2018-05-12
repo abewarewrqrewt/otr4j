@@ -13,10 +13,12 @@ import static java.util.Objects.requireNonNull;
 
 final class StateAwaitingAuthI extends AbstractAuthState {
 
+    private final String queryTag;
     private final ECDHKeyPair x;
     private final DHKeyPair a;
 
-    StateAwaitingAuthI(@Nonnull final ECDHKeyPair x, @Nonnull final DHKeyPair a) {
+    StateAwaitingAuthI(@Nonnull final String queryTag, @Nonnull final ECDHKeyPair x, @Nonnull final DHKeyPair a) {
+        this.queryTag = requireNonNull(queryTag);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
     }

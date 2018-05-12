@@ -1,18 +1,20 @@
 package net.java.otr4j.session.state;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
-import static org.junit.Assert.assertEquals;
+import net.java.otr4j.io.messages.Message;
+import net.java.otr4j.io.messages.PlainTextMessage;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -25,7 +27,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithViablePolicy() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage(
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv23?",
                 new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE)),
                 "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
@@ -40,7 +42,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithOTRv2OnlyPolicy() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage(
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv2?",
                 Collections.singleton(OTRv.TWO), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
@@ -54,7 +56,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithOTRv3OnlyPolicy() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage(
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv3?",
                 Collections.singleton(OTRv.THREE), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
@@ -68,7 +70,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithNonViablePolicy() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage(
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
@@ -82,7 +84,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformDoNotSendWhitespaceTag() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage(
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
@@ -96,8 +98,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformAlreadySentWhitespaceTag() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage(
-                Collections.<Integer>emptySet(), "Hello world!");
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv?",Collections.<Integer>emptySet(), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);

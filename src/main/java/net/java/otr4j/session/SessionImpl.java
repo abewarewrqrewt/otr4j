@@ -234,7 +234,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener) {
         this(null, sessionID, listener, InstanceTag.ZERO_TAG, InstanceTag.ZERO_TAG,
-                new SecureRandom(), StateInitial.instance());
+                new SecureRandom(), StateInitial.empty());
     }
 
     /**
@@ -419,6 +419,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             offerStatus = OfferStatus.rejected;
         }
 
+        // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
         if (masterSession == this && m instanceof AbstractEncodedMessage
                 && ((AbstractEncodedMessage) m).protocolVersion == Session.OTRv.THREE) {
             // In case of OTRv3 delegate message processing to dedicated slave
@@ -442,6 +443,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
             final InstanceTag messageSenderInstance = new InstanceTag(encodedM.senderInstanceTag);
             final SessionImpl session;
+            // FIXME handle copying of authstate for all OTRv4 messages, as otherwise we miss information about the used query tag.
             if (encodedM instanceof DHCommitMessage) {
                 // We are more flexible with processing the DH Commit
                 // message as the message's receiver tag may be zero. It is
@@ -454,7 +456,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                                 this, this.sessionState.getSessionID(),
                                 this.host, this.senderTag,
                                 messageSenderInstance, this.secureRandom,
-                                StateInitial.instance());
+                                this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }
@@ -499,7 +501,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                                 this, this.sessionState.getSessionID(),
                                 this.host, this.senderTag,
                                 messageSenderInstance, this.secureRandom,
-                                StateInitial.instance());
+                                this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }
@@ -507,6 +509,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 }
             }
             logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}", messageSenderInstance.getValue());
+            // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
             return session.transformReceiving(msgText);
         }
 
@@ -754,6 +757,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             // TODO consider making this an OtrException as this is reasonably possible with configuration.
             throw new IllegalStateException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }
+        // FIXME don't forget to set used query tag in auth state.
         // FIXME It's a bit of a work-around to add an empty string just because the serialization code doesn't use it.
         injectMessage(new QueryMessage("", allowedVersions));
     }

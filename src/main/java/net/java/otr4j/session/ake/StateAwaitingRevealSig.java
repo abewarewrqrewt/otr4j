@@ -164,7 +164,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             // Ensure transition to AUTHSTATE_NONE.
             // OTR: "Transition authstate to AUTHSTATE_NONE."
             // OTR: "Regardless of whether the signature verifications succeed, the authstate variable is transitioned to AUTHSTATE_NONE."
-            context.setState(StateInitial.instance());
+            context.setState(StateInitial.empty());
         }
         // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
         // Transition to ENCRYPTED message state.

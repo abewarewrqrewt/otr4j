@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.api.Session;
@@ -14,6 +15,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+@SuppressWarnings("ConstantConditions")
 public class SerializationUtilsTest {
 
 	@Test
@@ -48,11 +50,11 @@ public class SerializationUtilsTest {
 
 	@Test(expected = IOException.class)
 	public void testToMessageWrongProtocolVersion() throws Exception {
+
 		SerializationUtils
-				.toMessage("?OTR:AAQDdAYBciqzcLcAAAAAAQAAAAIAAADAh7NAcXJNpXa8qw89tvx4eoxhR3iaTx4omdj34HRpgMXDGIR7Kp4trQ+L5k8INcse58RJWHQPYW+dgKMkwrpCNJIgaqjzaiJC5+QPylSchrAB78MNZiCLXW7YU3dSic1Pm0dpa57wwiFp7sfSm00GEcE7M1bRe7Pr1zgb8KP/5PJUeI7IVmYTDj5ONWUsyoocD40RQ+Bu+I7GLgb7WICGZ6mpof3UGEFFmJLB5lDfunhCqb0d3MRP0G6k/8YJzjIlAAAAAAAAAAEAAAAF8VtymMJceqLiPIYPjRTLmlr5gQPirDY87QAAAAA=.");
+				.toMessage("?OTR:AAUDdAYBciqzcLcAAAAAAQAAAAIAAADAh7NAcXJNpXa8qw89tvx4eoxhR3iaTx4omdj34HRpgMXDGIR7Kp4trQ+L5k8INcse58RJWHQPYW+dgKMkwrpCNJIgaqjzaiJC5+QPylSchrAB78MNZiCLXW7YU3dSic1Pm0dpa57wwiFp7sfSm00GEcE7M1bRe7Pr1zgb8KP/5PJUeI7IVmYTDj5ONWUsyoocD40RQ+Bu+I7GLgb7WICGZ6mpof3UGEFFmJLB5lDfunhCqb0d3MRP0G6k/8YJzjIlAAAAAAAAAAEAAAAF8VtymMJceqLiPIYPjRTLmlr5gQPirDY87QAAAAA=.");
 	}
 
-    @SuppressWarnings("ConstantConditions")
     @Test(expected = NullPointerException.class)
     public void testByteArrayToHexStringNullArray() {
         SerializationUtils.byteArrayToHexString(null);
@@ -75,9 +77,9 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testPlaintextMessageNoNullMangling() throws IOException {
+    public void testPlaintextMessageNoNullMangling() {
         final String data = "This is a test with \0 null \0 values.";
-        final PlainTextMessage m = new PlainTextMessage(
+        final PlainTextMessage m = new PlainTextMessage("?OTRv23?",
                 new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE)), data);
         assertTrue(SerializationUtils.toString(m).startsWith("This is a test with \0 null \0 values."));
     }
@@ -89,133 +91,143 @@ public class SerializationUtilsTest {
     }
 
     @Test
+    public void testNoFailureOnPlainMessage() throws IOException, OtrCryptoException {
+        final Message msg = SerializationUtils.toMessage("Hello world");
+        assertTrue(msg instanceof PlainTextMessage);
+        final PlainTextMessage plainMsg = (PlainTextMessage) msg;
+        assertEquals("", plainMsg.getTag());
+        assertTrue(plainMsg.getVersions().isEmpty());
+        assertEquals("Hello world", plainMsg.getCleanText());
+    }
+
+    @Test
     public void testCorrectIdentificationOfWhitespaceTagV1() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t ");
-        assertTrue(msg.versions.isEmpty());
-        assertEquals("", msg.cleanText);
+        assertTrue(msg.getVersions().isEmpty());
+        assertEquals("", msg.getCleanText());
     }
 
     @Test
     public void testCorrectIdentificationOfWhitespaceTagV2() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t ");
-        assertEquals(1, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.TWO));
-        assertEquals("", msg.cleanText);
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertEquals("", msg.getCleanText());
     }
 
     @Test
     public void testCorrectIdentificationOfWhitespaceTagV3() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t\t");
-        assertEquals(1, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.THREE));
-        assertEquals("", msg.cleanText);
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertEquals("", msg.getCleanText());
     }
 
     @Test
     public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t");
-        assertEquals(2, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.TWO));
-        assertTrue(msg.versions.contains(Session.OTRv.THREE));
-        assertEquals("", msg.cleanText);
+        assertEquals(2, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertEquals("", msg.getCleanText());
     }
 
     @Test
     public void testCorrectIdentificationOfWhitespaceTagV1AndV2() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t ");
-        assertEquals(1, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.TWO));
-        assertEquals("", msg.cleanText);
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertEquals("", msg.getCleanText());
     }
 
     @Test
     public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t");
-        assertEquals(1, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.THREE));
-        assertEquals("", msg.cleanText);
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertEquals("", msg.getCleanText());
     }
 
     @Test
     public void testCorrectWhitespaceErasure() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage("Hello \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t world!");
-        assertEquals(1, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.THREE));
-        assertEquals("Hello world!", msg.cleanText);
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertEquals("Hello world!", msg.getCleanText());
     }
 
     @Test
-    public void testQueryHeaderEmpty() throws IOException {
+    public void testQueryHeaderEmpty() {
         // Verify that we do not send the "bizarre claim" (as documented by otr spec) of willingness to speak otr but we accept not a single version.
-        final QueryMessage msg = new QueryMessage(Collections.<Integer>emptySet());
+        final QueryMessage msg = new QueryMessage("", Collections.<Integer>emptySet());
         assertEquals("", SerializationUtils.toString(msg));
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testCorrectQueryHeaderV1() throws IOException {
-        final QueryMessage msg = new QueryMessage(Collections.singleton(1));
+    public void testCorrectQueryHeaderV1() {
+        final QueryMessage msg = new QueryMessage("?OTR?", Collections.singleton(1));
         assertEquals("", SerializationUtils.toString(msg));
     }
 
     @Test
-    public void testCorrectQueryHeaderV2() throws IOException {
-        final QueryMessage msg = new QueryMessage(Collections.singleton(Session.OTRv.TWO));
+    public void testCorrectQueryHeaderV2() {
+        final QueryMessage msg = new QueryMessage("?OTRv2?", Collections.singleton(Session.OTRv.TWO));
         assertEquals("?OTRv2?", SerializationUtils.toString(msg));
     }
 
     @Test
-    public void testCorrectQueryHeaderV3() throws IOException {
-        final QueryMessage msg = new QueryMessage(Collections.singleton(Session.OTRv.THREE));
+    public void testCorrectQueryHeaderV3() {
+        final QueryMessage msg = new QueryMessage("?OTRv3?", Collections.singleton(Session.OTRv.THREE));
         assertEquals("?OTRv3?", SerializationUtils.toString(msg));
     }
 
     @Test
-    public void testCorrectQueryHeaderV2AndV3() throws IOException {
-        final QueryMessage msg = new QueryMessage(new HashSet<>(Arrays.asList(Session.OTRv.TWO, Session.OTRv.THREE)));
+    public void testCorrectQueryHeaderV2AndV3() {
+        final QueryMessage msg = new QueryMessage("?OTRv23?", new HashSet<>(Arrays.asList(Session.OTRv.TWO, Session.OTRv.THREE)));
         assertEquals("?OTRv23?", SerializationUtils.toString(msg));
     }
 
     @Test
     public void testCorrectDeduplicationOfVersionsWhileParsingQueryMessage() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRv2222222?");
-        assertEquals(1, msg.versions.size());
-        assertTrue(msg.versions.contains(Session.OTRv.TWO));
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
     }
 
     @Test
     public void testEnsureEmptyVersionStringIsCorrectlyParsed() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRv?");
-        assertTrue(msg.versions.isEmpty());
+        assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
     public void testEnsureOTRv1VersionStringIsIgnored() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTR?");
-        assertTrue(msg.versions.isEmpty());
+        assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
     public void testEnsureFakeOTRHeadersCorrectlyIgnored1() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?");
-        assertTrue(msg.versions.isEmpty());
+        assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
     public void testEnsureFakeOTRHeadersCorrectlyIgnored2() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?O");
-        assertTrue(msg.versions.isEmpty());
+        assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
     public void testEnsureFakeOTRHeadersCorrectlyIgnored3() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRa");
-        assertTrue(msg.versions.isEmpty());
+        assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
     public void testEnsureFakeOTRHeadersCorrectlyIgnored4() throws IOException, OtrCryptoException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTR ");
-        assertTrue(msg.versions.isEmpty());
+        assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test(expected = IOException.class)
@@ -225,7 +237,7 @@ public class SerializationUtilsTest {
 
     @Test
     public void testWhitespaceTagsNoVersions() {
-        final PlainTextMessage m = new PlainTextMessage(Collections.<Integer>emptySet(), "Hello");
+        final PlainTextMessage m = new PlainTextMessage("", Collections.<Integer>emptySet(), "Hello");
         assertEquals("Hello", SerializationUtils.toString(m));
     }
 
@@ -234,19 +246,19 @@ public class SerializationUtilsTest {
         final HashSet<Integer> versions = new HashSet<>();
         versions.add(OTRv.TWO);
         versions.add(OTRv.THREE);
-        final PlainTextMessage m = new PlainTextMessage(versions, "Hello");
+        final PlainTextMessage m = new PlainTextMessage("", versions, "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t", SerializationUtils.toString(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion2Only() {
-        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.TWO), "Hello");
+        final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.TWO), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t ", SerializationUtils.toString(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion3Only() {
-        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.THREE), "Hello");
+        final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.THREE), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t\t", SerializationUtils.toString(m));
     }
 
