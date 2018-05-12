@@ -124,11 +124,38 @@ public class SerializationUtilsTest {
     }
 
     @Test
+    public void testCorrectIdentificationOfWhitespaceTagV4() throws IOException, OtrCryptoException {
+        PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t \t  ");
+        assertEquals(1, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertEquals("", msg.getCleanText());
+    }
+
+    @Test
+    public void testCorrectIdentificationOfWhitespaceTagV2V3V4() throws IOException, OtrCryptoException {
+        PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ");
+        assertEquals(3, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertEquals("", msg.getCleanText());
+    }
+
+    @Test
     public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertEquals("", msg.getCleanText());
+    }
+
+    @Test
+    public void testCorrectIdentificationOfWhitespaceTagV1V2V4() throws IOException, OtrCryptoException {
+        PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t \t  ");
+        assertEquals(2, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -141,10 +168,29 @@ public class SerializationUtilsTest {
     }
 
     @Test
+    public void testCorrectIdentificationOfWhitespaceTagV1V3V4() throws IOException, OtrCryptoException {
+        PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t  \t\t \t  ");
+        assertEquals(2, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertEquals("", msg.getCleanText());
+    }
+
+    @Test
     public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws IOException, OtrCryptoException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertEquals("", msg.getCleanText());
+    }
+
+    @Test
+    public void testCorrectIdentificationOfWhitespaceTagV1V2V3V4() throws IOException, OtrCryptoException {
+        PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t  \t\t  \t\t \t  ");
+        assertEquals(3, msg.getVersions().size());
+        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -246,8 +292,9 @@ public class SerializationUtilsTest {
         final HashSet<Integer> versions = new HashSet<>();
         versions.add(OTRv.TWO);
         versions.add(OTRv.THREE);
+        versions.add(OTRv.FOUR);
         final PlainTextMessage m = new PlainTextMessage("", versions, "Hello");
-        assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t", SerializationUtils.toString(m));
+        assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ", SerializationUtils.toString(m));
     }
 
     @Test
@@ -260,6 +307,12 @@ public class SerializationUtilsTest {
     public void testWhitespaceTagsVersion3Only() {
         final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.THREE), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t\t", SerializationUtils.toString(m));
+    }
+
+    @Test
+    public void testWhitespaceTagsVersion4Only() {
+        final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.FOUR), "Hello");
+        assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t \t  ", SerializationUtils.toString(m));
     }
 
     @Test(expected = NullPointerException.class)

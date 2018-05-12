@@ -88,13 +88,12 @@ public final class SerializationUtils {
     private static final String HEX_DECODER = "0123456789ABCDEF";
 
     /**
-     * PATTERN_WHITESPACE recognizes OTR v1, v2 and v3 whitespace tags. We will
-     * continue to recognize OTR v1 whitespace tag for compatibility purposes
-     * and to avoid bad interpretation.
+     * PATTERN_WHITESPACE recognizes OTR v1, v2, v3 and v4 whitespace tags. We will continue to recognize OTR v1
+     * whitespace tag for compatibility purposes and to avoid bad interpretation.
      */
-    // FIXME introduce OTRv4 whitespace tag.
+    // TODO whitespace detection is lacking, there is no guarantee that whitespace tags for OTR versions will be found in this predefined order.
     private static final Pattern PATTERN_WHITESPACE = Pattern
-            .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?");
+            .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?(  \\t\\t \\t  )?");
 
     private SerializationUtils() {
         // Utility class cannot be instantiated.
@@ -229,6 +228,9 @@ public final class SerializationUtils {
                     if (version == OTRv.THREE) {
                         writer.write("  \t\t  \t\t");
                     }
+                    if (version == OTRv.FOUR) {
+                        writer.write("  \t\t \t  ");
+                    }
                 }
             }
         } else if (m instanceof QueryMessage) {
@@ -282,6 +284,7 @@ public final class SerializationUtils {
      *             or real IO error
      * @throws net.java.otr4j.crypto.OtrCryptoException error of cryptographic nature
      */
+    // TODO remove OTRv2 support in due time
     @Nullable
     public static Message toMessage(@Nonnull final String s) throws IOException, OtrCryptoException {
         if (s.length() == 0) {
@@ -346,6 +349,7 @@ public final class SerializationUtils {
 
         boolean v2 = false;
         boolean v3 = false;
+        boolean v4 = false;
         while (matcher.find()) {
             // Ignore group 1 (OTRv1 tag) as V1 is not supported anymore.
             if (!v2 && matcher.start(2) > -1) {
@@ -354,7 +358,10 @@ public final class SerializationUtils {
             if (!v3 && matcher.start(3) > -1) {
                 v3 = true;
             }
-            if (v2 && v3) {
+            if (!v4 && matcher.start(4) > -1) {
+                v4 = true;
+            }
+            if (v2 && v3 && v4) {
                 break;
             }
         }
@@ -366,6 +373,9 @@ public final class SerializationUtils {
         }
         if (v3) {
             versions.add(OTRv.THREE);
+        }
+        if (v4) {
+            versions.add(OTRv.FOUR);
         }
         return new PlainTextMessage(matcher.matches() ? matcher.group() : "", versions, cleanText);
     }
@@ -516,7 +526,8 @@ public final class SerializationUtils {
             otrout.writeData(queryTagBytes);
             otrout.writeData(senderIDBytes);
             otrout.writeData(receiverIDBytes);
-            return out.toByteArray();
+            throw new UnsupportedOperationException("Incomplete implementation, needs finishing.");
+            //return out.toByteArray();
         } catch (final IOException e) {
             throw new IllegalStateException("Failed to generate Phi.", e);
         }
