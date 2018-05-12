@@ -20,20 +20,8 @@ import static net.java.otr4j.io.messages.SignatureMessage.MESSAGE_SIGNATURE;
  */
 public final class EncodedMessageParser {
 
-    private static final EncodedMessageParser INSTANCE = new EncodedMessageParser();
-
     private EncodedMessageParser() {
-        // Not allowed to instantiate singleton.
-    }
-
-    /**
-     * Instance of the Encoded Message Parser.
-     *
-     * @return Returns instance.
-     */
-    @Nonnull
-    public static EncodedMessageParser instance() {
-        return INSTANCE;
+        // No need to instantiate utility class.
     }
 
     /**
@@ -50,9 +38,8 @@ public final class EncodedMessageParser {
      * @throws OtrCryptoException In case of issues during reconstruction of cryptographic components of a message. (For
      *                            example, a bad public key.)
      */
-    // FIXME convert to static method, there is no reason why this needs to be be an instance method.
     @Nonnull
-    public AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
+    public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
         final int protocolVersion = input.readShort();
         if (!Session.OTRv.ALL.contains(protocolVersion)) {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);
@@ -60,6 +47,7 @@ public final class EncodedMessageParser {
         final int messageType = input.readByte();
         final int senderInstanceTag;
         final int recipientInstanceTag;
+        // FIXME change condition to support versions over OTR v3.
         if (protocolVersion == Session.OTRv.THREE) {
             senderInstanceTag = input.readInt();
             recipientInstanceTag = input.readInt();

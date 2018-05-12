@@ -10,7 +10,6 @@ import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.EncodedMessageParser;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.MysteriousT;
@@ -48,6 +47,7 @@ import static net.java.otr4j.io.SerializationConstants.HEAD_ENCODED;
 import static net.java.otr4j.io.SerializationConstants.HEAD_ERROR;
 import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_Q;
 import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_V;
+import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 import static org.bouncycastle.util.encoders.Base64.decode;
 import static org.bouncycastle.util.encoders.Base64.encode;
 
@@ -92,6 +92,7 @@ public final class SerializationUtils {
      * continue to recognize OTR v1 whitespace tag for compatibility purposes
      * and to avoid bad interpretation.
      */
+    // FIXME introduce OTRv4 whitespace tag.
     private static final Pattern PATTERN_WHITESPACE = Pattern
             .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?");
 
@@ -335,7 +336,7 @@ public final class SerializationUtils {
                 final ByteArrayInputStream bin = new ByteArrayInputStream(
                     decode(content.substring(0, content.length() - 1).getBytes(ASCII)));
                 try (final OtrInputStream otr = new OtrInputStream(bin)) {
-                    return EncodedMessageParser.instance().read(otr);
+                    return read(otr);
                 }
             }
         }
