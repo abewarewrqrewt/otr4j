@@ -19,17 +19,41 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 
+/**
+ * OTRv4 AKE state AWAITING_AUTH_R.
+ */
 final class StateAwaitingAuthR extends AbstractAuthState {
 
     private final String queryTag;
+
+    /**
+     * This is the sender's contact ID.
+     * <p>
+     * As AUTH_R receiver we need to verify 'sigma'. The other party is the sender of the 'sigma' value, hence the
+     * sender contact ID.
+     */
+    private final String theirContactID;
+
+    /**
+     * This is the receiver's contact ID
+     * <p>
+     * As AUTH_R receiver we need to verify 'sigma'. 'sigma' contains the phi (shared session state). Hence we are the
+     * receiving end in this process.
+     */
+    private final String ourContactID;
+
     private final ECDHKeyPair ecdhKeyPair;
+
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
-                       @Nonnull final String queryTag) {
+                       @Nonnull final String queryTag, @Nonnull final String theirContactID,
+                       @Nonnull final String ourContactID) {
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
         this.queryTag = requireNonNull(queryTag);
+        this.theirContactID = requireNonNull(theirContactID);
+        this.ourContactID = requireNonNull(ourContactID);
     }
 
     @Override
@@ -45,10 +69,9 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final UserProfile ourUserProfile = context.getUserProfile();
-        final String senderContactID, receiverContactID;
         final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
-            this.queryTag, senderContactID, receiverContactID);
+            this.queryTag, this.theirContactID, this.ourContactID);
         // FIXME initialize a2 and a3 according to specs
         final Point a2;
         final Point a3;
