@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 public interface Session {
 
+    // TODO consider converting this to an enum, and EnumSet for SUPPORTED, KNOWN versions.
     interface OTRv {
 
         int ONE = 1;
@@ -25,8 +26,9 @@ public interface Session {
         int THREE = 3;
         int FOUR = 4;
 
-        // TODO 'ALL' should indicate all supported versions, not all existing versions.
-        Set<Integer> ALL = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
+        // TODO in time remove support for OTR version 2.
+        Set<Integer> SUPPORTED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
+        Set<Integer> KNOWN = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(ONE, TWO, THREE, FOUR)));
     }
 
     /* Methods that provide session information. */

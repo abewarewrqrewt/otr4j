@@ -55,6 +55,20 @@ public class EncodedMessageParserTest {
         assertEquals(m, parsedM);
     }
 
+    @Test(expected = ProtocolException.class)
+    public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException {
+        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
+        // Prepare output message to parse.
+        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.FOUR, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        final OtrOutputStream otrOutput = new OtrOutputStream(output);
+        m.write(otrOutput);
+        // Parse produced message bytes.
+        final ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
+        final OtrInputStream otrInput = new OtrInputStream(input);
+        read(otrInput);
+    }
+
     @Test
     public void testConstructAndParsePartialDHKeyMessage() throws IOException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);

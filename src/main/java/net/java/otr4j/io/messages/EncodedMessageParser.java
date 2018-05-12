@@ -9,6 +9,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.io.IOException;
 import java.net.ProtocolException;
 
+import static net.java.otr4j.api.Session.OTRv.SUPPORTED;
 import static net.java.otr4j.io.messages.DHCommitMessage.MESSAGE_DH_COMMIT;
 import static net.java.otr4j.io.messages.DHKeyMessage.MESSAGE_DHKEY;
 import static net.java.otr4j.io.messages.DataMessage.MESSAGE_DATA;
@@ -41,14 +42,13 @@ public final class EncodedMessageParser {
     @Nonnull
     public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
         final int protocolVersion = input.readShort();
-        if (!Session.OTRv.ALL.contains(protocolVersion)) {
+        if (!SUPPORTED.contains(protocolVersion)) {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);
         }
         final int messageType = input.readByte();
         final int senderInstanceTag;
         final int recipientInstanceTag;
-        // FIXME change condition to support versions over OTR v3.
-        if (protocolVersion == Session.OTRv.THREE) {
+        if (protocolVersion >= Session.OTRv.THREE) {
             senderInstanceTag = input.readInt();
             recipientInstanceTag = input.readInt();
         } else {
@@ -70,14 +70,17 @@ public final class EncodedMessageParser {
                 return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
                     encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
             case MESSAGE_DH_COMMIT:
+                requireOTR23(protocolVersion);
                 final byte[] dhPublicKeyEncrypted = input.readData();
                 final byte[] dhPublicKeyHash = input.readData();
                 return new DHCommitMessage(protocolVersion, dhPublicKeyHash, dhPublicKeyEncrypted, senderInstanceTag,
                     recipientInstanceTag);
             case MESSAGE_DHKEY:
+                requireOTR23(protocolVersion);
                 final DHPublicKey dhPublicKey = input.readDHPublicKey();
                 return new DHKeyMessage(protocolVersion, dhPublicKey, senderInstanceTag, recipientInstanceTag);
             case MESSAGE_REVEALSIG: {
+                requireOTR23(protocolVersion);
                 final byte[] revealedKey = input.readData();
                 final byte[] xEncrypted = input.readData();
                 final byte[] xEncryptedMac = input.readMac();
@@ -85,15 +88,26 @@ public final class EncodedMessageParser {
                     senderInstanceTag, recipientInstanceTag);
             }
             case MESSAGE_SIGNATURE: {
+                requireOTR23(protocolVersion);
                 final byte[] xEncryted = input.readData();
                 final byte[] xEncryptedMac = input.readMac();
                 return new SignatureMessage(protocolVersion, xEncryted, xEncryptedMac, senderInstanceTag,
                     recipientInstanceTag);
             }
             default:
-                // NOTE by gp: aren't we being a little too harsh here? Passing the message as a plaintext
-                // message to the host application shouldn't hurt anybody.
                 throw new ProtocolException("Illegal message type.");
+        }
+    }
+
+    private static void requireOTR23(final int version) throws ProtocolException {
+        if (version != Session.OTRv.TWO && version != Session.OTRv.THREE) {
+            throw new ProtocolException("The protocol version is illegal for this type of message. Expected protocol version 2 or 3.");
+        }
+    }
+
+    private static void requireOTR4(final int version) throws ProtocolException {
+        if (version != Session.OTRv.FOUR) {
+            throw new ProtocolException("The protocol version is illegal for this type of message. Expected protocol version 4.");
         }
     }
 }

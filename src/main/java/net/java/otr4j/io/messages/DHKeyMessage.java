@@ -20,6 +20,7 @@ import javax.crypto.interfaces.DHPublicKey;
  * @author George Politis
  * @author Danny van Heumen
  */
+// FIXME add exact protocol version checks for OTRv2/OTRv3 message types.
 public final class DHKeyMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_DHKEY = 0x0a;

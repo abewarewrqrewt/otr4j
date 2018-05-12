@@ -1005,8 +1005,8 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nonnull
     private AbstractEncodedMessage respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
                                                @Nonnull final String queryTag) throws OtrException {
-        if (!OTRv.ALL.contains(version)) {
-            throw new OtrException("Only allowed versions are: 2, 3");
+        if (!OTRv.SUPPORTED.contains(version)) {
+            throw new OtrException("Unsupported OTR version encountered.");
         }
         // Ensure we initiate authentication state in master session, as we
         // copy the master session's authentication state upon receiving a
