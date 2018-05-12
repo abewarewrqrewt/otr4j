@@ -66,10 +66,32 @@ public final class SecurityParameters4 {
     }
 
     /**
-     * Initialization component, indicating whether our own keys will be preinitialized with pre-defined generated ECDH
+     * Initialization component, indicating whether our own keys will be pre-initialized with pre-defined generated ECDH
      * and DH keys, or theirs.
+     * <p>
+     * More information on this enum can be found in the OTRv4 spec. OURS/THEIRS refers to which side of the
+     * double-ratchet will be initialized with especially crafted values such that the ratchet is initialized with
+     * knowledge shared between the two parties. Refer to the "Interactive DAKE overview" and subsequent sections for
+     * more information.
+     * <p>
+     * At the time of writing, the instructions were:
+     * <pre>
+     * Generates an ephemeral ECDH key pair, as defined in Generating ECDH and DH keys, but instead of using a random
+     * value r, it will use : r = KDF_1(0x13 || K, 57). Securely replaces our_ecdh with the outputs.
+     * Generates an ephemeral DH key pair, as defined in Generating ECDH and DH keys, but instead of using a random
+     * value r, it will use : r = KDF_1(0x14 || K, 80). Securely replaces our_dh with the outputs.
+     * </pre>
      */
     public enum Component {
-        OURS, THEIRS
+        /**
+         * OURS, indicating that we are representing <i>Bob</i>, as defined in the spec. This means that we will
+         * generate crafted values for our (i.e. Bob's) side of the double ratchet.
+         */
+        OURS,
+        /**
+         * THEIRS, indicating that we are representing <i>Alice</i>, as defined in the spec. This means that we will
+         * generate crafted values for Bob's side (i.e. not our side) of the double ratchet.
+         */
+        THEIRS
     }
 }
