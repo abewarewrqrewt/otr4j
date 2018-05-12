@@ -31,16 +31,20 @@ public interface AuthState {
     /**
      * Initiate a new AKE. Caller needs to send
      *
-     * @param context Context.
-     * @param version Initiate AKE using protocol version.
-     * @param receiverTag The receiver's instance tag. This tag may not always
-     * be known at this time, therefore providing ZERO TAG is also valid.
-     * @param queryTag The query tag that was originally received.
+     * @param context        Context.
+     * @param version        Initiate AKE using protocol version.
+     * @param receiverTag    The receiver's instance tag. This tag may not always
+     *                       be known at this time, therefore providing ZERO TAG is also valid.
+     * @param queryTag       The query tag that was originally received.
+     * @param theirContactID Other party's contact ID as defined/used in the underlying infrastructure, like a JID in
+     *                       XMPP.
+     * @param ourContactID   Our own contact ID as defined/used in the underlying infrastructure, like a JID in XMPP.
      * @return Returns DHCommitMessage with which we can initiate an AKE.
      */
     @Nonnull
     AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag,
-                                    @Nonnull final String queryTag);
+                                    @Nonnull final String queryTag, @Nonnull final String theirContactID,
+                                    @Nonnull final String ourContactID);
 
     /**
      * Handle AKE message.

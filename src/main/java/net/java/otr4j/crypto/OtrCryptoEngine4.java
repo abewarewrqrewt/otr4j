@@ -83,6 +83,7 @@ public final class OtrCryptoEngine4 {
      * @param outputSize Expected output size.
      * @return Returns byte-array with KDF_1 result.
      */
+    // TODO Consider moving all USAGE_ID_... constants to OtrCryptoEngine4 class, instead of having them distributed over all classes that use `kdf1`.
     public static byte[] kdf1(@Nonnull final byte[] input, final int outputSize) {
         final byte[] result = new byte[outputSize];
         kdf1(result, 0, input, outputSize);

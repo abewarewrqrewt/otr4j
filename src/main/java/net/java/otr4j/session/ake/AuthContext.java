@@ -61,6 +61,7 @@ public interface AuthContext {
      *
      * @return Returns long-term key pair.
      */
+    // FIXME do we need this method or was this a mistake, as this information can be retrieved through UserProfile?
     @Nonnull
     KeyPair getLocalKeyPair();
 

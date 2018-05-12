@@ -37,15 +37,16 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
-                                           @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
+                                           @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag,
+                                           @Nonnull final String theirContactID, @Nonnull final String ourContactID) {
         // TODO use constants for comparing versions?
-        if (version < 2 || version > 4) {
+        if (version < Session.OTRv.TWO || version > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
         }
-        if (version == 2 || version == 3) {
+        if (version == Session.OTRv.TWO || version == Session.OTRv.THREE) {
             return initiateVersion3(context, version, receiverTag);
         }
-        return initiateVersion4(context, receiverTag, queryTag);
+        return initiateVersion4(context, receiverTag, queryTag, theirContactID, ourContactID);
     }
 
     @Nonnull
@@ -86,16 +87,17 @@ abstract class AbstractAuthState implements AuthState {
 
     @Nonnull
     private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag,
-                                             @Nonnull final String queryTag) {
-        final ECDHKeyPair y = ECDHKeyPair.generate(context.secureRandom());
-        final DHKeyPair b = DHKeyPair.generate(context.secureRandom());
+                                             @Nonnull final String queryTag, @Nonnull final String theirContactID,
+                                             @Nonnull final String ourContactID) {
+        final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
+        final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
         final int senderTagValue = context.getSenderInstanceTag().getValue();
         final int receiverTagValue = receiverTag.getValue();
         final UserProfile profile = context.getUserProfile();
         final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, profile,
-            y.getPublicKey(), b.getPublicKey());
-        context.setState(new StateAwaitingAuthR(y, b, queryTag));
+            ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
+        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, theirContactID, ourContactID));
         return message;
     }
 }
