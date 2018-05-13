@@ -14,7 +14,7 @@ import static net.java.otr4j.io.SerializationUtils.writeUserProfile;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
- * Mysterious value t that is used in phi (shared session) identification of OTRv4.
+ * Mysterious value t that is used in phi (shared session state) identification of OTRv4.
  */
 public final class MysteriousT4 {
 

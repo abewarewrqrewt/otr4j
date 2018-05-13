@@ -502,7 +502,8 @@ public final class SerializationUtils {
     }
 
     /**
-     * Generate the shared session state that is used in verification the session consistency.
+     * Generate the shared session state that is used in verification the session consistency. Note that this part is
+     * basically only concerned with the correct serialization of provided data.
      *
      * @param senderInstanceTag   The sender instance tag.
      * @param receiverInstanceTag The receiver instance tag.
