@@ -32,6 +32,7 @@ public final class ECDHKeyPair {
     private static final byte[] SIGNING_CONTEXT_C = new byte[0];
 
     private final BigInteger secretKey;
+
     private final Point publicKey;
 
     ECDHKeyPair(@Nonnull final BigInteger secretKey) {
