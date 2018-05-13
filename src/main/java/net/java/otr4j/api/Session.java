@@ -159,6 +159,7 @@ public interface Session {
      * instance tag.
      *
      * @param tag receiver instance tag
+     * @throws java.util.NoSuchElementException In case instance tag cannot be found.
      */
     void setOutgoingSession(@Nonnull final InstanceTag tag);
 

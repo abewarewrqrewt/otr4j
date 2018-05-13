@@ -103,7 +103,6 @@ public final class OtrCryptoEngine4 {
      * @param offset     The offset position to start writing to the destination byte array.
      * @param input      The input data to KDF_1.
      */
-    // TODO Consider adding parameter for usage ID, as all usages of kdf1 concatenate the single byte usage ID manually right now.
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
