@@ -7,7 +7,7 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
 import static net.java.otr4j.crypto.DHKeyPair.checkPublicKey;
-import static net.java.otr4j.crypto.DHKeyPairs.verifyPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
 import static org.bouncycastle.math.ec.ECConstants.TWO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,32 +66,32 @@ public class DHKeyPairTest {
     @Test
     public void testVerifyPublicKey() throws OtrCryptoException {
         final DHKeyPair keypair = DHKeyPair.generate(RANDOM);
-        verifyPublicKey(keypair.getPublicKey());
+        verifyDHPublicKey(keypair.getPublicKey());
     }
 
     @Test(expected = NullPointerException.class)
     public void testVerifyNull() throws OtrCryptoException {
-        verifyPublicKey(null);
+        verifyDHPublicKey(null);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testVerifyIllegalPublicKeyTooLow() throws OtrCryptoException {
-        verifyPublicKey(ONE);
+        verifyDHPublicKey(ONE);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testVerifyIllegalPublicKeyTooHigh() throws OtrCryptoException {
-        verifyPublicKey(MODULUS);
+        verifyDHPublicKey(MODULUS);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testVerifyIllegalPublicKeyTooHigh2() throws OtrCryptoException {
-        verifyPublicKey(MODULUS.subtract(ONE));
+        verifyDHPublicKey(MODULUS.subtract(ONE));
     }
 
     @Test
     public void testVerifyPublicKeyLowerBound() throws OtrCryptoException {
-        verifyPublicKey(TWO);
+        verifyDHPublicKey(TWO);
     }
 
     @Test(expected = NullPointerException.class)

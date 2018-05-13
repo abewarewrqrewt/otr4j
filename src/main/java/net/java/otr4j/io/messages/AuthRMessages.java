@@ -10,7 +10,7 @@ import nl.dannyvanheumen.joldilocks.Point;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
-import static net.java.otr4j.crypto.DHKeyPairs.verifyPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 
@@ -54,7 +54,7 @@ public final class AuthRMessages {
         // FIXME Check that the receiver's instance tag matches your sender's instance tag.
         UserProfiles.validate(message.getUserProfile());
         verifyECDHPublicKey(message.getX());
-        verifyPublicKey(message.getA());
+        verifyDHPublicKey(message.getA());
         final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
             receiverECDHPublicKey, message.getA(), receiverDHPublicKey, senderTag, receiverTag, queryTag,
             senderAccountID, receiverAccountID);

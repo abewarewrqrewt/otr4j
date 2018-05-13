@@ -6,7 +6,7 @@ import net.java.otr4j.profile.UserProfiles;
 
 import javax.annotation.Nonnull;
 
-import static net.java.otr4j.crypto.DHKeyPairs.verifyPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.profile.UserProfiles.validate;
 
@@ -27,6 +27,6 @@ public final class IdentityMessages {
         }
         validate(message.getUserProfile());
         verifyECDHPublicKey(message.getY());
-        verifyPublicKey(message.getB());
+        verifyDHPublicKey(message.getB());
     }
 }
