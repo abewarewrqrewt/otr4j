@@ -12,7 +12,7 @@ import java.security.PrivateKey;
 import java.util.Date;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
-import static net.java.otr4j.io.SerializationUtils.writeUserProfile;
+import static net.java.otr4j.io.SerializationUtils.writeClientProfile;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -30,9 +30,9 @@ public final class UserProfiles {
      *
      * @param profile The user profile.
      */
-    public static void sign(@Nonnull final UserProfile profile, @Nonnull final PrivateKey dsaPrivateKey,
+    public static void sign(@Nonnull final ClientProfile profile, @Nonnull final PrivateKey dsaPrivateKey,
                             @Nonnull final BigInteger ecSecretKey) {
-        final byte[] m = writeUserProfile(profile);
+        final byte[] m = writeClientProfile(profile);
         final byte[] transitionalSignature = OtrCryptoEngine.sign(m, dsaPrivateKey);
         final byte[] userProfileSignature = Ed448.sign(ecSecretKey, new byte[0], concatenate(m, transitionalSignature));
         // FIXME continue implementation.
@@ -44,7 +44,7 @@ public final class UserProfiles {
      *
      * @param profile user profile to be verified.
      */
-    public static void validate(@Nonnull final UserProfile profile) throws InvalidUserProfileException,
+    public static void validate(@Nonnull final ClientProfile profile) throws InvalidUserProfileException,
         OtrCryptoException {
 
         // Verify that the User Profile has not expired.

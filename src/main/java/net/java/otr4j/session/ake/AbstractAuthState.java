@@ -17,7 +17,7 @@ import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -92,7 +92,7 @@ abstract class AbstractAuthState implements AuthState {
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
         final int senderTagValue = context.getSenderInstanceTag().getValue();
         final int receiverTagValue = receiverTag.getValue();
-        final UserProfile profile = context.getUserProfile();
+        final ClientProfile profile = context.getUserProfile();
         final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, profile,
             ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
         context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag));

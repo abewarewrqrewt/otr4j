@@ -3,7 +3,7 @@ package net.java.otr4j.io.messages;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,7 @@ public final class AuthIMessages {
     }
 
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
-                                @Nonnull final UserProfile ourProfile, @Nonnull final UserProfile profileBob,
+                                @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile profileBob,
                                 @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a,
                                 @Nonnull final BigInteger b, @Nonnull final InstanceTag senderTag,
                                 @Nonnull final InstanceTag receiverTag, @Nonnull final String senderAccountID,

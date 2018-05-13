@@ -3,7 +3,7 @@ package net.java.otr4j.io.messages;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -21,7 +21,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_AUTH_R = 0x91;
 
-    private final UserProfile userProfile;
+    private final ClientProfile clientProfile;
 
     private final Point x;
 
@@ -30,10 +30,10 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     private final OtrCryptoEngine4.Sigma sigma;
 
     public AuthRMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
-                 @Nonnull final UserProfile userProfile, @Nonnull final Point x, @Nonnull final BigInteger a,
-                 @Nonnull final OtrCryptoEngine4.Sigma sigma) {
+                        @Nonnull final ClientProfile clientProfile, @Nonnull final Point x, @Nonnull final BigInteger a,
+                        @Nonnull final OtrCryptoEngine4.Sigma sigma) {
         super(requireAtLeast(Session.OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
-        this.userProfile = requireNonNull(userProfile);
+        this.clientProfile = requireNonNull(clientProfile);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
         this.sigma = requireNonNull(sigma);
@@ -45,8 +45,8 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     }
 
     @Nonnull
-    public UserProfile getUserProfile() {
-        return userProfile;
+    public ClientProfile getClientProfile() {
+        return clientProfile;
     }
 
     @Nonnull
@@ -67,7 +67,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     @Override
     public void write(@Nonnull final OtrOutputStream writer) throws IOException {
         super.write(writer);
-        writer.writeUserProfile(this.userProfile);
+        writer.writeClientProfile(this.clientProfile);
         writer.writePoint(this.x);
         writer.writeBigInt(this.a);
         this.sigma.writeTo(writer);

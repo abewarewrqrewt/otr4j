@@ -23,6 +23,6 @@ public class OtrOutputStreamTest {
     @Test(expected = NullPointerException.class)
     public void testWriteNullUserProfile() throws IOException {
         final OtrOutputStream otr = new OtrOutputStream(out);
-        otr.writeUserProfile(null);
+        otr.writeClientProfile(null);
     }
 }

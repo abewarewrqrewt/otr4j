@@ -10,7 +10,7 @@ package net.java.otr4j.io;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.bouncycastle.util.BigIntegers;
 
@@ -175,13 +175,13 @@ public final class OtrOutputStream extends FilterOutputStream implements
     }
 
     /**
-     * Write User Profile to stream.
+     * Write Client Profile to stream.
      *
-     * @param profile the user profile to serialize.
-     * @throws IOException Thrown in case of failure to serialize a part of the user profile.
+     * @param profile the client profile to serialize.
+     * @throws IOException Thrown in case of failure to serialize a part of the client profile.
      */
     // FIXME write unit tests.
-    public void writeUserProfile(@Nonnull final UserProfile profile) throws IOException {
+    public void writeClientProfile(@Nonnull final ClientProfile profile) throws IOException {
         writeInt(profile.getIdentifier());
         writeInt(profile.getInstanceTag());
         writePoint(profile.getLongTermPublicKey());
@@ -196,6 +196,6 @@ public final class OtrOutputStream extends FilterOutputStream implements
         writeLong(profile.getExpirationUnixTime());
         writeData(profile.getTransitionalSignature());
         writeData(profile.getProfileSignature());
-        throw new UnsupportedOperationException("TODO implement writing user profile");
+        throw new UnsupportedOperationException("TODO implement writing client profile");
     }
 }

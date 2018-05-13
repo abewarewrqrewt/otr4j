@@ -10,7 +10,7 @@ import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.MysteriousT4;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.profile.UserProfiles;
 import nl.dannyvanheumen.joldilocks.KeyPair;
 
@@ -69,18 +69,18 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
-        final UserProfile ourUserProfile = context.getUserProfile();
+        final ClientProfile ourClientProfile = context.getUserProfile();
         final KeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
-        validate(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
+        validate(message, ourClientProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
         // FIXME consider if we should put 'setState' call in finally to ensure execution.
         context.setState(StateInitial.empty());
-        final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
+        final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
             this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
-            ourLongTermKeyPair.getPublicKey(), message.getUserProfile().getLongTermPublicKey(),
+            ourLongTermKeyPair.getPublicKey(), message.getClientProfile().getLongTermPublicKey(),
             this.ecdhKeyPair.getPublicKey(), t);
         // FIXME sender and receiver are probably swapped for the "sending AUTH_I message" use case.
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);

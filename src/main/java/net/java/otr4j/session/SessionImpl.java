@@ -31,7 +31,7 @@ import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
@@ -862,7 +862,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nonnull
     @Override
-    public UserProfile getUserProfile() {
+    public ClientProfile getUserProfile() {
         // FIXME delegate request to OtrEngineHost.
         throw new UnsupportedOperationException("To be implemented");
     }

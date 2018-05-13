@@ -1,7 +1,7 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -10,7 +10,7 @@ import java.math.BigInteger;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.io.SerializationUtils.generatePhi;
 import static net.java.otr4j.io.SerializationUtils.writeMpi;
-import static net.java.otr4j.io.SerializationUtils.writeUserProfile;
+import static net.java.otr4j.io.SerializationUtils.writeClientProfile;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -35,14 +35,14 @@ public final class MysteriousT4 {
     }
 
     @Nonnull
-    public static byte[] encode(@Nonnull final UserProfile profileAlice, @Nonnull final UserProfile profileBob,
+    public static byte[] encode(@Nonnull final ClientProfile profileAlice, @Nonnull final ClientProfile profileBob,
                                 @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a,
                                 @Nonnull final BigInteger b, @Nonnull final InstanceTag senderInstanceTag,
                                 @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final String queryTag,
                                 @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
-        final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE, writeUserProfile(profileBob)),
+        final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE, writeClientProfile(profileBob)),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
-        final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, writeUserProfile(profileAlice)),
+        final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, writeClientProfile(profileAlice)),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] yEncoded = y.encode();
         final byte[] xEncoded = x.encode();

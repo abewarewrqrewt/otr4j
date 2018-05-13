@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 
 /**
  * Context required for authentication state implementations.
@@ -114,7 +114,7 @@ public interface AuthContext {
      * @return Returns the user profile for this client.
      */
     @Nonnull
-    UserProfile getUserProfile();
+    ClientProfile getUserProfile();
 
     /**
      * InteractionFailedException indicates an error happened while interacting

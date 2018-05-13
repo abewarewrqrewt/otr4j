@@ -24,7 +24,7 @@ public final class IdentityMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
-        UserProfiles.validate(message.getUserProfile());
+        UserProfiles.validate(message.getClientProfile());
         verifyECDHPublicKey(message.getY());
         verifyDHPublicKey(message.getB());
     }

@@ -19,7 +19,7 @@ import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.MysteriousT4;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.profile.UserProfiles;
 
 import javax.annotation.Nonnull;
@@ -114,24 +114,24 @@ public final class StateInitial extends AbstractAuthState {
         throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
 
         validate(message);
-        final UserProfile profile = context.getUserProfile();
+        final ClientProfile profile = context.getUserProfile();
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
         final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
-        final byte[] t = MysteriousT4.encode(profile, message.getUserProfile(), x.getPublicKey(), message.getY(),
+        final byte[] t = MysteriousT4.encode(profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
             a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
             this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
-        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, message.getUserProfile().getLongTermPublicKey(),
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, message.getClientProfile().getLongTermPublicKey(),
             profile.getLongTermPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getUserProfile(), x.getPublicKey(), a.getPublicKey(),
             sigma);
         context.setState(new StateAwaitingAuthI(queryTag, x, a, message.getY(), message.getB(), profile,
-            message.getUserProfile(), context.getSenderInstanceTag(), context.getReceiverInstanceTag()));
+            message.getClientProfile(), context.getSenderInstanceTag(), context.getReceiverInstanceTag()));
         return authRMessage;
     }
 }

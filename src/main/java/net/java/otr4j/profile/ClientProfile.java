@@ -10,10 +10,9 @@ import java.util.Collection;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
-// TODO Ensure that shared pre-key expires at same time as user profile.
 // FIXME Should we also allow versions 4 AND 3 when no transitional signature (OTRv3 long term public key) is provided?
-// FIXME rename class to ClientProfile.
-public final class UserProfile {
+// FIXME add support for multiple long-term keys with definite order. (Older keys before newer keys)
+public final class ClientProfile {
 
     /**
      * User Profile's identifier.
@@ -50,9 +49,9 @@ public final class UserProfile {
      */
     private final byte[] profileSignature;
 
-    public UserProfile(final int identifier, final int instanceTag, @Nonnull final Point longTermPublicKey,
-                       @Nonnull final Collection<Integer> versions, final long expirationUnixTime,
-                       @Nonnull final byte[] profileSignature, @Nullable final byte[] transitionalSignature) {
+    public ClientProfile(final int identifier, final int instanceTag, @Nonnull final Point longTermPublicKey,
+                         @Nonnull final Collection<Integer> versions, final long expirationUnixTime,
+                         @Nonnull final byte[] profileSignature, @Nullable final byte[] transitionalSignature) {
         this.identifier = identifier;
         this.instanceTag = instanceTag;
         this.longTermPublicKey = requireNonNull(longTermPublicKey);

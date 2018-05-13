@@ -7,7 +7,7 @@ import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -41,9 +41,9 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     private final BigInteger b;
 
-    private final UserProfile ourProfile;
+    private final ClientProfile ourProfile;
 
-    private final UserProfile profileBob;
+    private final ClientProfile profileBob;
 
     private final InstanceTag senderTag;
 
@@ -51,7 +51,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     StateAwaitingAuthI(@Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
                        @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
-                       @Nonnull final UserProfile ourProfile, @Nonnull final UserProfile profileBob,
+                       @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile profileBob,
                        @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag) {
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);

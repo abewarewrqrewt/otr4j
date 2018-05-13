@@ -1,7 +1,7 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.crypto.ECDHKeyPair;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.profile.UserProfileTestUtils;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
@@ -20,10 +20,10 @@ public class IdentityMessageTest {
     @Test
     public void testConstructIdentityMessage() {
         final ECDHKeyPair ecKeyPair = ECDHKeyPair.generate(RANDOM);
-        final UserProfile userProfile = profileTestUtils.createTransitionalUserProfile();
+        final ClientProfile clientProfile = profileTestUtils.createTransitionalUserProfile();
         final Point y = basePoint();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(4, 0, 0, userProfile, y, b);
+        new IdentityMessage(4, 0, 0, clientProfile, y, b);
     }
 
     @Test(expected = NullPointerException.class)
@@ -35,23 +35,23 @@ public class IdentityMessageTest {
 
     @Test(expected = NullPointerException.class)
     public void testConstructIdentityMessageNullY() {
-        final UserProfile userProfile = profileTestUtils.createUserProfile();
+        final ClientProfile clientProfile = profileTestUtils.createUserProfile();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(4, 0, 0, userProfile, null, b);
+        new IdentityMessage(4, 0, 0, clientProfile, null, b);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructIdentityMessageNullB() {
-        final UserProfile userProfile = profileTestUtils.createUserProfile();
+        final ClientProfile clientProfile = profileTestUtils.createUserProfile();
         final Point y = basePoint();
-        new IdentityMessage(4, 0, 0, userProfile, y, null);
+        new IdentityMessage(4, 0, 0, clientProfile, y, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructTooLowProtocolVersion() {
-        final UserProfile userProfile = profileTestUtils.createUserProfile();
+        final ClientProfile clientProfile = profileTestUtils.createUserProfile();
         final Point y = basePoint();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(3, 0, 0, userProfile, y, b);
+        new IdentityMessage(3, 0, 0, clientProfile, y, b);
     }
 }

@@ -17,7 +17,7 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
-import net.java.otr4j.profile.UserProfile;
+import net.java.otr4j.profile.ClientProfile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -188,15 +188,15 @@ public final class SerializationUtils {
         }
     }
 
-    // FIXME write unit tests for writeUserProfile utility.
+    // FIXME write unit tests for writeClientProfile utility.
     @Nonnull
-    public static byte[] writeUserProfile(@Nonnull final UserProfile profile) {
+    public static byte[] writeClientProfile(@Nonnull final ClientProfile profile) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
              final OtrOutputStream otrOut = new OtrOutputStream(out)) {
-            otrOut.writeUserProfile(profile);
+            otrOut.writeClientProfile(profile);
             return out.toByteArray();
         } catch (final IOException e) {
-            throw new IllegalStateException("Unexpected failure while serializing user profile.", e);
+            throw new IllegalStateException("Unexpected failure while serializing client profile.", e);
         }
     }
 
