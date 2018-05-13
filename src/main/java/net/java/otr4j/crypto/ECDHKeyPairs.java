@@ -20,6 +20,7 @@ public final class ECDHKeyPairs {
      * @param point The ECDH public key.
      */
     public static void verifyECDHPublicKey(@Nonnull final Point point) throws OtrCryptoException {
+        // FIXME is there anything more to testing correct ECDH public key? (Check for identity?)
         if (!Ed448.contains(point)) {
             throw new OtrCryptoException("ECDH public key is not on curve Ed448-Goldilocks.");
         }
