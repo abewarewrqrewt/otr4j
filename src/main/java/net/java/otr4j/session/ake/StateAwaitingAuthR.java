@@ -71,7 +71,6 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final UserProfile ourUserProfile = context.getUserProfile();
-        // FIXME awaiting questions of whether public keys need verification, erring on side of caution for now. (https://github.com/otrv4/otrv4/issues/145)
         verifyECDHPublicKey(message.getX());
         verifyPublicKey(message.getA());
         verify(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
