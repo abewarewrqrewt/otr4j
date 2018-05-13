@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 
 import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
-import static net.java.otr4j.profile.UserProfiles.validate;
 
 public final class IdentityMessages {
 
@@ -16,7 +15,7 @@ public final class IdentityMessages {
         // No need to instantiate utility class.
     }
 
-    public static void verify(@Nonnull final IdentityMessage message) throws UserProfiles.InvalidUserProfileException,
+    public static void validate(@Nonnull final IdentityMessage message) throws UserProfiles.InvalidUserProfileException,
         OtrCryptoException {
 
         if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {
@@ -25,7 +24,7 @@ public final class IdentityMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
-        validate(message.getUserProfile());
+        UserProfiles.validate(message.getUserProfile());
         verifyECDHPublicKey(message.getY());
         verifyDHPublicKey(message.getB());
     }

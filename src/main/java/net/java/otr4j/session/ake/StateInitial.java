@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
-import static net.java.otr4j.io.messages.IdentityMessages.verify;
+import static net.java.otr4j.io.messages.IdentityMessages.validate;
 
 /**
  * Initial AKE state, a.k.a. NONE.
@@ -113,7 +113,7 @@ public final class StateInitial extends AbstractAuthState {
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
         throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
 
-        verify(message);
+        validate(message);
         final UserProfile profile = context.getUserProfile();
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
