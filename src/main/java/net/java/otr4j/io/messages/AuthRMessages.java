@@ -13,10 +13,9 @@ import java.math.BigInteger;
 import static net.java.otr4j.crypto.DHKeyPairs.verifyPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
-import static net.java.otr4j.profile.UserProfiles.validate;
 
 /**
- * Utility class for AuthRMessage. (AUTH_R messages)
+ * Utility class for AuthRMessage. (Auth-R messages)
  */
 // FIXME write unit tests
 public final class AuthRMessages {
@@ -26,7 +25,7 @@ public final class AuthRMessages {
     }
 
     /**
-     * Verify an AuthRMessage, using additional parameters to supply additional required data.
+     * Validate an AuthRMessage, using additional parameters to provide required data.
      *
      * @param message               the AUTH_R message
      * @param ourUserProfile        our UserProfile instance
@@ -41,21 +40,19 @@ public final class AuthRMessages {
      * @throws OtrCryptoException                       In case any cryptographic verification failed, such as ephemeral
      *                                                  public keys or the ring signature.
      */
-    // FIXME should be renamed to 'validate' as it uses outside information to validate against expectations.
-    public static void verify(@Nonnull final AuthRMessage message, @Nonnull final UserProfile ourUserProfile,
-                              @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
-                              @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
-                              @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
-                              @Nonnull final String queryTag) throws UserProfiles.InvalidUserProfileException, OtrCryptoException {
+    public static void validate(@Nonnull final AuthRMessage message, @Nonnull final UserProfile ourUserProfile,
+                                @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
+                                @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
+                                @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
+                                @Nonnull final String queryTag) throws UserProfiles.InvalidUserProfileException, OtrCryptoException {
         if (message.getType() != AuthRMessage.MESSAGE_AUTH_R) {
-            throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");
+            throw new IllegalStateException("Auth-R message should not have any other type than 0x91.");
         }
         if (message.protocolVersion != Session.OTRv.FOUR) {
-            throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
+            throw new IllegalStateException("Auth-R message should not have any other protocol version than 4.");
         }
         // FIXME Check that the receiver's instance tag matches your sender's instance tag.
-        validate(message.getUserProfile());
-        // TODO maybe these public key verifications are redundant, but checking just-in-case, until I know for certain. (They're not documented in the spec.)
+        UserProfiles.validate(message.getUserProfile());
         verifyECDHPublicKey(message.getX());
         verifyPublicKey(message.getA());
         final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),

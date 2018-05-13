@@ -33,6 +33,8 @@ public final class AuthIMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
+        // We don't do extra verification of points here, as these have been verified upon receiving the Identity
+        // message. This was the previous message that was sent. So we can assume points are trustworthy.
         final byte[] t = MysteriousT4.encode(ourProfile, profileBob, x, y, a, b, senderTag, receiverTag, queryTag,
             senderAccountID, receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."

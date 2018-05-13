@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPairs.verifyPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
-import static net.java.otr4j.io.messages.AuthRMessages.verify;
+import static net.java.otr4j.io.messages.AuthRMessages.validate;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 
 /**
@@ -73,7 +73,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final UserProfile ourUserProfile = context.getUserProfile();
         verifyECDHPublicKey(message.getX());
         verifyPublicKey(message.getA());
-        verify(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
+        validate(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
         // FIXME consider if we should put 'setState' call in finally to ensure execution.
