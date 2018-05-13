@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
@@ -912,12 +913,9 @@ final class SessionImpl implements Session, Context, AuthContext {
      * Set the outgoing session to the session corresponding to the specified
      * Receiver instance tag. Setting the outgoing session is only allowed for
      * master sessions.
-     *
-     * @param tag The receiver instance tag.
-     * @return Returns true upon successfully setting the outgoing instance.
      */
     @Override
-    public boolean setOutgoingSession(@Nonnull final InstanceTag tag) {
+    public void setOutgoingSession(@Nonnull final InstanceTag tag) {
         if (masterSession != this) {
             // Only master session can set the outgoing session.
             throw new IllegalStateException("Only master session is allowed to set/change the outgoing session instance.");
@@ -927,18 +925,15 @@ final class SessionImpl implements Session, Context, AuthContext {
             // Instance tag belongs to master session, set master session as
             // outgoing session.
             outgoingSession = this;
-            OtrEngineListenerUtil.outgoingSessionChanged(
-                    OtrEngineListenerUtil.duplicate(listeners), sessionId);
-            return true;
+            OtrEngineListenerUtil.outgoingSessionChanged(OtrEngineListenerUtil.duplicate(listeners), sessionId);
+            return;
         }
         final SessionImpl newActiveSession = slaveSessions.get(tag);
         if (newActiveSession == null) {
-            return false;
+            throw new NoSuchElementException("no slave session exists with provided instance tag");
         }
         outgoingSession = newActiveSession;
-        OtrEngineListenerUtil.outgoingSessionChanged(
-                OtrEngineListenerUtil.duplicate(listeners), sessionId);
-        return true;
+        OtrEngineListenerUtil.outgoingSessionChanged(OtrEngineListenerUtil.duplicate(listeners), sessionId);
     }
 
     /**

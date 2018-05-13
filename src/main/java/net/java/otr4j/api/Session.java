@@ -159,12 +159,8 @@ public interface Session {
      * instance tag.
      *
      * @param tag receiver instance tag
-     * @return Returns true in case of successfully setting outgoing instance,
-     * or false in case of failure to set. Failure happens in case receiver
-     * instance cannot be found.
      */
-    // TODO modify method signature to return void. (boolean is returned but never checked anyways)
-    boolean setOutgoingSession(@Nonnull final InstanceTag tag);
+    void setOutgoingSession(@Nonnull final InstanceTag tag);
 
     /**
      * Transform message text to prepare for sending which includes possible
