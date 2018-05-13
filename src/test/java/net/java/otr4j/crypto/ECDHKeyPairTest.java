@@ -1,5 +1,7 @@
 package net.java.otr4j.crypto;
 
+import nl.dannyvanheumen.joldilocks.Point;
+import nl.dannyvanheumen.joldilocks.Points;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -9,6 +11,7 @@ import java.security.SecureRandom;
 import static net.java.otr4j.crypto.ECDHKeyPair.generate;
 import static nl.dannyvanheumen.joldilocks.Ed448.sign;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @SuppressWarnings("ConstantConditions")
@@ -92,5 +95,27 @@ public class ECDHKeyPairTest {
         final byte[] message = "Hello Internet".getBytes(StandardCharsets.US_ASCII);
         final byte[] signature = new byte[]{124, -104, 13, -97, 19, 69, 35, 94, -60, -124, 53, 69, 35, 20, -88, -63, -39, 89, -100, 44, 102, 69, 6, -97, -3, 44, -104, -42, -5, -116, 67, 22, 20, -54, 96, -82, 77, 83, -90, 37, 117, 37, -44, -86, -121, 90, -21, -101, 54, -85, 58, 29, 10, -62, 24, 63, -128, 16, -21, 104, -119, -81, 1, 93, 88, 122, 25, 81, -44, 110, 116, -72, -77, 104, 1, -65, -20, 127, -8, 114, -90, -9, -52, 102, 56, 35, -45, -41, 81, -42, -31, 48, 76, -64, 113, -124, 108, 98, 24, -31, -123, -14, -64, -39, -105, 45, -4, -56, 95, 50, 101, 97, 10, 0, 13};
         ECDHKeyPair.verify(keypair.getPublicKey(), message, signature);
+    }
+
+    @Test
+    public void testGetSecretKey() {
+        final ECDHKeyPair keypair = new ECDHKeyPair(sk);
+        assertEquals(sk, keypair.getSecretKey());
+    }
+
+    @Test
+    public void testSharedSecretIsSymmetric() throws OtrCryptoException {
+        final ECDHKeyPair keypair1 = ECDHKeyPair.generate(RANDOM);
+        final ECDHKeyPair keypair2 = ECDHKeyPair.generate(RANDOM);
+        final Point shared1 = keypair1.generateSharedSecret(keypair2.getPublicKey());
+        final Point shared2 = keypair2.generateSharedSecret(keypair1.getPublicKey());
+        assertEquals(shared1.x(), shared2.x());
+        assertEquals(shared1.y(), shared2.y());
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testSharedSecretDoesNotAcceptIdentity() throws OtrCryptoException {
+        final ECDHKeyPair keypair1 = ECDHKeyPair.generate(RANDOM);
+        keypair1.generateSharedSecret(Points.identity());
     }
 }
