@@ -16,6 +16,8 @@ import net.java.otr4j.profile.UserProfiles;
 import javax.annotation.Nonnull;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.DHKeyPairs.verifyPublicKey;
+import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.AuthRMessages.verify;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
@@ -52,6 +54,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         this.queryTag = requireNonNull(queryTag);
     }
 
+    @Nonnull
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
         if (!(message instanceof AuthRMessage)) {
@@ -61,15 +64,20 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         return handleAuthRMessage(context, (AuthRMessage) message);
     }
 
+    @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
         throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final UserProfile ourUserProfile = context.getUserProfile();
+        // FIXME awaiting questions of whether public keys need verification, erring on side of caution for now. (https://github.com/otrv4/otrv4/issues/145)
+        verifyECDHPublicKey(message.getX());
+        verifyPublicKey(message.getA());
         verify(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
+        // FIXME consider if we should put 'setState' call in finally to ensure execution.
         context.setState(StateInitial.empty());
         final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
