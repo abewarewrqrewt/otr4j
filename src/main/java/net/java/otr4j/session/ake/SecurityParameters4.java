@@ -5,7 +5,6 @@ import net.java.otr4j.crypto.ECDHKeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
-
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
@@ -31,6 +30,7 @@ public final class SecurityParameters4 {
      * @param x                       Their ECDH public key.
      * @param a                       Their DH public key.
      */
+    // TODO consider renaming x and a to something less wrong. x and a are specific for alice, however SecurityParameters4 is used for both parties.
     SecurityParameters4(@Nonnull final Component initializationComponent, @Nonnull final ECDHKeyPair ecdhKeyPair,
                         @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a) {
         this.initializationComponent = requireNonNull(initializationComponent);

@@ -18,6 +18,7 @@ import static net.java.otr4j.profile.UserProfiles.validate;
 /**
  * Utility class for AuthRMessage. (AUTH_R messages)
  */
+// FIXME write unit tests
 public final class AuthRMessages {
 
     private AuthRMessages() {
@@ -40,6 +41,7 @@ public final class AuthRMessages {
      * @throws OtrCryptoException                       In case any cryptographic verification failed, such as ephemeral
      *                                                  public keys or the ring signature.
      */
+    // FIXME should be renamed to 'validate' as it uses outside information to validate against expectations.
     public static void verify(@Nonnull final AuthRMessage message, @Nonnull final UserProfile ourUserProfile,
                               @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
                               @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,

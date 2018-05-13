@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -12,6 +13,7 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
 /**
  * OTRv4 Interactive DAKE Auth I Message.
  */
+// FIXME write unit tests
 public final class AuthIMessage extends AbstractEncodedMessage {
 
     private static final int MESSAGE_AUTH_I = 0x88;
@@ -20,7 +22,7 @@ public final class AuthIMessage extends AbstractEncodedMessage {
 
     public AuthIMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
                  @Nonnull final OtrCryptoEngine4.Sigma sigma) {
-        super(requireAtLeast(4, protocolVersion), senderInstance, recipientInstance);
+        super(requireAtLeast(Session.OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
         this.sigma = requireNonNull(sigma);
     }
 
