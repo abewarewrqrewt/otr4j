@@ -51,7 +51,7 @@ public final class AuthRMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Auth-R message should not have any other protocol version than 4.");
         }
-        // FIXME Check that the receiver's instance tag matches your sender's instance tag.
+        // FIXME Check that the receiver's instance tag matches your sender's instance tag. (Really needed? I would expect this to happen earlier.)
         UserProfiles.validate(message.getUserProfile());
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());

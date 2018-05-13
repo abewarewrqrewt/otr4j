@@ -118,12 +118,15 @@ public final class StateInitial extends AbstractAuthState {
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
+        final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();
+        // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
+        // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = MysteriousT4.encode(profile, message.getUserProfile(), x.getPublicKey(), message.getY(),
             a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
             this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
-        // FIXME we cannot yet set the exact order of public keys: H_b, H_a, Y
-        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, x, message.getUserProfile().getLongTermPublicKey(),
-            message.getY(), t);
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, message.getUserProfile().getLongTermPublicKey(),
+            profile.getLongTermPublicKey(), message.getY(), t);
+        // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getUserProfile(), x.getPublicKey(), a.getPublicKey(),
             sigma);

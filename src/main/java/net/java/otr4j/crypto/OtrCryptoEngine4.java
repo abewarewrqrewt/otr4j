@@ -159,17 +159,19 @@ public final class OtrCryptoEngine4 {
     /**
      * Ring signature generation. (RSig)
      *
-     * @param random A secure random instance.
-     * @param keypair ECDH key pair that corresponds to signature.
-     * @param A2 Other public key to be included in the signature.
-     * @param A3 Other public key to be included in the signature.
-     * @param m  The message for which the signature should be generated.
+     * @param random          A secure random instance.
+     * @param longTermKeyPair The long-term Ed448 key pair.
+     * @param A1              Other public key to be included in the signature.
+     * @param A2              Other public key to be included in the signature.
+     * @param A3              Other public key to be included in the signature.
+     * @param m               The message for which the signature should be generated.
      */
     // FIXME write unit tests for ring signatures
     @Nonnull
-    public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final ECDHKeyPair keypair,
-                                 @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
-        if (!Ed448.contains(keypair.getPublicKey()) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
+    public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final KeyPair longTermKeyPair,
+                                 @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
+                                 @Nonnull final byte[] m) {
+        if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Valid points need to be on the curve.");
         }
         final BigInteger q = primeOrder();
@@ -191,7 +193,7 @@ public final class OtrCryptoEngine4 {
             buffer.write(USAGE_ID_RING_SIGNATURE);
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
-            keypair.getPublicKey().encodeTo(buffer);
+            A1.encodeTo(buffer);
             A2.encodeTo(buffer);
             A3.encodeTo(buffer);
             T1.encodeTo(buffer);
@@ -205,7 +207,7 @@ public final class OtrCryptoEngine4 {
         // "Compute c1 = c - c2 - c3 (mod q)."
         final BigInteger c1 = c.subtract(c2).subtract(c3).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final BigInteger r1 = t1.subtract(c1.multiply(keypair.getSecretKey())).mod(q);
+        final BigInteger r1 = t1.subtract(c1.multiply(longTermKeyPair.getPrivateKey())).mod(q);
         // "Send sigma = (c1, r1, c2, r2, c3, r3)."
         return new Sigma(c1, r1, c2, r2, c3, r3);
     }

@@ -854,6 +854,11 @@ final class SessionImpl implements Session, Context, AuthContext {
         return this.host.getLocalKeyPair(this.sessionState.getSessionID());
     }
 
+    @Override
+    public nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair() {
+        return this.host.getLongTermKeyPair(this.sessionState.getSessionID());
+    }
+
     @Nonnull
     @Override
     public UserProfile getUserProfile() {

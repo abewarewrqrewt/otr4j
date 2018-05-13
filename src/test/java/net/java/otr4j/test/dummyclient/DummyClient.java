@@ -346,6 +346,12 @@ public class DummyClient {
             return keypair;
         }
 
+        @Nonnull
+        @Override
+        public nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair(@Nonnull final SessionID sessionID) {
+            throw new UnsupportedOperationException("Not implemented yet. No support for OTRv4 in this dummy.");
+        }
+
         @Override
 		public OtrPolicy getSessionPolicy(@Nonnull SessionID ctx) {
 			return policy;

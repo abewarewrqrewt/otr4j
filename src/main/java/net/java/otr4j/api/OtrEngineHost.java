@@ -109,6 +109,16 @@ public interface OtrEngineHost extends SmpEngineHost {
     KeyPair getLocalKeyPair(@Nonnull SessionID sessionID);
 
     /**
+     * Request local long-term key pair from Engine Host. (OTRv4)
+     *
+     * @param sessionID the session ID
+     * @return Returns the local long-term Ed448-goldilocks key pair.
+     */
+    // TODO consider splitting this off into separate interface for OTRv4-related logic. That way we can easily recognize OTRv4-capable hosts.
+    @Nonnull
+    nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair(@Nonnull SessionID sessionID);
+
+    /**
      * Request local fingerprint in raw byte form.
      *
      * @param sessionID the session ID

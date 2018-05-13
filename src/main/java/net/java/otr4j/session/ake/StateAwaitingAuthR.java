@@ -12,12 +12,11 @@ import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.UserProfile;
 import net.java.otr4j.profile.UserProfiles;
+import nl.dannyvanheumen.joldilocks.KeyPair;
 
 import javax.annotation.Nonnull;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
-import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.AuthRMessages.validate;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
@@ -71,8 +70,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final UserProfile ourUserProfile = context.getUserProfile();
-        verifyECDHPublicKey(message.getX());
-        verifyDHPublicKey(message.getA());
+        final KeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         validate(message, ourUserProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
@@ -81,8 +79,9 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final byte[] t = MysteriousT4.encode(message.getUserProfile(), ourUserProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
             this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
-        final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), this.ecdhKeyPair,
-            message.getUserProfile().getLongTermPublicKey(), message.getX(), t);
+        final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
+            ourLongTermKeyPair.getPublicKey(), message.getUserProfile().getLongTermPublicKey(),
+            this.ecdhKeyPair.getPublicKey(), t);
         // FIXME sender and receiver are probably swapped for the "sending AUTH_I message" use case.
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);
     }

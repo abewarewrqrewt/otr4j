@@ -77,13 +77,20 @@ public interface AuthContext {
     String getRemoteAccountID();
 
     /**
-     * Access to long-term key pair.
+     * Access to long-term key pair. (OTRv2/OTRv3)
      *
-     * @return Returns long-term key pair.
+     * @return Returns the long-term key pair.
      */
-    // FIXME do we need this method or was this a mistake, as this information can be retrieved through UserProfile?
     @Nonnull
     KeyPair getLocalKeyPair();
+
+    /**
+     * Access to the long-term Ed448-Goldilocks key pair. (OTRv4)
+     *
+     * @return Returns the long-term key pair.
+     */
+    // TODO think up a decent name for this, as not to confuse with the original OTRv2/OTRv3 local long-term key pair.
+    nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair();
 
     /**
      * Sender instance tag value.
