@@ -1,5 +1,6 @@
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.KeyPair;
@@ -14,6 +15,7 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
@@ -85,6 +87,7 @@ public final class OtrCryptoEngine4 {
      */
     // TODO Consider moving all USAGE_ID_... constants to OtrCryptoEngine4 class, instead of having them distributed over all classes that use `kdf1`.
     public static byte[] kdf1(@Nonnull final byte[] input, final int outputSize) {
+        requireAtLeast(0, outputSize);
         final byte[] result = new byte[outputSize];
         kdf1(result, 0, input, outputSize);
         return result;
@@ -102,6 +105,7 @@ public final class OtrCryptoEngine4 {
      */
     // TODO Consider adding parameter for usage ID, as all usages of kdf1 concatenate the single byte usage ID manually right now.
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
+        requireAtLeast(0, outputSize);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(OTR4_PREFIX, 0, OTR4_PREFIX.length);
         digest.update(input, 0, input.length);
@@ -119,8 +123,7 @@ public final class OtrCryptoEngine4 {
     @Nonnull
     public static BigInteger hashToScalar(@Nonnull final byte[] d) {
         // "Compute h = KDF_1(d, 64) as an unsigned value, little-endian."
-        final byte[] hashedD = new byte[HASH_TO_SCALAR_LENGTH_BYTES];
-        kdf1(hashedD, 0, d, HASH_TO_SCALAR_LENGTH_BYTES);
+        final byte[] hashedD = kdf1(d, HASH_TO_SCALAR_LENGTH_BYTES);
         final BigInteger h = decodeLittleEndian(hashedD);
         // "Return h (mod q)"
         return h.mod(primeOrder());
@@ -146,8 +149,8 @@ public final class OtrCryptoEngine4 {
      * @param point EdDSA public key, represented as Point.
      * @throws OtrCryptoException Thrown in case point is illegal, i.e. does not lie on the Ed448-Goldilocks curve.
      */
-    // FIXME write unit tests.
     public static void verifyEdDSAPublicKey(@Nonnull final Point point) throws OtrCryptoException {
+        // FIXME should we do more input verification here? Somehow it seems unlikely that identity is considered a EdDSA key pair.
         if (!Ed448.contains(point)) {
             throw new OtrCryptoException("Illegal public key.");
         }
@@ -162,6 +165,7 @@ public final class OtrCryptoEngine4 {
      * @param A3 Other public key to be included in the signature.
      * @param m  The message for which the signature should be generated.
      */
+    // FIXME write unit tests for ring signatures
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final ECDHKeyPair keypair,
                                  @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
@@ -226,6 +230,7 @@ public final class OtrCryptoEngine4 {
      * @param sigma The sigma containing the ring signature components.
      * @param m     The message for which the signature was generated.
      */
+    // FIXME write unit tests for ring signatures
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
                                   @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
@@ -266,6 +271,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Data structure that captures all related data for 'sigma' in the Ring Signature.
      */
+    // FIXME write unit tests
     public static final class Sigma {
         private final BigInteger c1;
         private final BigInteger r1;
@@ -285,14 +291,19 @@ public final class OtrCryptoEngine4 {
         }
 
         /**
-         * Parse a raw data message and extract sigma.
+         * Read from OTR input stream and parse raw OTR data to extract sigma.
          *
-         * @param data the message
+         * @param in the OTR input stream
          * @return Returns sigma as parsed from the data.
          */
-        public static Sigma parse(@Nonnull final byte[] data) {
-            // FIXME implement parsing of sigma value in raw data message.
-            throw new UnsupportedOperationException("To be implemented.");
+        public static Sigma readFrom(@Nonnull final OtrInputStream in) throws IOException {
+            final BigInteger c1 = decodeLittleEndian(in.readData());
+            final BigInteger r1 = decodeLittleEndian(in.readData());
+            final BigInteger c2 = decodeLittleEndian(in.readData());
+            final BigInteger r2 = decodeLittleEndian(in.readData());
+            final BigInteger c3 = decodeLittleEndian(in.readData());
+            final BigInteger r3 = decodeLittleEndian(in.readData());
+            return new Sigma(c1, r1, c2, r2, c3, r3);
         }
 
         /**

@@ -1,5 +1,8 @@
 package net.java.otr4j.crypto;
 
+import nl.dannyvanheumen.joldilocks.KeyPair;
+import nl.dannyvanheumen.joldilocks.Points;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -11,6 +14,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateEdDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
@@ -103,6 +107,31 @@ public class OtrCryptoEngine4Test {
         assertArrayEquals(expected, dst);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testKdf1NegativeOutputSize() {
+        final byte[] input = "helloworld".getBytes(US_ASCII);
+        final byte[] dst = new byte[32];
+        kdf1(dst, 0, input, -1);
+    }
+
+    @Test
+    public void testKdf1ReturnValue() {
+        final byte[] input = "helloworld".getBytes(US_ASCII);
+        final byte[] expected = new byte[32];
+        kdf1(expected, 0, input, 32);
+        assertArrayEquals(expected, kdf1(input, 32));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testKdf1ReturnValueNullInput() {
+        kdf1(null, 32);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testKdf1ReturnValueBadOutputSize() {
+        kdf1("helloworld".getBytes(US_ASCII), -1);
+    }
+
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void testKdf1WithOffsetTooSmall() {
         final byte[] input = "helloworld".getBytes(US_ASCII);
@@ -130,5 +159,17 @@ public class OtrCryptoEngine4Test {
     @Test
     public void testGenerateEdDSAKeyPair() {
         assertNotNull(generateEdDSAKeyPair(RANDOM));
+    }
+
+    @Ignore("This test is most likely correct and verification is missing logic. Disabled for now for further research.")
+    @Test(expected = OtrCryptoException.class)
+    public void testVerifyEdDSAPublicKeyOne() throws OtrCryptoException {
+        verifyEdDSAPublicKey(Points.identity());
+    }
+
+    @Test
+    public void testVerifyEdDSAPublicKeyLegit() throws OtrCryptoException {
+        final KeyPair keypair = generateEdDSAKeyPair(RANDOM);
+        verifyEdDSAPublicKey(keypair.getPublicKey());
     }
 }
