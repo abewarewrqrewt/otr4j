@@ -511,9 +511,9 @@ public final class SerializationUtils {
      * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
      * @return Returns generate Phi value.
      */
-    // FIXME write unit tests.
+    // FIXME is use of UTF-8 for contact IDs confirmed? (https://github.com/otrv4/otrv4/issues/137)
     @Nonnull
-    public static byte[] generatePhi(final long senderInstanceTag, final long receiverInstanceTag,
+    public static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag,
                                      @Nonnull final String queryTag, @Nonnull final String senderContactID,
                                      @Nonnull final String receiverContactID) {
         final byte[] queryTagBytes = queryTag.getBytes(UTF8);
@@ -521,13 +521,12 @@ public final class SerializationUtils {
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
              final OtrOutputStream otrout = new OtrOutputStream(out)) {
-            // FIXME write sender instance tag
-            // FIXME write receiver instance tag
+            otrout.writeInt(senderInstanceTag);
+            otrout.writeInt(receiverInstanceTag);
             otrout.writeData(queryTagBytes);
             otrout.writeData(senderIDBytes);
             otrout.writeData(receiverIDBytes);
-            throw new UnsupportedOperationException("Incomplete implementation, needs finishing.");
-            //return out.toByteArray();
+            return out.toByteArray();
         } catch (final IOException e) {
             throw new IllegalStateException("Failed to generate Phi.", e);
         }
