@@ -357,9 +357,8 @@ public final class OtrCryptoEngine4 {
          * Write sigma to provided OtrOutputStream.
          *
          * @param out The output stream.
-         * @throws IOException Thrown in case of failure to write to output stream.
          */
-        public void writeTo(@Nonnull final OtrOutputStream out) throws IOException {
+        public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeData(encodeLittleEndian(this.c1));
             out.writeData(encodeLittleEndian(this.r1));
             out.writeData(encodeLittleEndian(this.c2));

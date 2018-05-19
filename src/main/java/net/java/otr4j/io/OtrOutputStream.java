@@ -17,97 +17,106 @@ import org.bouncycastle.util.BigIntegers;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.FilterOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.io.SerializationUtils.UTF8;
+import static net.java.otr4j.io.SerializationUtils.ASCII;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
-public final class OtrOutputStream extends FilterOutputStream implements SerializationConstants {
+public final class OtrOutputStream implements SerializationConstants, Closeable {
 
-    public OtrOutputStream(@Nonnull final OutputStream out) {
-        super(requireNonNull(out));
+    private final ByteArrayOutputStream out;
+
+    public OtrOutputStream() {
+        this.out = new ByteArrayOutputStream();
     }
 
-    private void writeNumber(final int value, final int length) throws IOException {
-        final byte[] b = new byte[length];
-        for (int i = 0; i < length; i++) {
-            final int offset = (b.length - 1 - i) * 8;
-            b[i] = (byte) ((value >>> offset) & 0xFF);
+    public OtrOutputStream(@Nonnull final ByteArrayOutputStream out) {
+        this.out = requireNonNull(out);
+    }
+
+    @Override
+    public void close() {
+        try {
+            this.out.close();
+        } catch (final IOException e) {
+            throw new IllegalStateException("ByteArrayOutputStream should never generate an IOException on close.", e);
         }
-        write(b);
     }
 
-    public void writeBigInt(@Nonnull final BigInteger bi) throws IOException {
+    @Nonnull
+    public byte[] toByteArray() {
+        return this.out.toByteArray();
+    }
+
+    public void writeBigInt(@Nonnull final BigInteger bi) {
         final byte[] b = BigIntegers.asUnsignedByteArray(bi);
         writeData(b);
     }
 
-    public void writeByte(final int b) throws IOException {
+    public void writeByte(final int b) {
         writeNumber(b, TYPE_LEN_BYTE);
     }
 
-    public void writeData(@Nullable final byte[] b) throws IOException {
+    public void writeData(@Nullable final byte[] b) {
         final int len = b == null ? 0 : b.length;
         writeNumber(len, DATA_LEN);
         if (len > 0) {
-            write(b);
+            this.out.write(b, 0, b.length);
         }
     }
 
-    public void writeInt(final int i) throws IOException {
+    public void writeInt(final int i) {
         writeNumber(i, TYPE_LEN_INT);
 
     }
 
-    public void writeShort(final int s) throws IOException {
+    public void writeShort(final int s) {
         writeNumber(s, TYPE_LEN_SHORT);
-
     }
 
     // FIXME write unit tests for writeLong.
-    public void writeLong(final long value) throws IOException {
+    public void writeLong(final long value) {
         final byte[] b = new byte[TYPE_LEN_LONG];
         for (int i = 0; i < TYPE_LEN_LONG; i++) {
             final int offset = (b.length - 1 - i) * 8;
             b[i] = (byte) ((value >>> offset) & 0xFF);
         }
-        write(b);
+        this.out.write(b, 0, b.length);
     }
 
-    public void writeMac(@Nonnull final byte[] mac) throws IOException {
+    public void writeMac(@Nonnull final byte[] mac) {
         if (mac.length != TYPE_LEN_MAC) {
             throw new IllegalArgumentException();
         }
-
-        write(mac);
+        this.out.write(mac, 0, mac.length);
     }
 
-    public void writeCtr(@Nullable final byte[] ctr) throws IOException {
+    // FIXME investigate if we can make this Nonnull for all cases!
+    public void writeCtr(@Nullable final byte[] ctr) {
         if (ctr == null || ctr.length < 1) {
             return;
         }
-
         int i = 0;
         while (i < TYPE_LEN_CTR && i < ctr.length) {
-            write(ctr[i]);
+            this.out.write(ctr[i]);
             i++;
         }
     }
 
-    public void writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) throws IOException {
+    public void writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) {
         final byte[] b = BigIntegers.asUnsignedByteArray(dhPublicKey.getY());
         writeData(b);
     }
 
-    public void writePublicKey(@Nonnull final PublicKey pubKey) throws IOException {
+    public void writePublicKey(@Nonnull final PublicKey pubKey) {
         if (!(pubKey instanceof DSAPublicKey)) {
             throw new UnsupportedOperationException(
                     "Key types other than DSA are not supported at the moment.");
@@ -125,36 +134,35 @@ public final class OtrOutputStream extends FilterOutputStream implements Seriali
 
     }
 
-    public void writeTlvData(@Nullable final byte[] b) throws IOException {
+    public void writeTlvData(@Nullable final byte[] b) {
         final int len = b == null ? 0 : b.length;
         writeNumber(len, TLV_LEN);
         if (len > 0) {
-            write(b);
+            this.out.write(b, 0, b.length);
         }
     }
 
-    public void writeSignature(@Nonnull final byte[] signature, @Nonnull final PublicKey pubKey)
-            throws IOException {
+    public void writeSignature(@Nonnull final byte[] signature, @Nonnull final PublicKey pubKey) {
         if (!pubKey.getAlgorithm().equals("DSA")) {
             throw new UnsupportedOperationException();
         }
-        out.write(signature);
+        this.out.write(signature, 0, signature.length);
     }
 
-    public void writeMysteriousX(@Nonnull final SignatureX x) throws IOException {
+    public void writeMysteriousX(@Nonnull final SignatureX x) {
         writePublicKey(x.longTermPublicKey);
         writeInt(x.dhKeyID);
         writeSignature(x.signature, x.longTermPublicKey);
     }
 
-    public void writeMysteriousM(@Nonnull final SignatureM m) throws IOException {
+    public void writeMysteriousM(@Nonnull final SignatureM m) {
         writeBigInt(m.localPubKey.getY());
         writeBigInt(m.remotePubKey.getY());
         writePublicKey(m.localLongTermPubKey);
         writeInt(m.keyPairID);
     }
 
-    public void writeMysteriousT(@Nonnull final MysteriousT t) throws IOException {
+    public void writeMysteriousT(@Nonnull final MysteriousT t) {
         writeShort(t.protocolVersion);
         writeByte(t.messageType);
         if (t.protocolVersion == 3) {
@@ -169,7 +177,7 @@ public final class OtrOutputStream extends FilterOutputStream implements Seriali
         writeData(t.encryptedMessage);
     }
 
-    public void writePoint(@Nonnull final Point p) throws IOException {
+    public void writePoint(@Nonnull final Point p) {
         writeData(p.encode());
     }
 
@@ -177,10 +185,9 @@ public final class OtrOutputStream extends FilterOutputStream implements Seriali
      * Write Client Profile to stream.
      *
      * @param profile the client profile to serialize.
-     * @throws IOException Thrown in case of failure to serialize a part of the client profile.
      */
     // FIXME write unit tests.
-    public void writeClientProfile(@Nonnull final ClientProfile profile) throws IOException {
+    public void writeClientProfile(@Nonnull final ClientProfile profile) {
         writeInt(profile.getIdentifier());
         writeInt(profile.getInstanceTag());
         writePoint(profile.getLongTermPublicKey());
@@ -196,5 +203,14 @@ public final class OtrOutputStream extends FilterOutputStream implements Seriali
         writeData(profile.getTransitionalSignature());
         writeData(profile.getProfileSignature());
         throw new UnsupportedOperationException("TODO implement writing client profile");
+    }
+
+    private void writeNumber(final int value, final int length) {
+        final byte[] b = new byte[length];
+        for (int i = 0; i < length; i++) {
+            final int offset = (b.length - 1 - i) * 8;
+            b[i] = (byte) ((value >>> offset) & 0xFF);
+        }
+        this.out.write(b, 0, b.length);
     }
 }

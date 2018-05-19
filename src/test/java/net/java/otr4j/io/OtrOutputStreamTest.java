@@ -3,7 +3,6 @@ package net.java.otr4j.io;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 @SuppressWarnings("ConstantConditions")
 public class OtrOutputStreamTest {
@@ -21,7 +20,7 @@ public class OtrOutputStreamTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testWriteNullUserProfile() throws IOException {
+    public void testWriteNullUserProfile() {
         final OtrOutputStream otr = new OtrOutputStream(out);
         otr.writeClientProfile(null);
     }

@@ -9,12 +9,10 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.io.OtrOutputStream;
 
-import java.io.IOException;
+import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
 import java.util.Arrays;
 import java.util.Objects;
-import javax.annotation.Nonnull;
-
-import javax.crypto.interfaces.DHPublicKey;
 
 /**
  * OTRv2 encrypted data message.
@@ -124,7 +122,7 @@ public final class DataMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+    public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
         writer.writeByte(this.flags);
         writer.writeInt(this.senderKeyID);

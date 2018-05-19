@@ -266,14 +266,11 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Append tlvs
         if (!tlvs.isEmpty()) {
             out.write((byte) 0x00);
-
             try (final OtrOutputStream eoos = new OtrOutputStream(out)) {
                 for (TLV tlv : tlvs) {
                     eoos.writeShort(tlv.getType());
                     eoos.writeTlvData(tlv.getValue());
                 }
-            } catch (final IOException ex) {
-                throw new OtrException(ex);
             }
         }
 

@@ -21,8 +21,14 @@
 
 package net.java.otr4j.session.smp;
 
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrOutputStream;
+import net.java.otr4j.io.SerializationUtils;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -30,13 +36,6 @@ import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.io.OtrInputStream;
-import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.io.SerializationUtils;
 
 public final class SM {
 
@@ -83,16 +82,13 @@ public final class SM {
     }
 
     @Nonnull
-    static byte[] serialize(@Nonnull final BigInteger[] ints) throws SMException {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeInt(ints.length);
+    static byte[] serialize(@Nonnull final BigInteger[] ints) {
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeInt(ints.length);
             for (final BigInteger i : ints) {
-                oos.writeBigInt(i);
+                out.writeBigInt(i);
             }
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new SMException("cannot serialize bigints", ex);
         }
     }
 

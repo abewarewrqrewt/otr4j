@@ -5,7 +5,6 @@ import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.Integers.requireAtLeast;
@@ -37,7 +36,7 @@ public final class AuthIMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+    public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
         this.sigma.writeTo(writer);
     }

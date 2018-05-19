@@ -7,7 +7,6 @@ import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
@@ -65,7 +64,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+    public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
         writer.writeClientProfile(this.clientProfile);
         writer.writePoint(this.x);

@@ -111,60 +111,45 @@ public final class SerializationUtils {
 
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureX x) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeMysteriousX(x);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeMysteriousX(x);
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
     }
 
     // Mysterious M IO.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureM m) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeMysteriousM(m);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeMysteriousM(m);
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
     }
 
     // Mysterious T IO.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final MysteriousT t) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeMysteriousT(t);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeMysteriousT(t);
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
     }
 
     // Basic IO.
     @Nonnull
     public static byte[] writeData(@Nullable final byte[] b) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeData(b);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeData(b);
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
     }
 
     // BigInteger IO.
     @Nonnull
     public static byte[] writeMpi(@Nonnull final BigInteger bigInt) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeBigInt(bigInt);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeBigInt(bigInt);
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
     }
 
@@ -179,24 +164,18 @@ public final class SerializationUtils {
     // Public Key IO.
     @Nonnull
     public static byte[] writePublicKey(@Nonnull final PublicKey pubKey) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writePublicKey(pubKey);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writePublicKey(pubKey);
             return out.toByteArray();
-        } catch (final IOException ex) {
-            throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
         }
     }
 
     // FIXME write unit tests for writeClientProfile utility.
     @Nonnull
     public static byte[] writeClientProfile(@Nonnull final ClientProfile profile) {
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream otrOut = new OtrOutputStream(out)) {
-            otrOut.writeClientProfile(profile);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeClientProfile(profile);
             return out.toByteArray();
-        } catch (final IOException e) {
-            throw new IllegalStateException("Unexpected failure while serializing client profile.", e);
         }
     }
 
@@ -258,14 +237,11 @@ public final class SerializationUtils {
                 writer.write(HEAD_QUERY_Q);
             }
         } else if (m instanceof AbstractEncodedMessage) {
-            final ByteArrayOutputStream o = new ByteArrayOutputStream();
-            try (final OtrOutputStream s = new OtrOutputStream(o)) {
-                ((AbstractEncodedMessage) m).write(s);
-            } catch (final IOException ex) {
-                throw new IllegalStateException("Unexpected error: failed to write message to ByteArrayOutputStream.", ex);
-            }
+            final OtrOutputStream out = new OtrOutputStream();
+            ((AbstractEncodedMessage) m).write(out);
+            out.close();
             writer.write(HEAD_ENCODED);
-            writer.write(new String(encode(o.toByteArray()), ASCII));
+            writer.write(new String(encode(out.toByteArray()), ASCII));
             writer.write(".");
         } else {
             throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());
@@ -519,16 +495,13 @@ public final class SerializationUtils {
         final byte[] queryTagBytes = queryTag.getBytes(UTF8);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
-             final OtrOutputStream otrout = new OtrOutputStream(out)) {
-            otrout.writeInt(senderInstanceTag);
-            otrout.writeInt(receiverInstanceTag);
-            otrout.writeData(queryTagBytes);
-            otrout.writeData(senderIDBytes);
-            otrout.writeData(receiverIDBytes);
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeInt(senderInstanceTag);
+            out.writeInt(receiverInstanceTag);
+            out.writeData(queryTagBytes);
+            out.writeData(senderIDBytes);
+            out.writeData(receiverIDBytes);
             return out.toByteArray();
-        } catch (final IOException e) {
-            throw new IllegalStateException("Failed to generate Phi.", e);
         }
     }
 }

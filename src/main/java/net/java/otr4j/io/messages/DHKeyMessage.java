@@ -9,10 +9,9 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.io.OtrOutputStream;
 
-import java.io.IOException;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
+import java.util.Objects;
 
 /**
  * OTRv2 AKE DH-Key message.
@@ -64,7 +63,7 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+    public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
         writer.writeDHPublicKey(this.dhPublicKey);
     }

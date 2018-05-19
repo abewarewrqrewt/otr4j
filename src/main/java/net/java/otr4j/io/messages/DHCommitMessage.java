@@ -9,10 +9,9 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.io.OtrOutputStream;
 
-import java.io.IOException;
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 
 /**
  * OTRv2 AKE DH-Commit message.
@@ -69,7 +68,7 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) throws IOException {
+    public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
         writer.writeData(this.dhPublicKeyEncrypted);
         writer.writeData(this.dhPublicKeyHash);
