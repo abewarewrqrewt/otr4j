@@ -9,12 +9,16 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
+import net.java.otr4j.io.messages.IdentityMessage;
+import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.profile.UserProfiles;
 import nl.dannyvanheumen.joldilocks.KeyPair;
 
 import javax.annotation.Nonnull;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
@@ -25,6 +29,13 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
  * OTRv4 AKE state AWAITING_AUTH_R.
  */
 final class StateAwaitingAuthR extends AbstractAuthState {
+
+    private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthR.class.getName());;
+
+    /**
+     * The identity message previously sent.
+     */
+    private final IdentityMessage previousMessage;
 
     /**
      * The query tag that triggered this AKE. The query tag is part of the shared session state common knowledge that is
@@ -47,20 +58,41 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
-                       @Nonnull final String queryTag) {
+                       @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
         this.queryTag = requireNonNull(queryTag);
+        this.previousMessage = requireNonNull(previousMessage);
     }
 
     @Nonnull
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
-        if (!(message instanceof AuthRMessage)) {
-            // FIXME what to do if unexpected message arrives?
-            throw new IllegalStateException("Unexpected message received.");
+        // FIXME need to verify protocol versions?
+        if (message instanceof IdentityMessage) {
+            return handleIdentityMessage(context, (IdentityMessage) message);
         }
-        return handleAuthRMessage(context, (AuthRMessage) message);
+        if (message instanceof AuthRMessage) {
+            return handleAuthRMessage(context, (AuthRMessage) message);
+        }
+        // OTR: "Ignore the message."
+        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+            message.getType());
+        return null;
+    }
+
+    @Nonnull
+    private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
+                                                         @Nonnull final IdentityMessage message)
+        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        IdentityMessages.validate(message);
+        if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
+            // No state change necessary, we assume that by resending other party will still follow existing protocol
+            // execution.
+            return this.previousMessage;
+        }
+        // Pretend we are still in initial state and handle Identity message accordingly.
+        return new StateInitial(this.queryTag).handle(context, message);
     }
 
     @Nonnull

@@ -93,6 +93,7 @@ import java.util.logging.Logger;
  * @author George Politis
  * @author Danny van Heumen
  */
+// TODO consider if things become easier if instance tags are managed inside the various state machines ...
 final class SessionImpl implements Session, Context, AuthContext {
 
     /**

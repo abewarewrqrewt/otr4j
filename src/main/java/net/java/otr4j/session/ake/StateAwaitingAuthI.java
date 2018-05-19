@@ -4,18 +4,27 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
+import net.java.otr4j.io.messages.AuthRMessage;
+import net.java.otr4j.io.messages.IdentityMessage;
+import net.java.otr4j.io.messages.IdentityMessages;
+import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.profile.UserProfiles;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import java.math.BigInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.AuthIMessages.validate;
 
 /**
@@ -24,6 +33,8 @@ import static net.java.otr4j.io.messages.AuthIMessages.validate;
  * This is a state in which Alice will be while awaiting Bob's final message.
  */
 final class StateAwaitingAuthI extends AbstractAuthState {
+
+    private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());
 
     private final String queryTag;
 
@@ -66,13 +77,40 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     @Nullable
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException {
-        if (!(message instanceof AuthIMessage)) {
-            // FIXME how to handle unexpected message type?
-            throw new IllegalStateException("Unexpected message type.");
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        // FIXME need to verify protocol versions?
+        if (message instanceof IdentityMessage) {
+            return handleIdentityMessage(context, (IdentityMessage) message);
         }
-        handleAuthIMessage(context, (AuthIMessage) message);
+        if (message instanceof AuthIMessage) {
+            handleAuthIMessage(context, (AuthIMessage) message);
+            return null;
+        }
+        // OTR: "Ignore the message."
+        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+            message.getType());
         return null;
+    }
+
+    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message) throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        IdentityMessages.validate(message);
+        final ClientProfile profile = context.getUserProfile();
+        final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();
+        // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
+        // Generate t value and calculate sigma based on known facts and generated t value.
+        final byte[] t = MysteriousT4.encode(profile, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
+            message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag(),
+            context.getReceiverInstanceTag(), this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
+        final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
+            message.getClientProfile().getLongTermPublicKey(), profile.getLongTermPublicKey(), message.getY(), t);
+        // Generate response message and transition into next state.
+        final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
+            context.getReceiverInstanceTag().getValue(), context.getUserProfile(), this.ourECDHKeyPair.getPublicKey(),
+            this.ourDHKeyPair.getPublicKey(), sigma);
+        context.setState(new StateAwaitingAuthI(queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
+            message.getB(), profile, message.getClientProfile(), context.getSenderInstanceTag(),
+            context.getReceiverInstanceTag()));
+        return authRMessage;
     }
 
     private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message) throws OtrCryptoException {

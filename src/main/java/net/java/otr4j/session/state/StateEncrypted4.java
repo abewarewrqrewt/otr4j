@@ -21,6 +21,7 @@ import static net.java.otr4j.crypto.SharedSecret4.initialize;
 /**
  * The OTRv4 ENCRYPTED message state.
  */
+// FIXME handle use cases of resending Auth-I and Auth-R message in case of receiving certain messages in duplicate. (However, how does resending help for long-established encrypted sessions?)
 final class StateEncrypted4 extends AbstractStateEncrypted {
 
     private final DoubleRatchet ratchet;

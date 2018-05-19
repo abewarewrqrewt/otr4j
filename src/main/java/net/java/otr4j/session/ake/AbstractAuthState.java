@@ -95,7 +95,7 @@ abstract class AbstractAuthState implements AuthState {
         final ClientProfile profile = context.getUserProfile();
         final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue, profile,
             ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag));
+        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, message));
         return message;
     }
 }
