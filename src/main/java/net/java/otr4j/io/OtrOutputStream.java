@@ -196,7 +196,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
             if (version < 0 || version > 9) {
                 throw new IllegalStateException("Negative and multi-digit version numbers are not supported.");
             }
-            versions = concatenate(versions, Integer.toString(version).getBytes(UTF8));
+            versions = concatenate(versions, Integer.toString(version).getBytes(ASCII));
         }
         writeData(versions);
         writeLong(profile.getExpirationUnixTime());

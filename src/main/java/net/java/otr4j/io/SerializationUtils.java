@@ -492,7 +492,7 @@ public final class SerializationUtils {
     public static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag,
                                      @Nonnull final String queryTag, @Nonnull final String senderContactID,
                                      @Nonnull final String receiverContactID) {
-        final byte[] queryTagBytes = queryTag.getBytes(UTF8);
+        final byte[] queryTagBytes = queryTag.getBytes(ASCII);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
         try (final OtrOutputStream out = new OtrOutputStream()) {
