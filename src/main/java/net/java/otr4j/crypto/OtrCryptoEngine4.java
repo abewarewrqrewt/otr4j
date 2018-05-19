@@ -161,14 +161,14 @@ public final class OtrCryptoEngine4 {
     /**
      * Encrypt a message using XSalsa20, given the specified IV and key.
      *
-     * @param key     the secret key used for encryption
-     * @param iv      the initialization vector (nonce)
-     * @param message the plaintext message to be encrypted
+     * @param key     the secret key used for encryption (32 bytes)
+     * @param iv      the initialization vector (nonce, 24 bytes)
+     * @param message the plaintext message to be encrypted (non-null)
      * @return Returns the encrypted content.
      */
-    // FIXME add unit tests.
     @Nonnull
     public static byte[] encrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] message) {
+        requireNonNull(message);
         final XSalsa20Engine engine = new XSalsa20Engine();
         engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length),
             requireNonNull(iv)));
@@ -182,14 +182,14 @@ public final class OtrCryptoEngine4 {
     /**
      * Decrypt a ciphertext using XSalsa20, given the specified IV and key.
      *
-     * @param key        the secret key used for decryption
-     * @param iv         the initialization vector (nonce)
-     * @param ciphertext te ciphertext to be decrypted
+     * @param key        the secret key used for decryption (32 bytes)
+     * @param iv         the initialization vector (nonce, 24 bytes)
+     * @param ciphertext te ciphertext to be decrypted (non-null)
      * @return Returns the decrypted (plaintext) content.
      */
-    // FIXME add unit tests.
     @Nonnull
     public static byte[] decrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] ciphertext) {
+        requireNonNull(ciphertext);
         final XSalsa20Engine engine = new XSalsa20Engine();
         engine.init(false, new ParametersWithIV(new KeyParameter(key, 0, key.length),
             requireNonNull(iv)));

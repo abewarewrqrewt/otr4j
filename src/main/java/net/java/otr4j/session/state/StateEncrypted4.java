@@ -1,6 +1,5 @@
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DoubleRatchet;
@@ -12,7 +11,6 @@ import net.java.otr4j.session.ake.SecurityParameters4;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
 
@@ -44,21 +42,21 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     @Nonnull
     @Override
-    public PublicKey getRemotePublicKey() throws IncorrectStateException {
+    public PublicKey getRemotePublicKey() {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 
     @Nonnull
     @Override
-    public byte[] getExtraSymmetricKey() throws IncorrectStateException {
+    public byte[] getExtraSymmetricKey() {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 
     @Nonnull
     @Override
-    public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
+    public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
@@ -72,26 +70,26 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws IOException, OtrException {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 
     @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 
     @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 
     @Nonnull
     @Override
-    public SmpTlvHandler getSmpTlvHandler() throws IncorrectStateException {
+    public SmpTlvHandler getSmpTlvHandler() {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }

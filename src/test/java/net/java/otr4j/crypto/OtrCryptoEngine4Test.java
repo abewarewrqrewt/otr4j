@@ -7,18 +7,23 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.FINGERPRINT_LENGTH_BYTES;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateEdDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
+import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 @SuppressWarnings("ConstantConditions")
@@ -171,5 +176,81 @@ public class OtrCryptoEngine4Test {
     public void testVerifyEdDSAPublicKeyLegit() throws OtrCryptoException {
         final KeyPair keypair = generateEdDSAKeyPair(RANDOM);
         verifyEdDSAPublicKey(keypair.getPublicKey());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testEncryptNullKey() {
+        encrypt(null, new byte[24], new byte[1]);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testEncryptNullIV() {
+        encrypt(new byte[24], null, new byte[1]);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testEncryptNullMessage() {
+        encrypt(new byte[24], new byte[24], null);
+    }
+
+    @Test
+    public void testEncryptMessage() {
+        final byte[] message = "hello world".getBytes(UTF8);
+        final byte[] key = new byte[32];
+        RANDOM.nextBytes(key);
+        final byte[] ciphertext = encrypt(key, new byte[24], message);
+        assertNotNull(ciphertext);
+        assertFalse(Arrays.equals(message, ciphertext));
+    }
+
+    @Test
+    public void testEncryptionAndDecryption() {
+        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] key = new byte[32];
+        RANDOM.nextBytes(key);
+        final byte[] iv = new byte[24];
+        RANDOM.nextBytes(iv);
+        final byte[] result = decrypt(key, iv, encrypt(key, iv, message));
+        assertArrayEquals(message, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEncryptInvalidKeySize() {
+        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] key = new byte[31];
+        RANDOM.nextBytes(key);
+        final byte[] iv = new byte[24];
+        RANDOM.nextBytes(iv);
+        encrypt(key, iv, message);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEncryptInvalidIVSize() {
+        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] key = new byte[32];
+        RANDOM.nextBytes(key);
+        final byte[] iv = new byte[23];
+        RANDOM.nextBytes(iv);
+        encrypt(key, iv, message);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDecryptInvalidKeySize() {
+        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] key = new byte[31];
+        RANDOM.nextBytes(key);
+        final byte[] iv = new byte[24];
+        RANDOM.nextBytes(iv);
+        encrypt(key, iv, message);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDecryptInvalidIVSize() {
+        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] key = new byte[32];
+        RANDOM.nextBytes(key);
+        final byte[] iv = new byte[23];
+        RANDOM.nextBytes(iv);
+        encrypt(key, iv, message);
     }
 }
