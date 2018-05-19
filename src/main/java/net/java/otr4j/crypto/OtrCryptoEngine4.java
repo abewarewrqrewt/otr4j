@@ -6,6 +6,9 @@ import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.KeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
+import org.bouncycastle.crypto.engines.XSalsa20Engine;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
@@ -153,6 +156,48 @@ public final class OtrCryptoEngine4 {
         if (!Ed448.contains(point)) {
             throw new OtrCryptoException("Illegal public key.");
         }
+    }
+
+    /**
+     * Encrypt a message using XSalsa20, given the specified IV and key.
+     *
+     * @param key     the secret key used for encryption
+     * @param iv      the initialization vector (nonce)
+     * @param message the plaintext message to be encrypted
+     * @return Returns the encrypted content.
+     */
+    // FIXME add unit tests.
+    @Nonnull
+    public static byte[] encrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] message) {
+        final XSalsa20Engine engine = new XSalsa20Engine();
+        engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length),
+            requireNonNull(iv)));
+        final byte[] out = new byte[message.length];
+        if (engine.processBytes(message, 0, message.length, out, 0) != message.length) {
+            throw new IllegalStateException("Expected to process exactly full size of the message.");
+        }
+        return out;
+    }
+
+    /**
+     * Decrypt a ciphertext using XSalsa20, given the specified IV and key.
+     *
+     * @param key        the secret key used for decryption
+     * @param iv         the initialization vector (nonce)
+     * @param ciphertext te ciphertext to be decrypted
+     * @return Returns the decrypted (plaintext) content.
+     */
+    // FIXME add unit tests.
+    @Nonnull
+    public static byte[] decrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] ciphertext) {
+        final XSalsa20Engine engine = new XSalsa20Engine();
+        engine.init(false, new ParametersWithIV(new KeyParameter(key, 0, key.length),
+            requireNonNull(iv)));
+        final byte[] out = new byte[ciphertext.length];
+        if (engine.processBytes(ciphertext, 0, ciphertext.length, out, 0) != ciphertext.length) {
+            throw new IllegalStateException("Expected to process exactly full size of the message.");
+        }
+        return out;
     }
 
     /**
