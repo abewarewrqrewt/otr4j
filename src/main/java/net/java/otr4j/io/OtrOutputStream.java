@@ -30,8 +30,7 @@ import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
-public final class OtrOutputStream extends FilterOutputStream implements
-        SerializationConstants {
+public final class OtrOutputStream extends FilterOutputStream implements SerializationConstants {
 
     public OtrOutputStream(@Nonnull final OutputStream out) {
         super(requireNonNull(out));
@@ -148,7 +147,7 @@ public final class OtrOutputStream extends FilterOutputStream implements
         writeSignature(x.signature, x.longTermPublicKey);
     }
 
-    public void writeMysteriousX(@Nonnull final SignatureM m) throws IOException {
+    public void writeMysteriousM(@Nonnull final SignatureM m) throws IOException {
         writeBigInt(m.localPubKey.getY());
         writeBigInt(m.remotePubKey.getY());
         writePublicKey(m.localLongTermPubKey);
@@ -188,7 +187,7 @@ public final class OtrOutputStream extends FilterOutputStream implements
         byte[] versions = new byte[0];
         for (final int version : profile.getVersions()) {
             if (version < 0 || version > 9) {
-                throw new IllegalStateException("Negative and double-digit version numbers are not supported.");
+                throw new IllegalStateException("Negative and multi-digit version numbers are not supported.");
             }
             versions = concatenate(versions, Integer.toString(version).getBytes(UTF8));
         }

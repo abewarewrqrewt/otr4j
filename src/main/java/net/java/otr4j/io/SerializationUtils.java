@@ -125,7 +125,7 @@ public final class SerializationUtils {
     public static byte[] toByteArray(@Nonnull final SignatureM m) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
              final OtrOutputStream oos = new OtrOutputStream(out)) {
-            oos.writeMysteriousX(m);
+            oos.writeMysteriousM(m);
             return out.toByteArray();
         } catch (final IOException ex) {
             throw new IllegalStateException("Unexpected error: failed to write to ByteArrayOutputStream.", ex);
@@ -512,7 +512,6 @@ public final class SerializationUtils {
      * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
      * @return Returns generate Phi value.
      */
-    // FIXME is use of UTF-8 for contact IDs confirmed? (https://github.com/otrv4/otrv4/issues/137)
     @Nonnull
     public static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag,
                                      @Nonnull final String queryTag, @Nonnull final String senderContactID,
