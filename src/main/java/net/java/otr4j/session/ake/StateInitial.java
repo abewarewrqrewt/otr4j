@@ -20,7 +20,7 @@ import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.UserProfiles;
+import net.java.otr4j.profile.ClientProfiles;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,7 +71,7 @@ public final class StateInitial extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
 
         if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
@@ -111,7 +111,7 @@ public final class StateInitial extends AbstractAuthState {
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
 
         validate(message);
         final ClientProfile profile = context.getUserProfile();

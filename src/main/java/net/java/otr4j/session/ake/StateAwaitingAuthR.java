@@ -13,7 +13,7 @@ import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.UserProfiles;
+import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.KeyPair;
 
 import javax.annotation.Nonnull;
@@ -67,7 +67,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nonnull
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -84,7 +84,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nonnull
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
                                                          @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
         IdentityMessages.validate(message);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
@@ -97,7 +97,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
-        throws OtrCryptoException, UserProfiles.InvalidUserProfileException {
+        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();

@@ -8,7 +8,7 @@ import java.util.HashSet;
 
 import static java.util.Collections.singleton;
 
-public final class UserProfileTestUtils {
+public final class ClientProfileTestUtils {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -19,7 +19,7 @@ public final class UserProfileTestUtils {
     /**
      * Construct user profile test utils with default parameters.
      */
-    public UserProfileTestUtils() {
+    public ClientProfileTestUtils() {
         this.longTermKeyPair = ECDHKeyPair.generate(RANDOM);
         // By default set expiration time of 1 day in future.
         this.expirationTime = System.currentTimeMillis() / 1000 + 86400;

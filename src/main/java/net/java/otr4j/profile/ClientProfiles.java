@@ -18,10 +18,11 @@ import static org.bouncycastle.util.Arrays.concatenate;
 /**
  * Utility class for user profiles.
  */
-// FIXME rename class to ClientProfiles
-public final class UserProfiles {
+public final class ClientProfiles {
 
-    private UserProfiles() {
+    private static final byte[] ED448_CONTEXT = new byte[0];
+
+    private ClientProfiles() {
         // No need to instantiate utility class.
     }
 
@@ -34,7 +35,7 @@ public final class UserProfiles {
                             @Nonnull final BigInteger ecSecretKey) {
         final byte[] m = writeClientProfile(profile);
         final byte[] transitionalSignature = OtrCryptoEngine.sign(m, dsaPrivateKey);
-        final byte[] userProfileSignature = Ed448.sign(ecSecretKey, new byte[0], concatenate(m, transitionalSignature));
+        final byte[] clientProfileSignature = Ed448.sign(ecSecretKey, ED448_CONTEXT, concatenate(m, transitionalSignature));
         // FIXME continue implementation.
         throw new UnsupportedOperationException("To be implemented");
     }
@@ -44,18 +45,18 @@ public final class UserProfiles {
      *
      * @param profile user profile to be verified.
      */
-    public static void validate(@Nonnull final ClientProfile profile) throws InvalidUserProfileException,
+    public static void validate(@Nonnull final ClientProfile profile) throws InvalidClientProfileException,
         OtrCryptoException {
 
         // Verify that the User Profile has not expired.
         final Date now = new Date();
         final Date expirationDate = new Date(profile.getExpirationUnixTime());
         if (!now.before(expirationDate)) {
-            throw new InvalidUserProfileException("User profile has expired.");
+            throw new InvalidClientProfileException("User profile has expired.");
         }
         // Verify that the Versions field contains the character "4".
         if (!profile.getVersions().contains(Session.OTRv.FOUR)) {
-            throw new InvalidUserProfileException("OTR version 4 is not included in user profile list of accepted OTR protocol versions.");
+            throw new InvalidClientProfileException("OTR version 4 is not included in user profile list of accepted OTR protocol versions.");
         }
         // Validate that the Public Shared Prekey and the Ed448 Public Key are on the curve Ed448-Goldilocks.
         verifyEdDSAPublicKey(profile.getLongTermPublicKey());
@@ -69,9 +70,9 @@ public final class UserProfiles {
     /**
      * Exception indicating an invalid user profile.
      */
-    public static final class InvalidUserProfileException extends OtrException {
+    public static final class InvalidClientProfileException extends OtrException {
 
-        private InvalidUserProfileException(@Nonnull final String message) {
+        private InvalidClientProfileException(@Nonnull final String message) {
             super(message);
         }
     }

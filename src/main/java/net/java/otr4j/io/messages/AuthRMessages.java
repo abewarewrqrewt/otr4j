@@ -4,7 +4,7 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.UserProfiles;
+import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -36,7 +36,7 @@ public final class AuthRMessages {
      * @param receiverECDHPublicKey the receiver's ECDH public key
      * @param receiverDHPublicKey   the receiver's DH public key
      * @param queryTag              the query tag
-     * @throws UserProfiles.InvalidUserProfileException In case user profile validation has failed.
+     * @throws ClientProfiles.InvalidClientProfileException In case user profile validation has failed.
      * @throws OtrCryptoException                       In case any cryptographic verification failed, such as ephemeral
      *                                                  public keys or the ring signature.
      */
@@ -44,7 +44,7 @@ public final class AuthRMessages {
                                 @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
                                 @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
                                 @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
-                                @Nonnull final String queryTag) throws UserProfiles.InvalidUserProfileException, OtrCryptoException {
+                                @Nonnull final String queryTag) throws ClientProfiles.InvalidClientProfileException, OtrCryptoException {
         if (message.getType() != AuthRMessage.MESSAGE_AUTH_R) {
             throw new IllegalStateException("Auth-R message should not have any other type than 0x91.");
         }
@@ -52,7 +52,7 @@ public final class AuthRMessages {
             throw new IllegalStateException("Auth-R message should not have any other protocol version than 4.");
         }
         // FIXME Check that the receiver's instance tag matches your sender's instance tag. (Really needed? I would expect this to happen earlier.)
-        UserProfiles.validate(message.getClientProfile());
+        ClientProfiles.validate(message.getClientProfile());
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
         final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfile, message.getX(),

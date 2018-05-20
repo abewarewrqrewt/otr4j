@@ -2,7 +2,7 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.UserProfileTestUtils;
+import net.java.otr4j.profile.ClientProfileTestUtils;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class IdentityMessageTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private static final UserProfileTestUtils profileTestUtils = new UserProfileTestUtils();
+    private static final ClientProfileTestUtils profileTestUtils = new ClientProfileTestUtils();
 
     @Test
     public void testConstructIdentityMessage() {
