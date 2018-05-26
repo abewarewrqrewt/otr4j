@@ -1,6 +1,7 @@
 package net.java.otr4j.crypto;
 
 import nl.dannyvanheumen.joldilocks.KeyPair;
+import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.FINGERPRINT_LENGTH_BYTES;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
@@ -252,5 +254,28 @@ public class OtrCryptoEngine4Test {
         final byte[] iv = new byte[23];
         RANDOM.nextBytes(iv);
         encrypt(key, iv, message);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testDecodePointNull() throws OtrCryptoException {
+        decodePoint(null);
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testDecodePointInvalidLengthLow() throws OtrCryptoException {
+        decodePoint(new byte[56]);
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testDecodePointInvalidLengthHigh() throws OtrCryptoException {
+        decodePoint(new byte[58]);
+    }
+
+    @Test
+    public void testDecodePoint() throws OtrCryptoException {
+        final ECDHKeyPair keypair = ECDHKeyPair.generate(RANDOM);
+        final Point point = decodePoint(keypair.getPublicKey().encode());
+        assertEquals(keypair.getPublicKey().x(), point.x());
+        assertEquals(keypair.getPublicKey().y(), point.y());
     }
 }

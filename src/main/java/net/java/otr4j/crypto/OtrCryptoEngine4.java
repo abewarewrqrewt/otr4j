@@ -5,6 +5,7 @@ import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.KeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
+import nl.dannyvanheumen.joldilocks.Points;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -155,6 +156,22 @@ public final class OtrCryptoEngine4 {
         // FIXME should we do more input verification here? Somehow it seems unlikely that identity is considered a EdDSA key pair.
         if (!Ed448.contains(point)) {
             throw new OtrCryptoException("Illegal public key.");
+        }
+    }
+
+    /**
+     * Decode an EdDSA public key from RFC 8032 byte-encoding.
+     *
+     * @param pointBytes The bytes representing point.
+     * @return Returns Point instance.
+     * @throws OtrCryptoException Throws in case of bytes contain invalid data.
+     */
+    @Nonnull
+    public static Point decodePoint(@Nonnull final byte[] pointBytes) throws OtrCryptoException {
+        try {
+            return Points.decode(pointBytes);
+        } catch (final Points.InvalidDataException ex) {
+            throw new OtrCryptoException("Invalid Ed448 point data.", ex);
         }
     }
 
