@@ -79,6 +79,8 @@ public class EncodedMessageParserTest {
         m.write(otrOutput);
         final byte[] message = output.toByteArray();
         for (int i = 0; i < message.length; i++) {
+            // Try every possible partial message by starting with 0 length message up to the full-length message and
+            // try every substring in between.
             final byte[] partial = copyOf(message, i);
             try (final OtrInputStream partialStream = new OtrInputStream(new ByteArrayInputStream(partial))) {
                 read(partialStream);

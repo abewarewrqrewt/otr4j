@@ -1,18 +1,25 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session;
+import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.profile.ClientProfile;
+import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.ProtocolException;
 
 import static net.java.otr4j.api.Session.OTRv.SUPPORTED;
+import static net.java.otr4j.io.messages.AuthIMessage.MESSAGE_AUTH_I;
+import static net.java.otr4j.io.messages.AuthRMessage.MESSAGE_AUTH_R;
 import static net.java.otr4j.io.messages.DHCommitMessage.MESSAGE_DH_COMMIT;
 import static net.java.otr4j.io.messages.DHKeyMessage.MESSAGE_DHKEY;
 import static net.java.otr4j.io.messages.DataMessage.MESSAGE_DATA;
+import static net.java.otr4j.io.messages.IdentityMessage.MESSAGE_IDENTITY;
 import static net.java.otr4j.io.messages.RevealSignatureMessage.MESSAGE_REVEALSIG;
 import static net.java.otr4j.io.messages.SignatureMessage.MESSAGE_SIGNATURE;
 
@@ -56,7 +63,7 @@ public final class EncodedMessageParser {
             recipientInstanceTag = 0;
         }
         switch (messageType) {
-            case MESSAGE_DATA:
+            case MESSAGE_DATA: {
                 final int flags = input.readByte();
                 final int senderKeyID = input.readInt();
                 final int recipientKeyID = input.readInt();
@@ -69,16 +76,19 @@ public final class EncodedMessageParser {
                 // therefore happens in a later stage. For now we return an unvalidated data message instance.
                 return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
                     encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
-            case MESSAGE_DH_COMMIT:
+            }
+            case MESSAGE_DH_COMMIT: {
                 requireOTR23(protocolVersion);
                 final byte[] dhPublicKeyEncrypted = input.readData();
                 final byte[] dhPublicKeyHash = input.readData();
                 return new DHCommitMessage(protocolVersion, dhPublicKeyHash, dhPublicKeyEncrypted, senderInstanceTag,
                     recipientInstanceTag);
-            case MESSAGE_DHKEY:
+            }
+            case MESSAGE_DHKEY: {
                 requireOTR23(protocolVersion);
                 final DHPublicKey dhPublicKey = input.readDHPublicKey();
                 return new DHKeyMessage(protocolVersion, dhPublicKey, senderInstanceTag, recipientInstanceTag);
+            }
             case MESSAGE_REVEALSIG: {
                 requireOTR23(protocolVersion);
                 final byte[] revealedKey = input.readData();
@@ -93,6 +103,26 @@ public final class EncodedMessageParser {
                 final byte[] xEncryptedMac = input.readMac();
                 return new SignatureMessage(protocolVersion, xEncryted, xEncryptedMac, senderInstanceTag,
                     recipientInstanceTag);
+            }
+            case MESSAGE_IDENTITY: {
+                requireOTR4(protocolVersion);
+                final ClientProfile profile = input.readClientProfile();
+                final Point y = input.readPoint();
+                final BigInteger b = input.readBigInt();
+                return new IdentityMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, y, b);
+            }
+            case MESSAGE_AUTH_R: {
+                requireOTR4(protocolVersion);
+                final ClientProfile profile = input.readClientProfile();
+                final Point x = input.readPoint();
+                final BigInteger a = input.readBigInt();
+                final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
+                return new AuthRMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, x, a, sigma);
+            }
+            case MESSAGE_AUTH_I: {
+                requireOTR4(protocolVersion);
+                final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
+                return new AuthIMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, sigma);
             }
             default:
                 throw new ProtocolException("Illegal message type.");
