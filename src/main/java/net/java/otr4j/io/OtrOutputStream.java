@@ -12,7 +12,6 @@ import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
 import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
-import org.bouncycastle.util.BigIntegers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,7 +26,9 @@ import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.SerializationUtils.ASCII;
-import static org.bouncycastle.util.Arrays.concatenate;
+import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
 public final class OtrOutputStream implements SerializationConstants, Closeable {
@@ -57,7 +58,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
     }
 
     public void writeBigInt(@Nonnull final BigInteger bi) {
-        final byte[] b = BigIntegers.asUnsignedByteArray(bi);
+        final byte[] b = asUnsignedByteArray(bi);
         writeData(b);
     }
 
@@ -82,7 +83,6 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeNumber(s, TYPE_LEN_SHORT);
     }
 
-    // FIXME write unit tests for writeLong.
     public void writeLong(final long value) {
         final byte[] b = new byte[TYPE_LEN_LONG];
         for (int i = 0; i < TYPE_LEN_LONG; i++) {
@@ -93,9 +93,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
     }
 
     public void writeMac(@Nonnull final byte[] mac) {
-        if (mac.length != TYPE_LEN_MAC) {
-            throw new IllegalArgumentException();
-        }
+        requireLengthExactly(TYPE_LEN_MAC, mac);
         this.out.write(mac, 0, mac.length);
     }
 
@@ -112,7 +110,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
     }
 
     public void writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) {
-        final byte[] b = BigIntegers.asUnsignedByteArray(dhPublicKey.getY());
+        final byte[] b = asUnsignedByteArray(dhPublicKey.getY());
         writeData(b);
     }
 
@@ -131,7 +129,6 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeBigInt(dsaParams.getQ());
         writeBigInt(dsaParams.getG());
         writeBigInt(dsaKey.getY());
-
     }
 
     public void writeTlvData(@Nullable final byte[] b) {
@@ -191,14 +188,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeInt(profile.getIdentifier());
         writeInt(profile.getInstanceTag());
         writePoint(profile.getLongTermPublicKey());
-        byte[] versions = new byte[0];
-        for (final int version : profile.getVersions()) {
-            if (version < 0 || version > 9) {
-                throw new IllegalStateException("Negative and multi-digit version numbers are not supported.");
-            }
-            versions = concatenate(versions, Integer.toString(version).getBytes(ASCII));
-        }
-        writeData(versions);
+        writeData(encodeVersionString(profile.getVersions()).getBytes(ASCII));
         writeLong(profile.getExpirationUnixTime());
         writeData(profile.getTransitionalSignature());
         writeData(profile.getProfileSignature());

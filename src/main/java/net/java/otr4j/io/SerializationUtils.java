@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -49,7 +48,7 @@ import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_Q;
 import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_V;
 import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 import static org.bouncycastle.util.encoders.Base64.decode;
-import static org.bouncycastle.util.encoders.Base64.encode;
+import static org.bouncycastle.util.encoders.Base64.toBase64String;
 
 /**
  * @author George Politis
@@ -191,10 +190,9 @@ public final class SerializationUtils {
         }
 
         if (m instanceof ErrorMessage) {
-            final ErrorMessage error = (ErrorMessage) m;
             writer.write(HEAD_ERROR);
             writer.write(ERROR_PREFIX);
-            writer.write(error.error);
+            writer.write(((ErrorMessage) m).error);
         } else if (m instanceof PlainTextMessage) {
             final PlainTextMessage plaintxt = (PlainTextMessage) m;
             writer.write(plaintxt.getCleanText());
@@ -237,11 +235,11 @@ public final class SerializationUtils {
                 writer.write(HEAD_QUERY_Q);
             }
         } else if (m instanceof AbstractEncodedMessage) {
-            final OtrOutputStream out = new OtrOutputStream();
-            ((AbstractEncodedMessage) m).write(out);
-            out.close();
             writer.write(HEAD_ENCODED);
-            writer.write(new String(encode(out.toByteArray()), ASCII));
+            try (final OtrOutputStream out = new OtrOutputStream()) {
+                ((AbstractEncodedMessage) m).write(out);
+                writer.write(toBase64String(out.toByteArray()));
+            }
             writer.write(".");
         } else {
             throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());
@@ -356,18 +354,38 @@ public final class SerializationUtils {
         return new PlainTextMessage(matcher.matches() ? matcher.group() : "", versions, cleanText);
     }
 
-    private static Set<Integer> parseVersionString(@Nonnull final String versionString) {
-        final HashSet<Integer> versions = new HashSet<>();
-        try (final StringReader sr = new StringReader(versionString)) {
-            int c;
-            while ((c = sr.read()) != -1) {
-                final int idx = NUMBERINDEX.indexOf(c);
-                if (idx > -1) {
-                    versions.add(idx);
-                }
+    /**
+     * Encode an iterable containing integer version values into a ASCII-based string representation of the version numbers.
+     *
+     * @param versions The container containing the versions.
+     * @return Returns ASCII string representation.
+     */
+    @Nonnull
+    public static String encodeVersionString(@Nonnull final Iterable<Integer> versions) {
+        final StringBuilder versionsString = new StringBuilder();
+        for (final int version : versions) {
+            if (version < 0 || version > 9) {
+                throw new IllegalArgumentException("Negative and multi-digit version numbers are not supported.");
             }
-        } catch (final IOException e) {
-            throw new IllegalStateException("Unexpected failure from StringReader.", e);
+            versionsString.append(version);
+        }
+        return versionsString.toString();
+    }
+
+    /**
+     * Parse a string containing ASCII-encoded digits (plaintext version numbers) into a set containing integer version numbers.
+     *
+     * @param versionString The string representation of a sequence of numbers.
+     * @return Returns set containing version ints.
+     */
+    @Nonnull
+    public static Set<Integer> parseVersionString(@Nonnull final String versionString) {
+        final HashSet<Integer> versions = new HashSet<>();
+        for (final char c : versionString.toCharArray()) {
+            final int idx = NUMBERINDEX.indexOf(c);
+            if (idx > -1) {
+                versions.add(idx);
+            }
         }
         return versions;
     }

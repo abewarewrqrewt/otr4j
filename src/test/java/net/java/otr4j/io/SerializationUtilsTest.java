@@ -13,7 +13,9 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.OTRv;
 import org.junit.Test;
 
+import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
 import static net.java.otr4j.io.SerializationUtils.generatePhi;
+import static net.java.otr4j.io.SerializationUtils.parseVersionString;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("ConstantConditions")
@@ -439,5 +441,68 @@ public class SerializationUtilsTest {
         assertTrue(plainChars.length < unicodeCharsReceiver.length);
         final byte[] unicodeCharsSender = generatePhi(0, 0, "?OTRv4?", "m\u24e8ContactID", "theirContactID");
         assertTrue(plainChars.length < unicodeCharsSender.length);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testEncodeVersionsStringNull() {
+        encodeVersionString(null);
+    }
+
+    @Test
+    public void testEncodeVersionsStringEmptyVersionsSet() {
+        assertEquals("", encodeVersionString(Collections.<Integer>emptySet()));
+    }
+
+    @Test
+    public void testEncodeVersionsStringSingletonSet() {
+        assertEquals("4", encodeVersionString(Collections.singleton(4)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEncodeVersionsStringDoubleDigitVersion() {
+        encodeVersionString(Collections.singleton(10));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEncodeVersionsStringNegativeVersion() {
+        encodeVersionString(Collections.singleton(-3));
+    }
+
+    @Test
+    public void testEncodeVersionsStringMultipleVersions() {
+        assertEquals("3456", encodeVersionString(Arrays.asList(3, 4, 5, 6)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEncodeVersionsStringMultipleVersionsSomeIllegal() {
+        encodeVersionString(Arrays.asList(3, 4, -5, 6));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testParseVersionsStringNull() {
+        parseVersionString(null);
+    }
+
+    @Test
+    public void testParseVersionsStringSingleton() {
+        assertEquals(Collections.singleton(1), parseVersionString("1"));
+    }
+
+    @Test
+    public void testParseVersionsStringMultiple() {
+        final HashSet<Integer> expected = new HashSet<>();
+        expected.add(1);
+        expected.add(3);
+        expected.add(4);
+        expected.add(5);
+        assertEquals(expected, parseVersionString("1345"));
+    }
+
+    @Test
+    public void testParseVersionsStringDuplicates() {
+        final HashSet<Integer> expected = new HashSet<>();
+        expected.add(3);
+        expected.add(1);
+        assertEquals(expected, parseVersionString("131113"));
     }
 }
