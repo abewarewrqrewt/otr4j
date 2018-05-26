@@ -29,7 +29,7 @@ public final class ClientProfileTestUtils {
         // TODO produce user profile signature.
         final byte[] profileSignature = new byte[0];
         return new ClientProfile(0, 0x100, this.longTermKeyPair.getPublicKey(),
-            singleton(Session.OTRv.FOUR), this.expirationTime, profileSignature, null);
+            singleton(Session.OTRv.FOUR), this.expirationTime, null, profileSignature);
     }
 
     public ClientProfile createTransitionalUserProfile() {

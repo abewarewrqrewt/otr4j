@@ -12,6 +12,7 @@ import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
 // FIXME Should we also allow versions 4 AND 3 when no transitional signature (OTRv3 long term public key) is provided?
 // FIXME add support for multiple long-term keys with definite order. (Older keys before newer keys)
+// FIXME update Client Profile composition as specification has changed.
 public final class ClientProfile {
 
     /**
@@ -51,7 +52,7 @@ public final class ClientProfile {
 
     public ClientProfile(final int identifier, final int instanceTag, @Nonnull final Point longTermPublicKey,
                          @Nonnull final Collection<Integer> versions, final long expirationUnixTime,
-                         @Nonnull final byte[] profileSignature, @Nullable final byte[] transitionalSignature) {
+                         @Nullable final byte[] transitionalSignature, @Nonnull final byte[] profileSignature) {
         this.identifier = identifier;
         this.instanceTag = instanceTag;
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
