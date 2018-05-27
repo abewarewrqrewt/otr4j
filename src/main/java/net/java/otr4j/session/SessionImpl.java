@@ -28,6 +28,7 @@ import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
+import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
@@ -443,7 +444,8 @@ final class SessionImpl implements Session, Context, AuthContext {
             }
 
             if (encodedM.receiverInstanceTag != this.senderTag.getValue()
-                    && !(encodedM instanceof DHCommitMessage && encodedM.receiverInstanceTag == 0)) {
+                    && !(encodedM instanceof DHCommitMessage && encodedM.receiverInstanceTag == 0)
+                    && !(encodedM instanceof IdentityMessage && encodedM.receiverInstanceTag == 0)) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received an encoded message with receiver instance tag"
                         + " that is different from ours. Ignore this message.");
@@ -453,28 +455,21 @@ final class SessionImpl implements Session, Context, AuthContext {
 
             final InstanceTag messageSenderInstance = new InstanceTag(encodedM.senderInstanceTag);
             final SessionImpl session;
-            // FIXME handle copying of authstate for all OTRv4 messages, as otherwise we miss information about the used query tag.
-            if (encodedM instanceof DHCommitMessage) {
-                // We are more flexible with processing the DH Commit
-                // message as the message's receiver tag may be zero. It is
-                // zero as we may not have announced our sender tag yet,
-                // therefore they cannot include it in the DH commit
-                // message.
+            if (encodedM instanceof DHCommitMessage || encodedM instanceof IdentityMessage) {
+                // We are more flexible with processing the DH Commit message as the message's receiver tag may be zero.
+                // It is zero as we may not have announced our sender tag yet, therefore they cannot include it in the
+                // DH commit message.
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(messageSenderInstance)) {
-                        final SessionImpl newSlaveSession = new SessionImpl(
-                                this, this.sessionState.getSessionID(),
-                                this.host, this.senderTag,
-                                messageSenderInstance, this.secureRandom,
-                                this.authState);
+                        final SessionImpl newSlaveSession = new SessionImpl(this, this.sessionState.getSessionID(),
+                                this.host, this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }
                     session = slaveSessions.get(messageSenderInstance);
                 }
             } else if (encodedM instanceof DHKeyMessage) {
-                // DH Key messages should be complete, however we may
-                // receive multiple of these messages.
+                // DH Key messages should be complete, however we may receive multiple of these messages.
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(messageSenderInstance)) {
                         final SessionImpl newSlaveSession = new SessionImpl(
@@ -487,18 +482,15 @@ final class SessionImpl implements Session, Context, AuthContext {
                     }
                     session = slaveSessions.get(messageSenderInstance);
                 }
-                // Replicate AKE state to slave session for continuation of
-                // AKE negotiation. We may receive multiple DH Key replies
-                // as we may have sent a DH Commit message without
-                // specifying a receiver tag, hence multiple clients may be
-                // inclined to respond.
-                // Ideally we would NOT copy the state if we sent a DH Commit
-                // message with receiver instance tag earlier.
+                // Replicate AKE state to slave session for continuation of AKE negotiation. We may receive multiple
+                // DH Key replies as we may have sent a DH Commit message without specifying a receiver tag, hence
+                // multiple clients may be inclined to respond.
+                // Ideally we would NOT copy the state if we sent a DH Commit message with receiver instance tag
+                // earlier.
                 session.setState(this.authState);
             } else {
-                // Handle other encoded messages. By now we expect the
-                // message sender's (receiver) tag to be known. If not we
-                // consider this a bad message and ignore it.
+                // Handle other encoded messages. By now we expect the message sender's (receiver) tag to be known. If
+                // not we consider this a bad message and ignore it.
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(messageSenderInstance)) {
                         logger.log(Level.INFO,
@@ -506,11 +498,8 @@ final class SessionImpl implements Session, Context, AuthContext {
                                 messageSenderInstance.getValue());
                         multipleInstancesDetected(this.host, this.sessionState.getSessionID());
                         multipleInstancesDetected(duplicate(listeners), this.sessionState.getSessionID());
-                        final SessionImpl newSlaveSession = new SessionImpl(
-                                this, this.sessionState.getSessionID(),
-                                this.host, this.senderTag,
-                                messageSenderInstance, this.secureRandom,
-                                this.authState);
+                        final SessionImpl newSlaveSession = new SessionImpl(this, this.sessionState.getSessionID(),
+                                this.host, this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }

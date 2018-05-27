@@ -1,23 +1,40 @@
 
 package net.java.otr4j.api;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.session.OtrSessionManager;
 import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.test.dummyclient.DummyClient;
 import net.java.otr4j.test.dummyclient.PriorityServer;
 import net.java.otr4j.test.dummyclient.ProcessedTestMessage;
 import net.java.otr4j.test.dummyclient.Server;
 import org.junit.Before;
-
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.security.KeyPair;
+import java.security.SecureRandom;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateEdDSAKeyPair;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+
 public class SessionTest {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Before
     public void setUp() {
@@ -320,5 +337,222 @@ public class SessionTest {
 
         bob.exit();
         alice.exit();
+    }
+
+    @Test
+    public void testPlainTextMessagingNewClients() throws OtrException, InterruptedException {
+        final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(20);
+        final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(20);
+        final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4", "DummyNetwork4");
+        final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4", "DummyNetwork4");
+        final Client hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
+            channelAlice, channelBob);
+        final Client hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
+            RANDOM, channelBob, channelAlice);
+
+        hostBob.sendMessage("hello world");
+        assertEquals("hello world", hostAlice.receiveMessage());
+        hostAlice.sendMessage("hello bob");
+        assertEquals("hello bob", hostBob.receiveMessage());
+    }
+
+    @Test
+    public void testEstablishOTR4Session() throws OtrException, InterruptedException {
+        final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(20);
+        final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(20);
+        final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4", "DummyNetwork4");
+        final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4", "DummyNetwork4");
+        final Client hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
+            channelAlice, channelBob);
+        final Client hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
+            RANDOM, channelBob, channelAlice);
+
+        hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", hostAlice.receiveMessage());
+        hostAlice.sendRequest();
+        assertNull(hostBob.receiveMessage());
+        assertNull(hostAlice.receiveMessage());
+        assertNull(hostBob.receiveMessage());
+        assertNull(hostAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, hostAlice.getMessageState());
+        assertNull(hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, hostBob.getMessageState());
+    }
+
+    /**
+     * Dummy client implementation for use with OTRv4 protocol tests.
+     */
+    private static class Client implements OtrEngineHost {
+
+        private final Logger logger;
+
+        private final KeyPair dsaKeyPair;
+
+        private final nl.dannyvanheumen.joldilocks.KeyPair ed448KeyPair;
+
+        private final BlockingQueue<String> sendChannel;
+
+        private final BlockingQueue<String> receiptChannel;
+
+        private final OtrPolicy policy;
+
+        private final ClientProfile profile;
+
+        private final Session session;
+
+        private Client(@Nonnull final String label, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
+                       @Nonnull final SecureRandom random, @Nonnull final BlockingQueue<String> sendChannel,
+                       @Nonnull final BlockingQueue<String> receiptChannel) {
+            this.logger = Logger.getLogger(Client.class.getName() + ":" + label);
+            this.ed448KeyPair = generateEdDSAKeyPair(random);
+            this.dsaKeyPair = OtrCryptoEngine.generateDSAKeyPair();
+            this.receiptChannel = requireNonNull(receiptChannel);
+            this.sendChannel = requireNonNull(sendChannel);
+            this.policy = requireNonNull(policy);
+            final Calendar expirationCalendar = Calendar.getInstance();
+            expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
+            this.profile = new ClientProfile(1, InstanceTag.random(random).getValue(),
+                this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
+                expirationCalendar.getTimeInMillis(), null, new byte[0]);
+            this.session = OtrSessionManager.createSession(sessionID, this);
+        }
+
+        public String receiveMessage() throws InterruptedException, OtrException {
+            final String msg = this.receiptChannel.take();
+            return this.session.transformReceiving(msg);
+        }
+
+        public void sendMessage(@Nonnull final String msg) throws OtrException, InterruptedException {
+            for (final String part : this.session.transformSending(msg)) {
+                this.sendChannel.put(part);
+            }
+        }
+
+        public void sendRequest() throws OtrException {
+            this.session.startSession();
+        }
+
+        @Nonnull
+        public SessionStatus getMessageState() {
+            return this.session.getSessionStatus();
+        }
+
+        @Override
+        public void injectMessage(@Nonnull final SessionID sessionID, @Nonnull final String msg) {
+            try {
+                this.sendChannel.put(msg);
+            } catch (final InterruptedException e) {
+                throw new IllegalStateException("Failed to inject message into simulated chat receiptChannel.", e);
+            }
+        }
+
+        @Override
+        public void unreadableMessageReceived(@Nonnull final SessionID sessionID) {
+            logger.finest("Unreadable message received. (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void unencryptedMessageReceived(@Nonnull final SessionID sessionID, @Nonnull final String msg) {
+            logger.finest("Message received unencrypted: " + msg + " (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void showError(@Nonnull final SessionID sessionID, @Nonnull final String error) {
+            logger.finest("OTR received an error: " + error + " (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void finishedSessionMessage(@Nonnull final SessionID sessionID, @Nonnull final String msgText) {
+            logger.finest("Encrypted session finished. (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void requireEncryptedMessage(@Nonnull final SessionID sessionID, @Nonnull final String msgText) {
+            logger.finest("Encrypted message is required. (Session: " + sessionID + "). Sent in plain text: " + msgText);
+        }
+
+        @Override
+        public OtrPolicy getSessionPolicy(@Nonnull final SessionID sessionID) {
+            return this.policy;
+        }
+
+        @Override
+        public int getMaxFragmentSize(@Nonnull final SessionID sessionID) {
+            return MAX_VALUE;
+        }
+
+        @Nonnull
+        @Override
+        public KeyPair getLocalKeyPair(@Nonnull final SessionID sessionID) {
+            return this.dsaKeyPair;
+        }
+
+        @Nonnull
+        @Override
+        public nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair(@Nonnull final SessionID sessionID) {
+            return this.ed448KeyPair;
+        }
+
+        @Nonnull
+        @Override
+        public ClientProfile getClientProfile() {
+            return this.profile;
+        }
+
+        @Override
+        public void askForSecret(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiverTag, @Nullable final String question) {
+            // FIXME implement secret for use in dummy test connections.
+        }
+
+        @Nonnull
+        @Override
+        public byte[] getLocalFingerprintRaw(@Nonnull final SessionID sessionID) {
+            return OtrCryptoEngine.getFingerprintRaw(this.dsaKeyPair.getPublic());
+        }
+
+        @Override
+        public void smpError(@Nonnull final SessionID sessionID, final int tlvType, final boolean cheated) {
+            logger.finest("SMP process resulted in error. (TLV type: " + tlvType + ", cheated: " + cheated + ", session: " + sessionID + ")");
+        }
+
+        @Override
+        public void smpAborted(@Nonnull final SessionID sessionID) {
+            logger.finest("SMP process is aborted. (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void verify(@Nonnull final SessionID sessionID, @Nonnull final String fingerprint) {
+            logger.finest("Verifying fingerprint " + fingerprint + " (Session: " + sessionID + ") [NOT IMPLEMENTED, LOGGING ONLY]");
+        }
+
+        @Override
+        public void unverify(@Nonnull final SessionID sessionID, @Nonnull final String fingerprint) {
+            logger.finest("Invalidating fingerprint " + fingerprint + " (Session: " + sessionID + ") [NOT IMPLEMENTED, LOGGING ONLY]");
+        }
+
+        @Override
+        public String getReplyForUnreadableMessage(@Nonnull final SessionID sessionID) {
+            return "The message is unreadable. (Session: " + sessionID + ")";
+        }
+
+        @Override
+        public String getFallbackMessage(@Nonnull final SessionID sessionID) {
+            return null;
+        }
+
+        @Override
+        public void messageFromAnotherInstanceReceived(@Nonnull final SessionID sessionID) {
+            logger.finest("Message from another instance received. (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void multipleInstancesDetected(@Nonnull final SessionID sessionID) {
+            logger.finest("Multiple instances detected. (Session: " + sessionID + ")");
+        }
+
+        @Override
+        public void extraSymmetricKeyDiscovered(@Nonnull final SessionID sessionID, @Nonnull final String message, @Nonnull final byte[] extraSymmetricKey, @Nonnull final byte[] tlvData) {
+            logger.finest("Extra symmetric key TLV discovered in encoded message. (Session: " + sessionID + ")");
+        }
     }
 }

@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -78,6 +79,7 @@ public final class OtrCryptoEngine {
         // as an early indicator in case support for required types is missing.
         try {
             KeyAgreement.getInstance(KA_DH);
+            KeyPairGenerator.getInstance(ALGORITHM_DSA);
             KeyFactory.getInstance(KF_DH);
             Mac.getInstance(HMAC_SHA256);
             Mac.getInstance(HMAC_SHA1);
@@ -105,6 +107,16 @@ public final class OtrCryptoEngine {
 
     private OtrCryptoEngine() {
         // this class is never instantiated, it only has static methods
+    }
+
+    @Nonnull
+    public static KeyPair generateDSAKeyPair() {
+        try {
+            KeyPairGenerator kg = KeyPairGenerator.getInstance(ALGORITHM_DSA);
+            return kg.genKeyPair();
+        } catch (final NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Failed to generate DSA key pair.", e);
+        }
     }
 
     @Nonnull

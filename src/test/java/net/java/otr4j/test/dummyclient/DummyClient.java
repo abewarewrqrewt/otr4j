@@ -1,6 +1,20 @@
 
 package net.java.otr4j.test.dummyclient;
 
+import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.OtrEngineHost;
+import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.OtrPolicy;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.SessionID;
+import net.java.otr4j.api.SessionStatus;
+import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.session.OtrSessionManager;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -10,16 +24,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import net.java.otr4j.api.OtrEngineHost;
-import net.java.otr4j.api.OtrException;
-import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.*;
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.session.*;
 
 /**
  * Created by gp on 2/5/14.
@@ -340,7 +344,7 @@ public class DummyClient {
                     KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
                     keypair = kg.genKeyPair();
                     this.keypairs.put(paramSessionID, keypair);
-                } catch (NoSuchAlgorithmException ex) {
+                } catch (final NoSuchAlgorithmException ex) {
                     throw new IllegalStateException("DSA algorithm unavailable.", ex);
                 }
             }

@@ -18,6 +18,7 @@ import java.util.logging.Logger;
  *
  * @author George Politis
  */
+// FIXME add OTRv4 support.
 public final class OtrPolicy {
 
     private static final Logger LOGGER = Logger.getLogger(OtrPolicy.class.getName());

@@ -75,9 +75,8 @@ abstract class AbstractAuthState implements AuthState {
             throw new IllegalStateException("Failed to encrypt public key bytes.", ex);
         }
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
-        final DHCommitMessage dhcommit = new DHCommitMessage(version,
-                publicKeyHash, publicKeyEncrypted, context.getSenderInstanceTag().getValue(),
-                receiverTag.getValue());
+        final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
+            context.getSenderInstanceTag().getValue(), receiverTag.getValue());
         LOGGER.finest("Sending DH commit message.");
         context.setState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
