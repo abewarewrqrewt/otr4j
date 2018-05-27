@@ -130,7 +130,7 @@ public final class StateInitial extends AbstractAuthState {
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getUserProfile(), x.getPublicKey(), a.getPublicKey(),
             sigma);
-        context.setState(new StateAwaitingAuthI(queryTag, x, a, message.getY(), message.getB(), profile,
+        context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
             message.getClientProfile(), context.getSenderInstanceTag(), context.getReceiverInstanceTag()));
         return authRMessage;
     }

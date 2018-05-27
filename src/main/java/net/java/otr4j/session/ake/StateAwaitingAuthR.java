@@ -17,6 +17,7 @@ import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.KeyPair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,7 +66,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         this.previousMessage = requireNonNull(previousMessage);
     }
 
-    @Nonnull
+    @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
         // FIXME need to verify protocol versions?
@@ -81,7 +82,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         return null;
     }
 
-    @Nonnull
+    @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
                                                          @Nonnull final IdentityMessage message)
         throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
