@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
 import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
@@ -435,9 +436,9 @@ final class SessionImpl implements Session, Context, AuthContext {
             // session.
             final AbstractEncodedMessage encodedM = (AbstractEncodedMessage) m;
 
-            if (encodedM.senderInstanceTag == 0) {
+            if (encodedM.senderInstanceTag == 0 || !isValidInstanceTag(encodedM.senderInstanceTag)) {
                 // An encoded message without a sender instance tag is always bad.
-                logger.warning("Encoded message is missing sender instance tag. Ignoring message.");
+                logger.warning("Encoded message is missing sender instance tag or sender instance tag is bad. Ignoring message.");
                 return null;
             }
 
