@@ -18,7 +18,8 @@ import java.util.logging.Logger;
  *
  * @author George Politis
  */
-// FIXME add OTRv4 support.
+// FIXME extend unit tests for OTRv4
+// TODO consider removing OTRv1 methods altogether
 public final class OtrPolicy {
 
     private static final Logger LOGGER = Logger.getLogger(OtrPolicy.class.getName());

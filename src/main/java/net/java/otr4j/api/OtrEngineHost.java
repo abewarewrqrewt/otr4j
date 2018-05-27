@@ -125,6 +125,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      *
      * @return Returns the Client Profile for this client.
      */
+    // TODO consider defining getClientProfile with sessionID parameter such that we can use different client profiles for different networks.
     @Nonnull
     ClientProfile getClientProfile();
 
