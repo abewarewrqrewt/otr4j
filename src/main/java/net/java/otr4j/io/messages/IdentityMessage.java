@@ -2,12 +2,14 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.profile.ClientProfiles.writeTo;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 
 /**
@@ -56,7 +58,7 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     @Override
     public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
-        writer.writeClientProfile(this.clientProfile);
+        writeTo(this.clientProfile, writer);
         writer.writePoint(this.y);
         writer.writeBigInt(this.b);
     }

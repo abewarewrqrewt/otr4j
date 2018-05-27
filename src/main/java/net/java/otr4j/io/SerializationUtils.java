@@ -17,7 +17,6 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
-import net.java.otr4j.profile.ClientProfile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -165,15 +164,6 @@ public final class SerializationUtils {
     public static byte[] writePublicKey(@Nonnull final PublicKey pubKey) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePublicKey(pubKey);
-            return out.toByteArray();
-        }
-    }
-
-    // FIXME write unit tests for writeClientProfile utility.
-    @Nonnull
-    public static byte[] writeClientProfile(@Nonnull final ClientProfile profile) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeClientProfile(profile);
             return out.toByteArray();
         }
     }

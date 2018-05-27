@@ -235,8 +235,8 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @param listener  The OTR engine host listener.
      */
     SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener) {
-        this(null, sessionID, listener, InstanceTag.ZERO_TAG, InstanceTag.ZERO_TAG,
-                new SecureRandom(), StateInitial.empty());
+        this(null, sessionID, listener, InstanceTag.ZERO_TAG, InstanceTag.ZERO_TAG, new SecureRandom(),
+            StateInitial.empty());
     }
 
     /**

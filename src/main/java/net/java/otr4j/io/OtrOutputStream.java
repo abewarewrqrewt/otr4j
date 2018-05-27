@@ -10,7 +10,6 @@ package net.java.otr4j.io;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
-import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -25,8 +24,6 @@ import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.io.SerializationUtils.ASCII;
-import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
@@ -176,23 +173,6 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
 
     public void writePoint(@Nonnull final Point p) {
         writeData(p.encode());
-    }
-
-    /**
-     * Write Client Profile to stream.
-     *
-     * @param profile the client profile to serialize.
-     */
-    // FIXME write unit tests.
-    public void writeClientProfile(@Nonnull final ClientProfile profile) {
-        writeInt(profile.getIdentifier());
-        writeInt(profile.getInstanceTag());
-        writePoint(profile.getLongTermPublicKey());
-        writeData(encodeVersionString(profile.getVersions()).getBytes(ASCII));
-        writeLong(profile.getExpirationUnixTime());
-        writeData(profile.getTransitionalSignature());
-        writeData(profile.getProfileSignature());
-        throw new UnsupportedOperationException("TODO implement writing client profile");
     }
 
     private void writeNumber(final int value, final int length) {

@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.junit.Assert.assertArrayEquals;
@@ -31,12 +30,6 @@ public class OtrOutputStreamTest {
     @Test
     public void testConstructOtrOutputStream() {
         new OtrOutputStream(out);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testWriteNullUserProfile() {
-        final OtrOutputStream otr = new OtrOutputStream(out);
-        otr.writeClientProfile(null);
     }
 
     @Test

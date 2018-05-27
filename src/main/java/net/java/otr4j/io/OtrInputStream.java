@@ -10,7 +10,6 @@ package net.java.otr4j.io;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.SignatureX;
-import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -23,11 +22,8 @@ import java.net.ProtocolException;
 import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
-import java.util.Set;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
-import static net.java.otr4j.io.SerializationUtils.ASCII;
-import static net.java.otr4j.io.SerializationUtils.parseVersionString;
 
 /**
  * OTR input stream.
@@ -231,25 +227,6 @@ public final class OtrInputStream extends FilterInputStream implements
         final int dhKeyID = readInt();
         final byte[] sig = readSignature(pubKey);
         return new SignatureX(pubKey, dhKeyID, sig);
-    }
-
-    /**
-     * Read Client Profile from input stream.
-     *
-     * @return Returns Client Profile.
-     */
-    // FIXME add unit tests.
-    @Nonnull
-    public ClientProfile readClientProfile() throws IOException, OtrCryptoException {
-        final int identifier = readInt();
-        final int instanceTag = readInt();
-        final Point longTermPublicKey = readPoint();
-        final Set<Integer> versions = parseVersionString(new String(readData(), ASCII));
-        final long expirationUnixTime = readLong();
-        final byte[] transitionalSignature = readData();
-        final byte[] profileSignature = readData();
-        return new ClientProfile(identifier, instanceTag, longTermPublicKey, versions, expirationUnixTime,
-            transitionalSignature, profileSignature);
     }
 
     public long readLong() throws IOException {

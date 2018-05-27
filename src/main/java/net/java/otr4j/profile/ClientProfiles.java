@@ -4,15 +4,22 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
+import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.util.Date;
+import java.util.Set;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
-import static net.java.otr4j.io.SerializationUtils.writeClientProfile;
+import static net.java.otr4j.io.SerializationUtils.ASCII;
+import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
+import static net.java.otr4j.io.SerializationUtils.parseVersionString;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -33,7 +40,7 @@ public final class ClientProfiles {
      */
     public static void sign(@Nonnull final ClientProfile profile, @Nonnull final PrivateKey dsaPrivateKey,
                             @Nonnull final BigInteger ecSecretKey) {
-        final byte[] m = writeClientProfile(profile);
+        final byte[] m = write(profile);
         final byte[] transitionalSignature = OtrCryptoEngine.sign(m, dsaPrivateKey);
         final byte[] clientProfileSignature = Ed448.sign(ecSecretKey, ED448_CONTEXT, concatenate(m, transitionalSignature));
         // FIXME continue implementation.
@@ -65,6 +72,51 @@ public final class ClientProfiles {
         // Verify that the User Profile signature is valid.
         // FIXME Implement user profile signature validation.
         throw new UnsupportedOperationException("To be implemented.");
+    }
+
+    /**
+     * Read ClientProfile from provided input stream.
+     *
+     * @param in The input stream
+     * @return Returns ClientProfile reconstructed from data on input stream.
+     * @throws IOException        In case of failure to read from stream.
+     * @throws OtrCryptoException In case of illegal data encountered while reconstructing ClientProfile.
+     */
+    @Nonnull
+    public static ClientProfile readFrom(@Nonnull final OtrInputStream in) throws IOException, OtrCryptoException {
+        final int identifier = in.readInt();
+        final int instanceTag = in.readInt();
+        final Point longTermPublicKey = in.readPoint();
+        final Set<Integer> versions = parseVersionString(new String(in.readData(), ASCII));
+        final long expirationUnixTime = in.readLong();
+        final byte[] transitionalSignature = in.readData();
+        final byte[] profileSignature = in.readData();
+        return new ClientProfile(identifier, instanceTag, longTermPublicKey, versions, expirationUnixTime,
+            transitionalSignature, profileSignature);
+    }
+
+    @Nonnull
+    public static byte[] write(@Nonnull final ClientProfile profile) {
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            writeTo(profile, out);
+            return out.toByteArray();
+        }
+    }
+
+    /**
+     * Write ClientProfile to provided output stream.
+     *
+     * @param profile The client profile
+     * @param out     The OTR output stream
+     */
+    public static void writeTo(@Nonnull final ClientProfile profile, @Nonnull final OtrOutputStream out) {
+        out.writeInt(profile.getIdentifier());
+        out.writeInt(profile.getInstanceTag());
+        out.writePoint(profile.getLongTermPublicKey());
+        out.writeData(encodeVersionString(profile.getVersions()).getBytes(ASCII));
+        out.writeLong(profile.getExpirationUnixTime());
+        out.writeData(profile.getTransitionalSignature());
+        out.writeData(profile.getProfileSignature());
     }
 
     /**

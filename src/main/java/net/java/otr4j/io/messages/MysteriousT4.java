@@ -10,7 +10,7 @@ import java.math.BigInteger;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.io.SerializationUtils.generatePhi;
 import static net.java.otr4j.io.SerializationUtils.writeMpi;
-import static net.java.otr4j.io.SerializationUtils.writeClientProfile;
+import static net.java.otr4j.profile.ClientProfiles.write;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -40,9 +40,9 @@ public final class MysteriousT4 {
                                 @Nonnull final BigInteger b, @Nonnull final InstanceTag senderInstanceTag,
                                 @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final String queryTag,
                                 @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
-        final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE, writeClientProfile(profileBob)),
+        final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE, write(profileBob)),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
-        final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, writeClientProfile(profileAlice)),
+        final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, write(profileAlice)),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] yEncoded = y.encode();
         final byte[] xEncoded = x.encode();

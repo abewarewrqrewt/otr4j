@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.profile.ClientProfiles.writeTo;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 
 /**
@@ -66,7 +67,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     @Override
     public void write(@Nonnull final OtrOutputStream writer) {
         super.write(writer);
-        writer.writeClientProfile(this.clientProfile);
+        writeTo(this.clientProfile, writer);
         writer.writePoint(this.x);
         writer.writeBigInt(this.a);
         this.sigma.writeTo(writer);
