@@ -109,12 +109,12 @@ public interface AuthContext {
     InstanceTag getReceiverInstanceTag();
 
     /**
-     * User profile for the client.
+     * Client profile.
      *
-     * @return Returns the user profile for this client.
+     * @return Returns the client profile for this client.
      */
     @Nonnull
-    ClientProfile getUserProfile();
+    ClientProfile getClientProfile();
 
     /**
      * InteractionFailedException indicates an error happened while interacting

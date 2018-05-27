@@ -102,7 +102,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
-        final ClientProfile ourClientProfile = context.getUserProfile();
+        final ClientProfile ourClientProfile = context.getClientProfile();
         final KeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         validate(message, ourClientProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);

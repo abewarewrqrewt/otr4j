@@ -870,7 +870,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nonnull
     @Override
-    public ClientProfile getUserProfile() {
+    public ClientProfile getClientProfile() {
         // FIXME delegate request to OtrEngineHost.
         throw new UnsupportedOperationException("To be implemented");
     }

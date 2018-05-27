@@ -94,7 +94,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message) throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
         IdentityMessages.validate(message);
-        final ClientProfile profile = context.getUserProfile();
+        final ClientProfile profile = context.getClientProfile();
         final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
@@ -105,7 +105,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             message.getClientProfile().getLongTermPublicKey(), profile.getLongTermPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), context.getUserProfile(), this.ourECDHKeyPair.getPublicKey(),
+            context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             this.ourDHKeyPair.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
             message.getB(), profile, message.getClientProfile(), context.getSenderInstanceTag(),
