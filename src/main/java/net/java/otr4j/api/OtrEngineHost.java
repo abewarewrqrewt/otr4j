@@ -7,6 +7,8 @@
 
 package net.java.otr4j.api;
 
+import net.java.otr4j.profile.ClientProfile;
+
 import java.security.KeyPair;
 import javax.annotation.Nonnull;
 
@@ -117,6 +119,14 @@ public interface OtrEngineHost extends SmpEngineHost {
     // TODO consider splitting this off into separate interface for OTRv4-related logic. That way we can easily recognize OTRv4-capable hosts.
     @Nonnull
     nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair(@Nonnull SessionID sessionID);
+
+    /**
+     * Request the client's Client Profile.
+     *
+     * @return Returns the Client Profile for this client.
+     */
+    @Nonnull
+    ClientProfile getClientProfile();
 
     /**
      * Request local fingerprint in raw byte form.

@@ -10,6 +10,7 @@ package net.java.otr4j.api;
 import java.security.SecureRandom;
 import javax.annotation.Nonnull;
 
+// FIXME ensure that instance tags are persistent. Nowhere can we arbitrarily generate instance tags as they require matching up with the instance tag value in the Client Profile.
 public final class InstanceTag {
 
     /**

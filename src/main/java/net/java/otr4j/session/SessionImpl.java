@@ -271,6 +271,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         this.sessionState = new StatePlaintext(sessionID);
         this.authState = Objects.requireNonNull(authState);
         this.host = Objects.requireNonNull(host);
+        // FIXME acquire sender instance tag from Client Profile
         this.senderTag = senderTag == InstanceTag.ZERO_TAG ? InstanceTag.random(secureRandom) : senderTag;
         this.receiverTag = Objects.requireNonNull(receiverTag);
         this.offerStatus = OfferStatus.idle;
