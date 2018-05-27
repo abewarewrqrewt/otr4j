@@ -30,9 +30,10 @@ public class OtrPolicyUtilTest {
     public void testAllowedVersionsDefaultPolicy() {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OTRL_POLICY_DEFAULT);
         final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
-        assertEquals(2, versions.size());
+        assertEquals(3, versions.size());
         assertTrue(versions.contains(Session.OTRv.TWO));
         assertTrue(versions.contains(Session.OTRv.THREE));
+        assertTrue(versions.contains(Session.OTRv.FOUR));
     }
 
     @Test

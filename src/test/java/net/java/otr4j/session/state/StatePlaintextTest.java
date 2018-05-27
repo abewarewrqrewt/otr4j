@@ -27,8 +27,8 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithViablePolicy() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage("?OTRv23?",
-                new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE)),
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv234?",
+                new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE, OTRv.FOUR)),
                 "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);

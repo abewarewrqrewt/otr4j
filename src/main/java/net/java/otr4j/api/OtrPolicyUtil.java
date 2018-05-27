@@ -37,6 +37,9 @@ public final class OtrPolicyUtil {
         if (policy.getAllowV3()) {
             versions.add(Session.OTRv.THREE);
         }
+        if (policy.getAllowV4()) {
+            versions.add(Session.OTRv.FOUR);
+        }
         return versions;
     }
 }

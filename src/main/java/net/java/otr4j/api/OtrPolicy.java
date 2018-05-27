@@ -18,7 +18,6 @@ import java.util.logging.Logger;
  *
  * @author George Politis
  */
-// FIXME extend unit tests for OTRv4
 // TODO consider removing OTRv1 methods altogether
 public final class OtrPolicy {
 
@@ -30,25 +29,27 @@ public final class OtrPolicy {
      * @deprecated OTR v1 is no longer supported.
      */
     @Deprecated
-    public static final int ALLOW_V1 = 0x01;
-    public static final int ALLOW_V2 = 0x02;
-    // ALLOW_V3 is set to 0x40 for compatibility with older versions
-    public static final int ALLOW_V3 = 0x40;
-    public static final int REQUIRE_ENCRYPTION = 0x04;
-    public static final int SEND_WHITESPACE_TAG = 0x8;
-    public static final int WHITESPACE_START_AKE = 0x10;
-    public static final int ERROR_START_AKE = 0x20;
-    public static final int VERSION_MASK = ALLOW_V2 | ALLOW_V3;
+    public static final int ALLOW_V1 = 1;
+    public static final int ALLOW_V2 = 1 << 1;
+    public static final int REQUIRE_ENCRYPTION = 1 << 2;
+    public static final int SEND_WHITESPACE_TAG = 1 << 3;
+    public static final int WHITESPACE_START_AKE = 1 << 4;
+    public static final int ERROR_START_AKE = 1 << 5;
+    public static final int ALLOW_V3 = 1 << 6;
+    public static final int ALLOW_V4 = 1 << 7;
+
+    public static final int VERSION_MASK = ALLOW_V2 | ALLOW_V3 | ALLOW_V4;
 
     // The four old version 1 policies correspond to the following combinations
     // of flags (adding an allowance for version 2 of the protocol):
 
     public static final int NEVER = 0x00;
-    public static final int OPPORTUNISTIC = ALLOW_V2 | ALLOW_V3
+    public static final int OPPORTUNISTIC = ALLOW_V2 | ALLOW_V3 | ALLOW_V4
             | SEND_WHITESPACE_TAG | WHITESPACE_START_AKE | ERROR_START_AKE;
-    public static final int OTRL_POLICY_MANUAL = ALLOW_V2 | ALLOW_V3;
-    public static final int OTRL_POLICY_ALWAYS = ALLOW_V2 | ALLOW_V3
+    public static final int OTRL_POLICY_MANUAL = ALLOW_V2 | ALLOW_V3 | ALLOW_V4;
+    public static final int OTRL_POLICY_ALWAYS = ALLOW_V2 | ALLOW_V3 | ALLOW_V4
             | REQUIRE_ENCRYPTION | WHITESPACE_START_AKE | ERROR_START_AKE;
+
     public static final int OTRL_POLICY_DEFAULT = OPPORTUNISTIC;
 
     private int policy;
@@ -106,6 +107,15 @@ public final class OtrPolicy {
      */
     public boolean getAllowV3() {
         return (policy & OtrPolicy.ALLOW_V3) != 0;
+    }
+
+    /**
+     * Get OTR v4 policy.
+     *
+     * @return Returns true if OTR version 4 is allowed.
+     */
+    public boolean getAllowV4() {
+        return (policy & OtrPolicy.ALLOW_V4) != 0;
     }
 
     /**
@@ -214,6 +224,14 @@ public final class OtrPolicy {
         }
     }
 
+    public void setAllowv4(final boolean value) {
+        if (value) {
+            policy |= ALLOW_V4;
+        } else {
+            policy &= ~ALLOW_V4;
+        }
+    }
+
     /**
      * Set ERROR_START_AKE flag, indicating that we should start a new AKE
      * negotiation upon receiving an OTR error message.
@@ -317,7 +335,7 @@ public final class OtrPolicy {
      * @return Returns true if ENABLE_MANUAL is active, false otherwise.
      */
     public boolean getEnableManual() {
-        return getAllowV2() && getAllowV3();
+        return getAllowV2() && getAllowV3() && getAllowV4();
     }
 
     /**
@@ -341,6 +359,7 @@ public final class OtrPolicy {
     public void setEnableManual() {
         setAllowV2(true);
         setAllowV3(true);
+        setAllowv4(true);
     }
 
     /**
@@ -352,7 +371,7 @@ public final class OtrPolicy {
      * compatible policy. Returns false if no protocol version is enabled.
      */
     public boolean viable() {
-        return getAllowV2() || getAllowV3();
+        return getAllowV2() || getAllowV3() || getAllowV4();
     }
 
     @Override
