@@ -38,8 +38,7 @@ abstract class AbstractAuthState implements AuthState {
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
                                            @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
-        // TODO use constants for comparing versions?
-        if (version < Session.OTRv.TWO || version > Session.OTRv.FOUR) {
+        if (!Session.OTRv.SUPPORTED.contains(version)) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
         }
         if (version == Session.OTRv.TWO || version == Session.OTRv.THREE) {
