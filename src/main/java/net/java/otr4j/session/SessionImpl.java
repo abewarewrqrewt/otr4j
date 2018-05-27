@@ -62,6 +62,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
+import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
+import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
+import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
+import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 
 /**
  * Implementation of the OTR session.
@@ -209,7 +213,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiver) {
             OtrEngineListenerUtil.sessionStatusChanged(
-                    OtrEngineListenerUtil.duplicate(listeners), sessionID, receiver);
+                    duplicate(listeners), sessionID, receiver);
         }
 
         @Override
@@ -340,7 +344,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     public void setState(@Nonnull final State state) {
         this.sessionState = Objects.requireNonNull(state);
         OtrEngineListenerUtil.sessionStatusChanged(
-                OtrEngineListenerUtil.duplicate(listeners),
+                duplicate(listeners),
                 state.getSessionID(), this.receiverTag);
     }
 
@@ -499,9 +503,8 @@ final class SessionImpl implements Session, Context, AuthContext {
                         logger.log(Level.INFO,
                                 "Slave session instance missing for receiver tag: {0}. Our buddy may be logged in at multiple locations.",
                                 messageSenderInstance.getValue());
-                        OtrEngineHostUtil.multipleInstancesDetected(this.host, this.sessionState.getSessionID());
-                        OtrEngineListenerUtil.multipleInstancesDetected(
-                                OtrEngineListenerUtil.duplicate(listeners), this.sessionState.getSessionID());
+                        multipleInstancesDetected(this.host, this.sessionState.getSessionID());
+                        multipleInstancesDetected(duplicate(listeners), this.sessionState.getSessionID());
                         final SessionImpl newSlaveSession = new SessionImpl(
                                 this, this.sessionState.getSessionID(),
                                 this.host, this.senderTag,
@@ -929,7 +932,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             // Instance tag belongs to master session, set master session as
             // outgoing session.
             outgoingSession = this;
-            OtrEngineListenerUtil.outgoingSessionChanged(OtrEngineListenerUtil.duplicate(listeners), sessionId);
+            outgoingSessionChanged(duplicate(listeners), sessionId);
             return;
         }
         final SessionImpl newActiveSession = slaveSessions.get(tag);
@@ -937,7 +940,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             throw new NoSuchElementException("no slave session exists with provided instance tag");
         }
         outgoingSession = newActiveSession;
-        OtrEngineListenerUtil.outgoingSessionChanged(OtrEngineListenerUtil.duplicate(listeners), sessionId);
+        outgoingSessionChanged(duplicate(listeners), sessionId);
     }
 
     /**
