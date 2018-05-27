@@ -61,6 +61,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
+
 /**
  * Implementation of the OTR session.
  *
@@ -399,7 +401,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final OtrAssembler.UnknownInstanceException e) {
             // The fragment is not intended for us
             logger.finest(e.getMessage());
-            OtrEngineHostUtil.messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
+            messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
             return null;
         } catch (final ProtocolException e) {
             logger.log(Level.WARNING, "An invalid message fragment was discarded.", e);
@@ -440,7 +442,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received an encoded message with receiver instance tag"
                         + " that is different from ours. Ignore this message.");
-                OtrEngineHostUtil.messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
+                messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
                 return null;
             }
 
