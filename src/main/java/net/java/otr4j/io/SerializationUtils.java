@@ -135,7 +135,7 @@ public final class SerializationUtils {
 
     // Basic IO.
     @Nonnull
-    public static byte[] writeData(@Nullable final byte[] b) {
+    public static byte[] writeData(@Nonnull final byte[] b) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writeData(b);
             return out.toByteArray();

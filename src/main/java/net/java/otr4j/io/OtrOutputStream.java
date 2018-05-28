@@ -63,10 +63,9 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeNumber(b, TYPE_LEN_BYTE);
     }
 
-    public void writeData(@Nullable final byte[] b) {
-        final int len = b == null ? 0 : b.length;
-        writeNumber(len, DATA_LEN);
-        if (len > 0) {
+    public void writeData(@Nonnull final byte[] b) {
+        writeNumber(b.length, DATA_LEN);
+        if (b.length > 0) {
             this.out.write(b, 0, b.length);
         }
     }

@@ -2,7 +2,6 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;

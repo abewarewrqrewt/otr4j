@@ -27,9 +27,8 @@ public final class ClientProfileTestUtils {
 
     public ClientProfile createUserProfile() {
         // TODO produce user profile signature.
-        final byte[] profileSignature = new byte[0];
         return new ClientProfile(0, 0x100, this.longTermKeyPair.getPublicKey(),
-            singleton(Session.OTRv.FOUR), this.expirationTime, null, profileSignature);
+            singleton(Session.OTRv.FOUR), this.expirationTime, new byte[0], new byte[114]);
     }
 
     public ClientProfile createTransitionalUserProfile() {
@@ -37,9 +36,9 @@ public final class ClientProfileTestUtils {
         versions.add(Session.OTRv.THREE);
         versions.add(Session.OTRv.FOUR);
         // TODO produce transitional signature.
-        final byte[] transitionalSignature = new byte[0];
+        final byte[] transitionalSignature = new byte[20];
         // TODO produce user profile signature.
-        final byte[] profileSignature = new byte[0];
+        final byte[] profileSignature = new byte[114];
         return new ClientProfile(0, 0x100, this.longTermKeyPair.getPublicKey(), versions,
             this.expirationTime, transitionalSignature, profileSignature);
     }

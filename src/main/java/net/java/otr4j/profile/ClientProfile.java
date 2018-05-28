@@ -4,16 +4,20 @@ import net.java.otr4j.api.Session;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static net.java.otr4j.util.ByteArrays.requireZeroOrLengthExactly;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
 // FIXME Should we also allow versions 4 AND 3 when no transitional signature (OTRv3 long term public key) is provided?
 // FIXME add support for multiple long-term keys with definite order. (Older keys before newer keys)
 // FIXME update Client Profile composition as specification has changed.
 public final class ClientProfile {
+
+    private static final int EDDSA_SIGNATURE_LENGTH_BYTES = 114;
+    private static final int DSA_SIGNATURE_LENGTH_BYTES = 20;
 
     /**
      * User Profile's identifier.
@@ -52,14 +56,14 @@ public final class ClientProfile {
 
     public ClientProfile(final int identifier, final int instanceTag, @Nonnull final Point longTermPublicKey,
                          @Nonnull final Collection<Integer> versions, final long expirationUnixTime,
-                         @Nullable final byte[] transitionalSignature, @Nonnull final byte[] profileSignature) {
+                         @Nonnull final byte[] transitionalSignature, @Nonnull final byte[] profileSignature) {
         this.identifier = identifier;
         this.instanceTag = instanceTag;
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
         this.versions = requireNoIllegalValues(versions, Session.OTRv.ONE, Session.OTRv.TWO);
         this.expirationUnixTime = expirationUnixTime;
-        this.transitionalSignature = transitionalSignature;
-        this.profileSignature = requireNonNull(profileSignature);
+        this.transitionalSignature = requireZeroOrLengthExactly(DSA_SIGNATURE_LENGTH_BYTES, transitionalSignature);
+        this.profileSignature = requireLengthExactly(EDDSA_SIGNATURE_LENGTH_BYTES, profileSignature);
     }
 
     public int getIdentifier() {
@@ -85,12 +89,12 @@ public final class ClientProfile {
     }
 
     @Nonnull
-    public byte[] getProfileSignature() {
-        return profileSignature;
+    public byte[] getTransitionalSignature() {
+        return transitionalSignature;
     }
 
     @Nonnull
-    public byte[] getTransitionalSignature() {
-        return transitionalSignature;
+    public byte[] getProfileSignature() {
+        return profileSignature;
     }
 }

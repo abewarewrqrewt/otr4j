@@ -413,7 +413,7 @@ public class SessionTest {
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
             this.profile = new ClientProfile(1, InstanceTag.random(random).getValue(),
                 this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
-                expirationCalendar.getTimeInMillis(), null, new byte[0]);
+                expirationCalendar.getTimeInMillis(), new byte[0], new byte[114]);
             this.session = OtrSessionManager.createSession(sessionID, this);
         }
 
