@@ -98,7 +98,7 @@ public final class ClientProfiles {
     @Nonnull
     public static byte[] write(@Nonnull final ClientProfile profile) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
-            writeTo(profile, out);
+            writeTo(out, profile);
             return out.toByteArray();
         }
     }
@@ -109,7 +109,7 @@ public final class ClientProfiles {
      * @param profile The client profile
      * @param out     The OTR output stream
      */
-    public static void writeTo(@Nonnull final ClientProfile profile, @Nonnull final OtrOutputStream out) {
+    public static void writeTo(@Nonnull final OtrOutputStream out, @Nonnull final ClientProfile profile) {
         out.writeInt(profile.getIdentifier());
         out.writeInt(profile.getInstanceTag());
         out.writePoint(profile.getLongTermPublicKey());
