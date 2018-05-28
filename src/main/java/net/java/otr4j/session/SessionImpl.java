@@ -432,7 +432,8 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
         if (masterSession == this && m instanceof AbstractEncodedMessage
-                && ((AbstractEncodedMessage) m).protocolVersion == Session.OTRv.THREE) {
+                && (((AbstractEncodedMessage) m).protocolVersion == Session.OTRv.THREE
+                    || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
             // In case of OTRv3 delegate message processing to dedicated slave
             // session.
             final AbstractEncodedMessage encodedM = (AbstractEncodedMessage) m;
@@ -543,7 +544,10 @@ final class SessionImpl implements Session, Context, AuthContext {
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
 
         final OtrPolicy policy = getSessionPolicy();
-        if (queryMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
+        if (queryMessage.getVersions().contains(OTRv.FOUR) && policy.getAllowV4()) {
+            logger.finest("Query message with V4 support found. Sending Identity Message.");
+            injectMessage(respondAuth(OTRv.FOUR, InstanceTag.ZERO_TAG, queryMessage.getTag()));
+        } else if (queryMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG, queryMessage.getTag()));
         } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
@@ -626,16 +630,21 @@ final class SessionImpl implements Session, Context, AuthContext {
             return;
         }
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
-        if (plainTextMessage.getVersions().contains(Session.OTRv.THREE)
-                && policy.getAllowV3()) {
+        if (plainTextMessage.getVersions().contains(Session.OTRv.FOUR) && policy.getAllowV4()) {
+            logger.finest("V4 tag found. Sending Identity Message.");
+            try {
+                injectMessage(respondAuth(Session.OTRv.FOUR, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+            } catch (final OtrException e) {
+                logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
+            }
+        } else if (plainTextMessage.getVersions().contains(Session.OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
                 injectMessage(respondAuth(Session.OTRv.THREE, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(Session.OTRv.TWO)
-                && policy.getAllowV2()) {
+        } else if (plainTextMessage.getVersions().contains(Session.OTRv.TWO) && policy.getAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
                 injectMessage(respondAuth(Session.OTRv.TWO, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
@@ -663,12 +672,16 @@ final class SessionImpl implements Session, Context, AuthContext {
             logger.finest("ALLOW_V3 is not set, ignore this message.");
             return null;
         }
+        if (m.protocolVersion == OTRv.FOUR && !policy.getAllowV4()) {
+            logger.finest("ALLOW_V4 is not set, ignore this message.");
+            return null;
+        }
 
         // Verify that we received an AKE message using the previously agreed
         // upon protocol version. Exception to this rule for DH Commit message,
         // as this message initiates a new AKE negotiation and thus proposes a
         // new protocol version corresponding to the message's intention.
-        if (!(m instanceof DHCommitMessage)
+        if (!(m instanceof DHCommitMessage) && !(m instanceof IdentityMessage)
                 && m.protocolVersion != this.authState.getVersion()) {
             logger.log(Level.INFO, "AKE message containing unexpected protocol version encountered. ({0} instead of {1}.) Ignoring.",
                     new Object[]{m.protocolVersion, this.authState.getVersion()});
@@ -1009,7 +1022,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // DHKey message. This is caused by the fact that we may get multiple
         // D-H Key responses to a D-H Commit message without receiver instance
         // tag. (This is due to the subtle workings of the implementation.)
-        logger.finest("Responding to Query Message with D-H Commit message.");
+        logger.finest("Responding to Query Message, acknowledging version " + version);
         return this.masterSession.authState.initiate(this.masterSession, version, receiverTag, queryTag);
     }
 

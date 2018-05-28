@@ -68,10 +68,13 @@ public abstract class AbstractEncodedMessage implements Message {
         // Start writing common header of encoded messages.
         writer.writeShort(this.protocolVersion);
         writer.writeByte(getType());
-        // FIXME need to upgrade version to support OTRv4.
-        if (this.protocolVersion == Session.OTRv.THREE) {
+        if (this.protocolVersion == Session.OTRv.TWO) {
+            // skipping serializing instance tags ...
+        } else if (this.protocolVersion == Session.OTRv.THREE || this.protocolVersion == Session.OTRv.FOUR) {
             writer.writeInt(this.senderInstanceTag);
             writer.writeInt(this.receiverInstanceTag);
+        } else {
+            throw new UnsupportedOperationException("Unsupported protocol version.");
         }
     }
 

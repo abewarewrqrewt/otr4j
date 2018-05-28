@@ -56,7 +56,7 @@ public final class EncodedMessageParser {
         final int messageType = input.readByte();
         final int senderInstanceTag;
         final int recipientInstanceTag;
-        if (protocolVersion >= Session.OTRv.THREE) {
+        if (protocolVersion == Session.OTRv.THREE || protocolVersion == Session.OTRv.FOUR) {
             senderInstanceTag = input.readInt();
             recipientInstanceTag = input.readInt();
         } else {

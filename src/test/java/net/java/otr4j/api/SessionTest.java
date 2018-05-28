@@ -366,7 +366,6 @@ public class SessionTest {
             channelAlice, channelBob);
         final Client hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
             RANDOM, channelBob, channelAlice);
-
         hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", hostAlice.receiveMessage());
         hostAlice.sendRequest();
