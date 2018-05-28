@@ -234,7 +234,7 @@ public final class OtrInputStream extends FilterInputStream implements
         long value = 0;
         for (int i = 0; i < b.length; i++) {
             final int shift = (b.length - 1 - i) * 8;
-            value += (b[i] & 0x00000000000000FF) << shift;
+            value += ((b[i] & 0xFFL) << shift);
         }
         return value;
     }

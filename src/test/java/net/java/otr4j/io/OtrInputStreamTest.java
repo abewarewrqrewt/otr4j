@@ -219,4 +219,12 @@ public class OtrInputStreamTest {
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readData();
     }
+
+    @Test
+    public void testReadLong() throws IOException {
+        final long expected = Long.MAX_VALUE;
+        final byte[] data = new byte[] {127, -1, -1, -1, -1, -1, -1, -1};
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        assertEquals(expected, in.readLong());
+    }
 }
