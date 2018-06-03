@@ -15,7 +15,7 @@ public final class IdentityMessages {
         // No need to instantiate utility class.
     }
 
-    public static void validate(@Nonnull final IdentityMessage message) throws ClientProfiles.InvalidClientProfileException,
+    public static void validate(@Nonnull final IdentityMessage message) throws ClientProfiles.ValidationFailedException,
         OtrCryptoException {
 
         if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {

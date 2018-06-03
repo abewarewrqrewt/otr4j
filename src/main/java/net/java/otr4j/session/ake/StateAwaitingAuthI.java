@@ -77,7 +77,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     @Nullable
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.ValidationFailedException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -92,7 +92,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         return null;
     }
 
-    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message) throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message) throws OtrCryptoException, ClientProfiles.ValidationFailedException {
         IdentityMessages.validate(message);
         final ClientProfile profile = context.getClientProfile();
         final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();

@@ -52,18 +52,18 @@ public final class ClientProfiles {
      *
      * @param profile user profile to be verified.
      */
-    public static void validate(@Nonnull final ClientProfile profile) throws InvalidClientProfileException,
+    public static void validate(@Nonnull final ClientProfile profile) throws ValidationFailedException,
         OtrCryptoException {
 
         // Verify that the User Profile has not expired.
         final Date now = new Date();
         final Date expirationDate = new Date(profile.getExpirationUnixTime());
         if (!now.before(expirationDate)) {
-            throw new InvalidClientProfileException("User profile has expired.");
+            throw new ValidationFailedException("User profile has expired.");
         }
         // Verify that the Versions field contains the character "4".
         if (!profile.getVersions().contains(Session.OTRv.FOUR)) {
-            throw new InvalidClientProfileException("OTR version 4 is not included in user profile list of accepted OTR protocol versions.");
+            throw new ValidationFailedException("OTR version 4 is not included in user profile list of accepted OTR protocol versions.");
         }
         // Validate that the Public Shared Prekey and the Ed448 Public Key are on the curve Ed448-Goldilocks.
         verifyEdDSAPublicKey(profile.getLongTermPublicKey());
@@ -122,9 +122,9 @@ public final class ClientProfiles {
     /**
      * Exception indicating an invalid user profile.
      */
-    public static final class InvalidClientProfileException extends OtrException {
+    public static final class ValidationFailedException extends OtrException {
 
-        private InvalidClientProfileException(@Nonnull final String message) {
+        private ValidationFailedException(@Nonnull final String message) {
             super(message);
         }
     }

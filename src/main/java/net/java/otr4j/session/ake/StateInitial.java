@@ -71,7 +71,7 @@ public final class StateInitial extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
 
         if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
@@ -111,7 +111,7 @@ public final class StateInitial extends AbstractAuthState {
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
 
         validate(message);
         final ClientProfile profile = context.getClientProfile();

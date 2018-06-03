@@ -68,7 +68,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nullable
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.ValidationFailedException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -85,7 +85,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
                                                          @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
         IdentityMessages.validate(message);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
@@ -98,7 +98,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
-        throws OtrCryptoException, ClientProfiles.InvalidClientProfileException {
+        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();

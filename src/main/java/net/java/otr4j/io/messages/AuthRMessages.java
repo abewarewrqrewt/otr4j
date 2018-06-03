@@ -36,7 +36,7 @@ public final class AuthRMessages {
      * @param receiverECDHPublicKey the receiver's ECDH public key
      * @param receiverDHPublicKey   the receiver's DH public key
      * @param queryTag              the query tag
-     * @throws ClientProfiles.InvalidClientProfileException In case user profile validation has failed.
+     * @throws ClientProfiles.ValidationFailedException In case user profile validation has failed.
      * @throws OtrCryptoException                       In case any cryptographic verification failed, such as ephemeral
      *                                                  public keys or the ring signature.
      */
@@ -44,7 +44,7 @@ public final class AuthRMessages {
                                 @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
                                 @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
                                 @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
-                                @Nonnull final String queryTag) throws ClientProfiles.InvalidClientProfileException, OtrCryptoException {
+                                @Nonnull final String queryTag) throws ClientProfiles.ValidationFailedException, OtrCryptoException {
         if (message.getType() != AuthRMessage.MESSAGE_AUTH_R) {
             throw new IllegalStateException("Auth-R message should not have any other type than 0x91.");
         }
