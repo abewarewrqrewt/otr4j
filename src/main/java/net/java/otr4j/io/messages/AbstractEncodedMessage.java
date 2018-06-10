@@ -8,6 +8,7 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session;
+import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
@@ -16,8 +17,7 @@ import javax.annotation.Nonnull;
  * @author George Politis
  * @author Danny van Heumen
  */
-// FIXME extract "encodeable" property such that it can be reused for smaller subparts of the OTR encoded message.
-public abstract class AbstractEncodedMessage implements Message {
+public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
 
     public final int protocolVersion;
 
@@ -64,7 +64,8 @@ public abstract class AbstractEncodedMessage implements Message {
         return true;
     }
 
-    public void write(@Nonnull final OtrOutputStream writer) {
+    @Override
+    public void writeTo(@Nonnull final OtrOutputStream writer) {
         // Start writing common header of encoded messages.
         writer.writeShort(this.protocolVersion);
         writer.writeByte(getType());

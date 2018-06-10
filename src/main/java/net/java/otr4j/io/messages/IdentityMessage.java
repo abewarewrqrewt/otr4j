@@ -55,9 +55,9 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) {
-        super.write(writer);
-        writeTo(writer, this.clientProfile);
+    public void writeTo(@Nonnull final OtrOutputStream writer) {
+        super.writeTo(writer);
+        clientProfile.writeTo(writer);
         writer.writePoint(this.y);
         writer.writeBigInt(this.b);
     }

@@ -122,8 +122,8 @@ public final class DataMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) {
-        super.write(writer);
+    public void writeTo(@Nonnull final OtrOutputStream writer) {
+        super.writeTo(writer);
         writer.writeByte(this.flags);
         writer.writeInt(this.senderKeyID);
         writer.writeInt(this.recipientKeyID);

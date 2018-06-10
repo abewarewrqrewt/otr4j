@@ -65,9 +65,9 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) {
-        super.write(writer);
-        writeTo(writer, this.clientProfile);
+    public void writeTo(@Nonnull final OtrOutputStream writer) {
+        super.writeTo(writer);
+        this.clientProfile.writeTo(writer);
         writer.writePoint(this.x);
         writer.writeBigInt(this.a);
         this.sigma.writeTo(writer);

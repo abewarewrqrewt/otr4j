@@ -68,8 +68,8 @@ public final class SignatureMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) {
-        super.write(writer);
+    public void writeTo(@Nonnull final OtrOutputStream writer) {
+        super.writeTo(writer);
         writer.writeData(this.xEncrypted);
         writer.writeMac(this.xEncryptedMAC);
     }

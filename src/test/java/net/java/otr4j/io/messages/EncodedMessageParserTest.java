@@ -47,7 +47,7 @@ public class EncodedMessageParserTest {
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
-        m.write(otrOutput);
+        m.writeTo(otrOutput);
         // Parse produced message bytes.
         final ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
         final OtrInputStream otrInput = new OtrInputStream(input);
@@ -62,7 +62,7 @@ public class EncodedMessageParserTest {
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.FOUR, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
-        m.write(otrOutput);
+        m.writeTo(otrOutput);
         // Parse produced message bytes.
         final ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
         final OtrInputStream otrInput = new OtrInputStream(input);
@@ -76,7 +76,7 @@ public class EncodedMessageParserTest {
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
-        m.write(otrOutput);
+        m.writeTo(otrOutput);
         final byte[] message = output.toByteArray();
         for (int i = 0; i < message.length; i++) {
             // Try every possible partial message by starting with 0 length message up to the full-length message and

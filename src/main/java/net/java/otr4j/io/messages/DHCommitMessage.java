@@ -68,8 +68,8 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public void write(@Nonnull final OtrOutputStream writer) {
-        super.write(writer);
+    public void writeTo(@Nonnull final OtrOutputStream writer) {
+        super.writeTo(writer);
         writer.writeData(this.dhPublicKeyEncrypted);
         writer.writeData(this.dhPublicKeyHash);
     }
