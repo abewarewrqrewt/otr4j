@@ -1,5 +1,6 @@
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
@@ -336,7 +337,7 @@ public final class OtrCryptoEngine4 {
      * Data structure that captures all related data for 'sigma' in the Ring Signature.
      */
     // FIXME write unit tests
-    public static final class Sigma {
+    public static final class Sigma implements OtrEncodable {
         private final BigInteger c1;
         private final BigInteger r1;
         private final BigInteger c2;
@@ -375,6 +376,7 @@ public final class OtrCryptoEngine4 {
          *
          * @param out The output stream.
          */
+        @Override
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeData(encodeLittleEndian(this.c1));
             out.writeData(encodeLittleEndian(this.r1));
