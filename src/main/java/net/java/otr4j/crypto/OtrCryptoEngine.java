@@ -109,6 +109,7 @@ public final class OtrCryptoEngine {
         // this class is never instantiated, it only has static methods
     }
 
+    // FIXME add unit tests.
     @Nonnull
     public static KeyPair generateDSAKeyPair() {
         try {
@@ -428,7 +429,7 @@ public final class OtrCryptoEngine {
         verify(b, pubKey, new BigInteger(1, r), new BigInteger(1, s));
     }
 
-    private static void verify(@Nonnull final byte[] b, @Nonnull final PublicKey pubKey, @Nonnull final BigInteger r,
+    public static void verify(@Nonnull final byte[] b, @Nonnull final PublicKey pubKey, @Nonnull final BigInteger r,
             @Nonnull final BigInteger s) throws OtrCryptoException {
 
         if (!(pubKey instanceof DSAPublicKey)) {
