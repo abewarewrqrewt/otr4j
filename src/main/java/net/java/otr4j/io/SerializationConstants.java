@@ -35,5 +35,7 @@ public interface SerializationConstants {
      */
     int PUBLIC_KEY_TYPE_DSA = 0;
 
+    int EDDSA_SIGNATURE_LENGTH_BYTES = 114;
+
     String DEFAULT_FALLBACK_MESSAGE = "Your contact is requesting to start an encrypted chat. Please install an app that supports OTR: https://github.com/otr4j/otr4j/wiki/Apps";
 }

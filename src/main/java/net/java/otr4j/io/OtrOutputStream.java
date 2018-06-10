@@ -174,8 +174,25 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeData(t.encryptedMessage);
     }
 
+    /**
+     * Write an Edwards point encoded according to RFC8032.
+     *
+     * @param p The Edwards point.
+     */
+    // FIXME add unit tests.
     public void writePoint(@Nonnull final Point p) {
         writeData(p.encode());
+    }
+
+    /**
+     * Write an EdDSA signature.
+     *
+     * @param signature A signature consisting of exactly 114 bytes is expected.
+     */
+    // FIXME add unit tests.
+    public void writeEdDSASignature(@Nonnull final byte[] signature) {
+        requireLengthExactly(EDDSA_SIGNATURE_LENGTH_BYTES, signature);
+        this.out.write(signature, 0, signature.length);
     }
 
     private void writeNumber(final int value, final int length) {
