@@ -3,10 +3,12 @@ package net.java.otr4j.io;
 import org.bouncycastle.util.BigIntegers;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -115,5 +117,29 @@ public class OtrOutputStreamTest {
             out.writeLong(value);
             assertArrayEquals(expected, out.toByteArray());
         }
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteEncodableNull() {
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.write(null);
+        }
+    }
+
+    @Test
+    public void testWriteEncodable() {
+        final byte[] data = "Hello world!".getBytes(UTF8);
+        final byte[] expected = concatenate(new byte[]{0, 0, 0, 0xc}, data);
+        final byte[] result;
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.write(new OtrEncodable() {
+                @Override
+                public void writeTo(@Nonnull final OtrOutputStream out) {
+                    out.writeData(data);
+                }
+            });
+            result = out.toByteArray();
+        }
+        assertArrayEquals(expected, result);
     }
 }

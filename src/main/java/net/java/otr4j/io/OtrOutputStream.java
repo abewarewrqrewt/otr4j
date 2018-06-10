@@ -54,6 +54,10 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         return this.out.toByteArray();
     }
 
+    public void write(@Nonnull final OtrEncodable encodable) {
+        encodable.writeTo(this);
+    }
+
     public void writeBigInt(@Nonnull final BigInteger bi) {
         final byte[] b = asUnsignedByteArray(bi);
         writeData(b);
