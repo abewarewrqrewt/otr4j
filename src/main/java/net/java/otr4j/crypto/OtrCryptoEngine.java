@@ -7,6 +7,35 @@
 
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.io.SerializationConstants;
+import net.java.otr4j.io.SerializationUtils;
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.generators.DHKeyPairGenerator;
+import org.bouncycastle.crypto.modes.SICBlockCipher;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.DHKeyGenerationParameters;
+import org.bouncycastle.crypto.params.DHParameters;
+import org.bouncycastle.crypto.params.DHPrivateKeyParameters;
+import org.bouncycastle.crypto.params.DHPublicKeyParameters;
+import org.bouncycastle.crypto.params.DSAParameters;
+import org.bouncycastle.crypto.params.DSAPrivateKeyParameters;
+import org.bouncycastle.crypto.params.DSAPublicKeyParameters;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.crypto.signers.DSASigner;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.crypto.KeyAgreement;
+import javax.crypto.Mac;
+import javax.crypto.interfaces.DHPrivateKey;
+import javax.crypto.interfaces.DHPublicKey;
+import javax.crypto.spec.DHPrivateKeySpec;
+import javax.crypto.spec.DHPublicKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
@@ -25,37 +54,8 @@ import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.crypto.KeyAgreement;
-import javax.crypto.Mac;
-import javax.crypto.interfaces.DHPrivateKey;
-import javax.crypto.interfaces.DHPublicKey;
-import javax.crypto.spec.DHPrivateKeySpec;
-import javax.crypto.spec.DHPublicKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import net.java.otr4j.io.SerializationConstants;
-import net.java.otr4j.io.SerializationUtils;
-
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.BufferedBlockCipher;
-import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.generators.DHKeyPairGenerator;
-import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.DHKeyGenerationParameters;
-import org.bouncycastle.crypto.params.DHParameters;
-import org.bouncycastle.crypto.params.DHPrivateKeyParameters;
-import org.bouncycastle.crypto.params.DHPublicKeyParameters;
-import org.bouncycastle.crypto.params.DSAParameters;
-import org.bouncycastle.crypto.params.DSAPrivateKeyParameters;
-import org.bouncycastle.crypto.params.DSAPublicKeyParameters;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.crypto.signers.DSASigner;
-import org.bouncycastle.util.BigIntegers;
+import static java.util.Objects.requireNonNull;
+import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
  * Utility for cryptographic functions.
@@ -334,18 +334,40 @@ public final class OtrCryptoEngine {
 
     @Nonnull
     public static byte[] sign(@Nonnull final byte[] b, @Nonnull final PrivateKey privatekey) {
-
         if (!(privatekey instanceof DSAPrivateKey)) {
             throw new IllegalArgumentException("Private key instance must be of type DSAPrivateKey.");
         }
 
-        final DSAParams dsaParams = ((DSAPrivateKey) privatekey).getParams();
-        final DSAParameters bcDSAParameters = new DSAParameters(dsaParams.getP(),
-                dsaParams.getQ(), dsaParams.getG());
-
         final DSAPrivateKey dsaPrivateKey = (DSAPrivateKey) privatekey;
-        final DSAPrivateKeyParameters bcDSAPrivateKeyParms = new DSAPrivateKeyParameters(
-                dsaPrivateKey.getX(), bcDSAParameters);
+        final BigInteger q = dsaPrivateKey.getParams().getQ();
+        final DSASignature signature = signRS(b, dsaPrivateKey);
+
+        final int siglen = q.bitLength() / 4;
+        final int rslen = siglen / 2;
+        final byte[] rb = asUnsignedByteArray(signature.r);
+        final byte[] sb = asUnsignedByteArray(signature.s);
+
+        // Create the final signature array, padded with zeros if necessary.
+        final byte[] sig = new byte[siglen];
+        System.arraycopy(rb, 0, sig, rslen - rb.length, rb.length);
+        System.arraycopy(sb, 0, sig, sig.length - sb.length, sb.length);
+        return sig;
+    }
+
+    /**
+     * Sign data 'b' using DSA private key 'privateKey' and return signature components 'r' and 's'.
+     *
+     * @param b          The data to be signed.
+     * @param privateKey The private key.
+     * @return Signature components 'r' and 's'.
+     */
+    // FIXME write unit tests.
+    @Nonnull
+    public static DSASignature signRS(@Nonnull final byte[] b, @Nonnull final DSAPrivateKey privateKey) {
+        final DSAParams dsaParams = privateKey.getParams();
+        final DSAParameters bcDSAParameters = new DSAParameters(dsaParams.getP(), dsaParams.getQ(), dsaParams.getG());
+        final DSAPrivateKeyParameters bcDSAPrivateKeyParms = new DSAPrivateKeyParameters(privateKey.getX(),
+            bcDSAParameters);
 
         final DSASigner dsaSigner = new DSASigner();
         dsaSigner.init(true, bcDSAPrivateKeyParms);
@@ -358,19 +380,20 @@ public final class OtrCryptoEngine {
         // should be well.
         // ref: Interop problems with libotr - DSA signature
         final BigInteger bmpi = new BigInteger(1, b);
-        final BigInteger[] rs = dsaSigner.generateSignature(BigIntegers
-                .asUnsignedByteArray(bmpi.mod(q)));
+        final BigInteger[] signature = dsaSigner.generateSignature(asUnsignedByteArray(bmpi.mod(q)));
+        assert signature.length == 2 : "signRS result does not contain the expected 2 components: r and s";
+        return new DSASignature(signature[0], signature[1]);
+    }
 
-        final int siglen = q.bitLength() / 4;
-        final int rslen = siglen / 2;
-        final byte[] rb = BigIntegers.asUnsignedByteArray(rs[0]);
-        final byte[] sb = BigIntegers.asUnsignedByteArray(rs[1]);
+    public static final class DSASignature {
 
-        // Create the final signature array, padded with zeros if necessary.
-        final byte[] sig = new byte[siglen];
-        System.arraycopy(rb, 0, sig, rslen - rb.length, rb.length);
-        System.arraycopy(sb, 0, sig, sig.length - sb.length, sb.length);
-        return sig;
+        public final BigInteger r;
+        public final BigInteger s;
+
+        public DSASignature(@Nonnull final BigInteger r, @Nonnull final BigInteger s) {
+            this.r = requireNonNull(r);
+            this.s = requireNonNull(s);
+        }
     }
 
     /**
@@ -431,7 +454,7 @@ public final class OtrCryptoEngine {
         dsaSigner.init(false, dsaPrivParms);
 
         final BigInteger bmpi = new BigInteger(1, b);
-        if (!dsaSigner.verifySignature(BigIntegers.asUnsignedByteArray(bmpi.mod(q)), r, s)) {
+        if (!dsaSigner.verifySignature(asUnsignedByteArray(bmpi.mod(q)), r, s)) {
             throw new OtrCryptoException("DSA signature verification failed.");
         }
     }
