@@ -43,8 +43,11 @@ abstract class AbstractAuthState implements AuthState {
         }
         if (version == Session.OTRv.TWO || version == Session.OTRv.THREE) {
             return initiateVersion3(context, version, receiverTag);
+        } else if (version == Session.OTRv.FOUR) {
+            return initiateVersion4(context, receiverTag, queryTag);
+        } else {
+            throw new UnsupportedOperationException("Unsupported protocol version.");
         }
-        return initiateVersion4(context, receiverTag, queryTag);
     }
 
     @Nonnull
