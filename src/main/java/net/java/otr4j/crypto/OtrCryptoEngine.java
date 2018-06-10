@@ -109,11 +109,10 @@ public final class OtrCryptoEngine {
         // this class is never instantiated, it only has static methods
     }
 
-    // FIXME add unit tests.
     @Nonnull
     public static KeyPair generateDSAKeyPair() {
         try {
-            KeyPairGenerator kg = KeyPairGenerator.getInstance(ALGORITHM_DSA);
+            final KeyPairGenerator kg = KeyPairGenerator.getInstance(ALGORITHM_DSA);
             return kg.genKeyPair();
         } catch (final NoSuchAlgorithmException e) {
             throw new IllegalStateException("Failed to generate DSA key pair.", e);

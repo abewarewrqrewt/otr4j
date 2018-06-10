@@ -10,11 +10,13 @@ package net.java.otr4j.crypto;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import org.junit.Test;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
 import static net.java.otr4j.io.SerializationUtils.UTF8;
@@ -126,5 +128,26 @@ public class OtrCryptoEngineTest {
         final byte[] m = new byte[0];
         final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
         verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
+    }
+
+    @Test
+    public void testGenerateDSAKeyPair() {
+        final KeyPair keypair = generateDSAKeyPair();
+        assertNotNull(keypair);
+        assertTrue(keypair.getPublic() instanceof DSAPublicKey);
+        assertTrue(keypair.getPrivate() instanceof DSAPrivateKey);
+    }
+
+    @Test
+    public void testGenerateDSAKeyPairDifferentKeyPairs() {
+        final KeyPair keypair1 = generateDSAKeyPair();
+        final KeyPair keypair2 = generateDSAKeyPair();
+        final KeyPair keypair3 = generateDSAKeyPair();
+        assertNotEquals(((DSAPublicKey)keypair1.getPublic()).getY(), ((DSAPublicKey)keypair2.getPublic()).getY());
+        assertNotEquals(((DSAPublicKey)keypair1.getPublic()).getY(), ((DSAPublicKey)keypair3.getPublic()).getY());
+        assertNotEquals(((DSAPublicKey)keypair2.getPublic()).getY(), ((DSAPublicKey)keypair3.getPublic()).getY());
+        assertNotEquals(((DSAPrivateKey)keypair1.getPrivate()).getX(), ((DSAPrivateKey)keypair2.getPrivate()).getX());
+        assertNotEquals(((DSAPrivateKey)keypair1.getPrivate()).getX(), ((DSAPrivateKey)keypair3.getPrivate()).getX());
+        assertNotEquals(((DSAPrivateKey)keypair2.getPrivate()).getX(), ((DSAPrivateKey)keypair3.getPrivate()).getX());
     }
 }
