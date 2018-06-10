@@ -227,7 +227,7 @@ public final class SerializationUtils {
         } else if (m instanceof AbstractEncodedMessage) {
             writer.write(HEAD_ENCODED);
             try (final OtrOutputStream out = new OtrOutputStream()) {
-                ((AbstractEncodedMessage) m).writeTo(out);
+                out.write((AbstractEncodedMessage) m);
                 writer.write(toBase64String(out.toByteArray()));
             }
             writer.write(".");

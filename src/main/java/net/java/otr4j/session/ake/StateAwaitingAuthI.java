@@ -18,7 +18,6 @@ import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.math.BigInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;

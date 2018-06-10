@@ -38,6 +38,6 @@ public final class AuthIMessage extends AbstractEncodedMessage {
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
-        this.sigma.writeTo(writer);
+        writer.write(this.sigma);
     }
 }
