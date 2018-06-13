@@ -8,6 +8,7 @@
 package net.java.otr4j.api;
 
 import java.security.SecureRandom;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
 // FIXME ensure that instance tags are persistent. Nowhere can we arbitrarily generate instance tags as they require matching up with the instance tag value in the Client Profile.
@@ -55,6 +56,7 @@ public final class InstanceTag {
      */
     private final int value;
 
+    @CheckReturnValue
     public static boolean isValidInstanceTag(final int tagValue) {
         // Note that the decimal representation of Java's int is always
         // signed, that means that any value over 0x7fffffff will be
