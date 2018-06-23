@@ -22,21 +22,26 @@ public final class AuthIMessages {
     }
 
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
-                                @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile profileBob,
-                                @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a,
-                                @Nonnull final BigInteger b, @Nonnull final InstanceTag senderTag,
-                                @Nonnull final InstanceTag receiverTag, @Nonnull final String senderAccountID,
-                                @Nonnull final String receiverAccountID) throws OtrCryptoException {
+                                @Nonnull final ClientProfilePayload ourProfilePayload,
+                                @Nonnull final ClientProfilePayload profilePayloadBob, @Nonnull final Point x,
+                                @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
+                                @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
+                                @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID)
+        throws OtrCryptoException, ClientProfilePayload.ValidationException {
+
         if (message.getType() != AuthIMessage.MESSAGE_AUTH_I) {
             throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");
         }
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
+        // FIXME fix non-functional validation.
+        final ClientProfile ourProfile = ourProfilePayload.validate();
+        final ClientProfile profileBob = profilePayloadBob.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
-        final byte[] t = MysteriousT4.encode(ourProfile, profileBob, x, y, a, b, senderTag, receiverTag, queryTag,
-            senderAccountID, receiverAccountID);
+        final byte[] t = MysteriousT4.encode(ourProfilePayload, profilePayloadBob, x, y, a, b, senderTag, receiverTag,
+            queryTag, senderAccountID, receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
         ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), x, message.getSigma(), t);
     }

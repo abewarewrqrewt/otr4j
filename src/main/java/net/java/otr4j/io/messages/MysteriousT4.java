@@ -1,7 +1,7 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.io.OtrEncodables;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -10,7 +10,6 @@ import java.math.BigInteger;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.io.SerializationUtils.generatePhi;
 import static net.java.otr4j.io.SerializationUtils.writeMpi;
-import static net.java.otr4j.profile.ClientProfiles.write;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -35,14 +34,20 @@ public final class MysteriousT4 {
     }
 
     @Nonnull
-    public static byte[] encode(@Nonnull final ClientProfile profileAlice, @Nonnull final ClientProfile profileBob,
-                                @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a,
-                                @Nonnull final BigInteger b, @Nonnull final InstanceTag senderInstanceTag,
-                                @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final String queryTag,
-                                @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
-        final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE, write(profileBob)),
+    public static byte[] encode(@Nonnull final ClientProfilePayload profileAlice,
+                                @Nonnull final ClientProfilePayload profileBob,
+                                @Nonnull final Point x,
+                                @Nonnull final Point y,
+                                @Nonnull final BigInteger a,
+                                @Nonnull final BigInteger b,
+                                @Nonnull final InstanceTag senderInstanceTag,
+                                @Nonnull final InstanceTag receiverInstanceTag,
+                                @Nonnull final String queryTag,
+                                @Nonnull final String senderContactID,
+                                @Nonnull final String receiverContactID) {
+        final byte[] bobsProfileEncoded = kdf1(concatenate(USAGE_ID_BOBS_PROFILE, OtrEncodables.encode(profileBob)),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
-        final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, write(profileAlice)),
+        final byte[] alicesProfileEncoded = kdf1(concatenate(USAGE_ID_ALICES_PROFILE, OtrEncodables.encode(profileAlice)),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] yEncoded = y.encode();
         final byte[] xEncoded = x.encode();

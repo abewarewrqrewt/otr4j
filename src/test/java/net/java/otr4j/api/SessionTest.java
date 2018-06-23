@@ -1,7 +1,9 @@
 
 package net.java.otr4j.api;
 
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.session.OtrSessionManager;
 import net.java.otr4j.test.TestStrings;
@@ -25,7 +27,6 @@ import java.util.logging.Logger;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.generateEdDSAKeyPair;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -341,53 +342,61 @@ public class SessionTest {
 
     @Test
     public void testPlainTextMessagingNewClients() throws OtrException, InterruptedException {
-        final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(20);
-        final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(20);
-        final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4", "DummyNetwork4");
-        final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4", "DummyNetwork4");
-        final Client hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
-            channelAlice, channelBob);
-        final Client hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
-            RANDOM, channelBob, channelAlice);
-
-        hostBob.sendMessage("hello world");
-        assertEquals("hello world", hostAlice.receiveMessage());
-        hostAlice.sendMessage("hello bob");
-        assertEquals("hello bob", hostBob.receiveMessage());
+        final Conversation c = new Conversation();
+        c.hostBob.sendMessage("hello world");
+        assertEquals("hello world", c.hostAlice.receiveMessage());
+        c.hostAlice.sendMessage("hello bob");
+        assertEquals("hello bob", c.hostBob.receiveMessage());
     }
 
     @Test
     public void testEstablishOTR4Session() throws OtrException, InterruptedException {
-        final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(20);
-        final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(20);
-        final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4", "DummyNetwork4");
-        final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4", "DummyNetwork4");
-        final Client hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
-            channelAlice, channelBob);
-        final Client hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
-            RANDOM, channelBob, channelAlice);
-        hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", hostAlice.receiveMessage());
-        hostAlice.sendRequest();
-        assertNull(hostBob.receiveMessage());
-        assertNull(hostAlice.receiveMessage());
-        assertNull(hostBob.receiveMessage());
-        assertNull(hostAlice.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, hostAlice.getMessageState());
-        assertNull(hostBob.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, hostBob.getMessageState());
+        final Conversation c = new Conversation();
+        c.hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.hostAlice.sendRequest();
+        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.hostAlice.receiveMessage());
+        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.hostAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertNull(c.hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+    }
+
+    /**
+     * Dummy conversation implementation, mimicking a conversation between two parties.
+     */
+    private static final class Conversation {
+
+        private final Client hostAlice;
+        private final Client hostBob;
+
+        private Conversation() {
+            final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(20);
+            final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(20);
+            final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4",
+                "DummyNetwork4");
+            final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4",
+                "DummyNetwork4");
+            this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
+                channelAlice, channelBob);
+            this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
+                RANDOM, channelBob, channelAlice);
+        }
     }
 
     /**
      * Dummy client implementation for use with OTRv4 protocol tests.
      */
-    private static class Client implements OtrEngineHost {
+    // FIXME naming for consistency between field name, method name, type name.
+    private static final class Client implements OtrEngineHost {
 
         private final Logger logger;
 
         private final KeyPair dsaKeyPair;
 
-        private final nl.dannyvanheumen.joldilocks.KeyPair ed448KeyPair;
+        private final EdDSAKeyPair ed448KeyPair;
 
         private final BlockingQueue<String> sendChannel;
 
@@ -395,7 +404,7 @@ public class SessionTest {
 
         private final OtrPolicy policy;
 
-        private final ClientProfile profile;
+        private final ClientProfilePayload profilePayload;
 
         private final Session session;
 
@@ -403,16 +412,18 @@ public class SessionTest {
                        @Nonnull final SecureRandom random, @Nonnull final BlockingQueue<String> sendChannel,
                        @Nonnull final BlockingQueue<String> receiptChannel) {
             this.logger = Logger.getLogger(Client.class.getName() + ":" + label);
-            this.ed448KeyPair = generateEdDSAKeyPair(random);
+            this.ed448KeyPair = EdDSAKeyPair.generate(random);
             this.dsaKeyPair = OtrCryptoEngine.generateDSAKeyPair();
             this.receiptChannel = requireNonNull(receiptChannel);
             this.sendChannel = requireNonNull(sendChannel);
             this.policy = requireNonNull(policy);
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
-            this.profile = new ClientProfile(1, InstanceTag.random(random).getValue(),
+            final ClientProfile profile = new ClientProfile(InstanceTag.random(random).getValue(),
                 this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
-                expirationCalendar.getTimeInMillis(), new byte[0], new byte[114]);
+                expirationCalendar.getTimeInMillis()/1000);
+            // FIXME non-functional conversion used. Must be fixed.
+            this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
             this.session = OtrSessionManager.createSession(sessionID, this);
         }
 
@@ -488,14 +499,14 @@ public class SessionTest {
 
         @Nonnull
         @Override
-        public nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair(@Nonnull final SessionID sessionID) {
+        public EdDSAKeyPair getLongTermKeyPair(@Nonnull final SessionID sessionID) {
             return this.ed448KeyPair;
         }
 
         @Nonnull
         @Override
-        public ClientProfile getClientProfile() {
-            return this.profile;
+        public ClientProfilePayload getClientProfile() {
+            return this.profilePayload;
         }
 
         @Override

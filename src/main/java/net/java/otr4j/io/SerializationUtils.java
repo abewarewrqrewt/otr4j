@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -370,7 +371,7 @@ public final class SerializationUtils {
      */
     @Nonnull
     public static Set<Integer> parseVersionString(@Nonnull final String versionString) {
-        final HashSet<Integer> versions = new HashSet<>();
+        final TreeSet<Integer> versions = new TreeSet<>();
         for (final char c : versionString.toCharArray()) {
             final int idx = NUMBERINDEX.indexOf(c);
             if (idx > -1) {

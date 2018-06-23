@@ -7,14 +7,14 @@
 
 package net.java.otr4j.session.ake;
 
-import java.security.KeyPair;
-import java.security.SecureRandom;
+import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;
-
-import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.profile.ClientProfile;
+import java.security.KeyPair;
+import java.security.SecureRandom;
 
 /**
  * Context required for authentication state implementations.
@@ -90,7 +90,7 @@ public interface AuthContext {
      * @return Returns the long-term key pair.
      */
     // TODO think up a decent name for this, as not to confuse with the original OTRv2/OTRv3 local long-term key pair.
-    nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair();
+    EdDSAKeyPair getLongTermKeyPair();
 
     /**
      * Sender instance tag value.
@@ -114,7 +114,7 @@ public interface AuthContext {
      * @return Returns the client profile for this client.
      */
     @Nonnull
-    ClientProfile getClientProfile();
+    ClientProfilePayload getClientProfile();
 
     /**
      * InteractionFailedException indicates an error happened while interacting

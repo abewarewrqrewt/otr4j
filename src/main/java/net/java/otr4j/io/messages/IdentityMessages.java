@@ -2,7 +2,6 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.profile.ClientProfiles;
 
 import javax.annotation.Nonnull;
 
@@ -15,8 +14,7 @@ public final class IdentityMessages {
         // No need to instantiate utility class.
     }
 
-    public static void validate(@Nonnull final IdentityMessage message) throws ClientProfiles.ValidationFailedException,
-        OtrCryptoException {
+    public static void validate(@Nonnull final IdentityMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
 
         if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {
             throw new IllegalStateException("Identity message should not have any other type than 0x08.");
@@ -24,8 +22,11 @@ public final class IdentityMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
-        ClientProfiles.validate(message.getClientProfile());
+        // FIXME consider moving this out to first use case, instead of prematurely validating here.
+        message.getClientProfile().validate();
         verifyECDHPublicKey(message.getY());
         verifyDHPublicKey(message.getB());
+        // FIXME finish implementation.
+        throw new UnsupportedOperationException("To be implemented.");
     }
 }

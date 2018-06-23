@@ -4,8 +4,6 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
-import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -107,14 +105,14 @@ public final class EncodedMessageParser {
             }
             case MESSAGE_IDENTITY: {
                 requireOTR4(protocolVersion);
-                final ClientProfile profile = ClientProfiles.readFrom(input);
+                final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
                 final Point y = input.readPoint();
                 final BigInteger b = input.readBigInt();
                 return new IdentityMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, y, b);
             }
             case MESSAGE_AUTH_R: {
                 requireOTR4(protocolVersion);
-                final ClientProfile profile = ClientProfiles.readFrom(input);
+                final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
                 final Point x = input.readPoint();
                 final BigInteger a = input.readBigInt();
                 final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);

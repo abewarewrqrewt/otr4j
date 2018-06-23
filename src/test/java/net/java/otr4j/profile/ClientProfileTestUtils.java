@@ -1,7 +1,8 @@
 package net.java.otr4j.profile;
 
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 
 import java.security.SecureRandom;
 import java.util.HashSet;
@@ -12,7 +13,7 @@ public final class ClientProfileTestUtils {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final ECDHKeyPair longTermKeyPair;
+    private final EdDSAKeyPair eddsaLongTermKeyPair;
 
     private final long expirationTime;
 
@@ -20,27 +21,26 @@ public final class ClientProfileTestUtils {
      * Construct user profile test utils with default parameters.
      */
     public ClientProfileTestUtils() {
-        this.longTermKeyPair = ECDHKeyPair.generate(RANDOM);
+        this.eddsaLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
         // By default set expiration time of 1 day in future.
         this.expirationTime = System.currentTimeMillis() / 1000 + 86400;
     }
 
-    public ClientProfile createUserProfile() {
+    public ClientProfilePayload createUserProfile() {
         // TODO produce user profile signature.
-        return new ClientProfile(0, 0x100, this.longTermKeyPair.getPublicKey(),
-            singleton(Session.OTRv.FOUR), this.expirationTime, new byte[0], new byte[114]);
+        final ClientProfile profile = new ClientProfile(0x100, this.eddsaLongTermKeyPair.getPublicKey(),
+            singleton(Session.OTRv.FOUR), this.expirationTime);
+        // FIXME non-functional conversion. Needs to be fixed.
+        return ClientProfilePayload.sign(profile, null, this.eddsaLongTermKeyPair);
     }
 
-    public ClientProfile createTransitionalUserProfile() {
+    public ClientProfilePayload createTransitionalUserProfile() {
         final HashSet<Integer> versions = new HashSet<>();
         versions.add(Session.OTRv.THREE);
         versions.add(Session.OTRv.FOUR);
-        // TODO produce transitional signature.
-        final byte[] transitionalSignature = new byte[20];
-        // TODO produce user profile signature.
-        final byte[] profileSignature = new byte[114];
-        return new ClientProfile(0, 0x100, this.longTermKeyPair.getPublicKey(), versions,
-            this.expirationTime, transitionalSignature, profileSignature);
+        final ClientProfile profile = new ClientProfile(0x100, this.eddsaLongTermKeyPair.getPublicKey(),
+            versions, this.expirationTime);
+        // FIXME non-functional conversion. Needs to be fixed.
+        return ClientProfilePayload.sign(profile, null, this.eddsaLongTermKeyPair);
     }
-
 }

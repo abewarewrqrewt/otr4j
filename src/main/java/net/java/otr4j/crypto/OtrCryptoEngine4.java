@@ -4,7 +4,6 @@ import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
-import nl.dannyvanheumen.joldilocks.KeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
@@ -47,11 +46,6 @@ public final class OtrCryptoEngine4 {
      * Length of HashToScalar array of bytes.
      */
     private static final int HASH_TO_SCALAR_LENGTH_BYTES = 64;
-
-    /**
-     * Length of the random input data for generating a EdDSA key pair in bytes.
-     */
-    private static final int EDDSA_KEY_PAIR_RANDOM_INPUT_LENGTH_BYTES = 57;
 
     /**
      * Prefix used in key derivation functions.
@@ -131,20 +125,6 @@ public final class OtrCryptoEngine4 {
         final BigInteger h = decodeLittleEndian(hashedD);
         // "Return h (mod q)"
         return h.mod(primeOrder());
-    }
-
-    /**
-     * Generate a EdDSA (long-term) key pair. The key pair itself will be requested from the Engine host. This method is
-     * there for convenience, to be used by Engine host implementations.
-     *
-     * @param random Source of secure random data.
-     * @return Returns the generated key pair.
-     */
-    @Nonnull
-    public static KeyPair generateEdDSAKeyPair(@Nonnull final SecureRandom random) {
-        final byte[] data = new byte[EDDSA_KEY_PAIR_RANDOM_INPUT_LENGTH_BYTES];
-        random.nextBytes(data);
-        return Ed448.generate(data);
     }
 
     /**
@@ -231,7 +211,7 @@ public final class OtrCryptoEngine4 {
     // FIXME write unit tests for ring signatures
     // TODO look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
     @Nonnull
-    public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final KeyPair longTermKeyPair,
+    public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
                                  @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
                                  @Nonnull final byte[] m) {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
@@ -270,7 +250,7 @@ public final class OtrCryptoEngine4 {
         // "Compute c1 = c - c2 - c3 (mod q)."
         final BigInteger c1 = c.subtract(c2).subtract(c3).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final BigInteger r1 = t1.subtract(c1.multiply(longTermKeyPair.getPrivateKey())).mod(q);
+        final BigInteger r1 = t1.subtract(c1.multiply(longTermKeyPair.getSymmetricKey())).mod(q);
         // "Send sigma = (c1, r1, c2, r2, c3, r3)."
         return new Sigma(c1, r1, c2, r2, c3, r3);
     }

@@ -1,6 +1,5 @@
 package net.java.otr4j.crypto;
 
-import nl.dannyvanheumen.joldilocks.KeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 import org.junit.Ignore;
@@ -16,7 +15,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.generateEdDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
@@ -160,12 +158,12 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = NullPointerException.class)
     public void testGenerateEdDSAKeyPairNull() {
-        generateEdDSAKeyPair(null);
+        EdDSAKeyPair.generate(null);
     }
 
     @Test
     public void testGenerateEdDSAKeyPair() {
-        assertNotNull(generateEdDSAKeyPair(RANDOM));
+        assertNotNull(EdDSAKeyPair.generate(RANDOM));
     }
 
     @Ignore("This test is most likely correct and verification is missing logic. Disabled for now for further research.")
@@ -176,7 +174,7 @@ public class OtrCryptoEngine4Test {
 
     @Test
     public void testVerifyEdDSAPublicKeyLegit() throws OtrCryptoException {
-        final KeyPair keypair = generateEdDSAKeyPair(RANDOM);
+        EdDSAKeyPair keypair = EdDSAKeyPair.generate(RANDOM);
         verifyEdDSAPublicKey(keypair.getPublicKey());
     }
 

@@ -10,17 +10,18 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.ClientProfiles;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,7 +72,7 @@ public final class StateInitial extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+        throws OtrCryptoException, ClientProfilePayload.ValidationException {
 
         if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
@@ -111,21 +112,23 @@ public final class StateInitial extends AbstractAuthState {
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+        throws OtrCryptoException, ClientProfilePayload.ValidationException {
 
         validate(message);
-        final ClientProfile profile = context.getClientProfile();
+        // FIXME where should I get the DSA public key and EdDSA public key from?
+        final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        final ClientProfilePayload profile = context.getClientProfile();
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
-        final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();
+        final EdDSAKeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = MysteriousT4.encode(profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
             a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
             this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
-        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, message.getClientProfile().getLongTermPublicKey(),
-            profile.getLongTermPublicKey(), message.getY(), t);
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getLongTermPublicKey(),
+            longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(),

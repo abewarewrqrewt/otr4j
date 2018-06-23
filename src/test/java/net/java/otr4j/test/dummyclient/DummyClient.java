@@ -9,8 +9,9 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.session.OtrSessionManager;
 
 import javax.annotation.Nonnull;
@@ -353,13 +354,13 @@ public class DummyClient {
 
         @Nonnull
         @Override
-        public nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair(@Nonnull final SessionID sessionID) {
+        public EdDSAKeyPair getLongTermKeyPair(@Nonnull final SessionID sessionID) {
             throw new UnsupportedOperationException("Not implemented yet. No support for OTRv4 in this dummy.");
         }
 
         @Nonnull
         @Override
-        public ClientProfile getClientProfile() {
+        public ClientProfilePayload getClientProfile() {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
 

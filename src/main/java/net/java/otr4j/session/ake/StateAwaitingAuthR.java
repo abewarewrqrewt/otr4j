@@ -4,17 +4,17 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.ClientProfiles;
-import nl.dannyvanheumen.joldilocks.KeyPair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,7 +68,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nullable
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -85,7 +85,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
                                                          @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+        throws OtrCryptoException, ClientProfilePayload.ValidationException {
         IdentityMessages.validate(message);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
@@ -98,14 +98,16 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
-        throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+        throws OtrCryptoException, ClientProfilePayload.ValidationException {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final InstanceTag senderTag = context.getSenderInstanceTag();
-        final ClientProfile ourClientProfile = context.getClientProfile();
-        final KeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
+        final ClientProfilePayload ourClientProfile = context.getClientProfile();
+        final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         validate(message, ourClientProfile, senderTag, receiverTag, context.getRemoteAccountID(),
             context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
+        // FIXME verification is currently non-functional, fix it!
+        final ClientProfile theirClientProfile = message.getClientProfile().validate();
         context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
         // FIXME consider if we should put 'setState' call in finally to ensure execution.
         context.setState(StateInitial.empty());
@@ -113,7 +115,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag, receiverTag,
             this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
-            ourLongTermKeyPair.getPublicKey(), message.getClientProfile().getLongTermPublicKey(),
+            ourLongTermKeyPair.getPublicKey(), theirClientProfile.getLongTermPublicKey(),
             this.ecdhKeyPair.getPublicKey(), t);
         // FIXME sender and receiver are probably swapped for the "sending AUTH_I message" use case.
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);

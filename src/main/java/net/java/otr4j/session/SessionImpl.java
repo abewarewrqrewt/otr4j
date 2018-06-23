@@ -20,10 +20,12 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.DataMessage;
@@ -32,7 +34,6 @@ import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
@@ -866,13 +867,13 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     @Override
-    public nl.dannyvanheumen.joldilocks.KeyPair getLongTermKeyPair() {
+    public EdDSAKeyPair getLongTermKeyPair() {
         return this.host.getLongTermKeyPair(this.sessionState.getSessionID());
     }
 
     @Nonnull
     @Override
-    public ClientProfile getClientProfile() {
+    public ClientProfilePayload getClientProfile() {
         return this.host.getClientProfile();
     }
 

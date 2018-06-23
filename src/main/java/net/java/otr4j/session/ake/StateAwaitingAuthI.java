@@ -4,16 +4,17 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
+import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.profile.ClientProfiles;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -51,9 +52,9 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     private final BigInteger b;
 
-    private final ClientProfile ourProfile;
+    private final ClientProfilePayload ourProfile;
 
-    private final ClientProfile profileBob;
+    private final ClientProfilePayload profileBob;
 
     private final InstanceTag senderTag;
 
@@ -61,7 +62,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     StateAwaitingAuthI(@Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
                        @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
-                       @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile profileBob,
+                       @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob,
                        @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag) {
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
@@ -76,7 +77,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     @Nullable
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -91,28 +92,29 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         return null;
     }
 
-    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message) throws OtrCryptoException, ClientProfiles.ValidationFailedException {
+    private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
         IdentityMessages.validate(message);
-        final ClientProfile profile = context.getClientProfile();
-        final nl.dannyvanheumen.joldilocks.KeyPair longTermKeyPair = context.getLongTermKeyPair();
+        final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
+        final ClientProfilePayload profilePayload = context.getClientProfile();
+        final EdDSAKeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
-        final byte[] t = MysteriousT4.encode(profile, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
+        final byte[] t = MysteriousT4.encode(profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag(),
             context.getReceiverInstanceTag(), this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
-            message.getClientProfile().getLongTermPublicKey(), profile.getLongTermPublicKey(), message.getY(), t);
+            theirNewClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             this.ourDHKeyPair.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
-            message.getB(), profile, message.getClientProfile(), context.getSenderInstanceTag(),
+            message.getB(), ourProfile, message.getClientProfile(), context.getSenderInstanceTag(),
             context.getReceiverInstanceTag()));
         return authRMessage;
     }
 
-    private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message) throws OtrCryptoException {
+    private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
         validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
             this.y, this.ourDHKeyPair.getPublicKey(), this.b, this.senderTag, this.receiverTag,
             context.getRemoteAccountID(), context.getLocalAccountID());
