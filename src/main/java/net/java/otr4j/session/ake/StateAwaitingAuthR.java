@@ -68,7 +68,8 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nullable
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
+    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
+        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -85,7 +86,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
                                                          @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfilePayload.ValidationException {
+        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException {
         IdentityMessages.validate(message);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
