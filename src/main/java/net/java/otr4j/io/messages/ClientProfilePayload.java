@@ -6,6 +6,7 @@ import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
+import net.java.otr4j.io.OtrEncodables;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.profile.ClientProfile;
@@ -96,10 +97,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             final DSASignature transitionalSignature = signRS(partialM, dsaPrivateKey);
             // FIXME need to add OTRv3 DSA public key field too.
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
-            try (final OtrOutputStream out = new OtrOutputStream()) {
-                out.write(sigField);
-                m = concatenate(partialM, out.toByteArray());
-            }
+            m = concatenate(partialM, OtrEncodables.encode(sigField));
         } else {
             m = partialM;
         }
@@ -279,10 +277,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             } catch (final OtrCryptoException e) {
                 throw new ValidationException("Failed transitional signature validation.", e);
             }
-            try (final OtrOutputStream out = new OtrOutputStream()) {
-                out.write(transitionalSignatureFields.get(0));
-                m = concatenate(partialM, out.toByteArray());
-            }
+            m = concatenate(partialM, OtrEncodables.encode(transitionalSignatureFields.get(0)));
         } else {
             m = partialM;
         }
