@@ -116,7 +116,6 @@ public final class StateInitial extends AbstractAuthState {
         throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException {
 
         validate(message);
-        // FIXME where should I get the DSA public key and EdDSA public key from?
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         final ClientProfilePayload profile = context.getClientProfile();
         final SecureRandom secureRandom = context.secureRandom();

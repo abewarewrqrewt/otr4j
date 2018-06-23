@@ -215,8 +215,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiver) {
-            OtrEngineListenerUtil.sessionStatusChanged(
-                    duplicate(listeners), sessionID, receiver);
+            OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), sessionID, receiver);
         }
 
         @Override
@@ -233,9 +232,8 @@ final class SessionImpl implements Session, Context, AuthContext {
     /**
      * Constructor.
      * <p>
-     * Package-private constructor for creating new sessions. To create a
-     * sessions without using the OTR session manager, we offer a static method
-     * that (indirectly) provides access to the session implementation. See
+     * Package-private constructor for creating new sessions. To create a sessions without using the OTR session
+     * manager, we offer a static method that (indirectly) provides access to the session implementation. See
      * {@link OtrSessionManager#createSession(SessionID, OtrEngineHost)}.
      *
      * This constructor constructs a master session instance.
@@ -531,10 +529,9 @@ final class SessionImpl implements Session, Context, AuthContext {
             }
             return null;
         } else {
-            // At this point, the message m has a known type, but support
-            // was not implemented at this point in the code. This should be
-            // considered a programming error. We should handle any known
-            // message type gracefully. Unknown messages are caught earlier.
+            // At this point, the message m has a known type, but support was not implemented at this point in the code.
+            // This should be considered a programming error. We should handle any known message type gracefully.
+            // Unknown messages are caught earlier.
             throw new UnsupportedOperationException("This message type is not supported. Support is expected to be implemented for all known message types.");
         }
     }

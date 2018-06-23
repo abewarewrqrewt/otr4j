@@ -350,7 +350,7 @@ public class SessionTest {
     }
 
     @Test
-    public void testEstablishOTR4Session() throws OtrException, InterruptedException {
+    public void testEstablishOTR4Session() throws OtrException {
         final Conversation c = new Conversation();
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
