@@ -1,5 +1,6 @@
 package net.java.otr4j.crypto;
 
+import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.security.SecureRandom;
@@ -7,6 +8,8 @@ import java.security.SecureRandom;
 import static net.java.otr4j.crypto.EdDSAKeyPair.generate;
 import static net.java.otr4j.crypto.EdDSAKeyPair.verify;
 import static net.java.otr4j.io.SerializationUtils.UTF8;
+import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @SuppressWarnings("ConstantConditions")
@@ -24,6 +27,14 @@ public final class EdDSAKeyPairTest {
     @Test
     public void testGenerateKeyPair() {
         assertNotNull(generate(RANDOM));
+    }
+
+    @Test
+    public void testRegeneratePublicKey() {
+        final Point expected = this.keypair.getPublicKey();
+        final Point generated = multiplyByBase(this.keypair.getSymmetricKey());
+        assertEquals(expected.x(), generated.x());
+        assertEquals(expected.y(), generated.y());
     }
 
     @Test(expected = NullPointerException.class)
