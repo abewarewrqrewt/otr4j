@@ -256,7 +256,8 @@ public final class OtrCryptoEngine4 {
 
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])?
     private static BigInteger generateRandomValue(@Nonnull final SecureRandom random) {
-        final byte[] data = new byte[57];
+        // FIXME size of 54 bytes was arbitrarily chosen to work within the bounds of q. (Needs to be replaced with verified solution)
+        final byte[] data = new byte[54];
         random.nextBytes(data);
         // FIXME verify if and what kind of pruning is needed to guarantee valid value
         final BigInteger value = decodeLittleEndian(data);
