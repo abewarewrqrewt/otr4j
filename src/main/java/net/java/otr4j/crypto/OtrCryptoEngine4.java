@@ -208,7 +208,8 @@ public final class OtrCryptoEngine4 {
      * @param A3              Other public key to be included in the signature.
      * @param m               The message for which the signature should be generated.
      */
-    // TODO look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
+    // FIXME look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
+    // FIXME do we need to randomize which public key (A1, A2 or A3) belongs to the provided keypair?
     // TODO if implementation checks out, see if we can simplify by removing 1 public key parameter, as we already query keypair.
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,

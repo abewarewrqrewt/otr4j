@@ -386,6 +386,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     @Nullable
+    // TODO separate transformReceiving in a generic (text-based) processing and specific method for processing AbstractEncodedMessage in slave sessions.
     public String transformReceiving(@Nonnull String msgText) throws OtrException {
         logger.log(Level.FINEST, "Entering {0} session.", masterSession == this ? "master" : "slave");
 
