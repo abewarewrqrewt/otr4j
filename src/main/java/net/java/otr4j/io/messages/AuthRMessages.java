@@ -51,18 +51,15 @@ public final class AuthRMessages {
             throw new IllegalStateException("Auth-R message should not have any other protocol version than 4.");
         }
         // FIXME Check that the receiver's instance tag matches your sender's instance tag. (Really needed? I would expect this to happen earlier.)
-        // FIXME fix validation, this is non-functional work-around code.
-        final ClientProfile theirProfile = message.getClientProfile().validate();
-//        ClientProfiles.validate(message.getClientProfile());
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
         final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfilePayload, message.getX(),
             receiverECDHPublicKey, message.getA(), receiverDHPublicKey, senderTag, receiverTag, queryTag,
             senderAccountID, receiverAccountID);
-        // FIXME fix validation, this is non-functional work-around code.
+        final ClientProfile theirProfile = message.getClientProfile().validate();
         final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
-        ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(),
-            receiverECDHPublicKey, message.getSigma(), t);
+        ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
+            message.getSigma(), t);
     }
 }

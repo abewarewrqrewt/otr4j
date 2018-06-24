@@ -209,6 +209,7 @@ public final class OtrCryptoEngine4 {
      * @param m               The message for which the signature should be generated.
      */
     // TODO look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
+    // TODO if implementation checks out, see if we can simplify by removing 1 public key parameter, as we already query keypair.
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
                                  @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
@@ -255,7 +256,8 @@ public final class OtrCryptoEngine4 {
         // "Compute c1 = c - c2 - c3 (mod q)."
         final BigInteger c1 = c.subtract(c2).subtract(c3).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final BigInteger r1 = t1.subtract(c1.multiply(longTermKeyPair.getSymmetricKey())).mod(q);
+        final BigInteger r1 = t1.subtract(c1.multiply(longTermKeyPair.getSecretKey())).mod(q);
+
         // "Send sigma = (c1, r1, c2, r2, c3, r3)."
         return new Sigma(c1, r1, c2, r2, c3, r3);
     }
