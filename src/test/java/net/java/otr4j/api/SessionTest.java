@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.KeyPair;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
@@ -373,8 +374,8 @@ public class SessionTest {
         private final Client hostBob;
 
         private Conversation() {
-            final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(20);
-            final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(20);
+            final LinkedBlockingQueue<String> channelAlice = new LinkedBlockingQueue<>(1);
+            final LinkedBlockingQueue<String> channelBob = new LinkedBlockingQueue<>(1);
             final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4",
                 "DummyNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4",
@@ -427,15 +428,13 @@ public class SessionTest {
             this.session = OtrSessionManager.createSession(sessionID, this);
         }
 
-        public String receiveMessage() throws InterruptedException, OtrException {
-            final String msg = this.receiptChannel.take();
+        public String receiveMessage() throws OtrException {
+            final String msg = this.receiptChannel.remove();
             return this.session.transformReceiving(msg);
         }
 
-        public void sendMessage(@Nonnull final String msg) throws OtrException, InterruptedException {
-            for (final String part : this.session.transformSending(msg)) {
-                this.sendChannel.put(part);
-            }
+        public void sendMessage(@Nonnull final String msg) throws OtrException {
+            this.sendChannel.addAll(Arrays.asList(this.session.transformSending(msg)));
         }
 
         public void sendRequest() throws OtrException {
