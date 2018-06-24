@@ -216,9 +216,15 @@ public final class OtrCryptoEngine4 {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Valid points need to be on the curve.");
         }
+        // FIXME verify that A1 != A2 != A3 (???)
+        final Point longTermPublicKey = longTermKeyPair.getPublicKey();
+        if (longTermPublicKey != A1 && longTermPublicKey != A2 && longTermPublicKey != A3) {
+            throw new IllegalArgumentException("Long-term public key must be present in ring signature's public keys.");
+        }
         final BigInteger q = primeOrder();
         // "Pick random values t1, c2, c3, r2, r3 in q."
         final BigInteger t1 = generateRandomValue(random);
+        assert t1.equals(t1.mod(q)) : "Expected t1 to be a value in q.";
         final BigInteger c2 = generateRandomValue(random);
         final BigInteger c3 = generateRandomValue(random);
         final BigInteger r2 = generateRandomValue(random);
