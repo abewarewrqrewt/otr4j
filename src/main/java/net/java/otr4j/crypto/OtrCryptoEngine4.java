@@ -55,7 +55,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Usage ID used for generating ring signatures.
      */
-    private static final int USAGE_ID_RING_SIGNATURE = 0x29;
+    private static final int USAGE_ID_RING_SIGNATURE = 0x1D;
 
     private OtrCryptoEngine4() {
         // No need to instantiate utility class.
@@ -229,7 +229,7 @@ public final class OtrCryptoEngine4 {
         final Point T2 = multiplyByBase(r2).add(A2.multiply(c2));
         // "Compute T3 = G * r3 + A3 * c3."
         final Point T3 = multiplyByBase(r3).add(A3.multiply(c3));
-        // "Compute c = HashToScalar(0x29 || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
+        // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
         try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             buffer.write(USAGE_ID_RING_SIGNATURE);
@@ -289,7 +289,7 @@ public final class OtrCryptoEngine4 {
         final Point T2 = multiplyByBase(sigma.r2).add(A2.multiply(sigma.c2));
         // "Compute T3 = G * r3 + A3 * c3"
         final Point T3 = multiplyByBase(sigma.r3).add(A3.multiply(sigma.c3));
-        // "Compute c = HashToScalar(0x29 || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
+        // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
         try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             buffer.write(USAGE_ID_RING_SIGNATURE);
