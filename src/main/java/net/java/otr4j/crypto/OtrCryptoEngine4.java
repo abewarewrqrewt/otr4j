@@ -281,7 +281,6 @@ public final class OtrCryptoEngine4 {
      * @param sigma The sigma containing the ring signature components.
      * @param m     The message for which the signature was generated.
      */
-    // FIXME write unit tests for ring signatures
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
                                   @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {

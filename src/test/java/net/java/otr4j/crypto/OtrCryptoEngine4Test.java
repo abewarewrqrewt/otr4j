@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
@@ -17,6 +18,8 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
@@ -275,5 +278,114 @@ public class OtrCryptoEngine4Test {
         final Point point = decodePoint(keypair.getPublicKey().encode());
         assertEquals(keypair.getPublicKey().x(), point.x());
         assertEquals(keypair.getPublicKey().y(), point.y());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRingSignNullRandom() {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final byte[] message = "hello world".getBytes(UTF_8);
+        ringSign(null, longTermKeyPairA, longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeral,
+            message);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRingSignNullKeypair() {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final byte[] message = "hello world".getBytes(UTF_8);
+        ringSign(RANDOM, null, longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeral, message);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRingSignNullA1() {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final byte[] message = "hello world".getBytes(UTF_8);
+        ringSign(RANDOM, longTermKeyPairA, null, longTermKeyPairA.getPublicKey(), ephemeral, message);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRingSignNullA2() {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final byte[] message = "hello world".getBytes(UTF_8);
+        ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(), null, ephemeral, message);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRingSignNullA3() {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final byte[] message = "hello world".getBytes(UTF_8);
+        ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), null, message);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRingSignNullMessage() {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeral, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRingSignKeyPairNotPresentInPublicKeys() {
+        final EdDSAKeyPair longTermKeyPairA1 = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairA2 = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        ringSign(RANDOM, longTermKeyPairA1, longTermKeyPairB.getPublicKey(), longTermKeyPairA2.getPublicKey(), ephemeral, message);
+    }
+
+    // FIXME add unit tests that verify basic inputs to ringVerify method.
+
+    @Test
+    public void testRingSigningWithA1() throws OtrCryptoException {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, longTermKeyPairA, longTermKeyPairA.getPublicKey(),
+            longTermKeyPairB.getPublicKey(), ephemeral, message);
+        ringVerify(longTermKeyPairA.getPublicKey(), longTermKeyPairB.getPublicKey(), ephemeral, sigma, message);
+    }
+
+    @Test
+    public void testRingSigningWithA2() throws OtrCryptoException {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(),
+            longTermKeyPairA.getPublicKey(), ephemeral, message);
+        ringVerify(longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeral, sigma, message);
+    }
+
+    @Test
+    public void testRingSigningWithA3() throws OtrCryptoException {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(),
+            ephemeral, longTermKeyPairA.getPublicKey(), message);
+        ringVerify(longTermKeyPairB.getPublicKey(), ephemeral, longTermKeyPairA.getPublicKey(), sigma, message);
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testRingSignDifferentMessage() throws OtrCryptoException {
+        final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
+        final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
+        final Point ephemeral = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(),
+            longTermKeyPairA.getPublicKey(), ephemeral, message);
+        final byte[] wrongMessage = "hello World".getBytes(UTF_8);
+        ringVerify(longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeral, sigma, wrongMessage);
     }
 }
