@@ -40,6 +40,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * This is the client profile in a representation that is easily serializable and that is able to carry the signatures
  * corresponding to the client profile.
  */
+// FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
 public final class ClientProfilePayload implements OtrEncodable {
 
     // FIXME constant public key ID can probably be cleared once OTRv4 spec settles down on protocol design

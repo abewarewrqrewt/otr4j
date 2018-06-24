@@ -208,7 +208,6 @@ public final class OtrCryptoEngine4 {
      * @param A3              Other public key to be included in the signature.
      * @param m               The message for which the signature should be generated.
      */
-    // FIXME write unit tests for ring signatures
     // TODO look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,

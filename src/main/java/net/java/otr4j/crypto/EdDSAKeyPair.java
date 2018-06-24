@@ -8,12 +8,12 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
+import static nl.dannyvanheumen.joldilocks.Ed448.generatePublicKey;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**
  * EdDSA key pair.
  */
-// FIXME write tests for EdDSAKeyPair!
 public final class EdDSAKeyPair {
 
     /**
@@ -51,7 +51,7 @@ public final class EdDSAKeyPair {
         final byte[] data = new byte[EDDSA_KEY_PAIR_SYMMETRIC_KEY_LENGTH_BYTES];
         random.nextBytes(data);
         final BigInteger sk = decodeLittleEndian(data);
-        final Point pk = Ed448.generatePublicKey(data);
+        final Point pk = generatePublicKey(data);
         return new EdDSAKeyPair(sk, pk);
     }
 
