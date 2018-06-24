@@ -1,6 +1,7 @@
 package net.java.otr4j.crypto;
 
 import nl.dannyvanheumen.joldilocks.Ed448;
+import nl.dannyvanheumen.joldilocks.Ed448KeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -8,8 +9,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
-import static nl.dannyvanheumen.joldilocks.Ed448.generatePublicKey;
-import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**
  * EdDSA key pair.
@@ -17,26 +16,14 @@ import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 public final class EdDSAKeyPair {
 
     /**
-     * Length of the random input data for generating a EdDSA key pair in bytes.
-     */
-    private static final int EDDSA_KEY_PAIR_SYMMETRIC_KEY_LENGTH_BYTES = 57;
-
-    /**
      * Context value as applied in OTRv4.
      */
     private static final byte[] ED448_CONTEXT = new byte[0];
 
-    private final BigInteger symmetricKey;
-    private final Point publicKey;
+    private final Ed448KeyPair keypair;
 
-    private EdDSAKeyPair(@Nonnull final BigInteger symmetricKey, @Nonnull final Point publicKey) {
-        this.symmetricKey = requireNonNull(symmetricKey);
-        try {
-            OtrCryptoEngine4.verifyEdDSAPublicKey(publicKey);
-        } catch (final OtrCryptoException e) {
-            throw new IllegalArgumentException("Illegal public key provided.", e);
-        }
-        this.publicKey = publicKey;
+    private EdDSAKeyPair(@Nonnull final Ed448KeyPair keypair) {
+        this.keypair = requireNonNull(keypair);
     }
 
     /**
@@ -48,11 +35,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public static EdDSAKeyPair generate(@Nonnull final SecureRandom random) {
-        final byte[] data = new byte[EDDSA_KEY_PAIR_SYMMETRIC_KEY_LENGTH_BYTES];
-        random.nextBytes(data);
-        final BigInteger sk = decodeLittleEndian(data);
-        final Point pk = generatePublicKey(data);
-        return new EdDSAKeyPair(sk, pk);
+        return new EdDSAKeyPair(Ed448KeyPair.create(Ed448.generateSymmetricKey(random)));
     }
 
     /**
@@ -82,7 +65,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public byte[] sign(@Nonnull final byte[] message) {
-        return Ed448.sign(this.symmetricKey, ED448_CONTEXT, message);
+        return this.keypair.sign(ED448_CONTEXT, message);
     }
 
     /**
@@ -92,7 +75,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public Point getPublicKey() {
-        return publicKey;
+        return this.keypair.getPublicKey();
     }
 
     /**
@@ -101,7 +84,7 @@ public final class EdDSAKeyPair {
      * @return Returns symmetric key.
      */
     @Nonnull
-    BigInteger getSymmetricKey() {
-        return symmetricKey;
+    BigInteger getSecretKey() {
+        return this.keypair.getSecretKey();
     }
 }

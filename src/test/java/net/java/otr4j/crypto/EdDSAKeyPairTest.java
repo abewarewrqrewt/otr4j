@@ -32,7 +32,7 @@ public final class EdDSAKeyPairTest {
     @Test
     public void testRegeneratePublicKey() {
         final Point expected = this.keypair.getPublicKey();
-        final Point generated = multiplyByBase(this.keypair.getSymmetricKey());
+        final Point generated = multiplyByBase(this.keypair.getSecretKey());
         assertEquals(expected.x(), generated.x());
         assertEquals(expected.y(), generated.y());
     }
