@@ -1,6 +1,5 @@
 package net.java.otr4j.crypto;
 
-import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -25,11 +24,6 @@ public final class ECDHKeyPair {
      * Length of the secret key in bytes.
      */
     static final int LENGTH_SECRET_KEY_BYTES = 57;
-
-    /**
-     * Context c, used in signing.
-     */
-    private static final byte[] SIGNING_CONTEXT_C = new byte[0];
 
     private final BigInteger secretKey;
 
@@ -64,6 +58,7 @@ public final class ECDHKeyPair {
      *         process.)
      * @return Returns the generated ECDH key pair.
      */
+    // FIXME verify if spec has changed on pruning instructions for generating ECDH keys.
     @Nonnull
     public static ECDHKeyPair generate(@Nonnull final byte[] r) {
         requireLengthExactly(LENGTH_SECRET_KEY_BYTES + 1, r);
@@ -75,7 +70,8 @@ public final class ECDHKeyPair {
         //    to last byte is set.
         h[0] &= 0b11111100;
         h[56] = 0;
-        h[55] &= 0b01111111;
+        // FIXME verify that bit manipulations are correct. Previously was incorrect and corrected on-the-fly.
+        h[55] |= 0b10000000;
         //  - Interpret the buffer as the little-endian integer, forming the secret scalar
         //    's'.
         final BigInteger s = decodeLittleEndian(h);
@@ -104,36 +100,10 @@ public final class ECDHKeyPair {
      *
      * @return Returns the secret key.
      */
+    // TODO is this method really needed?
     @Nonnull
     BigInteger getSecretKey() {
         return this.secretKey;
-    }
-
-    /**
-     * Sign provided message using the secret key that is maintained inside this key pair.
-     *
-     * @param message The message to be signed.
-     * @return Returns the signature for the provided message.
-     */
-    @Nonnull
-    public byte[] sign(@Nonnull final byte[] message) {
-        return Ed448.sign(this.secretKey, SIGNING_CONTEXT_C, message);
-    }
-
-    /**
-     * Verify a message given public key and signature.
-     *
-     * @param publicKey The public key to verify the signature.
-     * @param message   The message to be verified.
-     * @param signature The signature with which to verify the message.
-     * @throws OtrCryptoException In case message verification fails.
-     */
-    public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature) throws OtrCryptoException {
-        try {
-            Ed448.verify(SIGNING_CONTEXT_C, publicKey, message, signature);
-        } catch (final Ed448.SignatureVerificationFailedException e) {
-            throw new OtrCryptoException("Signature verification failed.", e);
-        }
     }
 
     /**
