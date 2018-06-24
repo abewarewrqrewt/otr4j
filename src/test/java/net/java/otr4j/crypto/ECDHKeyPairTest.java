@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ECDHKeyPair.generate;
+import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static nl.dannyvanheumen.joldilocks.Ed448.sign;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -36,6 +37,15 @@ public class ECDHKeyPairTest {
         final ECDHKeyPair keypair = generate(RANDOM);
         assertNotNull(keypair);
         assertNotNull(keypair.getPublicKey());
+    }
+
+    @Test
+    public void testPublicKeyRegeneratable() {
+        final ECDHKeyPair keypair = generate(RANDOM);
+        final Point expected = keypair.getPublicKey();
+        final Point generated = multiplyByBase(keypair.getSecretKey());
+        assertEquals(expected.x(), generated.x());
+        assertEquals(expected.y(), generated.y());
     }
 
     @Test(expected = NullPointerException.class)
