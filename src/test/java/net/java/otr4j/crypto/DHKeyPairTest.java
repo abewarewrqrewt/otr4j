@@ -41,7 +41,7 @@ public class DHKeyPairTest {
 
     @Test
     public void testGeneratingKeyPairs() {
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 50; i++) {
             final DHKeyPair keypair = DHKeyPair.generate(RANDOM);
             if (!checkPublicKey(keypair.getPublicKey())) {
                 fail("Generated public key failed verification: " + keypair.getPublicKey());
