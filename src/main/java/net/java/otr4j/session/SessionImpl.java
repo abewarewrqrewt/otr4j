@@ -634,6 +634,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
+        setState(new StateInitial(plainTextMessage.getTag()));
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
         if (plainTextMessage.getVersions().contains(Session.OTRv.FOUR) && policy.getAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
