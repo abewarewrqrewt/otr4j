@@ -287,7 +287,7 @@ public final class SerializationUtils {
                     return new QueryMessage("", Collections.<Integer>emptySet());
                 }
                 final Set<Integer> versions = parseVersionString(versionString);
-                return new QueryMessage(s.substring(idxHead, s.indexOf('?', idxHeaderBody)), versions);
+                return new QueryMessage(s.substring(idxHead, s.indexOf('?', idxHeaderBody) + 1), versions);
             } else if (idxHead == 0 && contentType == HEAD_ENCODED) {
                 // Data message found.
 
