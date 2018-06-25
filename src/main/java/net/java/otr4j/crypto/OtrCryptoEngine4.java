@@ -210,6 +210,7 @@ public final class OtrCryptoEngine4 {
     // FIXME look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
     // FIXME do we need to randomize which public key (A1, A2 or A3) belongs to the provided keypair?
     // TODO if implementation checks out, see if we can simplify by removing 1 public key parameter, as we already query keypair.
+    // FIXME !!! Now cheating with 1 keypair + 2 public keys, hence we cannot vary the position of the keypair's public key.
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
                                  @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
