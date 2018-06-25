@@ -125,10 +125,11 @@ public final class StateInitial extends AbstractAuthState {
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = MysteriousT4.encode(profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
-            a.getPublicKey(), message.getB(), context.getSenderInstanceTag(), context.getReceiverInstanceTag(),
-            this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
+            a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
+            context.getReceiverInstanceTag().getValue(), this.queryTag, context.getLocalAccountID(),
+            context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getLongTermPublicKey(),
-            longTermKeyPair.getPublicKey(), message.getY(), t);
+            message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(),

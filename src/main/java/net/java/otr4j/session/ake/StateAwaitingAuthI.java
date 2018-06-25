@@ -102,10 +102,11 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = MysteriousT4.encode(profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
-            message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag(),
-            context.getReceiverInstanceTag(), this.queryTag, context.getRemoteAccountID(), context.getLocalAccountID());
+            message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
+            context.getReceiverInstanceTag().getValue(), this.queryTag, context.getRemoteAccountID(),
+            context.getLocalAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
-            theirNewClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+            theirNewClientProfile.getLongTermPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
@@ -118,8 +119,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
         validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
-            this.y, this.ourDHKeyPair.getPublicKey(), this.b, this.senderTag, this.receiverTag,
-            context.getRemoteAccountID(), context.getLocalAccountID());
+            this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(), context.getLocalAccountID());
         final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
             this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
         context.secure(params);

@@ -1,6 +1,5 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.profile.ClientProfile;
@@ -28,8 +27,6 @@ public final class AuthRMessages {
      *
      * @param message                 the AUTH_R message
      * @param ourClientProfilePayload our ClientProfile instance
-     * @param senderTag               the sender's instance tag
-     * @param receiverTag             the receiver's instance tag
      * @param senderAccountID         the sender's account ID
      * @param receiverAccountID       the Receiver's account ID
      * @param receiverECDHPublicKey   the receiver's ECDH public key
@@ -39,8 +36,8 @@ public final class AuthRMessages {
      * @throws OtrCryptoException                             In case any cryptographic verification failed, such as ephemeral
      *                                                        public keys or the ring signature.
      */
+    // TODO make sure that sender and receiver instance tags are verified prior to arriving here!
     public static void validate(@Nonnull final AuthRMessage message, @Nonnull final ClientProfilePayload ourClientProfilePayload,
-                                @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
                                 @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
                                 @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
                                 @Nonnull final String queryTag) throws OtrCryptoException, ClientProfilePayload.ValidationException {
@@ -54,12 +51,12 @@ public final class AuthRMessages {
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
         final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfilePayload, message.getX(),
-            receiverECDHPublicKey, message.getA(), receiverDHPublicKey, senderTag, receiverTag, queryTag,
-            senderAccountID, receiverAccountID);
+            receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
+            message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         final ClientProfile theirProfile = message.getClientProfile().validate();
         final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
-        ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
+        ringVerify(theirProfile.getLongTermPublicKey(), ourClientProfile.getLongTermPublicKey(), receiverECDHPublicKey,
             message.getSigma(), t);
     }
 }

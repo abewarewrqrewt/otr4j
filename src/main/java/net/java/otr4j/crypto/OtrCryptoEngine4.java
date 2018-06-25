@@ -203,7 +203,6 @@ public final class OtrCryptoEngine4 {
      *
      * @param random          A secure random instance.
      * @param longTermKeyPair The long-term Ed448 key pair.
-     * @param A1              Other public key to be included in the signature.
      * @param A2              Other public key to be included in the signature.
      * @param A3              Other public key to be included in the signature.
      * @param m               The message for which the signature should be generated.
@@ -213,16 +212,13 @@ public final class OtrCryptoEngine4 {
     // TODO if implementation checks out, see if we can simplify by removing 1 public key parameter, as we already query keypair.
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
-                                 @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
-                                 @Nonnull final byte[] m) {
-        if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
+                                 @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
+        if (!Ed448.contains(longTermKeyPair.getPublicKey()) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Valid points need to be on the curve.");
         }
         // FIXME verify that A1 != A2 != A3 (???)
+        // FIXME verify that longTermKeyPair is in (A1, A2, A3).
         final Point longTermPublicKey = longTermKeyPair.getPublicKey();
-        if (longTermPublicKey != A1 && longTermPublicKey != A2 && longTermPublicKey != A3) {
-            throw new IllegalArgumentException("Long-term public key must be present in ring signature's public keys.");
-        }
         final BigInteger q = primeOrder();
         // "Pick random values t1, c2, c3, r2, r3 in q."
         final BigInteger t1 = generateRandomValue(random);
@@ -243,7 +239,7 @@ public final class OtrCryptoEngine4 {
             buffer.write(USAGE_ID_RING_SIGNATURE);
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
-            A1.encodeTo(buffer);
+            longTermPublicKey.encodeTo(buffer);
             A2.encodeTo(buffer);
             A3.encodeTo(buffer);
             T1.encodeTo(buffer);

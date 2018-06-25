@@ -1,6 +1,5 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.io.OtrEncodables;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -40,8 +39,8 @@ public final class MysteriousT4 {
                                 @Nonnull final Point y,
                                 @Nonnull final BigInteger a,
                                 @Nonnull final BigInteger b,
-                                @Nonnull final InstanceTag senderInstanceTag,
-                                @Nonnull final InstanceTag receiverInstanceTag,
+                                @Nonnull final int senderInstanceTag,
+                                @Nonnull final int receiverInstanceTag,
                                 @Nonnull final String queryTag,
                                 @Nonnull final String senderContactID,
                                 @Nonnull final String receiverContactID) {
@@ -53,8 +52,7 @@ public final class MysteriousT4 {
         final byte[] xEncoded = x.encode();
         final byte[] bEncoded = writeMpi(b);
         final byte[] aEncoded = writeMpi(a);
-        final byte[] phi = generatePhi(senderInstanceTag.getValue(), receiverInstanceTag.getValue(), queryTag,
-            senderContactID, receiverContactID);
+        final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(concatenate(USAGE_ID_PHI_DERIVATIVE, phi),
             PHI_DERIVATIVE_LENGTH_BYTES);
         return concatenate(new byte[][]{new byte[]{0x00}, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,

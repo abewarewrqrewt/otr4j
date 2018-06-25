@@ -594,6 +594,9 @@ final class SessionImpl implements Session, Context, AuthContext {
             }
         } else {
             if (m instanceof QueryMessage) {
+                // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
+                assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
+                setState(new StateInitial(((QueryMessage) m).getTag()));
                 msg += getFallbackMessage(sessionId);
             }
             this.host.injectMessage(sessionId, msg);
@@ -767,9 +770,10 @@ final class SessionImpl implements Session, Context, AuthContext {
             // TODO consider making this an OtrException as this is reasonably possible with configuration.
             throw new IllegalStateException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }
-        // FIXME don't forget to set used query tag in auth state.
         // FIXME It's a bit of a work-around to add an empty string just because the serialization code doesn't use it.
-        injectMessage(new QueryMessage("", allowedVersions));
+        final QueryMessage queryMessage = new QueryMessage(allowedVersions);
+        setState(new StateInitial(queryMessage.getTag()));
+        injectMessage(queryMessage);
     }
 
     /**

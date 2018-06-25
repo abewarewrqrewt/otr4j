@@ -359,10 +359,10 @@ public class SessionTest {
         assertNull(c.hostBob.receiveMessage());
         assertNull(c.hostAlice.receiveMessage());
         assertNull(c.hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
         assertNull(c.hostAlice.receiveMessage());
         assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
-        assertNull(c.hostBob.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // FIXME extend test with final receive such that we are sure that both DoubleRatchets are fully initialized.
     }
 
     /**

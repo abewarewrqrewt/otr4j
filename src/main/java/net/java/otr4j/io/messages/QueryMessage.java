@@ -25,6 +25,17 @@ public class QueryMessage implements Message {
     private final Set<Integer> versions;
     private final String tag;
 
+    public QueryMessage(@Nonnull final Set<Integer> versions) {
+        this.versions = requireNonNull(versions);
+        // FIXME !!! bad workaround because we generate the actually sent Query-string in SerializationUtils.toString(m)!
+        StringBuilder tag = new StringBuilder("?OTRv");
+        for(final int version : versions) {
+            tag.append(version);
+        }
+        tag.append('?');
+        this.tag = tag.toString();
+    }
+
     /**
      * Construct a query message instance.
      *
