@@ -29,7 +29,7 @@ public final class MysteriousT4 {
 
     private MysteriousT4() {
         // For now this is a utility class. I'm not sure that this is the final incarnation, however for now, as T is
-        // not a full message in itself, it doesn't make sense to implement the AbsractEncodedMessage interface for
+        // not a full message in itself, it doesn't make sense to implement the AbstractEncodedMessage interface for
         // encoding. For now this will suffice.
     }
 
