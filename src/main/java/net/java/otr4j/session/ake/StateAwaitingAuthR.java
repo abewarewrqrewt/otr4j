@@ -31,7 +31,7 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
  */
 final class StateAwaitingAuthR extends AbstractAuthState {
 
-    private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthR.class.getName());;
+    private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthR.class.getName());
 
     /**
      * The identity message previously sent.
