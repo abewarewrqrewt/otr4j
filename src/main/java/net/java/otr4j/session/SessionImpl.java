@@ -538,6 +538,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     private void handleQueryMessage(@Nonnull final QueryMessage queryMessage) throws OtrException {
+        assert this.masterSession == this : "handleQueryMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a query message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
@@ -559,6 +560,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     private void handleErrorMessage(@Nonnull final ErrorMessage errorMessage)
             throws OtrException {
+        assert this.masterSession == this : "handleErrorMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received an error message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
@@ -612,6 +614,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     private String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
+        assert this.masterSession == this : "handlePlainTextMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a plaintext message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
