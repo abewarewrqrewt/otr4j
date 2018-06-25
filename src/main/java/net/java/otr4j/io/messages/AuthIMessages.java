@@ -35,7 +35,6 @@ public final class AuthIMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
-        // FIXME fix non-functional validation.
         final ClientProfile ourProfile = ourProfilePayload.validate();
         final ClientProfile profileBob = profilePayloadBob.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
