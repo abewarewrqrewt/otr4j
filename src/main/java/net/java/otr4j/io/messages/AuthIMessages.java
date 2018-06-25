@@ -41,6 +41,6 @@ public final class AuthIMessages {
         final byte[] t = MysteriousT4.encode(ourProfilePayload, profilePayloadBob, x, y, a, b,
             message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
-        ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), y, message.getSigma(), t);
+        ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), x, message.getSigma(), t);
     }
 }

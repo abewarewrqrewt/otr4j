@@ -117,7 +117,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
-            theirClientProfile.getLongTermPublicKey(), this.ecdhKeyPair.getPublicKey(), t);
+            theirClientProfile.getLongTermPublicKey(), message.getX(), t);
         // FIXME sender and receiver are probably swapped for the "sending AUTH_I message" use case.
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);
     }
