@@ -249,7 +249,7 @@ public final class OtrCryptoEngine4 {
             T1.encodeTo(buffer);
             T2.encodeTo(buffer);
             T3.encodeTo(buffer);
-            buffer.write(m);
+            buffer.write(m, 0, m.length);
             c = hashToScalar(buffer.toByteArray());
         } catch (final IOException e) {
             throw new IllegalStateException("Failed to write point to buffer.", e);
@@ -287,7 +287,7 @@ public final class OtrCryptoEngine4 {
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
                                   @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
-            throw new OtrCryptoException("Some of the public keys are invalid.");
+            throw new OtrCryptoException("One of the public keys is invalid.");
         }
         final BigInteger q = primeOrder();
         // "Parse sigma to retrieve components (c1, r1, c2, r2, c3, r3)."

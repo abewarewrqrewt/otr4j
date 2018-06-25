@@ -101,8 +101,8 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
         throws OtrCryptoException, ClientProfilePayload.ValidationException {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
-        final InstanceTag receiverTag = context.getReceiverInstanceTag();
-        final InstanceTag senderTag = context.getSenderInstanceTag();
+        final InstanceTag receiverTag = context.getSenderInstanceTag();
+        final InstanceTag senderTag = context.getReceiverInstanceTag();
         final ClientProfilePayload ourClientProfile = context.getClientProfile();
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         validate(message, ourClientProfile, senderTag, receiverTag, context.getRemoteAccountID(),

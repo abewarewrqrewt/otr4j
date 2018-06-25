@@ -124,6 +124,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
         context.secure(params);
         // FIXME consider if we should put 'setState' call in finally to ensure execution.
+        // TODO should we reset state with or without preserving previous query tag?
         context.setState(StateInitial.empty());
     }
 
