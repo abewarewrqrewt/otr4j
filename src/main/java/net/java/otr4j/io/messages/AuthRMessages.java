@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.profile.ClientProfile;
@@ -32,15 +33,15 @@ public final class AuthRMessages {
      * @param receiverECDHPublicKey   the receiver's ECDH public key
      * @param receiverDHPublicKey     the receiver's DH public key
      * @param queryTag                the query tag
-     * @throws ClientProfilePayload.ValidationException In case user profile validation has failed.
-     * @throws OtrCryptoException                             In case any cryptographic verification failed, such as ephemeral
-     *                                                        public keys or the ring signature.
+     * @throws OtrCryptoException  In case any cryptographic verification failed, such as ephemeral
+     *                             public keys or the ring signature.
+     * @throws ValidationException In case any part fails validation.
      */
     // TODO make sure that sender and receiver instance tags are verified prior to arriving here!
     public static void validate(@Nonnull final AuthRMessage message, @Nonnull final ClientProfilePayload ourClientProfilePayload,
                                 @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
                                 @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
-                                @Nonnull final String queryTag) throws OtrCryptoException, ClientProfilePayload.ValidationException {
+                                @Nonnull final String queryTag) throws OtrCryptoException, ValidationException {
         if (message.getType() != AuthRMessage.MESSAGE_AUTH_R) {
             throw new IllegalStateException("Auth-R message should not have any other type than 0x91.");
         }
@@ -53,10 +54,35 @@ public final class AuthRMessages {
         final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfilePayload, message.getX(),
             receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
             message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
-        final ClientProfile theirProfile = message.getClientProfile().validate();
-        final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
+        final ClientProfile theirProfile;
+        try {
+            theirProfile = message.getClientProfile().validate();
+        } catch (final ClientProfilePayload.ValidationException e) {
+            throw new ValidationException("Client profile is not valid.", e);
+        }
+        if (theirProfile.getInstanceTag() != message.senderInstanceTag) {
+            throw new ValidationException("The message sender's instance tag is different from the client profile's instance tag.");
+        }
+        final ClientProfile ourClientProfile;
+        try {
+            // TODO how should we handle the case where our own client profile is not valid (anymore)?
+            ourClientProfile = ourClientProfilePayload.validate();
+        } catch (final ClientProfilePayload.ValidationException e) {
+            throw new IllegalStateException("Our own client profile is not valid.", e);
+        }
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
         ringVerify(theirProfile.getLongTermPublicKey(), ourClientProfile.getLongTermPublicKey(), receiverECDHPublicKey,
             message.getSigma(), t);
+    }
+
+    public static final class ValidationException extends OtrException {
+
+        private ValidationException(@Nonnull final String message) {
+            super(message);
+        }
+
+        private ValidationException(@Nonnull final String message, @Nonnull final Throwable cause) {
+            super(message, cause);
+        }
     }
 }

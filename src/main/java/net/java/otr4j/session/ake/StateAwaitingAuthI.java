@@ -1,6 +1,5 @@
 package net.java.otr4j.session.ake;
 
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
@@ -9,6 +8,7 @@ import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
+import net.java.otr4j.io.messages.AuthIMessages;
 import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.IdentityMessage;
@@ -56,14 +56,9 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     private final ClientProfilePayload profileBob;
 
-    private final InstanceTag senderTag;
-
-    private final InstanceTag receiverTag;
-
     StateAwaitingAuthI(@Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
                        @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
-                       @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob,
-                       @Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag) {
+                       @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
         this.ourDHKeyPair = requireNonNull(ourDHKeyPair);
@@ -71,14 +66,12 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         this.b = requireNonNull(b);
         this.ourProfile = requireNonNull(ourProfile);
         this.profileBob = requireNonNull(profileBob);
-        this.senderTag = requireNonNull(senderTag);
-        this.receiverTag = requireNonNull(receiverTag);
     }
 
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException {
+        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException, AuthIMessages.ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -111,13 +104,14 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             this.ourDHKeyPair.getPublicKey(), sigma);
-        context.setState(new StateAwaitingAuthI(queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
-            message.getB(), ourProfile, message.getClientProfile(), context.getSenderInstanceTag(),
-            context.getReceiverInstanceTag()));
+        context.setState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
+            message.getB(), ourProfile, message.getClientProfile()));
         return authRMessage;
     }
 
-    private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message) throws OtrCryptoException, ClientProfilePayload.ValidationException {
+    private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message)
+        throws OtrCryptoException, AuthIMessages.ValidationException {
+
         validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
             this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(), context.getLocalAccountID());
         final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
