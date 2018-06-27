@@ -20,7 +20,6 @@ import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
-import net.java.otr4j.io.messages.MysteriousT4;
 import net.java.otr4j.io.messages.ValidationException;
 import net.java.otr4j.profile.ClientProfile;
 
@@ -35,6 +34,7 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.IdentityMessages.validate;
+import static net.java.otr4j.io.messages.MysteriousT4.encode;
 
 /**
  * Initial AKE state, a.k.a. NONE.
@@ -124,10 +124,9 @@ public final class StateInitial extends AbstractAuthState {
         final EdDSAKeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
-        final byte[] t = MysteriousT4.encode(profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
-            a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), this.queryTag, context.getLocalAccountID(),
-            context.getRemoteAccountID());
+        final byte[] t = encode(profile, message.getClientProfile(), x.getPublicKey(), message.getY(), a.getPublicKey(),
+            message.getB(), context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(),
+            this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getLongTermPublicKey(),
             message.getY(), t);
         // Generate response message and transition into next state.

@@ -19,6 +19,7 @@
 // TODO General questions on way-of-working for OTRv4:
 //  * Should we allow OTRv3 if no transitional signature is available?
 //  * Should anything be derived from the definite order of the long-term public keys in the client profile? (Not sure that makes sense if key pairs exist on disconnected clients.)
+//  * After having successfully finished DAKE, should we forget about previously used QueryTag or remember it? Let's say that we initiate a OTRv4 session immediately (send Identity message), should we then reuse previous query tag, or start blank?
 /**
  * otr4j.
  */

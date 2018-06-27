@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
+import static net.java.otr4j.io.messages.MysteriousT4.encode;
 
 /**
  * Utility class for AuthRMessage. (Auth-R messages)
@@ -50,7 +51,7 @@ public final class AuthRMessages {
         // FIXME Check that the receiver's instance tag matches your sender's instance tag. (Really needed? I would expect this to happen earlier.)
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
-        final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfilePayload, message.getX(),
+        final byte[] t = encode(message.getClientProfile(), ourClientProfilePayload, message.getX(),
             receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
             message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         final ClientProfile theirProfile = message.getClientProfile().validate();
