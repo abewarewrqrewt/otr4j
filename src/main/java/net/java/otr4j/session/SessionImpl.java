@@ -234,15 +234,16 @@ final class SessionImpl implements Session, Context, AuthContext {
      * <p>
      * Package-private constructor for creating new sessions. To create a sessions without using the OTR session
      * manager, we offer a static method that (indirectly) provides access to the session implementation. See
-     * {@link OtrSessionManager#createSession(SessionID, OtrEngineHost)}.
+     * {@link OtrSessionManager#createSession(SessionID, OtrEngineHost, InstanceTag)}.
      *
      * This constructor constructs a master session instance.
      *
      * @param sessionID The session ID
      * @param listener  The OTR engine host listener.
      */
-    SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener) {
-        this(null, sessionID, listener, InstanceTag.ZERO_TAG, InstanceTag.ZERO_TAG, new SecureRandom(),
+    SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener,
+                @Nonnull final InstanceTag senderInstanceTag) {
+        this(null, sessionID, listener, senderInstanceTag, InstanceTag.ZERO_TAG, new SecureRandom(),
             StateInitial.empty());
     }
 

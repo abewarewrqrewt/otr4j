@@ -20,6 +20,7 @@ import java.security.KeyPair;
  *
  * @author George Politis
  */
+// TODO consider splitting up the OTRv3 and OTRv4 EngineHost interfaces such that one can use random instance tags and the other queries the host.
 public interface OtrEngineHost extends SmpEngineHost {
 
     /**

@@ -5,7 +5,6 @@ import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.profile.ClientProfile;
-import net.java.otr4j.session.OtrSessionManager;
 import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.test.dummyclient.DummyClient;
 import net.java.otr4j.test.dummyclient.PriorityServer;
@@ -28,6 +27,7 @@ import java.util.logging.Logger;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -420,11 +420,12 @@ public class SessionTest {
             this.policy = requireNonNull(policy);
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
-            final ClientProfile profile = new ClientProfile(InstanceTag.random(random).getValue(),
+            final InstanceTag senderInstanceTag = InstanceTag.random(random);
+            final ClientProfile profile = new ClientProfile(senderInstanceTag.getValue(),
                 this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
                 expirationCalendar.getTimeInMillis()/1000);
             this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
-            this.session = OtrSessionManager.createSession(sessionID, this);
+            this.session = createSession(sessionID, this, senderInstanceTag);
         }
 
         public String receiveMessage() throws OtrException {

@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,6 +31,8 @@ import java.util.logging.Logger;
  * Created by gp on 2/5/14.
  */
 public class DummyClient {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private Logger logger;
 	private final String account;
@@ -118,16 +121,18 @@ public class DummyClient {
 
     public void init(String recipient, String message) throws OtrException {
 		if (session == null) {
+            final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
-			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
+			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
 		}
         session.startSession();
     }
 
 	public void send(@Nonnull String recipient, @Nonnull String s) throws OtrException {
 		if (session == null) {
+            final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
-			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
+			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
 		}
 		String[] outgoingMessage = session.transformSending(s, Collections.<TLV>emptyList());
 		for (String part : outgoingMessage) {
@@ -141,7 +146,7 @@ public class DummyClient {
 			session.endSession();
 	}
 
-	public void receive(String sender, String s) throws OtrException {
+	public void receive(String sender, String s) {
 		this.processor.enqueue(sender, s);
 	}
 
@@ -165,8 +170,9 @@ public class DummyClient {
 
 	public void secureSession(String recipient) throws OtrException {
 		if (session == null) {
+            final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
-			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
+			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
 		}
 
 		session.startSession();
@@ -204,8 +210,9 @@ public class DummyClient {
 
 		private void process(TestMessage m) throws OtrException {
 			if (session == null) {
+                final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 				final SessionID sessionID = new SessionID(account, m.getSender(), "DummyProtocol");
-				session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
+				session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
 			}
 
 			String receivedMessage = session.transformReceiving(m.getContent());

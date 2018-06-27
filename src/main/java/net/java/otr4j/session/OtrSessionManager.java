@@ -25,6 +25,7 @@ import net.java.otr4j.api.SessionID;
  * @author George Politis
  * @author Danny van Heumen
  */
+// TODO how to manage the owner instance tag in the OTR Session Manager? If we want to vary instance tags per session ID, you would need to query which instance tag to use. (Additionally, it needs to match with the instance tag in the ClientProfile.)
 public final class OtrSessionManager {
 
     /**
@@ -65,8 +66,9 @@ public final class OtrSessionManager {
      * @return Returns a newly created OTR session instance.
      */
     @Nonnull
-    public static Session createSession(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
-        return new SessionImpl(sessionID, host);
+    public static Session createSession(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host,
+                                        @Nonnull final InstanceTag senderInstanceTag) {
+        return new SessionImpl(sessionID, host, senderInstanceTag);
     }
 
     /**
@@ -119,7 +121,7 @@ public final class OtrSessionManager {
                 // Don't differentiate between existing but null and
                 // non-existing. If we do not get a valid instance, then we
                 // create a new instance.
-                session = new SessionImpl(sessionID, this.host);
+                session = new SessionImpl(sessionID, this.host, InstanceTag.ZERO_TAG);
                 session.addOtrEngineListener(sessionManagerListener);
                 sessions.put(sessionID, session);
             }
