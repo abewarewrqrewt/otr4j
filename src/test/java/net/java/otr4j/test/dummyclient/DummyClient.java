@@ -367,7 +367,7 @@ public class DummyClient {
 
         @Nonnull
         @Override
-        public ClientProfilePayload getClientProfile() {
+        public ClientProfilePayload getClientProfile(@Nonnull final SessionID sessionID) {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
 

@@ -504,7 +504,7 @@ public class SessionTest {
 
         @Nonnull
         @Override
-        public ClientProfilePayload getClientProfile() {
+        public ClientProfilePayload getClientProfile(@Nonnull final SessionID sessionID) {
             return this.profilePayload;
         }
 

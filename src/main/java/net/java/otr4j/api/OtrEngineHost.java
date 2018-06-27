@@ -118,19 +118,22 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID the session ID
      * @return Returns the local long-term Ed448-goldilocks key pair.
      */
-    // TODO consider splitting this off into separate interface for OTRv4-related logic. That way we can easily recognize OTRv4-capable hosts.
     @Nonnull
     EdDSAKeyPair getLongTermKeyPair(@Nonnull SessionID sessionID);
 
     /**
      * Request the client's Client Profile.
      *
+     * The client profile is requested from the OTR engine host. The session ID is provided as a parameter to indicate
+     * for which session a client profile is requested. The session ID can be used to distinguish between different
+     * networks or users, such that it becomes possible to return one of many possible client profiles, based on the
+     * current session.
+     *
+     * @param sessionID The session ID for which the Client Profile is requested.
      * @return Returns the Client Profile for this client.
      */
-    // TODO consider defining getClientProfile with sessionID parameter such that we can use different client profiles for different networks.
-    // FIXME evaluate whether returning ClientProfilePayload is really the expected format? (Benefit is that signing has already occurred.)
     @Nonnull
-    ClientProfilePayload getClientProfile();
+    ClientProfilePayload getClientProfile(@Nonnull SessionID sessionID);
 
     /**
      * Request local fingerprint in raw byte form.

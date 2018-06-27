@@ -881,7 +881,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nonnull
     @Override
     public ClientProfilePayload getClientProfile() {
-        return this.host.getClientProfile();
+        return this.host.getClientProfile(this.sessionState.getSessionID());
     }
 
     @Override
