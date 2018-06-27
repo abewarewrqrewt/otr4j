@@ -111,15 +111,16 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message)
         throws OtrCryptoException, ValidationException {
-
-        validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
-            this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(), context.getLocalAccountID());
-        final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
-            this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
-        context.secure(params);
-        // FIXME consider if we should put 'setState' call in finally to ensure execution.
-        // TODO should we reset state with or without preserving previous query tag?
-        context.setState(StateInitial.empty());
+        try {
+            validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
+                this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(), context.getLocalAccountID());
+            final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
+                this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
+            context.secure(params);
+        } finally {
+            // TODO should we reset state with or without preserving previous query tag?
+            context.setState(StateInitial.empty());
+        }
     }
 
     @Override

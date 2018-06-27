@@ -101,17 +101,18 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
         throws OtrCryptoException, ValidationException {
-        // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
+
         final ClientProfilePayload ourClientProfile = context.getClientProfile();
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         validate(message, ourClientProfile, context.getRemoteAccountID(), context.getLocalAccountID(),
             this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
-        // FIXME verification is currently non-functional, fix it!
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
-        context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
-        // FIXME consider if we should put 'setState' call in finally to ensure execution.
-        // TODO should we preserve the most recent query tag or start with empty initial state?
-        context.setState(StateInitial.empty());
+        try {
+            context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
+        } finally {
+            // TODO should we preserve the most recent query tag or start with empty initial state?
+            context.setState(StateInitial.empty());
+        }
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfile, message.getX(),
@@ -119,7 +120,6 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
             theirClientProfile.getLongTermPublicKey(), message.getX(), t);
-        // FIXME sender and receiver are probably swapped for the "sending AUTH_I message" use case.
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);
     }
 
