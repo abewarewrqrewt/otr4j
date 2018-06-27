@@ -1,6 +1,5 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.profile.ClientProfile;
@@ -54,35 +53,14 @@ public final class AuthRMessages {
         final byte[] t = MysteriousT4.encode(message.getClientProfile(), ourClientProfilePayload, message.getX(),
             receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
             message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
-        final ClientProfile theirProfile;
-        try {
-            theirProfile = message.getClientProfile().validate();
-        } catch (final ClientProfilePayload.ValidationException e) {
-            throw new ValidationException("Client profile is not valid.", e);
-        }
+        final ClientProfile theirProfile = message.getClientProfile().validate();
         if (theirProfile.getInstanceTag() != message.senderInstanceTag) {
             throw new ValidationException("The message sender's instance tag is different from the client profile's instance tag.");
         }
-        final ClientProfile ourClientProfile;
-        try {
-            // TODO how should we handle the case where our own client profile is not valid (anymore)?
-            ourClientProfile = ourClientProfilePayload.validate();
-        } catch (final ClientProfilePayload.ValidationException e) {
-            throw new IllegalStateException("Our own client profile is not valid.", e);
-        }
+        // TODO how should we handle the case where our own client profile is not valid (anymore)?
+        final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
         ringVerify(theirProfile.getLongTermPublicKey(), ourClientProfile.getLongTermPublicKey(), receiverECDHPublicKey,
             message.getSigma(), t);
-    }
-
-    public static final class ValidationException extends OtrException {
-
-        private ValidationException(@Nonnull final String message) {
-            super(message);
-        }
-
-        private ValidationException(@Nonnull final String message, @Nonnull final Throwable cause) {
-            super(message, cause);
-        }
     }
 }

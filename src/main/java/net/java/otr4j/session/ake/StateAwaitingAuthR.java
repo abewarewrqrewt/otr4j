@@ -10,11 +10,11 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
-import net.java.otr4j.io.messages.AuthRMessages;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.MysteriousT4;
+import net.java.otr4j.io.messages.ValidationException;
 import net.java.otr4j.profile.ClientProfile;
 
 import javax.annotation.Nonnull;
@@ -70,8 +70,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException,
-        AuthRMessages.ValidationException {
+        throws OtrCryptoException, ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -88,7 +87,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
                                                          @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException {
+        throws OtrCryptoException, ValidationException {
         IdentityMessages.validate(message);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
@@ -101,7 +100,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
-        throws OtrCryptoException, AuthRMessages.ValidationException, ClientProfilePayload.ValidationException {
+        throws OtrCryptoException, ValidationException {
         // FIXME not sure if sender/receiver here are correctly identified. (Check also occurrence for sending next message.)
         final ClientProfilePayload ourClientProfile = context.getClientProfile();
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();

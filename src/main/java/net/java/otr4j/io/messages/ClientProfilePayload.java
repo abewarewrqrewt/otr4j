@@ -1,6 +1,5 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
@@ -286,20 +285,6 @@ public final class ClientProfilePayload implements OtrEncodable {
             EdDSAKeyPair.verify(longTermPublicKey, m, signature);
         } catch (final OtrCryptoException e) {
             throw new ValidationException("Verification of EdDSA signature failed.", e);
-        }
-    }
-
-    /**
-     * Exception indicating an invalid client profile.
-     */
-    public static final class ValidationException extends OtrException {
-
-        private ValidationException(@Nonnull final String message) {
-            super(message);
-        }
-
-        private ValidationException(@Nonnull final String message, @Nonnull final Throwable cause) {
-            super(message, cause);
         }
     }
 

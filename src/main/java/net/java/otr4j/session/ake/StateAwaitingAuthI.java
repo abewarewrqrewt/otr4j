@@ -8,12 +8,12 @@ import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
-import net.java.otr4j.io.messages.AuthIMessages;
 import net.java.otr4j.io.messages.AuthRMessage;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.MysteriousT4;
+import net.java.otr4j.io.messages.ValidationException;
 import net.java.otr4j.profile.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -71,7 +71,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException, AuthIMessages.ValidationException {
+        throws OtrCryptoException, ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -87,7 +87,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     }
 
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ClientProfilePayload.ValidationException, IdentityMessages.ValidationException {
+        throws OtrCryptoException, ValidationException {
         IdentityMessages.validate(message);
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
         final ClientProfilePayload profilePayload = context.getClientProfile();
@@ -110,7 +110,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     }
 
     private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message)
-        throws OtrCryptoException, AuthIMessages.ValidationException {
+        throws OtrCryptoException, ValidationException {
 
         validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
             this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(), context.getLocalAccountID());

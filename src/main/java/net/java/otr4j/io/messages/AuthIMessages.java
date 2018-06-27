@@ -1,6 +1,5 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.profile.ClientProfile;
@@ -36,34 +35,13 @@ public final class AuthIMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
-        final ClientProfile profileBob;
-        try {
-            profileBob = profilePayloadBob.validate();
-        } catch (final ClientProfilePayload.ValidationException e) {
-            throw new ValidationException("Other party's client profile is invalid.", e);
-        }
-        final ClientProfile ourProfile;
-        try {
-            ourProfile = ourProfilePayload.validate();
-        } catch (final ClientProfilePayload.ValidationException e) {
-            throw new IllegalStateException("Our own client profile is invalid.", e);
-        }
+        final ClientProfile profileBob = profilePayloadBob.validate();
+        final ClientProfile ourProfile = ourProfilePayload.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
         final byte[] t = MysteriousT4.encode(ourProfilePayload, profilePayloadBob, x, y, a, b,
             message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
         ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), x, message.getSigma(), t);
-    }
-
-    public static final class ValidationException extends OtrException {
-
-        private ValidationException(@Nonnull final String message) {
-            super(message);
-        }
-
-        private ValidationException(@Nonnull final String message, @Nonnull final Throwable cause) {
-            super(message, cause);
-        }
     }
 }

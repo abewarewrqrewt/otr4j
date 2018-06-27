@@ -1,6 +1,5 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.profile.ClientProfile;
@@ -44,27 +43,11 @@ public final class IdentityMessages {
             throw new ValidationException("Illegal receiver instance tag.");
         }
         // TODO consider moving this out to first use case, instead of prematurely validating here.
-        final ClientProfile profile;
-        try {
-            profile = message.getClientProfile().validate();
-        } catch (ClientProfilePayload.ValidationException e) {
-            throw new ValidationException("Client profile failed validation.", e);
-        }
+        final ClientProfile profile = message.getClientProfile().validate();
         if (message.senderInstanceTag != profile.getInstanceTag()) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         verifyECDHPublicKey(message.getY());
         verifyDHPublicKey(message.getB());
-    }
-
-    public static final class ValidationException extends OtrException {
-
-        private ValidationException(@Nonnull final String message) {
-            super(message);
-        }
-
-        private ValidationException(@Nonnull final String message, @Nonnull final Throwable cause) {
-            super(message, cause);
-        }
     }
 }

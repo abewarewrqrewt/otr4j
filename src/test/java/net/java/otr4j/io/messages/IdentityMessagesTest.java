@@ -23,12 +23,12 @@ public final class IdentityMessagesTest {
     private final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
 
     @Test(expected = NullPointerException.class)
-    public void testValidateNull() throws OtrCryptoException, IdentityMessages.ValidationException {
+    public void testValidateNull() throws OtrCryptoException, ValidationException {
         validate(null);
     }
 
     @Test
-    public void testValidateIdentity() throws OtrCryptoException, IdentityMessages.ValidationException {
+    public void testValidateIdentity() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
@@ -38,7 +38,7 @@ public final class IdentityMessagesTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testValidateIdentityBadProtocolVersion() throws OtrCryptoException, IdentityMessages.ValidationException {
+    public void testValidateIdentityBadProtocolVersion() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
@@ -48,8 +48,8 @@ public final class IdentityMessagesTest {
     }
 
     // TODO should instance tag be verified here or earlier in the process?
-    @Test(expected = IdentityMessages.ValidationException.class)
-    public void testValidateIdentityBadSenderInstanceTag() throws OtrCryptoException, IdentityMessages.ValidationException {
+    @Test(expected = ValidationException.class)
+    public void testValidateIdentityBadSenderInstanceTag() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
@@ -59,8 +59,8 @@ public final class IdentityMessagesTest {
     }
 
     // TODO should instance tag be verified here or earlier in the process?
-    @Test(expected = IdentityMessages.ValidationException.class)
-    public void testValidateIdentityBadReceiverInstanceTag() throws OtrCryptoException, IdentityMessages.ValidationException {
+    @Test(expected = ValidationException.class)
+    public void testValidateIdentityBadReceiverInstanceTag() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
@@ -70,14 +70,14 @@ public final class IdentityMessagesTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testValidateIdentityNullClientProfile() throws OtrCryptoException, IdentityMessages.ValidationException {
+    public void testValidateIdentityNullClientProfile() throws OtrCryptoException, ValidationException {
         final IdentityMessage message = new IdentityMessage(4, InstanceTag.HIGHEST_VALUE,
             InstanceTag.SMALLEST_VALUE, null, ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
         validate(message);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testValidateIdentityNullEcdhPublicKey() throws OtrCryptoException, IdentityMessages.ValidationException {
+    public void testValidateIdentityNullEcdhPublicKey() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
@@ -87,7 +87,7 @@ public final class IdentityMessagesTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testValidateIdentityNullDhPublicKey() throws OtrCryptoException, IdentityMessages.ValidationException {
+    public void testValidateIdentityNullDhPublicKey() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
@@ -96,8 +96,8 @@ public final class IdentityMessagesTest {
         validate(message);
     }
 
-    @Test(expected = IdentityMessages.ValidationException.class)
-    public void testValidateIdentityInconsistentInstanceTag() throws OtrCryptoException, IdentityMessages.ValidationException {
+    @Test(expected = ValidationException.class)
+    public void testValidateIdentityInconsistentInstanceTag() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
