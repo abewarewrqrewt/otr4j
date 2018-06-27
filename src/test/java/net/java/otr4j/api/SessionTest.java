@@ -510,7 +510,7 @@ public class SessionTest {
 
         @Override
         public void askForSecret(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiverTag, @Nullable final String question) {
-            // FIXME implement secret for use in dummy test connections.
+            throw new UnsupportedOperationException("To be implemented");
         }
 
         @Nonnull
