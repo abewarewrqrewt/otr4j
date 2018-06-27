@@ -423,7 +423,6 @@ public class SessionTest {
             final ClientProfile profile = new ClientProfile(InstanceTag.random(random).getValue(),
                 this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
                 expirationCalendar.getTimeInMillis()/1000);
-            // FIXME non-functional conversion used. Must be fixed.
             this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
             this.session = OtrSessionManager.createSession(sessionID, this);
         }
