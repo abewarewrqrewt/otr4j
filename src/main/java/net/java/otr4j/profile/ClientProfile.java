@@ -1,19 +1,24 @@
 package net.java.otr4j.profile;
 
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
+import static net.java.otr4j.util.Collections.requireElements;
 import static net.java.otr4j.util.Collections.requireMinElements;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
-// FIXME Should we also allow versions 4 AND 3 when no transitional signature (OTRv3 long term public key) is provided?
 // FIXME add support for multiple long-term keys with definite order. (Older keys before newer keys)
 // FIXME update Client Profile composition as specification has changed.
+// TODO consider using InstanceTag type for instance tag value
 public final class ClientProfile {
 
     /**
@@ -36,12 +41,23 @@ public final class ClientProfile {
      */
     private final long expirationUnixTime;
 
+    /**
+     * DSA public key.
+     */
+    private final DSAPublicKey dsaPublicKey;
+
     public ClientProfile(final int instanceTag, @Nonnull final Point longTermPublicKey,
-                         @Nonnull final Set<Integer> versions, final long expirationUnixTime) {
+                         @Nonnull final Set<Integer> versions, final long expirationUnixTime,
+                         @Nullable DSAPublicKey dsaPublicKey) {
+        if (!isValidInstanceTag(instanceTag)) {
+            throw new IllegalArgumentException("Illegal instance tag specified.");
+        }
         this.instanceTag = instanceTag;
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
-        this.versions = requireMinElements(1, requireNoIllegalValues(versions, asList(Session.OTRv.ONE, Session.OTRv.TWO)));
+        this.versions = requireMinElements(1,
+            requireElements(singletonList(OTRv.FOUR), requireNoIllegalValues(versions, asList(OTRv.ONE, OTRv.TWO))));
         this.expirationUnixTime = expirationUnixTime;
+        this.dsaPublicKey = dsaPublicKey;
     }
 
     public int getInstanceTag() {
@@ -60,5 +76,10 @@ public final class ClientProfile {
 
     public long getExpirationUnixTime() {
         return expirationUnixTime;
+    }
+
+    @Nullable
+    public DSAPublicKey getDsaPublicKey() {
+        return dsaPublicKey;
     }
 }

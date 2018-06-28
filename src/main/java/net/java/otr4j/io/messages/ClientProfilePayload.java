@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * This is the client profile in a representation that is easily serializable and that is able to carry the signatures
  * corresponding to the client profile.
  */
+// FIXME write unit tests
 // FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
 public final class ClientProfilePayload implements OtrEncodable {
 
@@ -60,7 +62,7 @@ public final class ClientProfilePayload implements OtrEncodable {
     private ClientProfilePayload(@Nonnull final List<Field> fields, @Nonnull final byte[] signature) {
         try {
             validate(fields, signature, new Date());
-        } catch (ValidationException e) {
+        } catch (final ValidationException e) {
             throw new IllegalArgumentException("Invalid client profile fields.", e);
         }
         this.fields = fields;
@@ -84,7 +86,10 @@ public final class ClientProfilePayload implements OtrEncodable {
         fields.add(new ED448PublicKeyField(SINGLE_LONG_TERM_PUBLIC_KEY_ID, profile.getLongTermPublicKey()));
         fields.add(new VersionsField(profile.getVersions()));
         fields.add(new ExpirationDateField(profile.getExpirationUnixTime()));
-        // FIXME should we conditionally add the DSA public key, only if the DSA private key is provided?
+        final DSAPublicKey dsaPublicKey = profile.getDsaPublicKey();
+        if (dsaPublicKey != null) {
+            fields.add(new DSAPublicKeyField(dsaPublicKey));
+        }
         final byte[] partialM;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             for (final Field field : fields) {
@@ -94,9 +99,12 @@ public final class ClientProfilePayload implements OtrEncodable {
         }
         final byte[] m;
         if (dsaPrivateKey != null) {
+            if (dsaPublicKey == null) {
+                throw new IllegalArgumentException("DSA private key provided for transitional signature, but DSA public key is not present in the client profile.");
+            }
             final DSASignature transitionalSignature = signRS(partialM, dsaPrivateKey);
-            // FIXME need to add OTRv3 DSA public key field too.
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
+            fields.add(sigField);
             m = concatenate(partialM, encode(sigField));
         } else {
             m = partialM;
@@ -196,7 +204,9 @@ public final class ClientProfilePayload implements OtrEncodable {
         final Point longTermPublicKey = findByType(this.fields, ED448PublicKeyField.class).publicKey;
         final Set<Integer> versions = findByType(this.fields, VersionsField.class).versions;
         final long expirationUnixTime = findByType(this.fields, ExpirationDateField.class).timestamp;
-        return new ClientProfile(instanceTag, longTermPublicKey, versions, expirationUnixTime);
+        final DSAPublicKeyField dsaPublicKeyField = findByType(this.fields, DSAPublicKeyField.class, null);
+        return new ClientProfile(instanceTag, longTermPublicKey, versions, expirationUnixTime,
+            dsaPublicKeyField == null ? null : dsaPublicKeyField.publicKey);
     }
 
     /**
@@ -212,6 +222,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         final ArrayList<ED448PublicKeyField> publicKeyFields = new ArrayList<>();
         final ArrayList<VersionsField> versionsFields = new ArrayList<>();
         final ArrayList<ExpirationDateField> expirationDateFields = new ArrayList<>();
+        final ArrayList<DSAPublicKeyField> dsaPublicKeyFields = new ArrayList<>();
         final ArrayList<TransitionalSignatureField> transitionalSignatureFields = new ArrayList<>();
         // FIXME should we enforce strict order? Not in currently.
         for (final Field field : fields) {
@@ -223,6 +234,8 @@ public final class ClientProfilePayload implements OtrEncodable {
                 versionsFields.add((VersionsField) field);
             } else if (field instanceof ExpirationDateField) {
                 expirationDateFields.add((ExpirationDateField) field);
+            } else if (field instanceof DSAPublicKeyField) {
+                dsaPublicKeyFields.add((DSAPublicKeyField) field);
             } else if (field instanceof TransitionalSignatureField) {
                 transitionalSignatureFields.add((TransitionalSignatureField) field);
             } else {
@@ -254,6 +267,9 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (expirationDateFields.size() != 1) {
             throw new ValidationException("Incorrect number of expiration date fields: " + expirationDateFields.size());
         }
+        if (dsaPublicKeyFields.size() > 1) {
+            throw new ValidationException("Expect either no or single DSA public key field. Found more than one.");
+        }
         if (!now.before(new Date(expirationDateFields.get(0).timestamp * 1000))) {
             throw new ValidationException("Client Profile has expired.");
         }
@@ -263,7 +279,9 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.write(publicKeyFields.get(0));
             out.write(versionsFields.get(0));
             out.write(expirationDateFields.get(0));
-            // FIXME need to add DSA public key
+            if (dsaPublicKeyFields.size() == 1) {
+                out.write(dsaPublicKeyFields.get(0));
+            }
             partialM = out.toByteArray();
         }
         final byte[] m;
@@ -271,9 +289,12 @@ public final class ClientProfilePayload implements OtrEncodable {
             throw new ValidationException("Expected at most one transitional signature, got: " + transitionalSignatureFields.size());
         } else if (transitionalSignatureFields.size() == 1) {
             try {
-                // FIXME extract and use DSA public key for transitional signature.
+                if (dsaPublicKeyFields.size() != 1) {
+                    throw new ValidationException("DSA public key is missing. It is impossible to verify the transitional signature.");
+                }
+                final DSAPublicKey dsaPublicKey = dsaPublicKeyFields.get(0).publicKey;
                 final DSASignature transitionalSignature = transitionalSignatureFields.get(0).signature;
-                verify(partialM, null, transitionalSignature.r, transitionalSignature.s);
+                verify(partialM, dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
             } catch (final OtrCryptoException e) {
                 throw new ValidationException("Failed transitional signature validation.", e);
             }
@@ -429,6 +450,23 @@ public final class ClientProfilePayload implements OtrEncodable {
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeShort(TYPE.type);
             out.writeLong(this.timestamp);
+        }
+    }
+
+    /**
+     * Field for OTRv3 DSA public key.
+     */
+    private static final class DSAPublicKeyField implements Field {
+
+        private final DSAPublicKey publicKey;
+
+        private DSAPublicKeyField(@Nonnull final DSAPublicKey publicKey) {
+            this.publicKey = requireNonNull(publicKey);
+        }
+
+        @Override
+        public void writeTo(@Nonnull final OtrOutputStream out) {
+            out.writePublicKey(this.publicKey);
         }
     }
 

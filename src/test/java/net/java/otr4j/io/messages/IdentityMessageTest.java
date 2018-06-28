@@ -8,7 +8,7 @@ import java.math.BigInteger;
 
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 
-public class IdentityMessageTest {
+public final class IdentityMessageTest {
 
     private static final ClientProfileTestUtils profileTestUtils = new ClientProfileTestUtils();
 

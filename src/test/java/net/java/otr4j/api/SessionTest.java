@@ -423,7 +423,7 @@ public class SessionTest {
             final InstanceTag senderInstanceTag = InstanceTag.random(random);
             final ClientProfile profile = new ClientProfile(senderInstanceTag.getValue(),
                 this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
-                expirationCalendar.getTimeInMillis()/1000);
+                expirationCalendar.getTimeInMillis() / 1000, null);
             this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
             this.session = createSession(sessionID, this, senderInstanceTag);
         }
