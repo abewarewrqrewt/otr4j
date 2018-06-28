@@ -2,11 +2,15 @@ package net.java.otr4j.util;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static net.java.otr4j.util.Collections.requireElements;
 import static net.java.otr4j.util.Collections.requireMinElements;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 import static org.junit.Assert.assertSame;
@@ -63,5 +67,33 @@ public final class CollectionsTest {
     public void testRequireMinElementsAboveMinimum() {
         final List<String> list = asList("a", "b");
         assertSame(list, requireMinElements(1, list));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRequireElementsNullElementsList() {
+        requireElements(null, emptyList());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRequireElementsNullCollection() {
+        requireElements(emptySet(), null);
+    }
+
+    @Test
+    public void testRequireElementsEmptyElementsList() {
+        final ArrayList<Object> list = new ArrayList<>();
+        assertSame(list, requireElements(emptySet(), list));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRequireElementsMissingElement() {
+        final ArrayList<Object> list = new ArrayList<>();
+        requireElements(singleton("Hello"), list);
+    }
+
+    @Test
+    public void testRequireElementsElementsPresent() {
+        final List<Object> list = asList(new Object(), "a", "b", 3);
+        assertSame(list, requireElements(asList("a", "b"), list));
     }
 }

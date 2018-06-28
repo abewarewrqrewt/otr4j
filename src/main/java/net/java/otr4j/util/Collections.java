@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Utilities for Collections.
  */
+// TODO restructure such that these require-methods are more readable if nested.
 public final class Collections {
 
     private Collections() {
@@ -30,6 +31,15 @@ public final class Collections {
         final int size = collection.size();
         if (size < minimum) {
             throw new IllegalArgumentException("Only " + size + " entries found. Expected " + minimum + " at minimum.");
+        }
+        return collection;
+    }
+
+    @Nonnull
+    public static <E, T extends Collection<? super E>> T requireElements(@Nonnull final Collection<? extends E> elements,
+                                                                 @Nonnull final T collection) {
+        if (!collection.containsAll(elements)) {
+            throw new IllegalArgumentException("Expected elements certain elements to be present, but these are missing.");
         }
         return collection;
     }
