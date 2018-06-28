@@ -26,7 +26,7 @@ public final class CollectionsTest {
     @Test
     public void testRequireNoIllegalValuesNoIllegals() {
         final List<String> list = asList("a", "b", "c");
-        assertSame(list, requireNoIllegalValues(list, java.util.Collections.<String>emptyList()));
+        assertSame(list, requireNoIllegalValues(java.util.Collections.<String>emptyList(), list));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -38,7 +38,7 @@ public final class CollectionsTest {
     @Test
     public void testRequireNoIllegalValuesNonintersectingIllegals() {
         final List<String> list = asList("a", "b", "c");
-        assertSame(list, requireNoIllegalValues(list, singletonList("d")));
+        assertSame(list, requireNoIllegalValues(singletonList("d"), list));
     }
 
     @Test(expected = NullPointerException.class)

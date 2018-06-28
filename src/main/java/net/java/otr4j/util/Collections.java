@@ -8,7 +8,6 @@ import static java.util.Objects.requireNonNull;
 /**
  * Utilities for Collections.
  */
-// TODO restructure such that these require-methods are more readable if nested.
 public final class Collections {
 
     private Collections() {
@@ -16,7 +15,8 @@ public final class Collections {
     }
 
     @Nonnull
-    public static <S, T extends Collection<S>> T requireNoIllegalValues(@Nonnull final T collection, @Nonnull final Collection<S> blacklist) {
+    public static <S, T extends Collection<S>> T requireNoIllegalValues(@Nonnull final Collection<S> blacklist,
+                                                                        @Nonnull final T collection) {
         requireNonNull(collection);
         for (final S illegal : blacklist) {
             if (collection.contains(illegal)) {
@@ -36,7 +36,7 @@ public final class Collections {
     }
 
     @Nonnull
-    public static <E, T extends Collection<? super E>> T requireElements(@Nonnull final Collection<? extends E> elements,
+    public static <E, T extends Collection<? super E>> T requireElements(@Nonnull final Collection<E> elements,
                                                                  @Nonnull final T collection) {
         if (!collection.containsAll(elements)) {
             throw new IllegalArgumentException("Expected elements certain elements to be present, but these are missing.");

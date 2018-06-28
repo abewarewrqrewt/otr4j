@@ -54,8 +54,8 @@ public final class ClientProfile {
         }
         this.instanceTag = instanceTag;
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
-        this.versions = requireMinElements(1,
-            requireElements(singletonList(OTRv.FOUR), requireNoIllegalValues(versions, asList(OTRv.ONE, OTRv.TWO))));
+        this.versions = requireMinElements(1, requireElements(singletonList(OTRv.FOUR),
+            requireNoIllegalValues(asList(OTRv.ONE, OTRv.TWO), versions)));
         this.expirationUnixTime = expirationUnixTime;
         this.dsaPublicKey = dsaPublicKey;
     }
