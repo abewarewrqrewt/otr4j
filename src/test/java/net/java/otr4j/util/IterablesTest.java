@@ -35,4 +35,20 @@ public final class IterablesTest {
     public void testFindSubType() {
         assertEquals("Hello", findByType(asList(new Object(), "Hello"), String.class));
     }
+
+    @Test
+    public void testFindByTypeFound() {
+        assertEquals("Hello", findByType(asList(new Object(), "Hello"), String.class, null));
+    }
+
+    @Test
+    public void testFindByTypeNullDefault() {
+        assertNull(findByType(asList(new Object(), new Object()), String.class, null));
+    }
+
+    @Test
+    public void testFindByTypeNonNullDefault() {
+        final String defaultValue = "Hello world";
+        assertEquals(defaultValue, findByType(asList(new Object(), new Object()), String.class, defaultValue));
+    }
 }
