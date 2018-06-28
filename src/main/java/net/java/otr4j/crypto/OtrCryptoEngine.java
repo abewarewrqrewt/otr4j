@@ -406,44 +406,34 @@ public final class OtrCryptoEngine {
      * @param rs Components R and S.
      * @throws OtrCryptoException Thrown in case of failed verification.
      */
+    // TODO consider if we can modify type 'PublicKey' to 'DSAPublicKey'.
     public static void verify(@Nonnull final byte[] b, @Nonnull final PublicKey pubKey, @Nonnull final byte[] rs)
             throws OtrCryptoException {
-
         if (!(pubKey instanceof DSAPublicKey)) {
             throw new IllegalArgumentException("Public key instance must be of type DSAPublicKey.");
         }
-
-        final DSAParams dsaParams = ((DSAPublicKey) pubKey).getParams();
+        final DSAPublicKey dsaPublicKey = (DSAPublicKey) pubKey;
+        final DSAParams dsaParams = dsaPublicKey.getParams();
         final int qlen = dsaParams.getQ().bitLength() / 8;
         final ByteBuffer buff = ByteBuffer.wrap(rs);
         final byte[] r = new byte[qlen];
         buff.get(r);
         final byte[] s = new byte[qlen];
         buff.get(s);
-        verify(b, pubKey, r, s);
+        verify(b, dsaPublicKey, r, s);
     }
 
-    private static void verify(@Nonnull final byte[] b, @Nonnull final PublicKey pubKey, @Nonnull final byte[] r, @Nonnull final byte[] s)
-            throws OtrCryptoException {
+    private static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] r,
+                               @Nonnull final byte[] s) throws OtrCryptoException {
         verify(b, pubKey, new BigInteger(1, r), new BigInteger(1, s));
     }
 
-    public static void verify(@Nonnull final byte[] b, @Nonnull final PublicKey pubKey, @Nonnull final BigInteger r,
+    public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final BigInteger r,
             @Nonnull final BigInteger s) throws OtrCryptoException {
-
-        if (!(pubKey instanceof DSAPublicKey)) {
-            throw new IllegalArgumentException("Public key instance must be of type DSAPublicKey.");
-        }
-
-        final DSAParams dsaParams = ((DSAPublicKey) pubKey).getParams();
-
+        final DSAParams dsaParams = pubKey.getParams();
         final BigInteger q = dsaParams.getQ();
-        final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q,
-                dsaParams.getG());
-
-        final DSAPublicKey dsaPrivateKey = (DSAPublicKey) pubKey;
-        final DSAPublicKeyParameters dsaPrivParms = new DSAPublicKeyParameters(
-                dsaPrivateKey.getY(), bcDSAParams);
+        final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q, dsaParams.getG());
+        final DSAPublicKeyParameters dsaPubParams = new DSAPublicKeyParameters(pubKey.getY(), bcDSAParams);
 
         // Ian: Note that if you can get the standard DSA implementation you're
         // using to not hash its input, you should be able to pass it ((256-bit
@@ -451,7 +441,7 @@ public final class OtrCryptoEngine {
         // should be well.
         // ref: Interop problems with libotr - DSA signature
         final DSASigner dsaSigner = new DSASigner();
-        dsaSigner.init(false, dsaPrivParms);
+        dsaSigner.init(false, dsaPubParams);
 
         final BigInteger bmpi = new BigInteger(1, b);
         if (!dsaSigner.verifySignature(asUnsignedByteArray(bmpi.mod(q)), r, s)) {

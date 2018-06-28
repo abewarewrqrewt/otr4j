@@ -120,14 +120,14 @@ public class OtrCryptoEngineTest {
     public void testSignRS() throws OtrCryptoException {
         final byte[] m = "hello".getBytes(UTF8);
         final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
-        verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
+        verify(m, (DSAPublicKey) DSA_KEYPAIR.getPublic(), sig.r, sig.s);
     }
 
     @Test
     public void testSignRSEmptyMessage() throws OtrCryptoException {
         final byte[] m = new byte[0];
         final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
-        verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
+        verify(m, (DSAPublicKey) DSA_KEYPAIR.getPublic(), sig.r, sig.s);
     }
 
     @Test
