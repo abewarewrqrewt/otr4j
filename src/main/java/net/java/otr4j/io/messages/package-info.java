@@ -7,5 +7,4 @@
 /**
  * Package containing otr message types.
  */
-// FIXME consider moving to @ParametersAreNonnullByDefault for this package.
 package net.java.otr4j.io.messages;
