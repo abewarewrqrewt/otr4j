@@ -97,9 +97,8 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         this.out.write(mac, 0, mac.length);
     }
 
-    // FIXME investigate if we can make this Nonnull for all cases!
-    public void writeCtr(@Nullable final byte[] ctr) {
-        if (ctr == null || ctr.length < 1) {
+    public void writeCtr(@Nonnull final byte[] ctr) {
+        if (ctr.length < 1) {
             return;
         }
         int i = 0;
