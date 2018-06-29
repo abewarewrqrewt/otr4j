@@ -314,33 +314,47 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     private enum FieldType {
         /**
-         * The instance tag of the client/device that created the Client Profile.
+         * Client Profile Identifier (INT)
          */
-        INSTANCE_TAG(0x0001),
+        // FIXME implement profile identifier support
+        PROFILE_IDENTIFIER(0x0001),
         /**
-         * The Client's Ed448 long-term public key.
+         * Client Profile owner instance tag (INT)
          */
-        LONG_TERM_EdDSA_PUBLIC_KEY(0x0002),
+        INSTANCE_TAG(0x0002),
         /**
+         * Ed448 public key (ED448-PUBKEY)
+         */
+        LONG_TERM_EdDSA_PUBLIC_KEY(0x0003),
+        /**
+         * Ed448 forger public key (ED448-FORGER-PUBKEY)
+         */
+        // FIXME implement forger public key support
+        ED448_FORGER_PUBLIC_KEY(0x0004),
+        /**
+         * Versions (DATA)
+         *
          * A string corresponding to supported OTR protocol versions.
          */
-        VERSIONS(0x0003),
+        VERSIONS(0x0005),
         /**
-         * The expiration date.
+         * Client Profile Expiration (CLIENT-PROF-EXP)
          * <p>
          * The expiration date represented in standard Unix 64-bit timestamp format. (Seconds as of midnight Jan 1, 1970
          * UTC, ignoring leap seconds.)
          */
-        PROFILE_EXPIRATION(0x0004),
+        PROFILE_EXPIRATION(0x0006),
         /**
-         * The OTRv3 DSA public key used for the transitional signature.
+         * OTRv3 public authentication DSA key (PUBKEY)
          */
         TRANSITIONAL_DSA_PUBLIC_KEY(0x0007),
         /**
-         * This signature is a signature over fields of type: {@link #INSTANCE_TAG}, {@link #LONG_TERM_EdDSA_PUBLIC_KEY},
-         * {@link #VERSIONS} and {@link #PROFILE_EXPIRATION}.
+         * Transitional Signature (CLIENT-SIG)
+         *
+         * This signature is defined as a signature over fields 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x006 and 0x007
+         * only.
          */
-        TRANSITIONAL_SIGNATURE(0x0005);
+        TRANSITIONAL_SIGNATURE(0x0008);
 
         private final int type;
 
