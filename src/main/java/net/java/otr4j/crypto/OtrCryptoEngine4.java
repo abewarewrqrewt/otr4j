@@ -321,7 +321,6 @@ public final class OtrCryptoEngine4 {
     /**
      * Data structure that captures all related data for 'sigma' in the Ring Signature.
      */
-    // FIXME write unit tests
     public static final class Sigma implements OtrEncodable {
         private final BigInteger c1;
         private final BigInteger r1;
