@@ -44,7 +44,7 @@ public final class IdentityMessages {
         }
         // TODO consider moving this out to first use case, instead of prematurely validating here.
         final ClientProfile profile = message.getClientProfile().validate();
-        if (message.senderInstanceTag != profile.getInstanceTag()) {
+        if (message.senderInstanceTag != profile.getInstanceTag().getValue()) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         verifyECDHPublicKey(message.getY());

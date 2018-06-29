@@ -421,9 +421,8 @@ public class SessionTest {
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
             final InstanceTag senderInstanceTag = InstanceTag.random(random);
-            final ClientProfile profile = new ClientProfile(senderInstanceTag.getValue(),
-                this.ed448KeyPair.getPublicKey(), Collections.singleton(Session.OTRv.FOUR),
-                expirationCalendar.getTimeInMillis() / 1000, null);
+            final ClientProfile profile = new ClientProfile(senderInstanceTag, this.ed448KeyPair.getPublicKey(),
+                Collections.singleton(Session.OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000, null);
             this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
             this.session = createSession(sessionID, this, senderInstanceTag);
         }

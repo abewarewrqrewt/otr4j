@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.security.SecureRandom;
 import java.util.Collections;
 
+import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.io.messages.IdentityMessages.validate;
 
 @SuppressWarnings("ConstantConditions")
@@ -29,7 +30,7 @@ public final class IdentityMessagesTest {
 
     @Test
     public void testValidateIdentity() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, InstanceTag.SMALLEST_VALUE,
@@ -39,7 +40,7 @@ public final class IdentityMessagesTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testValidateIdentityBadProtocolVersion() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(3, InstanceTag.SMALLEST_VALUE,
@@ -50,7 +51,7 @@ public final class IdentityMessagesTest {
     // TODO should instance tag be verified here or earlier in the process?
     @Test(expected = ValidationException.class)
     public void testValidateIdentityBadSenderInstanceTag() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, 3, InstanceTag.HIGHEST_VALUE,
@@ -61,7 +62,7 @@ public final class IdentityMessagesTest {
     // TODO should instance tag be verified here or earlier in the process?
     @Test(expected = ValidationException.class)
     public void testValidateIdentityBadReceiverInstanceTag() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, InstanceTag.SMALLEST_VALUE, 5,
@@ -78,7 +79,7 @@ public final class IdentityMessagesTest {
 
     @Test(expected = NullPointerException.class)
     public void testValidateIdentityNullEcdhPublicKey() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, InstanceTag.HIGHEST_VALUE,
@@ -88,7 +89,7 @@ public final class IdentityMessagesTest {
 
     @Test(expected = NullPointerException.class)
     public void testValidateIdentityNullDhPublicKey() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, InstanceTag.HIGHEST_VALUE,
@@ -98,7 +99,7 @@ public final class IdentityMessagesTest {
 
     @Test(expected = ValidationException.class)
     public void testValidateIdentityInconsistentInstanceTag() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(InstanceTag.SMALLEST_VALUE, longTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
             Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
         final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, InstanceTag.HIGHEST_VALUE,

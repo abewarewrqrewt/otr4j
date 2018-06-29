@@ -12,6 +12,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.TreeSet;
 
 import static java.util.Collections.singleton;
+import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 
 public final class ClientProfileTestUtils {
 
@@ -30,7 +31,7 @@ public final class ClientProfileTestUtils {
     }
 
     public ClientProfilePayload createUserProfile() {
-        final ClientProfile profile = new ClientProfile(0x100, this.eddsaLongTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
             singleton(Session.OTRv.FOUR), this.expirationTime, null);
         return ClientProfilePayload.sign(profile, null, this.eddsaLongTermKeyPair);
     }
@@ -39,7 +40,7 @@ public final class ClientProfileTestUtils {
         final TreeSet<Integer> versions = new TreeSet<>();
         versions.add(Session.OTRv.THREE);
         versions.add(Session.OTRv.FOUR);
-        final ClientProfile profile = new ClientProfile(0x100, this.eddsaLongTermKeyPair.getPublicKey(),
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
             versions, this.expirationTime, (DSAPublicKey) this.dsaKeyPair.getPublic());
         return ClientProfilePayload.sign(profile, (DSAPrivateKey) this.dsaKeyPair.getPrivate(), this.eddsaLongTermKeyPair);
     }

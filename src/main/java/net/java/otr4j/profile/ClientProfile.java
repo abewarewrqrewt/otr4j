@@ -1,5 +1,6 @@
 package net.java.otr4j.profile;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -11,20 +12,18 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.util.Collections.requireElements;
 import static net.java.otr4j.util.Collections.requireMinElements;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
 // FIXME add support for multiple long-term keys with definite order. (Older keys before newer keys)
 // FIXME update Client Profile composition as specification has changed.
-// TODO consider using InstanceTag type for instance tag value
 public final class ClientProfile {
 
     /**
      * Owner's instance tag.
      */
-    private final int instanceTag;
+    private final InstanceTag instanceTag;
 
     /**
      * Public key of the long-term Ed448 keypair.
@@ -46,13 +45,10 @@ public final class ClientProfile {
      */
     private final DSAPublicKey dsaPublicKey;
 
-    public ClientProfile(final int instanceTag, @Nonnull final Point longTermPublicKey,
+    public ClientProfile(@Nonnull final InstanceTag instanceTag, @Nonnull final Point longTermPublicKey,
                          @Nonnull final Set<Integer> versions, final long expirationUnixTime,
                          @Nullable DSAPublicKey dsaPublicKey) {
-        if (!isValidInstanceTag(instanceTag)) {
-            throw new IllegalArgumentException("Illegal instance tag specified.");
-        }
-        this.instanceTag = instanceTag;
+        this.instanceTag = requireNonNull(instanceTag);
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
         this.versions = requireMinElements(1, requireElements(singletonList(OTRv.FOUR),
             requireNoIllegalValues(asList(OTRv.ONE, OTRv.TWO), versions)));
@@ -60,7 +56,8 @@ public final class ClientProfile {
         this.dsaPublicKey = dsaPublicKey;
     }
 
-    public int getInstanceTag() {
+    @Nonnull
+    public InstanceTag getInstanceTag() {
         return instanceTag;
     }
 

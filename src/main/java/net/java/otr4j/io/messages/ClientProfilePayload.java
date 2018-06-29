@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
@@ -82,7 +83,7 @@ public final class ClientProfilePayload implements OtrEncodable {
                                             @Nullable final DSAPrivateKey dsaPrivateKey,
                                             @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
-        fields.add(new InstanceTagField(profile.getInstanceTag()));
+        fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(SINGLE_LONG_TERM_PUBLIC_KEY_ID, profile.getLongTermPublicKey()));
         fields.add(new VersionsField(profile.getVersions()));
         fields.add(new ExpirationDateField(profile.getExpirationUnixTime()));
@@ -200,7 +201,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     @Nonnull
     private ClientProfile reconstructClientProfile() {
-        final int instanceTag = findByType(this.fields, InstanceTagField.class).instanceTag;
+        final InstanceTag instanceTag = new InstanceTag(findByType(this.fields, InstanceTagField.class).instanceTag);
         final Point longTermPublicKey = findByType(this.fields, ED448PublicKeyField.class).publicKey;
         final Set<Integer> versions = findByType(this.fields, VersionsField.class).versions;
         final long expirationUnixTime = findByType(this.fields, ExpirationDateField.class).timestamp;
