@@ -333,6 +333,10 @@ public final class ClientProfilePayload implements OtrEncodable {
          */
         PROFILE_EXPIRATION(0x0004),
         /**
+         * The OTRv3 DSA public key used for the transitional signature.
+         */
+        TRANSITIONAL_DSA_PUBLIC_KEY(0x0007),
+        /**
          * This signature is a signature over fields of type: {@link #INSTANCE_TAG}, {@link #LONG_TERM_EdDSA_PUBLIC_KEY},
          * {@link #VERSIONS} and {@link #PROFILE_EXPIRATION}.
          */
@@ -458,6 +462,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     private static final class DSAPublicKeyField implements Field {
 
+        private static final FieldType TYPE = FieldType.TRANSITIONAL_DSA_PUBLIC_KEY;
+
         private final DSAPublicKey publicKey;
 
         private DSAPublicKeyField(@Nonnull final DSAPublicKey publicKey) {
@@ -466,6 +472,7 @@ public final class ClientProfilePayload implements OtrEncodable {
 
         @Override
         public void writeTo(@Nonnull final OtrOutputStream out) {
+            out.writeShort(TYPE.type);
             out.writePublicKey(this.publicKey);
         }
     }
