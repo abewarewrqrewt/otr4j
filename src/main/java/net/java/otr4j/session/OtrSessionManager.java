@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +28,8 @@ import net.java.otr4j.api.SessionID;
  */
 // TODO how to manage the owner instance tag in the OTR Session Manager? If we want to vary instance tags per session ID, you would need to query which instance tag to use. (Additionally, it needs to match with the instance tag in the ClientProfile.)
 public final class OtrSessionManager {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * The OTR Engine Host instance.
@@ -121,7 +124,7 @@ public final class OtrSessionManager {
                 // Don't differentiate between existing but null and
                 // non-existing. If we do not get a valid instance, then we
                 // create a new instance.
-                session = new SessionImpl(sessionID, this.host, InstanceTag.ZERO_TAG);
+                session = new SessionImpl(sessionID, this.host, InstanceTag.random(RANDOM));
                 session.addOtrEngineListener(sessionManagerListener);
                 sessions.put(sessionID, session);
             }

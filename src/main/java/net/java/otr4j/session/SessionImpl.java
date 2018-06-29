@@ -58,11 +58,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
 import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
@@ -274,14 +274,16 @@ final class SessionImpl implements Session, Context, AuthContext {
             @Nonnull final SecureRandom secureRandom,
             @Nonnull final AuthState authState) {
         this.masterSession = masterSession == null ? this : masterSession;
-        this.secureRandom = Objects.requireNonNull(secureRandom);
+        this.secureRandom = requireNonNull(secureRandom);
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
         this.sessionState = new StatePlaintext(sessionID);
-        this.authState = Objects.requireNonNull(authState);
-        this.host = Objects.requireNonNull(host);
-        // FIXME acquire sender instance tag from Client Profile
-        this.senderTag = senderTag == InstanceTag.ZERO_TAG ? InstanceTag.random(secureRandom) : senderTag;
-        this.receiverTag = Objects.requireNonNull(receiverTag);
+        this.authState = requireNonNull(authState);
+        this.host = requireNonNull(host);
+        if (senderTag == InstanceTag.ZERO_TAG) {
+            throw new IllegalArgumentException("Only actual instance tags are allowed.");
+        }
+        this.senderTag = requireNonNull(senderTag);
+        this.receiverTag = requireNonNull(receiverTag);
         this.offerStatus = OfferStatus.idle;
         // Master session uses the map to manage slave sessions. Slave sessions do not use the map.
         slaveSessions = this.masterSession == this
@@ -344,7 +346,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     public void setState(@Nonnull final State state) {
-        this.sessionState = Objects.requireNonNull(state);
+        this.sessionState = requireNonNull(state);
         OtrEngineListenerUtil.sessionStatusChanged(
                 duplicate(listeners),
                 state.getSessionID(), this.receiverTag);
@@ -353,7 +355,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     public void setState(@Nonnull final AuthState state) {
         logger.log(Level.FINEST, "Updating state from {0} to {1}.", new Object[]{this.authState, state});
-        this.authState = Objects.requireNonNull(state);
+        this.authState = requireNonNull(state);
     }
 
     @Override
