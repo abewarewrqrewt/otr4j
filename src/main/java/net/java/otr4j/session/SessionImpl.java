@@ -413,6 +413,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
             return null;
         } catch (final ProtocolException e) {
+            // TODO consider downgrading to INFO message, as it is not an issue in any way to our local handling. Just a bad message.
             logger.log(Level.WARNING, "An invalid message fragment was discarded.", e);
             return null;
         }
@@ -512,12 +513,12 @@ final class SessionImpl implements Session, Context, AuthContext {
             }
             logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}", messageSenderInstance.getValue());
             // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
-            return session.transformReceiving(msgText);
+            return session.handleEncodedMessage(encodedM);
         }
 
         logger.log(Level.INFO, "Received message with type {0}", m.getClass());
-        if (m instanceof DataMessage) {
-            return handleDataMessage((DataMessage) m);
+        if (m instanceof AbstractEncodedMessage) {
+            return handleEncodedMessage((AbstractEncodedMessage) m);
         } else if (m instanceof ErrorMessage) {
             handleErrorMessage((ErrorMessage) m);
             return null;
@@ -526,18 +527,33 @@ final class SessionImpl implements Session, Context, AuthContext {
         } else if (m instanceof QueryMessage) {
             handleQueryMessage((QueryMessage) m);
             return null;
-        } else if (m instanceof AbstractEncodedMessage) {
-            final AbstractEncodedMessage reply = handleAKEMessage((AbstractEncodedMessage) m);
-            if (reply != null) {
-                injectMessage(reply);
-            }
-            return null;
         } else {
             // At this point, the message m has a known type, but support was not implemented at this point in the code.
             // This should be considered a programming error. We should handle any known message type gracefully.
             // Unknown messages are caught earlier.
             throw new UnsupportedOperationException("This message type is not supported. Support is expected to be implemented for all known message types.");
         }
+    }
+
+    /**
+     * Handle any kind of encoded message. (Either Data message or any type of AKE message.)
+     *
+     * @param message The encoded message.
+     * @return Returns result of handling message, typically decrypting encoded messages or null if no presentable result.
+     * @throws OtrException In case of failure to process.
+     */
+    @Nullable
+    private String handleEncodedMessage(@Nonnull final AbstractEncodedMessage message) throws OtrException {
+        assert this.masterSession != this || message.protocolVersion == OTRv.TWO : "BUG: We should not process encoded message in master session in protocol version 3 or higher.";
+        if (message instanceof DataMessage) {
+            return handleDataMessage((DataMessage) message);
+        }
+        // Anything that is not a Data message is some kind of AKE message.
+        final AbstractEncodedMessage reply = handleAKEMessage(message);
+        if (reply != null) {
+            injectMessage(reply);
+        }
+        return null;
     }
 
     private void handleQueryMessage(@Nonnull final QueryMessage queryMessage) throws OtrException {
