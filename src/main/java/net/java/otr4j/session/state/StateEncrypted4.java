@@ -1,5 +1,6 @@
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DoubleRatchet;
@@ -32,7 +33,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     @Override
     public int getVersion() {
-        return 4;
+        return Session.OTRv.FOUR;
     }
 
     @Nonnull

@@ -36,7 +36,7 @@ public final class SecurityParameters {
             @Nonnull final PublicKey remoteLongTermPublicKey,
             @Nonnull final DHPublicKey remoteDHPublicKey,
             @Nonnull final SharedSecret s) {
-        if (version < 2) {
+        if (version < 2 || version > 3) {
             throw new IllegalArgumentException("Illegal version value specified.");
         }
         this.version = version;

@@ -16,7 +16,6 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.messages.DataMessage;
@@ -75,9 +74,6 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
     StateEncrypted(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
         super(context.getSessionID(), context.getHost());
-        if (params.getVersion() > 3) {
-            throw new UnsupportedOperationException("Unsupported protocol version specified.");
-        }
         this.protocolVersion = params.getVersion();
         this.smpTlvHandler = new SmpTlvHandler(this, context, params.getS());
         this.remotePublicKey = params.getRemoteLongTermPublicKey();
@@ -308,7 +304,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     }
 
     @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         // FIXME determine if we should be allowed to transition from one encrypted messaging state to another. Added benefit here is that we effectively upgrade the connection, however do we trust this?
         throw new UnsupportedOperationException("To be implemented.");
     }

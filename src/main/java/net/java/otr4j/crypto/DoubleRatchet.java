@@ -14,9 +14,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
 // TODO Currently we do not keep track of used MACs for later reveal.
-// FIXME 2 use cases that seem to fail for Double Ratchet initialization if only Alice is allowed to send the first message:
-//  - 1. Alice skips the Query/Whitespace-tag message and immediately sends the Identity message, hence Bob is the one who should send the first message.
-//  - 2. Alice sends query message; gets multiple responses (from different instance tags), now Alice starts chatting with 1 recipient instance tag. Otherones are blocked from finalizing the connection. Will it be allowed to send another Query/Whitespace-tag message if Alice's instance is already in ENCRYPTED_MESSAGES mode?
 public final class DoubleRatchet {
 
     private static final int SSID_LENGTH_BYTES = 8;
@@ -102,6 +99,7 @@ public final class DoubleRatchet {
         return this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
     }
 
+    // FIXME should be generated at initial creation only or based on most recent K?
     public byte[] generateSSID() {
         final byte[] ssid = new byte[SSID_LENGTH_BYTES];
         kdf1(ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, this.sharedSecret.getK()), SSID_LENGTH_BYTES);
