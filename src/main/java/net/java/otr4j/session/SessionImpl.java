@@ -69,6 +69,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
+import static net.java.otr4j.io.SerializationUtils.toMessage;
 
 /**
  * Implementation of the OTR session.
@@ -420,7 +421,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         final Message m;
         try {
-            m = SerializationUtils.toMessage(msgText);
+            m = toMessage(msgText);
             if (m == null) {
                 return msgText;
             }
@@ -436,7 +437,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
         if (masterSession == this && m instanceof AbstractEncodedMessage
-                && (((AbstractEncodedMessage) m).protocolVersion == Session.OTRv.THREE
+                && (((AbstractEncodedMessage) m).protocolVersion == OTRv.THREE
                     || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
             // In case of OTRv3 delegate message processing to dedicated slave
             // session.
@@ -657,24 +658,24 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         setState(new StateInitial(plainTextMessage.getTag()));
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
-        if (plainTextMessage.getVersions().contains(Session.OTRv.FOUR) && policy.getAllowV4()) {
+        if (plainTextMessage.getVersions().contains(OTRv.FOUR) && policy.getAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
             try {
-                injectMessage(respondAuth(Session.OTRv.FOUR, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(OTRv.FOUR, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(Session.OTRv.THREE) && policy.getAllowV3()) {
+        } else if (plainTextMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(Session.OTRv.THREE, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(Session.OTRv.TWO) && policy.getAllowV2()) {
+        } else if (plainTextMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(Session.OTRv.TWO, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(OTRv.TWO, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }

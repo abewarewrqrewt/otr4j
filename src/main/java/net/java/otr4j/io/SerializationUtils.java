@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.nio.charset.Charset;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -251,7 +252,7 @@ public final class SerializationUtils {
      */
     // TODO remove OTRv2 support in due time
     @Nullable
-    public static Message toMessage(@Nonnull final String s) throws IOException, OtrCryptoException {
+    public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, IOException {
         if (s.length() == 0) {
             return null;
         }
@@ -292,7 +293,7 @@ public final class SerializationUtils {
                 // Data message found.
 
                 if (content.charAt(content.length() - 1) != '.') {
-                    throw new IOException("Invalid end to OTR encoded message.");
+                    throw new ProtocolException("Invalid end to OTR encoded message.");
                 }
 
                 /*
