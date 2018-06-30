@@ -796,7 +796,6 @@ final class SessionImpl implements Session, Context, AuthContext {
             // TODO consider making this an OtrException as this is reasonably possible with configuration.
             throw new IllegalStateException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }
-        // FIXME It's a bit of a work-around to add an empty string just because the serialization code doesn't use it.
         final QueryMessage queryMessage = new QueryMessage(allowedVersions);
         setState(new StateInitial(queryMessage.getTag()));
         injectMessage(queryMessage);
