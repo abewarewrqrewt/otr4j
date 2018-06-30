@@ -624,6 +624,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
     }
 
+    @Nonnull
     private String getFallbackMessage(final SessionID sessionId) {
         String fallback = OtrEngineHostUtil.getFallbackMessage(this.host, sessionId);
         if (fallback == null || fallback.isEmpty()) {
@@ -632,6 +633,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         return fallback;
     }
 
+    @Nonnull
     private String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
         assert this.masterSession == this : "handlePlainTextMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
@@ -892,6 +894,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     @Override
+    @Nonnull
     public EdDSAKeyPair getLongTermKeyPair() {
         return this.host.getLongTermKeyPair(this.sessionState.getSessionID());
     }

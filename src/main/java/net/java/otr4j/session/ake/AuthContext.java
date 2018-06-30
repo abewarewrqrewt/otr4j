@@ -90,6 +90,7 @@ public interface AuthContext {
      * @return Returns the long-term key pair.
      */
     // TODO think up a decent name for this, as not to confuse with the original OTRv2/OTRv3 local long-term key pair.
+    @Nonnull
     EdDSAKeyPair getLongTermKeyPair();
 
     /**
