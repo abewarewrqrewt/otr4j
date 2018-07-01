@@ -14,7 +14,8 @@ import static org.bouncycastle.util.Arrays.concatenate;
 
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
 // TODO Currently we do not keep track of used MACs for later reveal.
-public final class DoubleRatchet {
+// FIXME need to clean up DoubleRatchet after use. (Zero memory containing secrets.)
+public final class DoubleRatchet implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
@@ -58,6 +59,14 @@ public final class DoubleRatchet {
     public DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret) {
         this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
+    }
+
+    @Override
+    public void close() {
+        clear(this.rootKey);
+        clear(this.receivingChainKey);
+        clear(this.sendingChainKey);
+        this.sharedSecret.close();
     }
 
     /**

@@ -22,7 +22,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 // FIXME investigate what we need to clean additionally for Point and BigInteger calculations where we use temporary instances during computation.
 // FIXME use of concatenate(...) to concat byte arrays, but intermediate result is not cleared.
 // FIXME write tests for testing key rotation.
-public final class SharedSecret4 {
+public final class SharedSecret4 implements AutoCloseable {
 
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
@@ -79,6 +79,16 @@ public final class SharedSecret4 {
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         regenerateK(0);
+    }
+
+    /**
+     * Close SharedSecret4 instance by securely clearing used memory that contains sensitive data.
+     */
+    @Override
+    public void close() {
+        clear(this.braceKey);
+        clear(this.k);
+        // FIXME securely clear other fields
     }
 
     /**

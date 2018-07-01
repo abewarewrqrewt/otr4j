@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
  * produced. For now we verify immutability of values and that values change after rotation.
  */
 @SuppressWarnings("ConstantConditions")
+// FIXME add unit tests to verify correct clearing of fields
 public class SharedSecret4Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();

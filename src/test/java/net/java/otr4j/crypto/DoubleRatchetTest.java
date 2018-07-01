@@ -11,6 +11,7 @@ import static org.bouncycastle.util.Arrays.fill;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("ConstantConditions")
+// FIXME add unit tests to verify correct clearing of fields
 public class DoubleRatchetTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
