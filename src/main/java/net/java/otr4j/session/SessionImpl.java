@@ -103,7 +103,6 @@ import static net.java.otr4j.io.SerializationUtils.toMessage;
  * @author George Politis
  * @author Danny van Heumen
  */
-// TODO consider if things become easier if instance tags are managed inside the various state machines ...
 final class SessionImpl implements Session, Context, AuthContext {
 
     /**
@@ -190,7 +189,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     /**
      * Secure random instance to be used for this Session. This single
-     * SecureRandom instance is there to be shared among classes the classes in
+     * SecureRandom instance is there to be shared among the classes in
      * this package in order to support this specific Session instance.
      *
      * The SecureRandom instance should not be shared between sessions.
@@ -840,6 +839,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (version == 0) {
             startSession();
         } else {
+            // FIXME what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message.
             injectMessage(respondAuth(version, this.receiverTag, ""));
         }
     }

@@ -7,5 +7,5 @@
 /**
  * The API for otr4j.
  */
-// FIXME Check all uses of integer literals 0, 1, 2, 3, 4 to see if they are used as OTR version. If so, convert to existing OTRv constants.
+// TODO Can we implement some mechanism that we are ensured that either: 1. all sessions are disconnected stopping use/closing application (needed to reveal remaining MACs), or 2. warn user that library is not used appropriately? (I.e. need to programmatically end sessions first.)
 package net.java.otr4j.api;

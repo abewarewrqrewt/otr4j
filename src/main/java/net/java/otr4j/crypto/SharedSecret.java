@@ -55,6 +55,7 @@ public final class SharedSecret {
         return hash;
     }
 
+    // TODO consider replacing Arrays.equals with constant-time alternative. (Or alternatively, blocking use with exception.)
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

@@ -132,7 +132,6 @@ public final class StatePlaintext extends AbstractState {
             // At this point, reaching this state is considered a bug.
             throw new IllegalStateException("The current OTR policy does not allow any supported version of OTR. The software should either enable some protocol version or disable sending whitespace tags.");
         }
-        // FIXME verify if we can indeed construct PlainTextMessage with empty string
         // FIXME we do not insert the right whitespace tag here.
         final PlainTextMessage m = new PlainTextMessage("FIXME THIS IS STILL BAD WHITESPACE TAG", versions, msgText);
         context.setOfferStatusSent();
