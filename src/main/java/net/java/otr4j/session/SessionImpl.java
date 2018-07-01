@@ -344,12 +344,11 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
     }
 
+    // FIXME how to implement clearing sensitive data from old states upon transitioning. Calling AutoCloseable.close may recurse into same instance that calls setState, is this desirable?
     @Override
     public void setState(@Nonnull final State state) {
         this.sessionState = requireNonNull(state);
-        OtrEngineListenerUtil.sessionStatusChanged(
-                duplicate(listeners),
-                state.getSessionID(), this.receiverTag);
+        OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), state.getSessionID(), this.receiverTag);
     }
 
     @Override

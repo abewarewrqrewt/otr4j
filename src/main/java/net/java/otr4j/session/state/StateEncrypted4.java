@@ -18,6 +18,7 @@ import java.util.List;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
+import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -25,7 +26,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  */
 // FIXME handle use cases of resending Auth-I and Auth-R message in case of receiving certain messages in duplicate. (However, how does resending help for long-established encrypted sessions?)
 // TODO signal errors in data message using ERROR_2 indicator.
-final class StateEncrypted4 extends AbstractStateEncrypted {
+final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
     private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
@@ -39,6 +40,12 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
         final SharedSecret4 sharedSecret = initialize(params);
         kdf1(this.ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, sharedSecret.getK()), SSID_LENGTH_BYTES);
         this.ratchet = new DoubleRatchet(context.secureRandom(), sharedSecret);
+    }
+
+    @Override
+    public void close() {
+        clear(this.ssid);
+        this.ratchet.close();
     }
 
     @Override
