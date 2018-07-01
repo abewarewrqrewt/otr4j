@@ -119,6 +119,7 @@ final class OtrFragmenter {
      *             throws an IOException if the fragment size is too small or if
      *             the maximum number of fragments is exceeded.
      */
+    // TODO verify that we fragment an original message, not a message that is fragmented itself.
     String[] fragment(@Nonnull final String message) throws IOException {
         final SessionID sessionId = this.session.getSessionID();
         final int fragmentSize = this.host.getMaxFragmentSize(sessionId);

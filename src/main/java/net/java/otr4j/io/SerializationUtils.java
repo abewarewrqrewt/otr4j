@@ -427,8 +427,7 @@ public final class SerializationUtils {
      * @return returns true if content is OTR encoded, or false otherwise
      */
     public static boolean otrEncoded(@Nonnull final String content) {
-        return content.startsWith(HEAD
-                + HEAD_ENCODED);
+        return content.startsWith(HEAD + HEAD_ENCODED);
     }
 
     /**
