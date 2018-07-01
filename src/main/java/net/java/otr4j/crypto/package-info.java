@@ -7,4 +7,5 @@
 /**
  * Package containing cryptographic support logic for otr4j.
  */
+// TODO ensure that StateEncrypted4, MessageKeys, DoubleRatchet, SharedSecret4 are cleared after use.
 package net.java.otr4j.crypto;

@@ -120,8 +120,7 @@ public final class DoubleRatchet implements AutoCloseable {
      * Encryption and MAC keys derived from chain key.
      */
     // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
-    // TODO should we clear the fields at some point due to them containing sensitive material?
-    static final class MessageKeys {
+    static final class MessageKeys implements AutoCloseable {
 
         private static final byte[] USAGE_ID_ENC = new byte[]{0x24};
         private static final byte[] USAGE_ID_MAC = new byte[]{0x25};
@@ -147,6 +146,16 @@ public final class DoubleRatchet implements AutoCloseable {
             this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
             this.mac = requireLengthExactly(MK_MAC_LENGTH_BYTES, mac);
             this.extraSymmetricKey = requireLengthExactly(EXTRA_SYMMETRIC_KEY_LENGTH_BYTES, extraSymmetricKey);
+        }
+
+        /**
+         * Clear sensitive material.
+         */
+        @Override
+        public void close() {
+            clear(this.encrypt);
+            clear(this.mac);
+            clear(this.extraSymmetricKey);
         }
 
         /**
