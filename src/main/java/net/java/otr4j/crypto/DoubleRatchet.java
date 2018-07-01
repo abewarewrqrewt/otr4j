@@ -17,11 +17,9 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // FIXME need to clean up DoubleRatchet after use. (Zero memory containing secrets.)
 public final class DoubleRatchet implements AutoCloseable {
 
-    private static final int SSID_LENGTH_BYTES = 8;
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
     private static final int CHAIN_KEY_LENGTH_BYTES = 64;
 
-    private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
     private static final byte[] USAGE_ID_ROOT_KEY = new byte[]{0x21};
     private static final byte[] USAGE_ID_CHAIN_KEY = new byte[]{0x22};
 
@@ -106,13 +104,6 @@ public final class DoubleRatchet implements AutoCloseable {
 
     private byte[] derivePreviousRootKey() {
         return this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
-    }
-
-    // FIXME should be generated at initial creation only or based on most recent K?
-    public byte[] generateSSID() {
-        final byte[] ssid = new byte[SSID_LENGTH_BYTES];
-        kdf1(ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, this.sharedSecret.getK()), SSID_LENGTH_BYTES);
-        return ssid;
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.

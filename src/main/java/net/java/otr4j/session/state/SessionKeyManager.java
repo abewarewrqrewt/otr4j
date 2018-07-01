@@ -7,20 +7,22 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
+
+import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.crypto.interfaces.DHPublicKey;
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.crypto.OtrCryptoException;
+
+import static java.util.Collections.synchronizedList;
 
 /**
  * Session key manager.
@@ -44,7 +46,7 @@ final class SessionKeyManager {
     /**
      * List of old MAC keys for this session. (Synchronized)
      */
-    private final List<byte[]> oldMacKeys = Collections.synchronizedList(new ArrayList<byte[]>(0));
+    private final List<byte[]> oldMacKeys = synchronizedList(new ArrayList<byte[]>(0));
 
     SessionKeyManager(@Nonnull final SecureRandom secureRandom,
             @Nonnull final KeyPair localKeyPair,

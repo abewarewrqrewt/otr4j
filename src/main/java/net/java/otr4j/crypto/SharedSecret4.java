@@ -134,7 +134,7 @@ public final class SharedSecret4 implements AutoCloseable {
      *
      * @return Mixed shared secret K.
      */
-    byte[] getK() {
+    public byte[] getK() {
         return this.k.clone();
     }
 
