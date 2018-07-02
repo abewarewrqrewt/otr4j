@@ -120,7 +120,7 @@ public final class DoubleRatchet implements AutoCloseable {
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
-    MessageKeys generateSendingKeys() {
+    public MessageKeys generateSendingKeys() {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
@@ -128,7 +128,7 @@ public final class DoubleRatchet implements AutoCloseable {
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
-    MessageKeys generateReceivingKeys() {
+    public MessageKeys generateReceivingKeys() {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
@@ -139,7 +139,7 @@ public final class DoubleRatchet implements AutoCloseable {
      * Encryption and MAC keys derived from chain key.
      */
     // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
-    static final class MessageKeys implements AutoCloseable {
+    public static final class MessageKeys implements AutoCloseable {
 
         private static final byte[] USAGE_ID_ENC = new byte[]{0x24};
         private static final byte[] USAGE_ID_MAC = new byte[]{0x25};
@@ -195,18 +195,45 @@ public final class DoubleRatchet implements AutoCloseable {
             return new MessageKeys(encrypt, mac, extraSymmetricKey);
         }
 
+        /**
+         * Get the encryption key.
+         *
+         * NOTE: the encryption key that is returned is the same instance that is kept inside the MessageKeys instance.
+         * Once the keys are cleared, this instance will contain all-zero values. If the key needs to be preserved past
+         * the point of clearing/closing, a copy must be made.
+         *
+         * @return Returns the encryption key.
+         */
         @Nonnull
-        byte[] getEncrypt() {
+        public byte[] getEncrypt() {
             return encrypt;
         }
 
+        /**
+         * Get the MAC.
+         *
+         * NOTE: the MAC that is returned is the same instance that is kept inside the MessageKeys instance. Once the
+         * keys are cleared, this instance will contain all-zero values. If the MAC needs to be preserved past the point
+         * of clearing/closing, a copy must be made.
+         *
+         * @return Returns the MAC.
+         */
         @Nonnull
-        byte[] getMac() {
+        public byte[] getMac() {
             return mac;
         }
 
+        /**
+         * Get the Extra Symmetric Key.
+         *
+         * NOTE: the key that is returned is the same instance that is kept inside the MessageKeys instance. Once the
+         * keys are cleared, this instance will contain all-zero values. If the key needs to be preserved past the point
+         * of clearing/closing, a copy must be made.
+         *
+         * @return Returns the Extra Symmetric Key.
+         */
         @Nonnull
-        byte[] getExtraSymmetricKey() {
+        public byte[] getExtraSymmetricKey() {
             return extraSymmetricKey;
         }
     }
