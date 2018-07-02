@@ -85,6 +85,7 @@ public final class OtrCryptoEngine4 {
      * @return Returns byte-array with KDF_1 result.
      */
     // TODO Consider moving all USAGE_ID_... constants to OtrCryptoEngine4 class, instead of having them distributed over all classes that use `kdf1`.
+    // FIXME review all USAGE_ID_... entries as constants have changed in the spec.
     public static byte[] kdf1(@Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
         final byte[] result = new byte[outputSize];

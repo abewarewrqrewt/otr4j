@@ -59,6 +59,7 @@ public final class ECDHKeyPair {
      * @return Returns the generated ECDH key pair.
      */
     // FIXME verify if spec has changed on pruning instructions for generating ECDH keys.
+    // FIXME generation algorithm has changed in recent spec changes.
     @Nonnull
     public static ECDHKeyPair generate(@Nonnull final byte[] r) {
         requireLengthExactly(LENGTH_SECRET_KEY_BYTES + 1, r);

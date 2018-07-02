@@ -64,6 +64,10 @@ public final class DoubleRatchet implements AutoCloseable {
         clear(this.rootKey);
         clear(this.receivingChainKey);
         clear(this.sendingChainKey);
+        this.i = -1;
+        this.j = 0;
+        this.k = 0;
+        this.pn = 0;
         this.sharedSecret.close();
     }
 
@@ -71,6 +75,9 @@ public final class DoubleRatchet implements AutoCloseable {
      * Rotate the sender key.
      */
     public void rotateSenderKeys() throws OtrCryptoException {
+        if (this.i < 0) {
+            throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
+        }
         this.j = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = derivePreviousRootKey();
@@ -90,6 +97,9 @@ public final class DoubleRatchet implements AutoCloseable {
      * @param otherECDH The other party's ECDH public key.
      */
     public void rotateReceiverKeys(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
+        if (this.i < 0) {
+            throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
+        }
         this.k = 0;
         // FIXME verify that i is still correct, should it be incremented first? (Nothing is mentioned in the sender rotation spec.)
         final byte[] previousRootKey = derivePreviousRootKey();
@@ -103,16 +113,25 @@ public final class DoubleRatchet implements AutoCloseable {
     }
 
     private byte[] derivePreviousRootKey() {
+        if (this.i < 0) {
+            throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
+        }
         return this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
     MessageKeys generateSendingKeys() {
+        if (this.i < 0) {
+            throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
+        }
         return MessageKeys.generate(this.sendingChainKey);
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
     MessageKeys generateReceivingKeys() {
+        if (this.i < 0) {
+            throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
+        }
         return MessageKeys.generate(this.receivingChainKey);
     }
 
