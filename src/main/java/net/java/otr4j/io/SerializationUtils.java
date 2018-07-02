@@ -416,7 +416,7 @@ public final class SerializationUtils {
      */
     @Nonnull
     public static byte[] convertTextToBytes(@Nonnull final String msg) {
-        return msg.replace('\0', '?').getBytes(SerializationUtils.UTF8);
+        return msg.replace('\0', '?').getBytes(UTF8);
     }
 
     /**
