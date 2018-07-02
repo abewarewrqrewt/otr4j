@@ -16,18 +16,21 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateNonce;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.io.SerializationUtils.UTF8;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 
 @SuppressWarnings("ConstantConditions")
 public class OtrCryptoEngine4Test {
@@ -442,5 +445,27 @@ public class OtrCryptoEngine4Test {
             ephemeral, message);
         final byte[] wrongMessage = "hello World".getBytes(UTF_8);
         ringVerify(longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeral, sigma, wrongMessage);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testGenerateNonceNullSecureRandom() {
+        generateNonce(null);
+    }
+
+    @Test
+    public void testGenerateNonce() {
+        final byte[] result = generateNonce(RANDOM);
+        assertNotNull(result);
+        requireLengthExactly(24, result);
+    }
+
+    @Test
+    public void testGenerateNonceIsDifferentEachCall() {
+        final byte[] nonce1 = generateNonce(RANDOM);
+        final byte[] nonce2 = generateNonce(RANDOM);
+        assertNotSame(nonce1, nonce2);
+        // In theory this could end up with exactly the same random value. In practice the chance should be so remove
+        // that it makes sense to test this.
+        assertFalse(Arrays.equals(nonce1, nonce2));
     }
 }

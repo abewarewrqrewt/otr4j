@@ -57,6 +57,11 @@ public final class OtrCryptoEngine4 {
      */
     private static final int USAGE_ID_RING_SIGNATURE = 0x1D;
 
+    /**
+     * Size of IV for XSalsa20.
+     */
+    private static final int XSALSA20_IV_LENGTH_BYTES = 24;
+
     private OtrCryptoEngine4() {
         // No need to instantiate utility class.
     }
@@ -155,6 +160,19 @@ public final class OtrCryptoEngine4 {
         } catch (final Points.InvalidDataException ex) {
             throw new OtrCryptoException("Invalid Ed448 point data.", ex);
         }
+    }
+
+    /**
+     * Generate a random IV for use in XSalsa20 encryption.
+     *
+     * @param random a SecureRandom instance
+     * @return Returns random nonce for use in XSalsa20 encryption.
+     */
+    @Nonnull
+    public static byte[] generateNonce(@Nonnull final SecureRandom random) {
+        final byte[] nonce = new byte[XSALSA20_IV_LENGTH_BYTES];
+        random.nextBytes(nonce);
+        return nonce;
     }
 
     /**
