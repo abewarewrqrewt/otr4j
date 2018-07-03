@@ -186,17 +186,23 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = NullPointerException.class)
     public void testEncryptNullKey() {
-        encrypt(null, new byte[24], new byte[1]);
+        final byte[] nonce = generateNonce(RANDOM);
+        encrypt(null, nonce, new byte[1]);
     }
 
     @Test(expected = NullPointerException.class)
     public void testEncryptNullIV() {
-        encrypt(new byte[24], null, new byte[1]);
+        final byte[] key = new byte[32];
+        RANDOM.nextBytes(key);
+        encrypt(key, null, new byte[1]);
     }
 
     @Test(expected = NullPointerException.class)
     public void testEncryptNullMessage() {
-        encrypt(new byte[24], new byte[24], null);
+        final byte[] key = new byte[32];
+        RANDOM.nextBytes(key);
+        final byte[] nonce = generateNonce(RANDOM);
+        encrypt(key, nonce, null);
     }
 
     @Test
@@ -204,7 +210,8 @@ public class OtrCryptoEngine4Test {
         final byte[] message = "hello world".getBytes(UTF8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
-        final byte[] ciphertext = encrypt(key, new byte[24], message);
+        final byte[] nonce = generateNonce(RANDOM);
+        final byte[] ciphertext = encrypt(key, nonce, message);
         assertNotNull(ciphertext);
         assertFalse(Arrays.equals(message, ciphertext));
     }
