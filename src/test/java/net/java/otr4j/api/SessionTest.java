@@ -40,7 +40,7 @@ public class SessionTest {
 
     @Before
     public void setUp() {
-        Logger.getLogger("").setLevel(Level.ALL);
+        Logger.getLogger("").setLevel(Level.INFO);
     }
     
     @Test
