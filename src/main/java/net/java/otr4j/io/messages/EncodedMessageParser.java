@@ -52,7 +52,7 @@ public final class EncodedMessageParser {
         if (!SUPPORTED.contains(protocolVersion)) {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);
         }
-        final int messageType = input.readByte();
+        final byte messageType = input.readByte();
         final int senderInstanceTag;
         final int recipientInstanceTag;
         if (protocolVersion == OTRv.THREE || protocolVersion == OTRv.FOUR) {
@@ -71,7 +71,7 @@ public final class EncodedMessageParser {
                         throw new UnsupportedOperationException("Illegal protocol version: version 1 is no longer supported.");
                     case OTRv.TWO:
                     case OTRv.THREE: {
-                        final int flags = input.readByte();
+                        final byte flags = input.readByte();
                         final int senderKeyID = input.readInt();
                         final int recipientKeyID = input.readInt();
                         final DHPublicKey nextDH = input.readDHPublicKey();
@@ -153,7 +153,7 @@ public final class EncodedMessageParser {
                 return new AuthIMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, sigma);
             }
             default:
-                throw new ProtocolException("Illegal message type.");
+                throw new ProtocolException("Illegal message type: " + messageType);
         }
     }
 

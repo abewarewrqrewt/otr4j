@@ -15,7 +15,7 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
 // FIXME write unit tests
 public final class AuthIMessage extends AbstractEncodedMessage {
 
-    static final int MESSAGE_AUTH_I = 0x88;
+    static final byte MESSAGE_AUTH_I = (byte) 0x88;
 
     private final OtrCryptoEngine4.Sigma sigma;
 

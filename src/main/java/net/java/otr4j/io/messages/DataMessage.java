@@ -24,7 +24,7 @@ public final class DataMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_DATA = 0x03;
 
-    public final int flags;
+    public final byte flags;
     public final int senderKeyID;
     public final int recipientKeyID;
     public final DHPublicKey nextDH;
@@ -36,12 +36,12 @@ public final class DataMessage extends AbstractEncodedMessage {
     public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac,
             @Nonnull final byte[] oldMacKeys, final int senderInstanceTag,
             final int receiverInstanceTag) {
-        this(t.protocolVersion, t.flags, t.senderKeyID, t.recipientKeyID,
+        this(t.protocolVersion, (byte) t.flags, t.senderKeyID, t.recipientKeyID,
                 t.nextDH, t.ctr, t.encryptedMessage, mac, oldMacKeys,
                 senderInstanceTag, receiverInstanceTag);
     }
 
-    public DataMessage(final int protocolVersion, final int flags, final int senderKeyID,
+    public DataMessage(final int protocolVersion, final byte flags, final int senderKeyID,
             final int recipientKeyID, @Nonnull final DHPublicKey nextDH,
             @Nonnull final byte[] ctr, @Nonnull final byte[] encryptedMessage,
             @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,

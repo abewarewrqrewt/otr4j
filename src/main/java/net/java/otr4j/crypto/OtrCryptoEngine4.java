@@ -190,8 +190,7 @@ public final class OtrCryptoEngine4 {
         assert !allZeroBytes(iv) : "Expected non-zero byte array for a iv. Something critical might be going wrong.";
         requireNonNull(message);
         final XSalsa20Engine engine = new XSalsa20Engine();
-        engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length),
-            requireNonNull(iv)));
+        engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length), requireNonNull(iv)));
         final byte[] out = new byte[message.length];
         if (engine.processBytes(message, 0, message.length, out, 0) != message.length) {
             throw new IllegalStateException("Expected to process exactly full size of the message.");
