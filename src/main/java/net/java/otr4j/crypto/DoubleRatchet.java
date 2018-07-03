@@ -139,6 +139,7 @@ public final class DoubleRatchet implements AutoCloseable {
      * Encryption and MAC keys derived from chain key.
      */
     // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
+    // FIXME consider performing encryption, decryption, MACing inside MessageKeys, such that we do not need to expose raw key material.
     public static final class MessageKeys implements AutoCloseable {
 
         private static final byte[] USAGE_ID_ENC = new byte[]{0x24};
@@ -169,6 +170,10 @@ public final class DoubleRatchet implements AutoCloseable {
 
         /**
          * Clear sensitive material.
+         *
+         * NOTE: acquired keys are clones and must be cleared separately. We clone keys intentionally, such that byte[]
+         * instances aren't accidentally used after having been zeroed. It does, however, require maintenance on the
+         * side of the user.
          */
         @Override
         public void close() {
@@ -198,43 +203,31 @@ public final class DoubleRatchet implements AutoCloseable {
         /**
          * Get the encryption key.
          *
-         * NOTE: the encryption key that is returned is the same instance that is kept inside the MessageKeys instance.
-         * Once the keys are cleared, this instance will contain all-zero values. If the key needs to be preserved past
-         * the point of clearing/closing, a copy must be made.
-         *
-         * @return Returns the encryption key.
+         * @return Returns the encryption key. (Must be cleared separately.)
          */
         @Nonnull
         public byte[] getEncrypt() {
-            return encrypt;
+            return encrypt.clone();
         }
 
         /**
          * Get the MAC.
          *
-         * NOTE: the MAC that is returned is the same instance that is kept inside the MessageKeys instance. Once the
-         * keys are cleared, this instance will contain all-zero values. If the MAC needs to be preserved past the point
-         * of clearing/closing, a copy must be made.
-         *
-         * @return Returns the MAC.
+         * @return Returns the MAC. (Must be cleared separately.)
          */
         @Nonnull
         public byte[] getMac() {
-            return mac;
+            return mac.clone();
         }
 
         /**
          * Get the Extra Symmetric Key.
          *
-         * NOTE: the key that is returned is the same instance that is kept inside the MessageKeys instance. Once the
-         * keys are cleared, this instance will contain all-zero values. If the key needs to be preserved past the point
-         * of clearing/closing, a copy must be made.
-         *
-         * @return Returns the Extra Symmetric Key.
+         * @return Returns the Extra Symmetric Key. (Must be cleared separately.)
          */
         @Nonnull
         public byte[] getExtraSymmetricKey() {
-            return extraSymmetricKey;
+            return extraSymmetricKey.clone();
         }
     }
 }

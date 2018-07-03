@@ -8,9 +8,11 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("ConstantConditions")
 // FIXME add unit tests to verify correct clearing of fields
@@ -125,5 +127,44 @@ public class DoubleRatchetTest {
         assertFalse(Arrays.equals(initialReceivingKeys.getEncrypt(), nextReceivingKeys.getEncrypt()));
         assertFalse(Arrays.equals(initialReceivingKeys.getMac(), nextReceivingKeys.getMac()));
         assertFalse(Arrays.equals(initialReceivingKeys.getExtraSymmetricKey(), nextReceivingKeys.getExtraSymmetricKey()));
+    }
+
+    @Test
+    public void testMessageKeysCloseZeroesData() {
+        final MessageKeys keys;
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+            keys = ratchet.generateSendingKeys();
+        }
+        assertFalse(allZeroBytes(keys.getEncrypt()));
+        assertFalse(allZeroBytes(keys.getMac()));
+        assertFalse(allZeroBytes(keys.getExtraSymmetricKey()));
+        keys.close();
+        assertTrue(allZeroBytes(keys.getEncrypt()));
+        assertTrue(allZeroBytes(keys.getMac()));
+        assertTrue(allZeroBytes(keys.getExtraSymmetricKey()));
+    }
+
+    @Test
+    public void testMessageKeysCloseDoesNotZeroReturnedKeys() {
+        final MessageKeys keys;
+        final byte[] encrypt;
+        final byte[] mac;
+        final byte[] extraKey;
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+            keys = ratchet.generateSendingKeys();
+            encrypt = keys.getEncrypt();
+            mac = keys.getMac();
+            extraKey = keys.getExtraSymmetricKey();
+            assertFalse(allZeroBytes(encrypt));
+            assertFalse(allZeroBytes(mac));
+            assertFalse(allZeroBytes(extraKey));
+            keys.close();
+        }
+        assertTrue(allZeroBytes(keys.getEncrypt()));
+        assertTrue(allZeroBytes(keys.getMac()));
+        assertTrue(allZeroBytes(keys.getExtraSymmetricKey()));
+        assertFalse(allZeroBytes(encrypt));
+        assertFalse(allZeroBytes(mac));
+        assertFalse(allZeroBytes(extraKey));
     }
 }
