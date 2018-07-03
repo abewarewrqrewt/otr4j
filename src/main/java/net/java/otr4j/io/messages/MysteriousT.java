@@ -24,8 +24,7 @@ public final class MysteriousT {
     public final int senderInstanceTag;
     public final int receiverInstanceTag;
     public final int messageType;
-    // FIXME consider storing 'flags' as byte i.s.o. int.
-    public final int flags;
+    public final byte flags;
     public final int senderKeyID;
     public final int recipientKeyID;
     public final DHPublicKey nextDH;
@@ -34,7 +33,7 @@ public final class MysteriousT {
 
     // Ctor.
     public MysteriousT(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
-                       final int flags, final int senderKeyID, final int recipientKeyID,
+                       final byte flags, final int senderKeyID, final int recipientKeyID,
                        @Nonnull final DHPublicKey nextDH, @Nonnull final byte[] ctr,
                        @Nonnull final byte[] encryptedMessage) {
 

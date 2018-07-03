@@ -280,7 +280,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
         // Calculate T.
         final MysteriousT t = new MysteriousT(this.protocolVersion, context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), 0, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMsg);
+            context.getReceiverInstanceTag().getValue(), (byte) 0, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMsg);
 
         // Calculate T hash.
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
