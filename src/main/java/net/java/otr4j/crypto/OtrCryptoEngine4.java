@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
@@ -185,6 +186,8 @@ public final class OtrCryptoEngine4 {
      */
     @Nonnull
     public static byte[] encrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] message) {
+        assert !allZeroBytes(key) : "Expected non-zero byte array for a key. Something critical might be going wrong.";
+        assert !allZeroBytes(iv) : "Expected non-zero byte array for a iv. Something critical might be going wrong.";
         requireNonNull(message);
         final XSalsa20Engine engine = new XSalsa20Engine();
         engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length),
@@ -206,6 +209,8 @@ public final class OtrCryptoEngine4 {
      */
     @Nonnull
     public static byte[] decrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] ciphertext) {
+        assert !allZeroBytes(key) : "Expected non-zero byte array for a key. Something critical might be going wrong.";
+        assert !allZeroBytes(iv) : "Expected non-zero byte array for a iv. Something critical might be going wrong.";
         requireNonNull(ciphertext);
         final XSalsa20Engine engine = new XSalsa20Engine();
         engine.init(false, new ParametersWithIV(new KeyParameter(key, 0, key.length),

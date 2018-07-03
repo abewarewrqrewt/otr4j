@@ -26,4 +26,19 @@ public final class ByteArrays {
         }
         return bytes;
     }
+
+    /**
+     * Test if all bytes are zero for provided byte-array.
+     *
+     * @param data The byte-array to verify.
+     * @return Returns true if all bytes are zero, or false otherwise.
+     */
+    public static boolean allZeroBytes(@Nonnull final byte[] data) {
+        for (final byte b : data) {
+            if (b != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
