@@ -252,11 +252,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         if (msgText.length() > 0) {
-            try {
-                out.write(convertTextToBytes(msgText));
-            } catch (IOException e) {
-                throw new OtrException(e);
-            }
+            final byte[] msgBytes = convertTextToBytes(msgText);
+            out.write(msgBytes, 0, msgBytes.length);
         }
 
         // Append tlvs
