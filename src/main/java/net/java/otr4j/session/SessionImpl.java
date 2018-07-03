@@ -515,7 +515,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return session.handleEncodedMessage(encodedM);
         }
 
-        logger.log(Level.INFO, "Received message with type {0}", m.getClass());
+        logger.log(Level.FINE, "Received message with type {0}", m.getClass());
         if (m instanceof AbstractEncodedMessage) {
             return handleEncodedMessage((AbstractEncodedMessage) m);
         } else if (m instanceof ErrorMessage) {
