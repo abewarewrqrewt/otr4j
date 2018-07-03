@@ -93,8 +93,8 @@ public final class OtrInputStream extends FilterInputStream implements
         return value;
     }
 
-    public int readByte() throws IOException {
-        return readNumber(TYPE_LEN_BYTE);
+    public byte readByte() throws IOException {
+        return (byte) readNumber(TYPE_LEN_BYTE);
     }
 
     /**
@@ -237,6 +237,30 @@ public final class OtrInputStream extends FilterInputStream implements
             value += ((b[i] & 0xFFL) << shift);
         }
         return value;
+    }
+
+    /**
+     * Read XSalsa20 nonce.
+     *
+     * @return Returns XSalsa20 nonce.
+     * @throws IOException In case of failure to read nonce.
+     */
+    // FIXME add unit tests.
+    @Nonnull
+    public byte[] readNonce() throws IOException {
+        return checkedRead(TYPE_LEN_NONCE);
+    }
+
+    /**
+     * Read OTRv4 MAC.
+     *
+     * @return Returns MAC.
+     * @throws IOException In case of failure to read OTRv4 MAC.
+     */
+    // FIXME add unit tests.
+    @Nonnull
+    public byte[] readMacOTR4() throws IOException {
+        return checkedRead(TYPE_LEN_MAC_OTR4);
     }
 
     /**

@@ -1,6 +1,6 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
@@ -45,6 +45,7 @@ public final class EncodedMessageParser {
      * @throws OtrCryptoException In case of issues during reconstruction of cryptographic components of a message. (For
      *                            example, a bad public key.)
      */
+    // FIXME unit test deserialization of OTRv4 (data) messages.
     @Nonnull
     public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
         final int protocolVersion = input.readShort();
@@ -54,7 +55,7 @@ public final class EncodedMessageParser {
         final int messageType = input.readByte();
         final int senderInstanceTag;
         final int recipientInstanceTag;
-        if (protocolVersion == Session.OTRv.THREE || protocolVersion == Session.OTRv.FOUR) {
+        if (protocolVersion == OTRv.THREE || protocolVersion == OTRv.FOUR) {
             senderInstanceTag = input.readInt();
             recipientInstanceTag = input.readInt();
         } else {
@@ -63,18 +64,46 @@ public final class EncodedMessageParser {
         }
         switch (messageType) {
             case MESSAGE_DATA: {
-                final int flags = input.readByte();
-                final int senderKeyID = input.readInt();
-                final int recipientKeyID = input.readInt();
-                final DHPublicKey nextDH = input.readDHPublicKey();
-                final byte[] ctr = input.readCtr();
-                final byte[] encryptedMessage = input.readData();
-                final byte[] mac = input.readMac();
-                final byte[] oldMacKeys = input.readData();
-                // The data message can only be validated where the current session keys are accessible. MAC validation
-                // therefore happens in a later stage. For now we return an unvalidated data message instance.
-                return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
-                    encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
+                switch (protocolVersion) {
+                    case 0:
+                        throw new IllegalStateException("BUG: Unexpected protocol version found. Zero is not valid as a protocol version.");
+                    case OTRv.ONE:
+                        throw new UnsupportedOperationException("Illegal protocol version: version 1 is no longer supported.");
+                    case OTRv.TWO:
+                    case OTRv.THREE: {
+                        final int flags = input.readByte();
+                        final int senderKeyID = input.readInt();
+                        final int recipientKeyID = input.readInt();
+                        final DHPublicKey nextDH = input.readDHPublicKey();
+                        final byte[] ctr = input.readCtr();
+                        final byte[] encryptedMessage = input.readData();
+                        final byte[] mac = input.readMac();
+                        final byte[] oldMacKeys = input.readData();
+                        // The data message can only be validated where the current session keys are accessible. MAC validation
+                        // therefore happens in a later stage. For now we return an unvalidated data message instance.
+                        return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
+                            encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
+                    }
+                    case OTRv.FOUR: {
+                        final byte flags = input.readByte();
+                        final int pn = input.readInt();
+                        final int i = input.readInt();
+                        final int j = input.readInt();
+                        final Point ecdhPublicKey = input.readPoint();
+                        final BigInteger dhPublicKey = input.readBigInt();
+                        final byte[] nonce = input.readNonce();
+                        final byte[] ciphertext = input.readData();
+                        final byte[] authenticator = input.readMacOTR4();
+                        final byte[] revealedMacs = input.readData();
+                        // We only verify the format of the data message, but do not perform the validation actions yet.
+                        // Validation is delayed until a later point as we are missing context information for full
+                        // validation.
+                        return new DataMessage4(protocolVersion, senderInstanceTag, recipientInstanceTag, flags, pn, i,
+                            j, ecdhPublicKey, dhPublicKey, nonce, ciphertext, authenticator, revealedMacs);
+                    }
+                    default:
+                        throw new IllegalStateException("BUG: Future protocol versions are not supported. We should not have reached this state.");
+                }
             }
             case MESSAGE_DH_COMMIT: {
                 requireOTR23(protocolVersion);
@@ -129,13 +158,13 @@ public final class EncodedMessageParser {
     }
 
     private static void requireOTR23(final int version) throws ProtocolException {
-        if (version != Session.OTRv.TWO && version != Session.OTRv.THREE) {
+        if (version != OTRv.TWO && version != OTRv.THREE) {
             throw new ProtocolException("The protocol version is illegal for this type of message. Expected protocol version 2 or 3.");
         }
     }
 
     private static void requireOTR4(final int version) throws ProtocolException {
-        if (version != Session.OTRv.FOUR) {
+        if (version != OTRv.FOUR) {
             throw new ProtocolException("The protocol version is illegal for this type of message. Expected protocol version 4.");
         }
     }

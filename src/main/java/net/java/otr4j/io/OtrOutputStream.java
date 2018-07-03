@@ -28,6 +28,7 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
+// FIXME clean up methods that can be done publicly
 public final class OtrOutputStream implements SerializationConstants, Closeable {
 
     private final ByteArrayOutputStream out;
@@ -171,6 +172,28 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeDHPublicKey(t.nextDH);
         writeCtr(t.ctr);
         writeData(t.encryptedMessage);
+    }
+
+    /**
+     * Write an XSalsa20 nonce.
+     *
+     * @param nonce The nonce.
+     */
+    // FIXME add unit tests.
+    public void writeNonce(@Nonnull final byte[] nonce) {
+        requireLengthExactly(TYPE_LEN_NONCE, nonce);
+        this.out.write(nonce, 0, nonce.length);
+    }
+
+    /**
+     * Write an OTRv4 MAC.
+     *
+     * @param mac 64-byte MAC as used in OTRv4
+     */
+    // FIXME add unit tests.
+    public void writeMacOTR4(@Nonnull final byte[] mac) {
+        requireLengthExactly(TYPE_LEN_MAC_OTR4, mac);
+        this.out.write(mac, 0, mac.length);
     }
 
     /**

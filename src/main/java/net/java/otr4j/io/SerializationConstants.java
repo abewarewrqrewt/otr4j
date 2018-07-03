@@ -25,7 +25,12 @@ public interface SerializationConstants {
     int TYPE_LEN_INT = 4;
     int TYPE_LEN_LONG = 8;
     int TYPE_LEN_MAC = 20;
+    int TYPE_LEN_MAC_OTR4 = 64;
     int TYPE_LEN_CTR = 8;
+
+    // XSalsa20 nonce.
+    // TODO can we reuse the XSALSA20_IV_LENGTH_BYTES constant in OtrCryptoEngine4?
+    int TYPE_LEN_NONCE = 24;
 
     int DATA_LEN = TYPE_LEN_INT;
     int TLV_LEN = TYPE_LEN_SHORT;
