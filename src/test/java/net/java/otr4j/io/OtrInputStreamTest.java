@@ -10,6 +10,7 @@ package net.java.otr4j.io;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +22,8 @@ import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.SignatureX;
 import org.junit.Test;
+
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.*;
 
 /**
@@ -33,7 +36,7 @@ import static org.junit.Assert.*;
  */
 public class OtrInputStreamTest {
 
-    private final static SecureRandom rand = new SecureRandom();
+    private final static SecureRandom RANDOM = new SecureRandom();
 
     static {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -165,7 +168,7 @@ public class OtrInputStreamTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testReadSignatureBadPublicKey() throws OtrCryptoException, IOException {
-        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(rand);
+        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(new byte[0]));
         ois.readSignature(keypair.getPublic());
     }
@@ -226,5 +229,36 @@ public class OtrInputStreamTest {
         final byte[] data = new byte[] {127, -1, -1, -1, -1, -1, -1, -1};
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
         assertEquals(expected, in.readLong());
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testReadNonce() throws IOException {
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(new byte[23]));
+        in.readNonce();
+    }
+
+    @Test
+    public void testReadNonceAllZero() throws IOException {
+        final byte[] data = new byte[24];
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        assertArrayEquals(data, in.readNonce());
+    }
+
+    @Test
+    public void testReadNonceGenerated() throws IOException {
+        final byte[] data = new byte[24];
+        RANDOM.nextBytes(data);
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        assertArrayEquals(data, in.readNonce());
+    }
+
+    @Test
+    public void testReadNonceOversized() throws IOException {
+        final byte[] data = new byte[25];
+        data[24] = (byte) 0xff;
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        final byte[] result = in.readNonce();
+        assertEquals(24, result.length);
+        assertTrue(allZeroBytes(result));
     }
 }

@@ -245,7 +245,6 @@ public final class OtrInputStream extends FilterInputStream implements
      * @return Returns XSalsa20 nonce.
      * @throws IOException In case of failure to read nonce.
      */
-    // FIXME add unit tests.
     @Nonnull
     public byte[] readNonce() throws IOException {
         return checkedRead(TYPE_LEN_NONCE);
