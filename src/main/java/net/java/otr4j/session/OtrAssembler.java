@@ -16,8 +16,8 @@ import net.java.otr4j.api.InstanceTag;
 /**
  *
  * @author Felix Eckhofer
- *
  */
+// FIXME add support for assembling the OTRv4 fragmentation format.
 final class OtrAssembler {
 
     private static final int MAX_FRAGMENTS = 65535;
@@ -75,13 +75,9 @@ final class OtrAssembler {
     String accumulate(@Nonnull String msgText) throws ProtocolException, UnknownInstanceException {
         // if it's a fragment, remove everything before "k,n,piece-k"
         if (msgText.startsWith(HEAD_FRAGMENT_V2)) {
-            // v2
-            msgText = msgText.substring(
-                    HEAD_FRAGMENT_V2.length());
+            msgText = msgText.substring(HEAD_FRAGMENT_V2.length());
         } else if (msgText.startsWith(HEAD_FRAGMENT_V3)) {
-            // v3
-            msgText = msgText.substring(
-                    HEAD_FRAGMENT_V3.length());
+            msgText = msgText.substring(HEAD_FRAGMENT_V3.length());
 
             // break away the v2 part
             final String[] instancePart = msgText.split(",", 2);
