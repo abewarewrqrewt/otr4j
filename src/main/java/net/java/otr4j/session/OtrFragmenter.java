@@ -6,21 +6,24 @@
  */
 package net.java.otr4j.session;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.LinkedList;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * OTR fragmenter.
  * 
  * @author Danny van Heumen
  */
+// FIXME extend with support for OTRv4: https://github.com/otrv4/otrv4/blob/master/otrv4.md#fragmentation
+// TODO BUG: Fragmenter is based on allowed capabilities, not negotiated protocol version for session.
 final class OtrFragmenter {
 
     /**
@@ -60,8 +63,12 @@ final class OtrFragmenter {
      * @param host OTR engine host calling upon OTR session
      */
     OtrFragmenter(@Nonnull final Session session, @Nonnull final OtrEngineHost host) {
-        this.session = Objects.requireNonNull(session, "session cannot be null");
-        this.host = Objects.requireNonNull(host, "host cannot be null");
+        final int version = session.getProtocolVersion();
+        if (version < 2 || version > 3) {
+            throw new UnsupportedOperationException("Fragmentation is not supported for this version of the protocol.");
+        }
+        this.session = requireNonNull(session, "session cannot be null");
+        this.host = requireNonNull(host, "host cannot be null");
     }
 
     /**
