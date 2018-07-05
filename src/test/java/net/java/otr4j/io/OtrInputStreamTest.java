@@ -261,4 +261,36 @@ public class OtrInputStreamTest {
         assertEquals(24, result.length);
         assertTrue(allZeroBytes(result));
     }
+
+    @Test(expected = ProtocolException.class)
+    public void testReadOTR4MacMissingData() throws IOException {
+        final byte[] data = new byte[63];
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        in.readMacOTR4();
+    }
+
+    @Test
+    public void testReadOTR4MacAllZero() throws IOException {
+        final byte[] data = new byte[64];
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        assertArrayEquals(data, in.readMacOTR4());
+    }
+
+    @Test
+    public void testReadOTR4Mac() throws IOException {
+        final byte[] data = new byte[64];
+        RANDOM.nextBytes(data);
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        assertArrayEquals(data, in.readMacOTR4());
+    }
+
+    @Test
+    public void testReadOTR4MacWithSpareData() throws IOException {
+        final byte[] data = new byte[65];
+        data[64] = (byte) 0xff;
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        final byte[] result = in.readMacOTR4();
+        assertEquals(64, result.length);
+        assertTrue(allZeroBytes(result));
+    }
 }

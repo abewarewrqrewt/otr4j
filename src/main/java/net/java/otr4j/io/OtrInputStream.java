@@ -256,7 +256,6 @@ public final class OtrInputStream extends FilterInputStream implements
      * @return Returns MAC.
      * @throws IOException In case of failure to read OTRv4 MAC.
      */
-    // FIXME add unit tests.
     @Nonnull
     public byte[] readMacOTR4() throws IOException {
         return checkedRead(TYPE_LEN_MAC_OTR4);
