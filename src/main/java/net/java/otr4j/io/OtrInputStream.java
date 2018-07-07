@@ -278,7 +278,6 @@ public final class OtrInputStream extends FilterInputStream implements
      * @return Returns an EdDSA signature as bytes, expecting exactly 114 bytes.
      * @throws IOException Throws an error in case of failure to read.
      */
-    // FIXME add unit tests.
     @Nonnull
     public byte[] readEdDSASignature() throws IOException {
         return checkedRead(EDDSA_SIGNATURE_LENGTH_BYTES);

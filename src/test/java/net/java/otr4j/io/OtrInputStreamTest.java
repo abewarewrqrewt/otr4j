@@ -7,6 +7,13 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.messages.SignatureX;
+import nl.dannyvanheumen.joldilocks.Point;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -18,16 +25,15 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.Arrays;
 
-import net.java.otr4j.crypto.EdDSAKeyPair;
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.SignatureX;
-import nl.dannyvanheumen.joldilocks.Point;
-import org.junit.Test;
-
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for OtrInputStream.
@@ -172,7 +178,7 @@ public class OtrInputStreamTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testReadSignatureBadPublicKey() throws OtrCryptoException, IOException {
+    public void testReadSignatureBadPublicKey() throws IOException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(new byte[0]));
         ois.readSignature(keypair.getPublic());
@@ -352,5 +358,51 @@ public class OtrInputStreamTest {
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testReadEdDSASignatureBytesMissing() throws IOException {
+        final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
+        final byte[] data = new byte[113];
+        System.arraycopy(sig, 0, data, 0, data.length);
+        try (final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data))) {
+            in.readEdDSASignature();
+        }
+    }
+
+    @Test
+    public void testReadEdDSASignature() throws IOException {
+        final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
+        final byte[] result;
+        try (final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(sig))) {
+            result = in.readEdDSASignature();
+        }
+        assertArrayEquals(sig, result);
+    }
+
+    @Test
+    public void testReadEdDSASignatureExcessData() throws IOException {
+        final byte[] data = new byte[115];
+        RANDOM.nextBytes(data);
+        final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
+        System.arraycopy(sig, 0, data, 0, sig.length);
+        final byte[] result;
+        try (final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data))) {
+            result = in.readEdDSASignature();
+        }
+        assertArrayEquals(sig, result);
+    }
+
+    @Test
+    public void testReadEdDSASignatureOffset() throws IOException {
+        final byte[] data = new byte[115];
+        data[0] = (byte) 0xff;
+        final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
+        System.arraycopy(sig, 0, data, 1, sig.length);
+        final byte[] result;
+        try (final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data))) {
+            result = in.readEdDSASignature();
+        }
+        assertFalse(Arrays.equals(sig, result));
     }
 }
