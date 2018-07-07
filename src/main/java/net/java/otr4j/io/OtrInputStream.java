@@ -150,8 +150,7 @@ public final class OtrInputStream extends FilterInputStream implements
      */
     @Nonnull
     public byte[] readData() throws IOException {
-        final int dataLen = readNumber(DATA_LEN);
-        checkDataLength(dataLen);
+        final int dataLen = checkDataLength(readNumber(DATA_LEN));
         return checkedRead(dataLen);
     }
 
@@ -268,7 +267,6 @@ public final class OtrInputStream extends FilterInputStream implements
      * @throws IOException        In case of failure to read from input stream.
      * @throws OtrCryptoException In case of failure decoding Point, meaning point data is invalid.
      */
-    // FIXME add unit tests.
     @Nonnull
     public Point readPoint() throws IOException, OtrCryptoException {
         return decodePoint(readData());
@@ -296,7 +294,7 @@ public final class OtrInputStream extends FilterInputStream implements
      *
      * @param length the requested length to be verified
      */
-    private void checkDataLength(final int length) throws IOException {
+    private int checkDataLength(final int length) throws IOException {
         if (length < 0) {
             throw new UnsupportedLengthException(length);
         }
@@ -307,7 +305,7 @@ public final class OtrInputStream extends FilterInputStream implements
         if (length < LIMIT_UNCONDITIONAL_DATA_LENGTH || length <= this.in.available()) {
             // Immediately accept small amounts. Accept larger amounts if at
             // least that amount of data is available to be read.
-            return;
+            return length;
         }
         throw new UnverifiableLargeLengthException(length);
     }

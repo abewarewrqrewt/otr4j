@@ -18,9 +18,12 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+
+import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.SignatureX;
+import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
@@ -41,6 +44,8 @@ public class OtrInputStreamTest {
     static {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
+
+    private final EdDSAKeyPair keypair = EdDSAKeyPair.generate(RANDOM);
 
     @Test
     public void testDataLengthOkay() throws IOException {
@@ -292,5 +297,60 @@ public class OtrInputStreamTest {
         final byte[] result = in.readMacOTR4();
         assertEquals(64, result.length);
         assertTrue(allZeroBytes(result));
+    }
+
+    @Test
+    public void testReadPoint() throws IOException, OtrCryptoException {
+        final byte[] data;
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writePoint(keypair.getPublicKey());
+            data = out.toByteArray();
+        }
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        final Point result = in.readPoint();
+        assertNotNull(result);
+        assertEquals(this.keypair.getPublicKey().x(), result.x());
+        assertEquals(this.keypair.getPublicKey().y(), result.y());
+    }
+
+    @Test
+    public void testReadPointWithExcessData() throws IOException, OtrCryptoException {
+        final byte[] data;
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writePoint(keypair.getPublicKey());
+            out.writeByte(RANDOM.nextInt());
+            data = out.toByteArray();
+        }
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        final Point result = in.readPoint();
+        assertNotNull(result);
+        assertEquals(this.keypair.getPublicKey().x(), result.x());
+        assertEquals(this.keypair.getPublicKey().y(), result.y());
+    }
+
+    @Test(expected = IOException.class)
+    public void testReadPointShifted() throws IOException, OtrCryptoException {
+        final byte[] data;
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writeByte(RANDOM.nextInt());
+            out.writePoint(keypair.getPublicKey());
+            data = out.toByteArray();
+        }
+        new OtrInputStream(new ByteArrayInputStream(data)).readPoint();
+    }
+
+    @Test(expected = IOException.class)
+    public void testReadPointPartial() throws IOException, OtrCryptoException {
+        final byte[] data = new byte[60];
+        try (final OtrOutputStream out = new OtrOutputStream()) {
+            out.writePoint(keypair.getPublicKey());
+            final byte[] full = out.toByteArray();
+            System.arraycopy(full, 0, data, 0, full.length-1);
+        }
+        final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
+        final Point result = in.readPoint();
+        assertNotNull(result);
+        assertEquals(this.keypair.getPublicKey().x(), result.x());
+        assertEquals(this.keypair.getPublicKey().y(), result.y());
     }
 }
