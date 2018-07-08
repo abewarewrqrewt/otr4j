@@ -127,8 +127,8 @@ public final class StateInitial extends AbstractAuthState {
         final byte[] t = encode(profile, message.getClientProfile(), x.getPublicKey(), message.getY(), a.getPublicKey(),
             message.getB(), context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(),
             this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
-        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getLongTermPublicKey(),
-            message.getY(), t);
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
+            theirClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(),

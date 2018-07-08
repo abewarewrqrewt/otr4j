@@ -230,40 +230,57 @@ public final class OtrCryptoEngine4 {
      * @param A3              Other public key to be included in the signature.
      * @param m               The message for which the signature should be generated.
      */
-    // FIXME look into details on constant time operations for ring signatures. These may be extra requirements to the implementation.
-    // FIXME do we need to randomize which public key (A1, A2 or A3) belongs to the provided keypair?
-    // TODO if implementation checks out, see if we can simplify by removing 1 public key parameter, as we already query keypair.
-    // FIXME !!! Now cheating with 1 keypair + 2 public keys, hence we cannot vary the position of the keypair's public key.
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
-                                 @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
+                                 @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
+                                 @Nonnull final byte[] m) {
         if (!Ed448.contains(longTermKeyPair.getPublicKey()) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Valid points need to be on the curve.");
         }
-        // FIXME verify that A1 != A2 != A3 (???)
-        // FIXME verify that longTermKeyPair is in (A1, A2, A3).
+        if (Points.equals(A1, A2) || Points.equals(A2, A3) || Points.equals(A1, A3)) {
+            throw new IllegalArgumentException("Some of the points are equal. It defeats the purpose of the ring signature.");
+        }
         final Point longTermPublicKey = longTermKeyPair.getPublicKey();
         final BigInteger q = primeOrder();
+        // Calculate equality to each of the provided public keys.
+        final boolean eq1 = Points.equals(longTermPublicKey, A1);
+        final boolean eq2 = Points.equals(longTermPublicKey, A2);
+        final boolean eq3 = Points.equals(longTermPublicKey, A3);
         // "Pick random values t1, c2, c3, r2, r3 in q."
-        final BigInteger t1 = generateRandomValue(random);
-        assert t1.equals(t1.mod(q)) : "Expected t1 to be a value in q.";
-        final BigInteger c2 = generateRandomValue(random);
-        final BigInteger c3 = generateRandomValue(random);
-        final BigInteger r2 = generateRandomValue(random);
-        final BigInteger r3 = generateRandomValue(random);
-        // "Compute T1 = G * t1."
-        final Point T1 = multiplyByBase(t1);
-        // "Compute T2 = G * r2 + A2 * c2."
-        final Point T2 = multiplyByBase(r2).add(A2.multiply(c2));
-        // "Compute T3 = G * r3 + A3 * c3."
-        final Point T3 = multiplyByBase(r3).add(A3.multiply(c3));
+        final BigInteger ti = generateRandomValue(random);
+        final BigInteger cj = generateRandomValue(random);
+        final BigInteger rj = generateRandomValue(random);
+        final BigInteger ck = generateRandomValue(random);
+        final BigInteger rk = generateRandomValue(random);
+        final Point T1;
+        final Point T2;
+        final Point T3;
+        // FIXME replace with constant-time selection
+        if (eq1) {
+            // "Compute T1 = G * t1."
+            T1 = multiplyByBase(ti);
+            // "Compute T2 = G * r2 + A2 * c2."
+            T2 = multiplyByBase(rj).add(A2.multiply(cj));
+            // "Compute T3 = G * r3 + A3 * c3."
+            T3 = multiplyByBase(rk).add(A3.multiply(ck));
+        } else if (eq2) {
+            T1 = multiplyByBase(rj).add(A1.multiply(cj));
+            T2 = multiplyByBase(ti);
+            T3 = multiplyByBase(rk).add(A3.multiply(ck));
+        } else if (eq3) {
+            T1 = multiplyByBase(rj).add(A1.multiply(cj));
+            T2 = multiplyByBase(rk).add(A2.multiply(ck));
+            T3 = multiplyByBase(ti);
+        } else {
+            throw new IllegalArgumentException("Long-term key pair should match at least one of the public keys.");
+        }
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
         try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             buffer.write(USAGE_ID_RING_SIGNATURE);
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
-            longTermPublicKey.encodeTo(buffer);
+            A1.encodeTo(buffer);
             A2.encodeTo(buffer);
             A3.encodeTo(buffer);
             T1.encodeTo(buffer);
@@ -275,12 +292,20 @@ public final class OtrCryptoEngine4 {
             throw new IllegalStateException("Failed to write point to buffer.", e);
         }
         // "Compute c1 = c - c2 - c3 (mod q)."
-        final BigInteger c1 = c.subtract(c2).subtract(c3).mod(q);
+        final BigInteger ci = c.subtract(cj).subtract(ck).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final BigInteger r1 = t1.subtract(c1.multiply(longTermKeyPair.getSecretKey())).mod(q);
-
-        // "Send sigma = (c1, r1, c2, r2, c3, r3)."
-        return new Sigma(c1, r1, c2, r2, c3, r3);
+        final BigInteger ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
+        // FIXME replace with constant-time selection
+        if (eq1) {
+            // "Send sigma = (c1, r1, c2, r2, c3, r3)."
+            return new Sigma(ci, ri, cj, rj, ck, rk);
+        } else if (eq2) {
+            return new Sigma(cj, rj, ci, ri, ck, rk);
+        } else if (eq3) {
+            return new Sigma(cj, rj, ck, rk, ci, ri);
+        } else {
+            throw new IllegalStateException("BUG: eq1 or eq2 or e3 should always be true.");
+        }
     }
 
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])?
@@ -288,7 +313,6 @@ public final class OtrCryptoEngine4 {
         // FIXME size of 54 bytes was arbitrarily chosen to work within the bounds of q. (Needs to be replaced with verified solution)
         final byte[] data = new byte[54];
         random.nextBytes(data);
-        // FIXME verify if and what kind of pruning is needed to guarantee valid value
         final BigInteger value = decodeLittleEndian(data);
         assert ZERO.compareTo(value) <= 0 && primeOrder().compareTo(value) > 0
             : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
@@ -333,7 +357,7 @@ public final class OtrCryptoEngine4 {
             buffer.write(m, 0, m.length);
             c = hashToScalar(buffer.toByteArray());
         } catch (final IOException e) {
-            throw new IllegalStateException("Failed to write base point to buffer.", e);
+            throw new IllegalStateException("Failed to write point to buffer.", e);
         }
         // "Check if c ≟ c1 + c2 + c3 (mod q). If it is true, verification succeeds. If not, it fails."
         if (!c.equals(sigma.c1.add(sigma.c2).add(sigma.c3).mod(q))) {

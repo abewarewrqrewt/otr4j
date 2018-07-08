@@ -99,7 +99,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             context.getReceiverInstanceTag().getValue(), this.queryTag, context.getRemoteAccountID(),
             context.getLocalAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
-            theirNewClientProfile.getLongTermPublicKey(), message.getY(), t);
+            theirNewClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
