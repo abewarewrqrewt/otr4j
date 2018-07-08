@@ -22,7 +22,6 @@ import static java.util.Objects.requireNonNull;
  * @author Danny van Heumen
  */
 // FIXME extend with support for OTRv4: https://github.com/otrv4/otrv4/blob/master/otrv4.md#fragmentation
-// TODO BUG: Fragmenter is based on allowed capabilities, not negotiated protocol version for session.
 final class OtrFragmenter {
 
     /**
@@ -44,6 +43,16 @@ final class OtrFragmenter {
      * The message format of an OTRv2 message fragment.
      */
     private static final String OTRV2_MESSAGE_FRAGMENT_FORMAT = "?OTR,%d,%d,%s,";
+
+    /**
+     * OTRv2 header size (overhead in fragmentation).
+     */
+    private static final int OTRV2_HEADER_SIZE = 18;
+
+    /**
+     * OTRv3 header size (overhead in fragmentation).
+     */
+    private static final int OTRV3_HEADER_SIZE = 36;
 
     /**
      * Instructions on how to fragment the input message.
@@ -230,41 +239,14 @@ final class OtrFragmenter {
     private int computeHeaderSize(final int version) {
         switch (version) {
             case Session.OTRv.TWO:
-                return computeHeaderV2Size();
+                return OTRV2_HEADER_SIZE;
             case Session.OTRv.THREE:
-                return computeHeaderV3Size();
+                return OTRV3_HEADER_SIZE;
             case Session.OTRv.FOUR:
                 // FIXME implement OTRv4 support.
                 throw new UnsupportedOperationException("Protocol version 4 support has not been implemented yet.");
             default:
                 throw new UnsupportedOperationException("Unsupported protocol version: " + version);
         }
-    }
-
-    /**
-     * Compute the overhead size for a v3 header.
-     *
-     * @return returns size of v3 header
-     */
-    static int computeHeaderV3Size() {
-        // For a OTRv3 header this seems to be a constant number, since the
-        // specs seem to suggest that smaller numbers have leading zeros.
-        return 36;
-    }
-
-    /**
-     * Compute the overhead size for a v2 header.
-     *
-     * Current implementation returns an upper bound size for the size of the
-     * header. As I understand it, the protocol does not require leading zeros
-     * to fill a 5-space number are so in theory it is possible to gain a few
-     * extra characters per message if an exact calculation of the number of
-     * required chars is used.
-     *
-     * @return returns size of v2 header
-     */
-    static int computeHeaderV2Size() {
-        // currently returns an upper bound (for the case of 10000+ fragments)
-        return 18;
     }
 }

@@ -186,7 +186,7 @@ public class OtrFragmenterTest {
 	
 	@Test(expected = IOException.class)
 	public void testFragmentSizeTooSmallForPayload() throws IOException {
-		OtrFragmenter fragmenter = new OtrFragmenter(host(OtrFragmenter.computeHeaderV3Size()), this.sessionID, 0, 0);
+		OtrFragmenter fragmenter = new OtrFragmenter(host(36), this.sessionID, 0, 0);
 		fragmenter.numberOfFragments(3, specV3MessageFull);
 	}
 
@@ -225,7 +225,7 @@ public class OtrFragmenterTest {
 	@Test(expected = IOException.class)
 	public void testExceedProtocolMaximumNumberOfFragments() throws IOException {
 		final String veryLongString = new String(new char[65537]).replace('\0', 'a');
-		OtrFragmenter fragmenter = new OtrFragmenter(host(OtrFragmenter.computeHeaderV3Size() + 1), this.sessionID, 0, 0);
+		OtrFragmenter fragmenter = new OtrFragmenter(host(37), this.sessionID, 0, 0);
 		fragmenter.fragment(3, veryLongString);
 	}
 	
