@@ -61,7 +61,7 @@ public final class AuthRMessages {
         // TODO how should we handle the case where our own client profile is not valid (anymore)?
         final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
-        ringVerify(theirProfile.getLongTermPublicKey(), ourClientProfile.getLongTermPublicKey(), receiverECDHPublicKey,
+        ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
             message.getSigma(), t);
     }
 }
