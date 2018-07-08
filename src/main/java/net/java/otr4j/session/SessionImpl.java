@@ -292,7 +292,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         outgoingSession = this;
         // Initialize fragmented message support.
         assembler = new OtrAssembler(this.senderTag);
-        fragmenter = new OtrFragmenter(this, host);
+        fragmenter = new OtrFragmenter(host, this.sessionState.getSessionID(), this.senderTag.getValue(),
+            this.receiverTag.getValue());
     }
 
     /**
@@ -605,7 +606,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (SerializationUtils.otrEncoded(msg)) {
             // Content is OTR encoded, so we are allowed to partition.
             try {
-                final String[] fragments = this.fragmenter.fragment(msg);
+                final String[] fragments = this.fragmenter.fragment(this.sessionState.getVersion(), msg);
                 for (final String fragment : fragments) {
                     this.host.injectMessage(sessionId, fragment);
                 }
@@ -769,7 +770,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         final String msgtext = SerializationUtils.toString(m);
         try {
-            return this.fragmenter.fragment(msgtext);
+            return this.fragmenter.fragment(this.sessionState.getVersion(), msgtext);
         } catch (final IOException ex) {
             throw new OtrException("Failed to fragment message.", ex);
         }
