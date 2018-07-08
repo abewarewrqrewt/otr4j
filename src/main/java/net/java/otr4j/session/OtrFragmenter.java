@@ -11,7 +11,7 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
+import java.net.ProtocolException;
 import java.util.LinkedList;
 
 import static java.util.Objects.requireNonNull;
@@ -23,11 +23,6 @@ import static java.util.Objects.requireNonNull;
  */
 // FIXME extend with support for OTRv4: https://github.com/otrv4/otrv4/blob/master/otrv4.md#fragmentation
 final class OtrFragmenter {
-
-    /**
-     * Exception message in cases where only OTRv1 is allowed.
-     */
-    private static final String OTRV1_NOT_SUPPORTED = "Fragmentation is not supported in OTRv1.";
 
     /**
      * The maximum number of fragments supported by the OTR (v3) protocol.
@@ -82,20 +77,17 @@ final class OtrFragmenter {
      * sent fragmented completely.
      *
      * @param version the negotiated protocol version
-     * @param message
-     *            the original message
+     * @param message the original message
      * @return returns the number of fragments required
-     * @throws IOException
-     *             throws an IOException in case fragment size is too small to
-     *             store any content or when the provided policy does not
-     *             support fragmentation, for example if only OTRv1 is allowed.
+     * @throws ProtocolException In case fragment size is too small to store any content or when the provided policy does not support
+     *                           fragmentation, for example if only OTRv1 is allowed.
      */
-    int numberOfFragments(final int version, @Nonnull final String message) throws IOException {
-        if (version == Session.OTRv.ONE) {
-            throw new UnsupportedOperationException(OTRV1_NOT_SUPPORTED);
+    int numberOfFragments(final int version, @Nonnull final String message) throws ProtocolException {
+        if (version < Session.OTRv.TWO) {
+            return 1;
         }
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
-        if (version < Session.OTRv.TWO || fragmentSize >= message.length()) {
+        if (fragmentSize >= message.length()) {
             return 1;
         }
         return computeFragmentNumber(version, message, fragmentSize);
@@ -104,17 +96,17 @@ final class OtrFragmenter {
     /**
      * Compute the number of fragments required.
      *
-     * @param message the original message
+     * @param message      the original message
      * @param fragmentSize size of fragments
      * @return returns number of fragments required.
-     * @throws IOException throws an IOException if fragment size is too small.
+     * @throws ProtocolException if fragment size is too small.
      */
     private int computeFragmentNumber(final int version, @Nonnull final String message, final int fragmentSize)
-        throws IOException {
+        throws ProtocolException {
         final int overhead = computeHeaderSize(version);
         final int payloadSize = fragmentSize - overhead;
         if (payloadSize <= 0) {
-            throw new IOException("Fragment size too small for storing content.");
+            throw new ProtocolException("Fragment size too small for storing content.");
         }
         int messages = message.length() / payloadSize;
         if (message.length() % payloadSize != 0) {
@@ -130,14 +122,13 @@ final class OtrFragmenter {
      * @param message the original message
      * @return returns an array of message fragments. The array will contain at
      * least 1 message fragment, or more if fragmentation is necessary.
-     * @throws IOException throws an IOException if the fragment size is too small or if
-     *                     the maximum number of fragments is exceeded.
+     * @throws ProtocolException if the fragment size is too small or if the maximum number of fragments is exceeded.
      */
-    // TODO verify that we fragment an original message, not a message that is fragmented itself.
+    // TODO verify that we fragment an original message, not a message fragment itself.
     @Nonnull
-    String[] fragment(final int version, @Nonnull final String message) throws IOException {
-        if (version == 1) {
-            throw new UnsupportedOperationException(OTRV1_NOT_SUPPORTED);
+    String[] fragment(final int version, @Nonnull final String message) throws ProtocolException {
+        if (version < Session.OTRv.TWO) {
+            return new String[]{message};
         }
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
         return fragment(version, message, fragmentSize);
@@ -151,17 +142,17 @@ final class OtrFragmenter {
      * @param fragmentSize the maximum fragment size
      * @return Returns the fragmented message. The array will contain at least 1
      * message fragment, or more if fragmentation is necessary.
-     * @throws IOException Exception in the case when it is impossible to fragment the
-     *                     message according to the specified instructions.
+     * @throws ProtocolException In the case when it is impossible to fragment the message according to the specified
+     *                           instructions.
      */
     @Nonnull
-    private String[] fragment(final int version, @Nonnull final String message, final int fragmentSize) throws IOException {
-        if (version < Session.OTRv.TWO || fragmentSize >= message.length()) {
-            return new String[] { message };
+    private String[] fragment(final int version, @Nonnull final String message, final int fragmentSize) throws ProtocolException {
+        if (fragmentSize >= message.length()) {
+            return new String[]{message};
         }
         final int num = computeFragmentNumber(version, message, fragmentSize);
         if (num > MAXIMUM_NUMBER_OF_FRAGMENTS) {
-            throw new IOException("Number of necessary fragments exceeds limit.");
+            throw new ProtocolException("Number of necessary fragments exceeds limit.");
         }
         final int payloadSize = fragmentSize - computeHeaderSize(version);
         int previous = 0;

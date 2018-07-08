@@ -610,7 +610,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 for (final String fragment : fragments) {
                     this.host.injectMessage(sessionId, fragment);
                 }
-            } catch (final IOException e) {
+            } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment message according to provided instructions.", e);
             }
         } else {
@@ -771,7 +771,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         final String msgtext = SerializationUtils.toString(m);
         try {
             return this.fragmenter.fragment(this.sessionState.getVersion(), msgtext);
-        } catch (final IOException ex) {
+        } catch (final ProtocolException ex) {
             throw new OtrException("Failed to fragment message.", ex);
         }
     }

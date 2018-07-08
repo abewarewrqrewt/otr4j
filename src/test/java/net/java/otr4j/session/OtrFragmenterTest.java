@@ -210,16 +210,16 @@ public class OtrFragmenterTest {
 		verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void testV1ComputeHeaderSize() throws IOException {
 		OtrFragmenter fragmenter = new OtrFragmenter(host(310), this.sessionID, 0, 0);
-		fragmenter.numberOfFragments(1, specV2MessageFull);
+		assertEquals(1, fragmenter.numberOfFragments(1, specV2MessageFull));
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void testV1MessageToSplit() throws IOException {
 		OtrFragmenter fragmenter = new OtrFragmenter(host(310), this.sessionID, 0, 0);
-		fragmenter.fragment(1, specV2MessageFull);
+		assertArrayEquals(new String[]{specV2MessageFull}, fragmenter.fragment(1, specV2MessageFull));
 	}
 
 	@Test(expected = IOException.class)
