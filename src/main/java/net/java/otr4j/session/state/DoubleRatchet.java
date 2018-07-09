@@ -19,7 +19,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
 // TODO Currently we do not keep track of used MACs for later reveal.
 // FIXME need to clean up DoubleRatchet after use. (Zero memory containing secrets.)
-public final class DoubleRatchet implements AutoCloseable {
+final class DoubleRatchet implements AutoCloseable {
 
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
     private static final int CHAIN_KEY_LENGTH_BYTES = 64;
@@ -94,7 +94,7 @@ public final class DoubleRatchet implements AutoCloseable {
     /**
      * Rotate the sender key.
      */
-    public void rotateSenderKeys() throws OtrCryptoException {
+    void rotateSenderKeys() throws OtrCryptoException {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
@@ -116,7 +116,7 @@ public final class DoubleRatchet implements AutoCloseable {
      * @param otherDH   The other party's DH public key.
      * @param otherECDH The other party's ECDH public key.
      */
-    public void rotateReceiverKeys(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
+    void rotateReceiverKeys(@Nonnull final BigInteger otherDH, @Nonnull final Point otherECDH) throws OtrCryptoException {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
@@ -140,7 +140,7 @@ public final class DoubleRatchet implements AutoCloseable {
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
-    public MessageKeys generateSendingKeys() {
+    MessageKeys generateSendingKeys() {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
@@ -148,7 +148,7 @@ public final class DoubleRatchet implements AutoCloseable {
     }
 
     // FIXME consider removing the generate method and moving key generation to the rotate method.
-    public MessageKeys generateReceivingKeys() {
+    MessageKeys generateReceivingKeys() {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
@@ -160,7 +160,7 @@ public final class DoubleRatchet implements AutoCloseable {
      */
     // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
     // FIXME consider performing encryption, decryption, MACing inside MessageKeys, such that we do not need to expose raw key material.
-    public static final class MessageKeys implements AutoCloseable {
+    static final class MessageKeys implements AutoCloseable {
 
         private static final byte[] USAGE_ID_ENC = new byte[]{0x24};
         private static final byte[] USAGE_ID_MAC = new byte[]{0x25};
@@ -226,7 +226,7 @@ public final class DoubleRatchet implements AutoCloseable {
          * @return Returns the encryption key. (Must be cleared separately.)
          */
         @Nonnull
-        public byte[] getEncrypt() {
+        byte[] getEncrypt() {
             return encrypt.clone();
         }
 
@@ -236,7 +236,7 @@ public final class DoubleRatchet implements AutoCloseable {
          * @return Returns the MAC. (Must be cleared separately.)
          */
         @Nonnull
-        public byte[] getMac() {
+        byte[] getMac() {
             return mac.clone();
         }
 
@@ -246,7 +246,7 @@ public final class DoubleRatchet implements AutoCloseable {
          * @return Returns the Extra Symmetric Key. (Must be cleared separately.)
          */
         @Nonnull
-        public byte[] getExtraSymmetricKey() {
+        byte[] getExtraSymmetricKey() {
             return extraSymmetricKey.clone();
         }
     }
