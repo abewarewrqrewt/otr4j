@@ -91,6 +91,14 @@ final class DoubleRatchet implements AutoCloseable {
         return pn;
     }
 
+    Point getECDHPublicKey() {
+        return this.sharedSecret.getECDHPublicKey();
+    }
+
+    BigInteger getDHPublicKey() {
+        return this.sharedSecret.getDHPublicKey();
+    }
+
     /**
      * Rotate the sender key.
      */

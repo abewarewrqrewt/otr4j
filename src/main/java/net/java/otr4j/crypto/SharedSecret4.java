@@ -129,6 +129,14 @@ public final class SharedSecret4 implements AutoCloseable {
         }
     }
 
+    public Point getECDHPublicKey() {
+        return this.ecdhKeyPair.getPublicKey();
+    }
+
+    public BigInteger getDHPublicKey() {
+        return this.dhKeyPair.getPublicKey();
+    }
+
     /**
      * Get mixed shared secret K.
      *
