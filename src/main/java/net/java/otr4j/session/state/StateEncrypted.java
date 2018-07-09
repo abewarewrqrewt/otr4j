@@ -16,6 +16,7 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.messages.DataMessage;
@@ -301,8 +302,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     }
 
     @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
-        // FIXME determine if we should be allowed to transition from one encrypted messaging state to another. Added benefit here is that we effectively upgrade the connection, however do we trust this?
-        throw new UnsupportedOperationException("To be implemented.");
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        context.setState(new StateEncrypted4(context, params));
     }
 }

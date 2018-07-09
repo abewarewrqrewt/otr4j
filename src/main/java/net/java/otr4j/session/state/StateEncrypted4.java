@@ -24,7 +24,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
 /**
  * The OTRv4 ENCRYPTED message state.
  */
-// FIXME handle use cases of resending Auth-I and Auth-R message in case of receiving certain messages in duplicate. (However, how does resending help for long-established encrypted sessions?)
 // TODO signal errors in data message using ERROR_2 indicator.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
@@ -94,22 +93,20 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         throw new UnsupportedOperationException("To be implemented.");
     }
 
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
-        // FIXME to be implemented.
-        throw new UnsupportedOperationException("To be implemented.");
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
-        // FIXME to be implemented.
-        throw new UnsupportedOperationException("To be implemented.");
-    }
-
     @Nonnull
     @Override
     public SmpTlvHandler getSmpTlvHandler() {
         // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
+    }
+
+    @Override
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
+        throw new IllegalStateException("Transitioning to lower protocol version ENCRYPTED message state is forbidden.");
+    }
+
+    @Override
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        context.setState(new StateEncrypted4(context, params));
     }
 }
