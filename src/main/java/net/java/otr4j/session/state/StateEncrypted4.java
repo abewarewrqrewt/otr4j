@@ -29,6 +29,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     private static final int SSID_LENGTH_BYTES = 8;
     private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
 
+    private static final int VERSION = Session.OTRv.FOUR;
+
     private final byte[] ssid = new byte[SSID_LENGTH_BYTES];
 
     private final DoubleRatchet ratchet;
@@ -48,7 +50,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Override
     public int getVersion() {
-        return Session.OTRv.FOUR;
+        return VERSION;
     }
 
     @Nonnull
