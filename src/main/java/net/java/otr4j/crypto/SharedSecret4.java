@@ -145,7 +145,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @throws OtrCryptoException Thrown in case of failures generating the new cryptographic material.
      */
     // FIXME is a DHKeyPair always expected/required?
-    void rotateOurKeys(final int ratchetIteration, @Nonnull final ECDHKeyPair ourECDHKeyPair,
+    public void rotateOurKeys(final int ratchetIteration, @Nonnull final ECDHKeyPair ourECDHKeyPair,
                        @Nullable final DHKeyPair ourDHKeyPair) throws OtrCryptoException {
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         if (ratchetIteration % 3 == 0) {
@@ -162,7 +162,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param theirDHPublicKey   Their DH public key.
      * @throws OtrCryptoException Thrown in case of failures generating the new cryptographic material.
      */
-    void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
+    public void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
                          @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);

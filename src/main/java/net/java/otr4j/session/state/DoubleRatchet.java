@@ -1,5 +1,9 @@
-package net.java.otr4j.crypto;
+package net.java.otr4j.session.state;
 
+import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.SharedSecret4;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -69,6 +73,22 @@ public final class DoubleRatchet implements AutoCloseable {
         this.k = 0;
         this.pn = 0;
         this.sharedSecret.close();
+    }
+
+    int getI() {
+        return i;
+    }
+
+    int getJ() {
+        return j;
+    }
+
+    int getK() {
+        return k;
+    }
+
+    int getPn() {
+        return pn;
     }
 
     /**

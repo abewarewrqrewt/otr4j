@@ -1,6 +1,11 @@
-package net.java.otr4j.crypto;
+package net.java.otr4j.session.state;
 
-import net.java.otr4j.crypto.DoubleRatchet.MessageKeys;
+import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.SharedSecret4;
+import net.java.otr4j.crypto.SharedSecret4TestUtils;
+import net.java.otr4j.session.state.DoubleRatchet.MessageKeys;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
@@ -32,7 +37,7 @@ public class DoubleRatchetTest {
         final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         try {
-            SHARED_SECRET = new SharedSecret4(dhKeyPair, ecdhKeyPair, theirDHPublicKey, theirECDHPublicKey);
+            SHARED_SECRET = SharedSecret4TestUtils.create(dhKeyPair, ecdhKeyPair, theirDHPublicKey, theirECDHPublicKey);
             THEIR_NEXT_ECDH_PUBLIC_KEY = ECDHKeyPair.generate(RANDOM).getPublicKey();
             THEIR_NEXT_DH_PUBLIC_KEY = DHKeyPair.generate(RANDOM).getPublicKey();
         } catch (OtrCryptoException e) {
