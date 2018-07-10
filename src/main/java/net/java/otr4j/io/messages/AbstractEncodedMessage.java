@@ -12,6 +12,7 @@ import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /**
  * @author George Politis
@@ -64,6 +65,7 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         return true;
     }
 
+    @OverridingMethodsMustInvokeSuper
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         // Start writing common header of encoded messages.

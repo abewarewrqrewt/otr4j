@@ -20,6 +20,8 @@
 // FUTURE do something fuzzing-like to thoroughly test receiving user messages with various characters. Especially normal user messages that are picked up as OTR-encoded but then crash/fail processing because it's only a partially-valid OTR encoded message.
 // TODO General questions on way-of-working for OTRv4:
 //  * After having successfully finished DAKE, should we forget about previously used QueryTag or remember it? Let's say that we initiate a OTRv4 session immediately (send Identity message), should we then reuse previous query tag, or start blank?
+//  * Ratchet descriptions talk about "DH ratchet". It's not clear whether that means "Ratchet where DH is involved" or any ratchet due to ECDH always being involved.
+//  * In section "Extra Symmetric Key" already fixed ref `KDF_1(0x1A || 0xFF || chain_key)`?
 /**
  * otr4j.
  */

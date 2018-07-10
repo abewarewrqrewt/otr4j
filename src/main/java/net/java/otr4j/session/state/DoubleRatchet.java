@@ -19,6 +19,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets.
 // TODO Currently we do not keep track of used MACs for later reveal.
 // FIXME need to clean up DoubleRatchet after use. (Zero memory containing secrets.)
+// TODO consider adding a counter/semaphore in order to verify that "at most one" (depending on circumstances) set of message keys is active at a time. Ensures that message keys are appropriately cleaned after use.
 final class DoubleRatchet implements AutoCloseable {
 
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
