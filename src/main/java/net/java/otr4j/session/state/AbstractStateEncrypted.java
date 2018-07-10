@@ -4,7 +4,7 @@ import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.messages.DataMessage;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -38,12 +38,12 @@ abstract class AbstractStateEncrypted extends AbstractState {
 
     @Nonnull
     @Override
-    public abstract DataMessage transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs) throws OtrException;
+    public abstract AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs) throws OtrException;
 
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY);
-        final DataMessage m = transformSending(context, "", Collections.singletonList(disconnectTlv));
+        final AbstractEncodedMessage m = transformSending(context, "", Collections.singletonList(disconnectTlv));
         try {
             context.injectMessage(m);
         } finally {
