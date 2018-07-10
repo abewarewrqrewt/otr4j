@@ -108,6 +108,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        // FIXME probably do not want to transition to new DAKE keys. Requires exiting ENCRYPTED_MESSAGES state first and transitioning through AKE states.
         context.setState(new StateEncrypted4(context, params));
     }
 }

@@ -303,6 +303,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
+        // FIXME probably do not want to transition from OTRv3 to OTRv4. Requires exiting ENCRYPTED_MESSAGES state first and transitioning through AKE states.
         context.setState(new StateEncrypted4(context, params));
     }
 }
