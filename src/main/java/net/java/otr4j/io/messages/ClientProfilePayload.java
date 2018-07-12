@@ -185,6 +185,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @return Returns ClientProfile iff validation succeeds.
      * @throws ValidationException In case of validation failure.
      */
+    // FIXME ensure that we validate the ClientProfilePayload first, then verify that the ClientProfile contains the same sender instance tag as the message.
     @Nonnull
     public ClientProfile validate() throws ValidationException {
         validate(this.fields, this.signature, new Date());

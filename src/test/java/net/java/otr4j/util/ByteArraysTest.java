@@ -5,12 +5,13 @@ import org.junit.Test;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public class ByteArraysTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -58,5 +59,31 @@ public class ByteArraysTest {
         final byte[] data = new byte[20];
         data[RANDOM.nextInt(20)] = 1;
         assertFalse(allZeroBytes(data));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCompareSameStringConstantTime() {
+        final byte[] data = new byte[200];
+        RANDOM.nextBytes(data);
+        constantTimeEquals(data, data);
+    }
+
+    @Test
+    public void testCompareEqualSizeBytesInequal() {
+        final byte[] data1 = new byte[200];
+        final byte[] data2 = new byte[200];
+        RANDOM.nextBytes(data1);
+        RANDOM.nextBytes(data2);
+        data2[0] = (byte) (data1[0] ^ 0x1);
+        assertFalse(constantTimeEquals(data1, data2));
+    }
+
+    @Test
+    public void testCompareEqualSizeBytes() {
+        final byte[] data1 = new byte[200];
+        RANDOM.nextBytes(data1);
+        final byte[] data2 = new byte[200];
+        System.arraycopy(data1, 0, data2, 0, data1.length);
+        assertTrue(constantTimeEquals(data1, data2));
     }
 }
