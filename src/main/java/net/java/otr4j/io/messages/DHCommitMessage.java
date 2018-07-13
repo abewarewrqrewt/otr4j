@@ -13,6 +13,8 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+
 /**
  * OTRv2 AKE DH-Commit message.
  *
@@ -58,10 +60,10 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
             return false;
         }
         DHCommitMessage other = (DHCommitMessage) obj;
-        if (!Arrays.equals(dhPublicKeyEncrypted, other.dhPublicKeyEncrypted)) {
+        if (!constantTimeEquals(dhPublicKeyEncrypted, other.dhPublicKeyEncrypted)) {
             return false;
         }
-        if (!Arrays.equals(dhPublicKeyHash, other.dhPublicKeyHash)) {
+        if (!constantTimeEquals(dhPublicKeyHash, other.dhPublicKeyHash)) {
             return false;
         }
         return true;

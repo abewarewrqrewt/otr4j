@@ -16,6 +16,7 @@ import java.util.Arrays;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import org.junit.Test;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
@@ -60,45 +61,47 @@ public class OtrCryptoEngineTest {
     @Test
     public void testCheckEqualsEqualArrays() throws OtrCryptoException {
         final byte[] a = new byte[]{'a','b','c','d','e'};
-        OtrCryptoEngine.checkEquals(a, a, "Expected array to be equal.");
+        final byte[] b = new byte[]{'a','b','c','d','e'};
+        checkEquals(a, b, "Expected array to be equal.");
+        checkEquals(b, a, "Expected array to be equal.");
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testCheckEqualsArrayLengthDiff1() throws OtrCryptoException {
         final byte[] a = new byte[]{'a', 'a', 'a'};
         final byte[] b = new byte[]{'a', 'a', 'a', 'a'};
-        OtrCryptoEngine.checkEquals(a, b, "Expected array to be equal.");
+        checkEquals(a, b, "Expected array to be equal.");
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testCheckEqualsArrayLengthDiff2() throws OtrCryptoException {
         final byte[] a = new byte[]{'a', 'a', 'a', 'a'};
         final byte[] b = new byte[]{'a', 'a', 'a'};
-        OtrCryptoEngine.checkEquals(a, b, "Expected array to be equal.");
+        checkEquals(a, b, "Expected array to be equal.");
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testCheckEqualsArrayContentDiff() throws OtrCryptoException {
         final byte[] a = new byte[]{'a', 'b', 'c', 'd'};
         final byte[] b = new byte[]{'a', 'b', 'c', 'e'};
-        OtrCryptoEngine.checkEquals(a, b, "Expected array to be equal.");
+        checkEquals(a, b, "Expected array to be equal.");
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testCheckEqualsNullArraysEqual() throws OtrCryptoException {
-        OtrCryptoEngine.checkEquals(null, null, "Expected array to be equal.");
+        checkEquals(null, null, "Expected array to be equal.");
     }
 
-    @Test(expected = OtrCryptoException.class)
+    @Test(expected = NullPointerException.class)
     public void testCheckEqualsOneNull1() throws OtrCryptoException {
         final byte[] a = new byte[]{'a', 'a', 'a', 'a'};
-        OtrCryptoEngine.checkEquals(a, null, "Expected array to be equal.");
+        checkEquals(a, null, "Expected array to be equal.");
     }
 
-    @Test(expected = OtrCryptoException.class)
+    @Test(expected = NullPointerException.class)
     public void testCheckEqualsOneNull2() throws OtrCryptoException {
         final byte[] b = new byte[]{'a', 'a', 'a', 'a'};
-        OtrCryptoEngine.checkEquals(null, b, "Expected array to be equal.");
+        checkEquals(null, b, "Expected array to be equal.");
     }
 
     @Test

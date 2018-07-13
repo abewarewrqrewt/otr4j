@@ -52,9 +52,9 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
@@ -530,8 +530,9 @@ public final class OtrCryptoEngine {
      * @param message The exception message in case of arrays are not equal.
      * @throws OtrCryptoException Throws exception in case of inequality.
      */
-    public static void checkEquals(final byte[] a, final byte[] b, final String message) throws OtrCryptoException {
-        if (!Arrays.equals(a, b)) {
+    public static void checkEquals(@Nonnull final byte[] a, @Nonnull final byte[] b, @Nonnull final String message)
+        throws OtrCryptoException {
+        if (!constantTimeEquals(a, b)) {
             throw new OtrCryptoException(message);
         }
     }

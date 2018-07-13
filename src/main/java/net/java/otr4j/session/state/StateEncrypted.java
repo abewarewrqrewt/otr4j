@@ -33,7 +33,6 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -42,6 +41,7 @@ import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static net.java.otr4j.io.SerializationUtils.toByteArray;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
  * Message state in case an encrypted session is established.
@@ -148,7 +148,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] serializedT = toByteArray(data.getT());
         final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(serializedT,
                 matchingKeys.receivingMAC(), SerializationConstants.TYPE_LEN_MAC);
-        if (!Arrays.equals(computedMAC, data.mac)) {
+        if (!constantTimeEquals(computedMAC, data.mac)) {
             logger.finest("MAC verification failed, ignoring message");
             OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
             final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);

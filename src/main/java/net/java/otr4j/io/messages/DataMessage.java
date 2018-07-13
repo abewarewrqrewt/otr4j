@@ -14,6 +14,8 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+
 /**
  * OTRv2 encrypted data message.
  *
@@ -90,16 +92,16 @@ public final class DataMessage extends AbstractEncodedMessage {
             return false;
         }
         DataMessage other = (DataMessage) obj;
-        if (!Arrays.equals(ctr, other.ctr)) {
+        if (!constantTimeEquals(ctr, other.ctr)) {
             return false;
         }
-        if (!Arrays.equals(encryptedMessage, other.encryptedMessage)) {
+        if (!constantTimeEquals(encryptedMessage, other.encryptedMessage)) {
             return false;
         }
         if (flags != other.flags) {
             return false;
         }
-        if (!Arrays.equals(mac, other.mac)) {
+        if (!constantTimeEquals(mac, other.mac)) {
             return false;
         }
         if (nextDH == null) {
@@ -109,7 +111,7 @@ public final class DataMessage extends AbstractEncodedMessage {
         } else if (!nextDH.equals(other.nextDH)) {
             return false;
         }
-        if (!Arrays.equals(oldMACKeys, other.oldMACKeys)) {
+        if (!constantTimeEquals(oldMACKeys, other.oldMACKeys)) {
             return false;
         }
         if (recipientKeyID != other.recipientKeyID) {

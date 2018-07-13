@@ -1,14 +1,16 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.io.SerializationConstants;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Random;
-import net.java.otr4j.io.SerializationConstants;
-import net.java.otr4j.api.Session.OTRv;
-import static org.junit.Assert.assertFalse;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class SignatureMessageTest {
 
@@ -18,7 +20,7 @@ public class SignatureMessageTest {
     public void testHashCode() {
         Random r = new Random();
         byte[] fakeEncryptedMAC = new byte[SerializationConstants.TYPE_LEN_MAC];
-        SignatureMessage current = null;
+        SignatureMessage current;
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
             byte[] fakeEncrypted = new byte[i];
@@ -26,10 +28,9 @@ public class SignatureMessageTest {
             r.nextBytes(fakeEncryptedMAC);
             current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
-            assertFalse(current.equals(null));
-            assertFalse(current.equals(previous));
+            assertNotEquals(current, previous);
             if (previous != null)
-                assertFalse(current.hashCode() == previous.hashCode());
+                assertNotEquals(current.hashCode(), previous.hashCode());
             previous = current;
         }
         for (int i = -128; i < 128; i++) {
@@ -38,7 +39,7 @@ public class SignatureMessageTest {
             Arrays.fill(fakeEncryptedMAC, (byte) i);
             current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
-            assertFalse(current.hashCode() == previous.hashCode());
+            assertNotEquals(current.hashCode(), previous.hashCode());
             previous = current;
         }
     }
@@ -48,19 +49,22 @@ public class SignatureMessageTest {
      * there is a very small chance of false positives. */
     public void testEqualsObject() {
         Random r = new Random();
-        byte[] fakeEncryptedMAC = new byte[SerializationConstants.TYPE_LEN_MAC];
+        final byte[] fakeEncryptedMAC = new byte[SerializationConstants.TYPE_LEN_MAC];
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
-            byte[] fakeEncrypted = new byte[i];
+            final byte[] fakeEncrypted = new byte[i];
             r.nextBytes(fakeEncrypted);
             r.nextBytes(fakeEncryptedMAC);
             SignatureMessage sm = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(sm);
-            assertFalse(sm.equals(null));
-            SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
+            final byte[] fakeEncrypted2 = new byte[i];
+            System.arraycopy(fakeEncrypted, 0, fakeEncrypted2, 0, fakeEncrypted.length);
+            final byte[] fakeEncryptedMAC2 = new byte[SerializationConstants.TYPE_LEN_MAC];
+            System.arraycopy(fakeEncryptedMAC, 0, fakeEncryptedMAC2, 0, fakeEncryptedMAC.length);
+            SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted2, fakeEncryptedMAC2, 0, 0);
             assertNotNull(sm2);
-            assertTrue(sm.equals(sm2));
-            assertFalse(sm.equals(previous));
+            assertEquals(sm, sm2);
+            assertNotEquals(sm, previous);
             previous = sm;
         }
         for (int i = -128; i < 128; i++) {
@@ -69,8 +73,7 @@ public class SignatureMessageTest {
             Arrays.fill(fakeEncryptedMAC, (byte) i);
             SignatureMessage current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
-            assertFalse(current.equals(null));
-            assertFalse(current.equals(previous));
+            assertNotEquals(current, previous);
             previous = current;
         }
     }

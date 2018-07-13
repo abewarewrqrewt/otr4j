@@ -16,6 +16,8 @@ import javax.annotation.Nonnull;
 
 import net.java.otr4j.io.SerializationUtils;
 
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+
 /**
  * Container for the shared secret as defined by otr.
  *
@@ -68,7 +70,7 @@ public final class SharedSecret {
             return false;
         }
         final SharedSecret other = (SharedSecret) obj;
-        return Arrays.equals(this.secbytes, other.secbytes);
+        return constantTimeEquals(this.secbytes, other.secbytes);
     }
 
     /**

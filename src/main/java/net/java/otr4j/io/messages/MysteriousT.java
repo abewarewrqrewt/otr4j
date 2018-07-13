@@ -12,6 +12,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.util.Arrays;
 
 import static net.java.otr4j.io.messages.DataMessage.MESSAGE_DATA;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
  * MysteriousT represents the T_a composite as described in "Exchanging Data" section.
@@ -79,10 +80,10 @@ public final class MysteriousT {
             return false;
         }
         MysteriousT other = (MysteriousT) obj;
-        if (!Arrays.equals(ctr, other.ctr)) {
+        if (!constantTimeEquals(ctr, other.ctr)) {
             return false;
         }
-        if (!Arrays.equals(encryptedMessage, other.encryptedMessage)) {
+        if (!constantTimeEquals(encryptedMessage, other.encryptedMessage)) {
             return false;
         }
         if (flags != other.flags) {

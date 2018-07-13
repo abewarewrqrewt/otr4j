@@ -13,6 +13,8 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+
 /**
  * OTRv2 AKE Signature message.
  *
@@ -58,10 +60,10 @@ public final class SignatureMessage extends AbstractEncodedMessage {
             return false;
         }
         SignatureMessage other = (SignatureMessage) obj;
-        if (!Arrays.equals(xEncrypted, other.xEncrypted)) {
+        if (!constantTimeEquals(xEncrypted, other.xEncrypted)) {
             return false;
         }
-        if (!Arrays.equals(xEncryptedMAC, other.xEncryptedMAC)) {
+        if (!constantTimeEquals(xEncryptedMAC, other.xEncryptedMAC)) {
             return false;
         }
         return true;

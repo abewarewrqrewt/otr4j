@@ -9,6 +9,8 @@ package net.java.otr4j.io.messages;
 import java.security.PublicKey;
 import java.util.Arrays;
 
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+
 /**
  * 
  * @author George Politis
@@ -64,7 +66,7 @@ public final class SignatureX {
         } else if (!longTermPublicKey.equals(other.longTermPublicKey)) {
             return false;
         }
-        if (!Arrays.equals(signature, other.signature)) {
+        if (!constantTimeEquals(signature, other.signature)) {
             return false;
         }
         return true;

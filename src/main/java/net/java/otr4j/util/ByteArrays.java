@@ -48,13 +48,12 @@ public final class ByteArrays {
 
     /**
      * Test equality of two byte arrays using constant-time method. Throws an IllegalArgumentException in case both
-     * arrays are same instance. Input cannot be null.
+     * arrays are same instance. Inputs cannot be null.
      *
      * @param data1 The first byte array.
      * @param data2 The second byte array.
      * @return Returns true iff both byte arrays have same contents (and same length).
      */
-    // FIXME replace all uses of Arrays.equals(byte[], byte[]) with constantTimeEquals where needed!
     @CheckReturnValue
     public static boolean constantTimeEquals(@Nonnull final byte[] data1, @Nonnull final byte[] data2) {
         if (requireNonNull(data1) == requireNonNull(data2)) {

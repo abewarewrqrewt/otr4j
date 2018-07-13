@@ -13,6 +13,8 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+
 /**
  * OTRv2 AKE Reveal Signature message.
  *
@@ -60,7 +62,7 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
             return false;
         }
         RevealSignatureMessage other = (RevealSignatureMessage) obj;
-        if (!Arrays.equals(revealedKey, other.revealedKey)) {
+        if (!constantTimeEquals(revealedKey, other.revealedKey)) {
             return false;
         }
         return true;
