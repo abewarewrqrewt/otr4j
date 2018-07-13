@@ -69,7 +69,7 @@ public class ByteArraysTest {
     }
 
     @Test
-    public void testCompareEqualSizeBytesInequal() {
+    public void testCompareEqualSizeBytesUnequal() {
         final byte[] data1 = new byte[200];
         final byte[] data2 = new byte[200];
         RANDOM.nextBytes(data1);
@@ -85,5 +85,29 @@ public class ByteArraysTest {
         final byte[] data2 = new byte[200];
         System.arraycopy(data1, 0, data2, 0, data1.length);
         assertTrue(constantTimeEquals(data1, data2));
+    }
+
+    @Test
+    public void testCompareUnequalSizeBytes() {
+        final byte[] data1 = new byte[200];
+        final byte[] data2 = new byte[201];
+        assertFalse(constantTimeEquals(data1, data2));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCompareNullData1() {
+        final byte[] data2 = new byte[200];
+        constantTimeEquals(null, data2);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCompareNullData2() {
+        final byte[] data1 = new byte[200];
+        constantTimeEquals(data1, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCompareNullWithNull() {
+        constantTimeEquals(null, null);
     }
 }

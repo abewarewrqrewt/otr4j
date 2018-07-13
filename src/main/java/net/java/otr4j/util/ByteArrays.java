@@ -3,6 +3,7 @@ package net.java.otr4j.util;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
+import static java.util.Objects.requireNonNull;
 import static org.bouncycastle.util.Arrays.constantTimeAreEqual;
 
 /**
@@ -47,7 +48,7 @@ public final class ByteArrays {
 
     /**
      * Test equality of two byte arrays using constant-time method. Throws an IllegalArgumentException in case both
-     * arrays are same instance.
+     * arrays are same instance. Input cannot be null.
      *
      * @param data1 The first byte array.
      * @param data2 The second byte array.
@@ -56,7 +57,7 @@ public final class ByteArrays {
     // FIXME replace all uses of Arrays.equals(byte[], byte[]) with constantTimeEquals where needed!
     @CheckReturnValue
     public static boolean constantTimeEquals(@Nonnull final byte[] data1, @Nonnull final byte[] data2) {
-        if (data1 == data2) {
+        if (requireNonNull(data1) == requireNonNull(data2)) {
             throw new IllegalArgumentException("BUG: Same instance is compared.");
         }
         return constantTimeAreEqual(data1, data2);
