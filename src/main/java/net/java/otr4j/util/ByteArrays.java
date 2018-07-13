@@ -37,6 +37,7 @@ public final class ByteArrays {
      * @param data The byte-array to verify.
      * @return Returns true if all bytes are zero, or false otherwise.
      */
+    @CheckReturnValue
     public static boolean allZeroBytes(@Nonnull final byte[] data) {
         for (final byte b : data) {
             if (b != 0) {
