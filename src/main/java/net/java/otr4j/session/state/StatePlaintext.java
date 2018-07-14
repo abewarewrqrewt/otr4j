@@ -7,15 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import java.security.PublicKey;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineHostUtil;
@@ -27,11 +18,20 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.DataMessage;
+import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.security.PublicKey;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Message state PLAINTEXT. This is the only message state that is publicly
@@ -86,6 +86,16 @@ public final class StatePlaintext extends AbstractState {
     @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
+        final OtrEngineHost host = context.getHost();
+        OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
+        final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+        context.injectMessage(new ErrorMessage(replymsg));
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
         final OtrEngineHost host = context.getHost();
         OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
         final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);

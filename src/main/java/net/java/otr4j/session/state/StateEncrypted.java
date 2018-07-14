@@ -20,6 +20,7 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.messages.DataMessage;
+import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
@@ -221,6 +222,12 @@ final class StateEncrypted extends AbstractStateEncrypted {
             }
         }
         return content.message;
+    }
+
+    @Nullable
+    @Override
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
+        throw new UnsupportedOperationException("OTRv2 and OTRv3 do not support the OTRv4 DataMessage format.");
     }
 
     @Override

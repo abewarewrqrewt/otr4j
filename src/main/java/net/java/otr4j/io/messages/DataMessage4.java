@@ -53,8 +53,54 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         return MESSAGE_DATA;
     }
 
+    public byte getFlags() {
+        return flags;
+    }
+
+    public int getPn() {
+        return pn;
+    }
+
+    public int getI() {
+        return i;
+    }
+
+    public int getJ() {
+        return j;
+    }
+
+    public Point getEcdhPublicKey() {
+        return ecdhPublicKey;
+    }
+
+    public BigInteger getDhPublicKey() {
+        return dhPublicKey;
+    }
+
+    public byte[] getNonce() {
+        return nonce;
+    }
+
+    public byte[] getCiphertext() {
+        return ciphertext;
+    }
+
+    public byte[] getAuthenticator() {
+        return authenticator;
+    }
+
+    public byte[] getRevealedMacs() {
+        return revealedMacs;
+    }
+
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
+        writeAuthenticatedMessageDigest(writer);
+        writer.writeMacOTR4(this.authenticator);
+        writer.writeData(this.revealedMacs);
+    }
+
+    public void writeAuthenticatedMessageDigest(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
         writer.writeByte(this.flags);
         writer.writeInt(this.pn);
@@ -64,7 +110,5 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         writer.writeBigInt(this.dhPublicKey);
         writer.writeNonce(this.nonce);
         writer.writeData(this.ciphertext);
-        writer.writeMacOTR4(this.authenticator);
-        writer.writeData(this.revealedMacs);
     }
 }

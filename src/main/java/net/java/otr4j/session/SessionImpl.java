@@ -29,6 +29,7 @@ import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.DataMessage;
+import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.Message;
@@ -548,6 +549,9 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (message instanceof DataMessage) {
             return handleDataMessage((DataMessage) message);
         }
+        if (message instanceof DataMessage4) {
+            return handleDataMessage((DataMessage4) message);
+        }
         // Anything that is not a Data message is some kind of AKE message.
         final AbstractEncodedMessage reply = handleAKEMessage(message);
         if (reply != null) {
@@ -589,9 +593,22 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nullable
     private String handleDataMessage(@Nonnull final DataMessage data) throws OtrException {
         final SessionID sessionId = this.sessionState.getSessionID();
-        logger.log(Level.FINEST, "{0} received a data message from {1}, handling in state {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
-                    this.sessionState.getClass().getName()});
+        logger.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
+            new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
+                this.sessionState.getClass().getName()});
+        try {
+            return this.sessionState.handleDataMessage(this, data);
+        } catch (final IOException ex) {
+            throw new OtrException("Failed to process full data message.", ex);
+        }
+    }
+
+    @Nullable
+    private String handleDataMessage(@Nonnull final DataMessage4 data) throws OtrException {
+        final SessionID sessionId = this.sessionState.getSessionID();
+        logger.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
+            new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
+                this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final IOException ex) {

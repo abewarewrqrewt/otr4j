@@ -18,6 +18,7 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.DataMessage;
+import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
@@ -96,16 +97,28 @@ public interface State {
     String handlePlainTextMessage(@Nonnull Context context, @Nonnull PlainTextMessage plainTextMessage);
 
     /**
-     * Handle the received data message.
+     * Handle the received data message in OTRv2/OTRv3 format.
      *
      * @param context The session context.
-     * @param message The received message.
-     * @return Returns the decrypted message context.
+     * @param message The received data message.
+     * @return Returns the decrypted message text.
      * @throws java.io.IOException In case of I/O reading fails.
-     * @throws OtrException In case an exception occurs.
+     * @throws OtrException        In case an exception occurs.
      */
     @Nullable
     String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage message) throws IOException, OtrException;
+
+    /**
+     * Handle the received data message in OTRv4 format.
+     *
+     * @param context The session context.
+     * @param message The received data message.
+     * @return Returns the decrypted message text.
+     * @throws IOException  In case of I/O reading failures.
+     * @throws OtrException In case of failures regarding the OTR protocol (implementation).
+     */
+    @Nullable
+    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage4 message) throws IOException, OtrException;
 
     /**
      * Handle the received error message.
