@@ -95,6 +95,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                                                    @Nonnull final List<TLV> tlvs) {
         if (this.ratchet.isNeedSenderKeyRotation()) {
             // FIXME implement sender key rotation here
+            final DoubleRatchet.Rotation rotation = this.ratchet.rotateSenderKeys();
             // FIXME implement accept and prepare revealed MACs here
         }
         final byte[] msgBytes = convertTextToBytes(msgText);
