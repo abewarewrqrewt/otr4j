@@ -28,6 +28,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * The OTRv4 ENCRYPTED message state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
+// TODO Verify that old MACs are received ... as a way to verify your own deniability property.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
