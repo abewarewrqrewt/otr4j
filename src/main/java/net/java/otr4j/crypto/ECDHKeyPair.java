@@ -18,6 +18,7 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * ECDH keypair based on Ed448-Goldilocks.
  */
+// FIXME consider making AutoCloseable in order to clear private key component.
 public final class ECDHKeyPair {
 
     /**

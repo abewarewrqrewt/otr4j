@@ -12,6 +12,7 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
  * Class representing the DH key pair.
  */
 // TODO Is it okay that we perform DH value handling ourselves instead of going through the obscure JCA key factories and agreements? (Consider BC) (I'm not happy with this implementation over standard JCA stuff. However, I also currently cannot find a reason to switch. OTRv4 spec makes it look so simple that there's more risk in trying to use the JCA correctly ... Except maybe for mitigating side-channel attacks such as with timing-related requirements.)
+// FIXME consider making AutoCloseable in order to clear private key component.
 public final class DHKeyPair {
 
     /**
