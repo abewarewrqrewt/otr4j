@@ -51,7 +51,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Prefix used in key derivation functions.
      */
-    private static final byte[] OTR4_PREFIX = new byte[]{'O', 'T', 'R', '4'};
+    private static final byte[] OTR4_PREFIX = new byte[]{'O', 'T', 'R', 'v', '4'};
 
     /**
      * Usage ID used for generating ring signatures.
