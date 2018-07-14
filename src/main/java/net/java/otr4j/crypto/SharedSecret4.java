@@ -6,6 +6,7 @@ import nl.dannyvanheumen.joldilocks.Point;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
@@ -32,6 +33,11 @@ public final class SharedSecret4 implements AutoCloseable {
     private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x04};
     private static final byte[] USAGE_ID_COMMON_ECDH_RANDOM_DATA = new byte[]{0x19};
     private static final byte[] USAGE_ID_COMMON_DH_RANDOM_DATA = new byte[]{0x20};
+
+    /**
+     * SecureRandom instance.
+     */
+    private final SecureRandom random;
 
     /**
      * Either a hash of the shared DH key: 'KDF_1(0x02 || k_dh, 32)' (every third DH ratchet) or a hash of the previous
@@ -70,15 +76,15 @@ public final class SharedSecret4 implements AutoCloseable {
     @Nonnull
     private Point theirECDHPublicKey;
 
-    SharedSecret4(@Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-                  @Nonnull final BigInteger theirDHPublicKey, @Nonnull final Point theirECDHPublicKey)
-        throws OtrCryptoException {
-
+    SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
+                          @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final BigInteger theirDHPublicKey,
+                          @Nonnull final Point theirECDHPublicKey) {
+        this.random = requireNonNull(random);
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
-        regenerateK(0);
+        regenerateK(true);
     }
 
     /**
@@ -96,12 +102,11 @@ public final class SharedSecret4 implements AutoCloseable {
      *
      * @param params The security parameters.
      * @return Returns the initialized shared secrets instance.
-     * @throws OtrCryptoException Throws in case of illegal values for shared secrets.
      */
     // FIXME review secure deletions as described by section "Interactive DAKE Overview".
     @Nonnull
-    public static SharedSecret4 initialize(@Nonnull final SecurityParameters4 params) throws OtrCryptoException {
-        final SharedSecret4 exchangeSecrets = new SharedSecret4(params.getDhKeyPair(), params.getEcdhKeyPair(),
+    public static SharedSecret4 initialize(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
+        final SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
             params.getA(), params.getX());
         final byte[] k = exchangeSecrets.getK();
         // Generate common shared secret using Bob's information stored in security parameters.
@@ -120,9 +125,9 @@ public final class SharedSecret4 implements AutoCloseable {
         }
         switch (params.getInitializationComponent()) {
             case OURS:
-                return new SharedSecret4(initialDHKeyPair, initialECDHKeyPair, params.getA(), params.getX());
+                return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, params.getA(), params.getX());
             case THEIRS:
-                return new SharedSecret4(params.getDhKeyPair(), params.getEcdhKeyPair(),
+                return new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
                     initialDHKeyPair.getPublicKey(), initialECDHKeyPair.getPublicKey());
             default:
                 throw new UnsupportedOperationException("Unsupported component. Shared secret cannot be generated.");
@@ -149,45 +154,45 @@ public final class SharedSecret4 implements AutoCloseable {
     /**
      * Rotate our key pairs in the shared secret.
      *
-     * @param ratchetIteration The ratchet iteration a.k.a. 'i'.
+     * @param regenerateDHKeyPair Indicates whether we need to regenerate the DH key pair as well.
      */
-    // FIXME is a DHKeyPair always expected/required?
-    public void rotateOurKeys(final int ratchetIteration, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-                       @Nullable final DHKeyPair ourDHKeyPair) {
+    public void rotateOurKeys(final boolean regenerateDHKeyPair) {
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(this.random);
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
-        if (ratchetIteration % 3 == 0) {
+        if (regenerateDHKeyPair) {
+            final DHKeyPair ourDHKeyPair = DHKeyPair.generate(this.random);
             this.dhKeyPair = requireNonNull(ourDHKeyPair);
         }
-        regenerateK(ratchetIteration);
+        regenerateK(regenerateDHKeyPair);
     }
 
     /**
      * Rotate their public keys in the shared secret.
      *
-     * @param ratchetIteration   The ratchet iteration a.k.a. 'i'.
+     * @param performDHRatchet   Indicates whether we need to perform a DH ratchet.
      * @param theirECDHPublicKey Their ECDH public key.
      * @param theirDHPublicKey   Their DH public key.
      */
-    public void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
+    public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
                          @Nullable final BigInteger theirDHPublicKey) {
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
-        if (ratchetIteration % 3 == 0) {
+        if (performDHRatchet) {
             // FIXME we probably do not receive a new DH public key on every message. Hence we need to conditionally rotate DH public keys only on specific iterations.
             this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         }
         // FIXME securely delete our_ecdh.secret.
-        regenerateK(ratchetIteration);
+        regenerateK(performDHRatchet);
     }
 
-    private void regenerateK(final int ratchetIteration) {
+    private void regenerateK(final boolean performDHRatchet) {
         final byte[] k_ecdh;
         try {
             k_ecdh = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encode();
         } catch (final OtrCryptoException e) {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }
-        if (ratchetIteration % 3 == 0) {
+        if (performDHRatchet) {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, k_dh), BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);

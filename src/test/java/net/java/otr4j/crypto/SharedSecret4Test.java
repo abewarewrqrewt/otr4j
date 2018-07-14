@@ -9,7 +9,10 @@ import java.util.Arrays;
 
 import static org.bouncycastle.util.Arrays.fill;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * The SharedSecret4 tests currently do not perform a test that binary-exactly verifies that the right values are
@@ -38,98 +41,102 @@ public class SharedSecret4Test {
     private static final BigInteger theirNextDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
 
     @Test(expected = NullPointerException.class)
-    public void testConstructionNullDHKeyPair() throws OtrCryptoException {
-        new SharedSecret4(null, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testConstructionNullSecureRandom() {
+        new SharedSecret4(null, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testConstructionNullECDHKeyPair() throws OtrCryptoException {
-        new SharedSecret4(ourDHKeyPair, null, theirDHPublicKey, theirECDHPublicKey);
+    public void testConstructionNullDHKeyPair() {
+        new SharedSecret4(RANDOM, null, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testConstructionNullTheirDHPublicKey() throws OtrCryptoException {
-        new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, null, theirECDHPublicKey);
+    public void testConstructionNullECDHKeyPair() {
+        new SharedSecret4(RANDOM, ourDHKeyPair, null, theirDHPublicKey, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testConstructionNullTheirECDHPublicKey() throws OtrCryptoException {
-        new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, null);
+    public void testConstructionNullTheirDHPublicKey() {
+        new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, theirECDHPublicKey);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructionNullTheirECDHPublicKey() {
+        new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, null);
     }
 
     @Test
-    public void testConstruction() throws OtrCryptoException {
-        new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testConstruction() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        assertNotNull(ss.getECDHPublicKey());
+        assertNotNull(ss.getDHPublicKey());
+        assertNotNull(ss.getK());
     }
 
     @Test
-    public void testRotateOurKeys() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testRotateOurKeysNoDHRatchet() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final Point firstECDHPublicKey = ss.getECDHPublicKey();
+        final BigInteger firstDHPublicKey = ss.getDHPublicKey();
         final byte[] firstK = ss.getK();
         // Rotate our key pairs.
-        ss.rotateOurKeys(1, ourNextECDHKeyPair, ourNextDHKeyPair);
-        // Ensure that k and ssid actually change after rotation.
+        ss.rotateOurKeys(false);
+        // Ensure that k actually changes after rotation.
+        assertNotEquals(firstECDHPublicKey, ss.getECDHPublicKey());
+        assertEquals(firstDHPublicKey, ss.getDHPublicKey());
         assertFalse(Arrays.equals(firstK, ss.getK()));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testRotateOurKeysNullECDH() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        ss.rotateOurKeys(1, null, ourNextDHKeyPair);
-    }
-
     @Test
-    public void testRotateOurKeysNullDHOnNonThirdIteration() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        final byte[] firstK = ss.getK();
-        // DH key pair is not used on any non-third iteration.
-        ss.rotateOurKeys(1, ourNextECDHKeyPair, null);
-        // Ensure that k and ssid actually change after rotation.
-        assertFalse(Arrays.equals(firstK, ss.getK()));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testRotateOurKeysNullDHOnThirdIteration() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        ss.rotateOurKeys(3, ourNextECDHKeyPair, null);
-    }
-
-    @Test
-    public void testRotateTheirKeys() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testRotateOurKeysDHRatchet() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final Point firstECDHPublicKey = ss.getECDHPublicKey();
+        final BigInteger firstDHPublicKey = ss.getDHPublicKey();
         final byte[] firstK = ss.getK();
         // Rotate our key pairs.
-        ss.rotateTheirKeys(1, theirNextECDHPublicKey, theirNextDHPublicKey);
+        ss.rotateOurKeys(true);
+        // Ensure that k actually changes after rotation.
+        assertNotEquals(firstECDHPublicKey, ss.getECDHPublicKey());
+        assertNotEquals(firstDHPublicKey, ss.getDHPublicKey());
+        assertFalse(Arrays.equals(firstK, ss.getK()));
+    }
+
+    @Test
+    public void testRotateTheirKeys() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        final byte[] firstK = ss.getK();
+        // Rotate our key pairs.
+        ss.rotateTheirKeys(false, theirNextECDHPublicKey, theirNextDHPublicKey);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
     }
 
     @Test(expected = NullPointerException.class)
-    public void testRotateTheirKeysNullECDH() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        ss.rotateTheirKeys(1, null, theirNextDHPublicKey);
+    public void testRotateTheirKeysNullECDH() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        ss.rotateTheirKeys(true, null, theirNextDHPublicKey);
     }
 
     @Test
-    public void testRotateTheirKeysNullDHNonThirdIteration() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testRotateTheirKeysNullDHNonThirdIteration() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
         // Rotate their public keys.
-        ss.rotateTheirKeys(1, theirNextECDHPublicKey, null);
+        ss.rotateTheirKeys(false, theirNextECDHPublicKey, null);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
     }
 
     @Test(expected = NullPointerException.class)
-    public void testRotateTheirKeysNullDHThirdIteration() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        ss.rotateTheirKeys(3, theirNextECDHPublicKey, null);
+    public void testRotateTheirKeysNullDHThirdIteration() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        ss.rotateTheirKeys(true, theirNextECDHPublicKey, null);
     }
 
     @Test
-    public void testGetKNotModifiable() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        ss.rotateTheirKeys(0, theirNextECDHPublicKey, theirNextDHPublicKey);
+    public void testGetKNotModifiable() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        ss.rotateTheirKeys(true, theirNextECDHPublicKey, theirNextDHPublicKey);
         final byte[] firstK = ss.getK();
         fill(firstK, (byte) 0xff);
         final byte[] secondK = ss.getK();
@@ -138,18 +145,18 @@ public class SharedSecret4Test {
 
     // FIXME This notes that it is possible to go back to an earlier ratchet state by providing the same public keys again, ... within reason for a short while. Is this by design?
     @Test
-    public void testRotateSamePublicKeysEveryThirdIteration() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testRotateSamePublicKeysEveryThirdIteration() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        ss.rotateTheirKeys(0, theirECDHPublicKey, theirDHPublicKey);
+        ss.rotateTheirKeys(true, theirECDHPublicKey, theirDHPublicKey);
         assertArrayEquals(firstK, ss.getK());
     }
 
     @Test
-    public void testRotateSamePublicKeysEveryNonThirdIteration() throws OtrCryptoException {
-        final SharedSecret4 ss = new SharedSecret4(ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+    public void testRotateSamePublicKeysEveryNonThirdIteration() {
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
-        ss.rotateTheirKeys(1, theirECDHPublicKey, null);
+        ss.rotateTheirKeys(false, theirECDHPublicKey, null);
         assertFalse(Arrays.equals(firstK, ss.getK()));
     }
 }
