@@ -22,6 +22,10 @@
 //  * After having successfully finished DAKE, should we forget about previously used QueryTag or remember it? Let's say that we initiate a OTRv4 session immediately (send Identity message), should we then reuse previous query tag, or start blank?
 //  * Ratchet descriptions talk about "DH ratchet". It's not clear whether that means "Ratchet where DH is involved" or any ratchet due to ECDH always being involved.
 //  * In section "Extra Symmetric Key" already fixed ref `KDF_1(0x1A || 0xFF || chain_key)`?
+//  * In section When receiving a Data Message: Derive the next receiving chain key: chain_key_r[i-1][k+1] = KDF_1(0x17 || chain_key_r[i-1][k], 64). (0x17 used in 2 locations)
+//  * Error in: "Derive chain_key_r[i][k+1] = KDF_1(usageNextChainKey || chain_key_r[i][k], 64) and MKenc = KDF_1(usageMessageKey || chain_key_r[i][k], 32)" Should be 'i-1' instead of 'i'.
+//  * "Set their_ecdh as the 'Public ECDH key' from the message. Set their_dh as the 'Public DH Key' from the message, if it is not empty." are duplicate. Already included as part of Rotation instructions.
+
 /**
  * otr4j.
  */
