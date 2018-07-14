@@ -150,11 +150,10 @@ public final class SharedSecret4 implements AutoCloseable {
      * Rotate our key pairs in the shared secret.
      *
      * @param ratchetIteration The ratchet iteration a.k.a. 'i'.
-     * @throws OtrCryptoException Thrown in case of failures generating the new cryptographic material.
      */
     // FIXME is a DHKeyPair always expected/required?
     public void rotateOurKeys(final int ratchetIteration, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-                       @Nullable final DHKeyPair ourDHKeyPair) throws OtrCryptoException {
+                       @Nullable final DHKeyPair ourDHKeyPair) {
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         if (ratchetIteration % 3 == 0) {
             this.dhKeyPair = requireNonNull(ourDHKeyPair);
@@ -168,10 +167,9 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param ratchetIteration   The ratchet iteration a.k.a. 'i'.
      * @param theirECDHPublicKey Their ECDH public key.
      * @param theirDHPublicKey   Their DH public key.
-     * @throws OtrCryptoException Thrown in case of failures generating the new cryptographic material.
      */
     public void rotateTheirKeys(final int ratchetIteration, @Nonnull final Point theirECDHPublicKey,
-                         @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
+                         @Nullable final BigInteger theirDHPublicKey) {
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         if (ratchetIteration % 3 == 0) {
@@ -182,8 +180,13 @@ public final class SharedSecret4 implements AutoCloseable {
         regenerateK(ratchetIteration);
     }
 
-    private void regenerateK(final int ratchetIteration) throws OtrCryptoException {
-        final byte[] k_ecdh = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encode();
+    private void regenerateK(final int ratchetIteration) {
+        final byte[] k_ecdh;
+        try {
+            k_ecdh = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encode();
+        } catch (final OtrCryptoException e) {
+            throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
+        }
         if (ratchetIteration % 3 == 0) {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, k_dh), BRACE_KEY_LENGTH_BYTES);
