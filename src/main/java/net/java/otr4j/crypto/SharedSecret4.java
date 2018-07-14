@@ -28,11 +28,11 @@ public final class SharedSecret4 implements AutoCloseable {
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
 
-    private static final byte[] USAGE_ID_BRACE_KEY_FROM_DH = new byte[]{0x02};
-    private static final byte[] USAGE_ID_BRACE_KEY_FROM_BRACE_KEY = new byte[]{0x03};
-    private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x04};
-    private static final byte[] USAGE_ID_COMMON_ECDH_RANDOM_DATA = new byte[]{0x19};
-    private static final byte[] USAGE_ID_COMMON_DH_RANDOM_DATA = new byte[]{0x20};
+    private static final byte[] USAGE_ID_BRACE_KEY_FROM_DH = new byte[]{0x01};
+    private static final byte[] USAGE_ID_BRACE_KEY_FROM_BRACE_KEY = new byte[]{0x02};
+    private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x03};
+    private static final byte[] USAGE_ID_COMMON_ECDH_RANDOM_DATA = new byte[]{0x11};
+    private static final byte[] USAGE_ID_COMMON_DH_RANDOM_DATA = new byte[]{0x12};
 
     /**
      * SecureRandom instance.
@@ -171,7 +171,7 @@ public final class SharedSecret4 implements AutoCloseable {
      *
      * @param performDHRatchet   Indicates whether we need to perform a DH ratchet.
      * @param theirECDHPublicKey Their ECDH public key.
-     * @param theirDHPublicKey   Their DH public key.
+     * @param theirDHPublicKey   Their DH public key. (Optional)
      */
     public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
                          @Nullable final BigInteger theirDHPublicKey) {
