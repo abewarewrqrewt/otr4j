@@ -15,7 +15,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -35,13 +34,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+// FIXME extend with tests for one party sending many messages in a row.
+// FIXME extend with tests for alternating messaging in order to verify correct behavior of ratcheting/key rotation.
 public class SessionTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Before
     public void setUp() {
-        Logger.getLogger("").setLevel(Level.FINEST);
+        Logger.getLogger("").setLevel(Level.INFO);
     }
     
     @Test
