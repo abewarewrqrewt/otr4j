@@ -147,7 +147,7 @@ public interface State {
      *                state.
      * @throws OtrCryptoException In case security parameters contain illegal values.
      */
-    void secure(@Nonnull Context context, @Nonnull SecurityParameters4 params) throws OtrCryptoException;
+    void secure(@Nonnull Context context, @Nonnull SecurityParameters4 params) throws OtrException;
 
     /**
      * Call to end encrypted session, if any.

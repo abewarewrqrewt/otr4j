@@ -4,8 +4,6 @@ package net.java.otr4j.api;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.messages.ClientProfilePayload;
-import net.java.otr4j.io.messages.DataMessage4;
-import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.test.dummyclient.DummyClient;
@@ -30,14 +28,12 @@ import java.util.logging.Logger;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.io.SerializationUtils.toMessage;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class SessionTest {
 
@@ -45,7 +41,7 @@ public class SessionTest {
 
     @Before
     public void setUp() {
-        Logger.getLogger("").setLevel(Level.INFO);
+        Logger.getLogger("").setLevel(Level.FINEST);
     }
     
     @Test
@@ -356,7 +352,7 @@ public class SessionTest {
     }
 
     @Test
-    public void testEstablishOTR4Session() throws OtrException, IOException {
+    public void testEstablishOTR4Session() throws OtrException {
         final Conversation c = new Conversation();
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
@@ -371,12 +367,8 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.hostAlice.receiveMessage());
         assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
-        // FIXME extend test with final receive such that we are sure that both DoubleRatchets are fully initialized.
-        // TODO temporary code to test if established OTRv4 connection is working to approximation.
-        c.hostAlice.sendMessage("Hello world");
-        final Message msg = toMessage(c.channelBob.peek());
-        assertTrue(msg instanceof DataMessage4);
-        assertEquals("Hello world", c.hostBob.receiveMessage());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.hostBob.receiveMessage());
     }
 
     /**

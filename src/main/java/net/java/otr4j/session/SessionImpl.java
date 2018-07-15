@@ -335,7 +335,14 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     public void secure(@Nonnull final SecurityParameters4 s) throws OtrCryptoException {
-        this.sessionState.secure(this, s);
+        try {
+            this.sessionState.secure(this, s);
+        } catch (final OtrCryptoException e) {
+            // Propagate OtrCryptoException as is, as this is a failure of securing the message state.
+            throw e;
+        } catch (final OtrException e) {
+            logger.log(Level.WARNING, "Failed to send heartbeat message.", e);
+        }
         if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
         }

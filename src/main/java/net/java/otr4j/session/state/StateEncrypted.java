@@ -16,7 +16,6 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.messages.DataMessage;
@@ -26,7 +25,6 @@ import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
-import net.java.otr4j.session.ake.SecurityParameters4;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,6 +50,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
+// TODO check with released spec whether or not we want to transition from one encrypted session to another. (Or always go through AKE states in single state machine.)
 final class StateEncrypted extends AbstractStateEncrypted {
 
     /**
@@ -301,16 +300,5 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();
         return new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue());
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
-        context.setState(new StateEncrypted(context, params));
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
-        // FIXME probably do not want to transition from OTRv3 to OTRv4. Requires exiting ENCRYPTED_MESSAGES state first and transitioning through AKE states.
-        context.setState(new StateEncrypted4(context, params));
     }
 }

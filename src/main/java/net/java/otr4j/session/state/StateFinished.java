@@ -13,14 +13,11 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.session.ake.SecurityParameters;
-import net.java.otr4j.session.ake.SecurityParameters4;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -111,16 +108,6 @@ final class StateFinished extends AbstractState {
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) {
         OtrEngineHostUtil.finishedSessionMessage(context.getHost(), sessionId, msgText);
         return null;
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
-        context.setState(new StateEncrypted(context, params));
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
-        context.setState(new StateEncrypted4(context, params));
     }
 
     @Override

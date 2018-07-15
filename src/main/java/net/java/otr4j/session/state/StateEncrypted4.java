@@ -4,7 +4,6 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationUtils.Content;
@@ -150,7 +149,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException, IOException {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+        throws OtrException, IOException {
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.
         // FIXME try to decrypt using skipped message keys.
@@ -206,12 +206,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
+        // TODO verify if this is correct according to OTRv4 spec once released.
         throw new IllegalStateException("Transitioning to lower protocol version ENCRYPTED message state is forbidden.");
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrCryptoException {
-        // FIXME probably do not want to transition to new DAKE keys. Requires exiting ENCRYPTED_MESSAGES state first and transitioning through AKE states.
-        context.setState(new StateEncrypted4(context, params));
     }
 }
