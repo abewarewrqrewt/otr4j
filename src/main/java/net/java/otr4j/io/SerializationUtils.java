@@ -451,7 +451,7 @@ public final class SerializationUtils {
         }
 
         // get message body without trailing 0x00, expect UTF-8 bytes
-        final String message = new String(messageBytes, 0, tlvIndex, SerializationUtils.UTF8);
+        final String message = new String(messageBytes, 0, tlvIndex, UTF8);
 
         // if the null TLV separator is somewhere in the middle, there are TLVs
         final ArrayList<TLV> tlvs = new ArrayList<>();

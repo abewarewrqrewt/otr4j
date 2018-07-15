@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.shake256;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
@@ -66,7 +66,7 @@ public final class ECDHKeyPair {
         requireLengthExactly(LENGTH_SECRET_KEY_BYTES + 1, r);
         r[0] = 0x01;
         final byte[] h = new byte[57];
-        kdf1(h, 0, r, LENGTH_SECRET_KEY_BYTES);
+        shake256(h, 0, r, LENGTH_SECRET_KEY_BYTES);
         //  - prune 'h': the two least significant bits of the first byte are cleared, all
         //    eight bits of the last byte are cleared, and the highest bit of the second
         //    to last byte is set.

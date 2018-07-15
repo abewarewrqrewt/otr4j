@@ -14,6 +14,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.assertArrayEquals;
@@ -157,7 +158,7 @@ public class DoubleRatchetTest {
 
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsAuthenticate() {
-        final byte[] message = kdf1("Hello World!".getBytes(UTF_8), 64);
+        final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
         try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
             final MessageKeys keys = ratchet.generateSendingKeys();
             keys.close();
@@ -167,7 +168,7 @@ public class DoubleRatchetTest {
 
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsVerify() throws MessageKeys.VerificationException {
-        final byte[] message = kdf1("Hello World!".getBytes(UTF_8), 64);
+        final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
         try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
             final MessageKeys keys;
             final byte[] authenticator;

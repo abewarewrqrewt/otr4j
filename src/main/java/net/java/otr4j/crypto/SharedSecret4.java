@@ -11,6 +11,11 @@ import java.security.SecureRandom;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.ECDHKeyPair.LENGTH_SECRET_KEY_BYTES;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.BRACE_KEY;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DH_FIRST_EPHEMERAL;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ECDH_FIRST_EPHEMERAL;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SHARED_SECRET;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.THIRD_BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -27,12 +32,6 @@ public final class SharedSecret4 implements AutoCloseable {
 
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
-
-    private static final byte[] USAGE_ID_BRACE_KEY_FROM_DH = new byte[]{0x01};
-    private static final byte[] USAGE_ID_BRACE_KEY_FROM_BRACE_KEY = new byte[]{0x02};
-    private static final byte[] USAGE_ID_MIXED_SHARED_SECRET = new byte[]{0x03};
-    private static final byte[] USAGE_ID_COMMON_ECDH_RANDOM_DATA = new byte[]{0x11};
-    private static final byte[] USAGE_ID_COMMON_DH_RANDOM_DATA = new byte[]{0x12};
 
     /**
      * SecureRandom instance.
@@ -113,14 +112,14 @@ public final class SharedSecret4 implements AutoCloseable {
         final ECDHKeyPair initialECDHKeyPair;
         {
             final byte[] r = new byte[LENGTH_SECRET_KEY_BYTES + 1];
-            kdf1(r, 1, concatenate(USAGE_ID_COMMON_ECDH_RANDOM_DATA, k), LENGTH_SECRET_KEY_BYTES);
+            kdf1(r, 1, ECDH_FIRST_EPHEMERAL, k, LENGTH_SECRET_KEY_BYTES);
             initialECDHKeyPair = ECDHKeyPair.generate(r);
         }
         // Generate common shared secret using Bob's information stored in security parameters.
         final DHKeyPair initialDHKeyPair;
         {
             final byte[] r = new byte[DH_PRIVATE_KEY_LENGTH_BYTES];
-            kdf1(r, 0, concatenate(USAGE_ID_COMMON_DH_RANDOM_DATA, k), DH_PRIVATE_KEY_LENGTH_BYTES);
+            kdf1(r, 0, DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES);
             initialDHKeyPair = DHKeyPair.generate(r);
         }
         switch (params.getInitializationComponent()) {
@@ -194,14 +193,13 @@ public final class SharedSecret4 implements AutoCloseable {
         }
         if (performDHRatchet) {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
-            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_DH, k_dh), BRACE_KEY_LENGTH_BYTES);
+            kdf1(this.braceKey, 0, THIRD_BRACE_KEY, k_dh, BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);
             // FIXME securely delete our_dh.secret.
         } else {
-            kdf1(this.braceKey, 0, concatenate(USAGE_ID_BRACE_KEY_FROM_BRACE_KEY, this.braceKey),
-                BRACE_KEY_LENGTH_BYTES);
+            kdf1(this.braceKey, 0, BRACE_KEY, this.braceKey, BRACE_KEY_LENGTH_BYTES);
         }
-        kdf1(this.k, 0, concatenate(USAGE_ID_MIXED_SHARED_SECRET, k_ecdh, this.braceKey), K_LENGTH_BYTES);
+        kdf1(this.k, 0, SHARED_SECRET, concatenate(k_ecdh, this.braceKey), K_LENGTH_BYTES);
         clear(k_ecdh);
     }
 }

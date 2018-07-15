@@ -23,12 +23,13 @@ import java.security.PublicKey;
 import java.util.List;
 import java.util.logging.Level;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SSID;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static org.bouncycastle.util.Arrays.clear;
-import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
  * The OTRv4 ENCRYPTED message state.
@@ -38,9 +39,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
-    private static final byte[] USAGE_ID_SSID_GENERATION = new byte[]{0x05};
     private static final int DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES = 64;
-    private static final byte[] USAGE_ID_DATA_MESSAGE_SECTIONS = new byte[]{0x19};
 
     // TODO duplicate information, can we simplify this without breaking all structure?
     private static final byte DATA_MESSAGE_TYPE = 0x03;
@@ -54,7 +53,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         super(context.getSessionID(), context.getHost());
         final SharedSecret4 sharedSecret = initialize(context.secureRandom(), params);
-        kdf1(this.ssid, 0, concatenate(USAGE_ID_SSID_GENERATION, sharedSecret.getK()), SSID_LENGTH_BYTES);
+        kdf1(this.ssid, 0, SSID, sharedSecret.getK(), SSID_LENGTH_BYTES);
         this.ratchet = new DoubleRatchet(context.secureRandom(), sharedSecret);
     }
 
@@ -124,8 +123,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 out.writeBigInt(this.ratchet.getDHPublicKey());
                 out.writeNonce(result.nonce);
                 out.writeData(result.ciphertext);
-                messageMAC = kdf1(concatenate(USAGE_ID_DATA_MESSAGE_SECTIONS, out.toByteArray()),
-                    DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
+                messageMAC = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             }
             authenticator = keys.authenticate(messageMAC);
         }
@@ -171,8 +169,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             final byte[] digest;
             try (final OtrOutputStream out = new OtrOutputStream()) {
                 message.writeAuthenticatedMessageDigest(out);
-                digest = kdf1(concatenate(USAGE_ID_DATA_MESSAGE_SECTIONS, out.toByteArray()),
-                    DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
+                digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             }
             keys.verify(digest, message.getAuthenticator());
             dmc = keys.decrypt(message.getCiphertext(), message.getNonce());

@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
+import static net.java.otr4j.io.messages.MysteriousT4.Purpose.AUTH_I;
 import static net.java.otr4j.io.messages.MysteriousT4.encode;
 
 /**
@@ -40,7 +41,7 @@ public final class AuthIMessages {
         final ClientProfile ourProfile = ourProfilePayload.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
-        final byte[] t = encode(ourProfilePayload, profilePayloadBob, x, y, a, b, message.senderInstanceTag,
+        final byte[] t = encode(AUTH_I, ourProfilePayload, profilePayloadBob, x, y, a, b, message.senderInstanceTag,
             message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, X}, t)."
         ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), x, message.getSigma(), t);

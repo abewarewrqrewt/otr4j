@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.AuthRMessages.validate;
+import static net.java.otr4j.io.messages.MysteriousT4.Purpose.AUTH_I;
 import static net.java.otr4j.io.messages.MysteriousT4.encode;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 
@@ -115,7 +116,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         }
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
-        final byte[] t = encode(message.getClientProfile(), ourClientProfile, message.getX(),
+        final byte[] t = encode(AUTH_I, message.getClientProfile(), ourClientProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,

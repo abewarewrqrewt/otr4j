@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.AuthIMessages.validate;
+import static net.java.otr4j.io.messages.MysteriousT4.Purpose.AUTH_R;
 import static net.java.otr4j.io.messages.MysteriousT4.encode;
 
 /**
@@ -94,7 +95,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         final EdDSAKeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
-        final byte[] t = encode(profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
+        final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), this.queryTag, context.getRemoteAccountID(),
             context.getLocalAccountID());

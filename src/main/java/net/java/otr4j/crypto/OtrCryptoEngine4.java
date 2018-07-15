@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTH;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
@@ -54,14 +55,43 @@ public final class OtrCryptoEngine4 {
     private static final byte[] OTR4_PREFIX = new byte[]{'O', 'T', 'R', 'v', '4'};
 
     /**
-     * Usage ID used for generating ring signatures.
-     */
-    private static final int USAGE_ID_RING_SIGNATURE = 0x1D;
-
-    /**
      * Size of IV for XSalsa20.
      */
     private static final int XSALSA20_IV_LENGTH_BYTES = 24;
+
+    /**
+     * KDF Usage IDs.
+     */
+    public enum KDFUsage {
+        FINGERPRINT((byte) 0x00),
+        THIRD_BRACE_KEY((byte) 0x01),
+        BRACE_KEY((byte) 0x02),
+        SHARED_SECRET((byte) 0x03),
+        SSID((byte) 0x04),
+        AUTH_R_BOB_CLIENT_PROFILE((byte) 0x05),
+        AUTH_R_ALICE_CLIENT_PROFILE((byte) 0x06),
+        AUTH_R_PHI((byte) 0x07),
+        AUTH_I_BOB_CLIENT_PROFILE((byte) 0x08),
+        AUTH_I_ALICE_CLIENT_PROFILE((byte) 0x09),
+        AUTH_I_PHI((byte) 0x0A),
+        ECDH_FIRST_EPHEMERAL((byte) 0x11),
+        DH_FIRST_EPHEMERAL((byte) 0x12),
+        ROOT_KEY((byte) 0x13),
+        CHAIN_KEY((byte) 0x14),
+        NEXT_CHAIN_KEY((byte) 0x15),
+        MESSAGE_KEY((byte) 0x16),
+        MAC_KEY((byte) 0x17),
+        EXTRA_SYMMETRIC_KEY((byte) 0x18),
+        DATA_MESSAGE_SECTIONS((byte) 0x19),
+        AUTHENTICATOR((byte) 0x1A),
+        AUTH((byte) 0x1C);
+
+        private final byte value;
+
+        KDFUsage(final byte value) {
+            this.value = value;
+        }
+    }
 
     private OtrCryptoEngine4() {
         // No need to instantiate utility class.
@@ -73,6 +103,7 @@ public final class OtrCryptoEngine4 {
      * @param dst       The destination byte array to which to write the fingerprint.
      * @param publicKey The public key to fingerprint.
      */
+    // FIXME review fingerprint implementation.
     public static void fingerprint(@Nonnull final byte[] dst, @Nonnull final Point publicKey) {
         requireNonNull(dst);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
@@ -84,18 +115,16 @@ public final class OtrCryptoEngine4 {
     }
 
     /**
-     * KDF_1 key derivation function. ({@link #kdf1(byte[], int, byte[], int)} for more details.)
+     * KDF_1 key derivation function. ({@link #kdf1(byte[], int, KDFUsage, byte[], int)} for more details.)
      *
      * @param input      Input data.
      * @param outputSize Expected output size.
      * @return Returns byte-array with KDF_1 result.
      */
-    // TODO Consider moving all USAGE_ID_... constants to OtrCryptoEngine4 class, instead of having them distributed over all classes that use `kdf1`.
-    // FIXME review all USAGE_ID_... entries as constants have changed in the spec.
-    public static byte[] kdf1(@Nonnull final byte[] input, final int outputSize) {
+    public static byte[] kdf1(@Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
         final byte[] result = new byte[outputSize];
-        kdf1(result, 0, input, outputSize);
+        kdf1(result, 0, usageID, input, outputSize);
         return result;
     }
 
@@ -109,10 +138,19 @@ public final class OtrCryptoEngine4 {
      * @param offset     The offset position to start writing to the destination byte array.
      * @param input      The input data to KDF_1.
      */
-    public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
+    public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(OTR4_PREFIX, 0, OTR4_PREFIX.length);
+        digest.update(usageID.value);
+        digest.update(input, 0, input.length);
+        digest.doFinal(dst, offset, outputSize);
+    }
+
+    // TODO revew if this method is really needed? (Only needed for ECDHKeyPair AFAICT.)
+    static void shake256(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
+        requireAtLeast(0, outputSize);
+        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(input, 0, input.length);
         digest.doFinal(dst, offset, outputSize);
     }
@@ -126,9 +164,9 @@ public final class OtrCryptoEngine4 {
      * @return Returns derived scalar value.
      */
     @Nonnull
-    public static BigInteger hashToScalar(@Nonnull final byte[] d) {
+    public static BigInteger hashToScalar(@Nonnull final KDFUsage usageID, @Nonnull final byte[] d) {
         // "Compute h = KDF_1(d, 64) as an unsigned value, little-endian."
-        final byte[] hashedD = kdf1(d, HASH_TO_SCALAR_LENGTH_BYTES);
+        final byte[] hashedD = kdf1(usageID, d, HASH_TO_SCALAR_LENGTH_BYTES);
         final BigInteger h = decodeLittleEndian(hashedD);
         // "Return h (mod q)"
         return h.mod(primeOrder());
@@ -277,7 +315,6 @@ public final class OtrCryptoEngine4 {
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
         try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            buffer.write(USAGE_ID_RING_SIGNATURE);
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
             A1.encodeTo(buffer);
@@ -287,7 +324,7 @@ public final class OtrCryptoEngine4 {
             T2.encodeTo(buffer);
             T3.encodeTo(buffer);
             buffer.write(m, 0, m.length);
-            c = hashToScalar(buffer.toByteArray());
+            c = hashToScalar(AUTH, buffer.toByteArray());
         } catch (final IOException e) {
             throw new IllegalStateException("Failed to write point to buffer.", e);
         }
@@ -345,7 +382,6 @@ public final class OtrCryptoEngine4 {
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
         try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            buffer.write(USAGE_ID_RING_SIGNATURE);
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
             A1.encodeTo(buffer);
@@ -355,7 +391,7 @@ public final class OtrCryptoEngine4 {
             T2.encodeTo(buffer);
             T3.encodeTo(buffer);
             buffer.write(m, 0, m.length);
-            c = hashToScalar(buffer.toByteArray());
+            c = hashToScalar(AUTH, buffer.toByteArray());
         } catch (final IOException e) {
             throw new IllegalStateException("Failed to write point to buffer.", e);
         }
