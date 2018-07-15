@@ -194,7 +194,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                     break;
             }
         }
-        return content.message;
+        return content.message.length() > 0 ? content.message : null;
     }
 
     @Nonnull
