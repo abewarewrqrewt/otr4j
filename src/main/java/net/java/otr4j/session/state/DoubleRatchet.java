@@ -57,7 +57,7 @@ final class DoubleRatchet implements AutoCloseable {
 
     private final SharedSecret4 sharedSecret;
 
-    private final byte[] rootKey = new byte[ROOT_KEY_LENGTH_BYTES];
+    private final byte[] rootKey;
 
     private final byte[] sendingChainKey = new byte[CHAIN_KEY_LENGTH_BYTES];
 
@@ -86,9 +86,11 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private int pn = 0;
 
-    DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret) {
+    DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret,
+                  @Nonnull final byte[] initialRootKey) {
         this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
+        this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);
     }
 
     @Override
@@ -159,7 +161,7 @@ final class DoubleRatchet implements AutoCloseable {
         }
         LOGGER.log(Level.FINEST, "Rotating root key and sending chain key for ratchet " + this.i);
         this.j = 0;
-        final byte[] previousRootKey = derivePreviousRootKey();
+        final byte[] previousRootKey = this.rootKey.clone();
         final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateOurKeys(performDHRatchet);
         final byte[] newK = this.sharedSecret.getK();
@@ -207,7 +209,7 @@ final class DoubleRatchet implements AutoCloseable {
         LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet " + this.i);
         this.needSenderKeyRotation = true;
         this.k = 0;
-        final byte[] previousRootKey = derivePreviousRootKey();
+        final byte[] previousRootKey = this.rootKey.clone();
         final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
         final byte[] newK = this.sharedSecret.getK();
@@ -219,13 +221,6 @@ final class DoubleRatchet implements AutoCloseable {
         this.j = 0;
         this.k = 0;
         this.i += 1;
-    }
-
-    // FIXME need to clear returned root key after use
-    @Nonnull
-    private byte[] derivePreviousRootKey() {
-        requireNotClosed();
-        return this.i == 0 ? this.sharedSecret.getK() : this.rootKey.clone();
     }
 
     private void requireNotClosed() {

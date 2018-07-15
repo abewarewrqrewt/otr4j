@@ -25,6 +25,8 @@ import java.util.logging.Level;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SSID;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.SharedSecret4.generateK;
+import static net.java.otr4j.crypto.SharedSecret4.generateSSID;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
@@ -37,7 +39,6 @@ import static org.bouncycastle.util.Arrays.clear;
 // TODO Verify that old MACs are received ... as a way to verify your own deniability property.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
-    private static final int SSID_LENGTH_BYTES = 8;
     private static final int DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES = 64;
 
     // TODO duplicate information, can we simplify this without breaking all structure?
@@ -45,15 +46,16 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private static final int VERSION = Session.OTRv.FOUR;
 
-    private final byte[] ssid = new byte[SSID_LENGTH_BYTES];
+    private final byte[] ssid;
 
     private final DoubleRatchet ratchet;
 
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         super(context.getSessionID(), context.getHost());
+        this.ssid = generateSSID(context.secureRandom(), params);
+        final byte[] exchangeK = generateK(context.secureRandom(), params);
         final SharedSecret4 sharedSecret = initialize(context.secureRandom(), params);
-        kdf1(this.ssid, 0, SSID, sharedSecret.getK(), SSID_LENGTH_BYTES);
-        this.ratchet = new DoubleRatchet(context.secureRandom(), sharedSecret);
+        this.ratchet = new DoubleRatchet(context.secureRandom(), sharedSecret, exchangeK);
     }
 
     @Override

@@ -35,6 +35,8 @@ public class DoubleRatchetTest {
 
     private static final BigInteger THEIR_NEXT_DH_PUBLIC_KEY;
 
+    private static final byte[] INITIAL_K = new byte[64];
+
     static {
         final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
@@ -43,39 +45,45 @@ public class DoubleRatchetTest {
         SHARED_SECRET = SharedSecret4TestUtils.create(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey, theirECDHPublicKey);
         THEIR_NEXT_ECDH_PUBLIC_KEY = ECDHKeyPair.generate(RANDOM).getPublicKey();
         THEIR_NEXT_DH_PUBLIC_KEY = DHKeyPair.generate(RANDOM).getPublicKey();
+        RANDOM.nextBytes(INITIAL_K);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructDoubleRatchetNullSecureRandom() {
-        new DoubleRatchet(null, SHARED_SECRET);
+        new DoubleRatchet(null, SHARED_SECRET, INITIAL_K);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructDoubleRatchetNullSharedSecret() {
-        new DoubleRatchet(RANDOM, null);
+        new DoubleRatchet(RANDOM, null, INITIAL_K);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructDoubleRatchetNullInitialRootKey() {
+        new DoubleRatchet(RANDOM, SHARED_SECRET, null);
     }
 
     @Test
     public void testConstructDoubleRatchet() {
-        new DoubleRatchet(RANDOM, SHARED_SECRET);
+        new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testGenerateBeforeRotationFails() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.generateSendingKeys();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testGenerateRotateBeforeReception() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.rotateSenderKeys();
         ratchet.rotateSenderKeys();
     }
 
     @Test
     public void testGenerateReceivingMessageKeys() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.rotateSenderKeys();
         final MessageKeys keys = ratchet.generateReceivingKeys(ratchet.getI()-1, ratchet.getK());
         assertNotNull(keys);
@@ -84,7 +92,7 @@ public class DoubleRatchetTest {
 
     @Test
     public void testRotateSenderKeysDoesNotProduceNullReceiverKeys() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.rotateSenderKeys();
         final MessageKeys keys = ratchet.generateReceivingKeys(ratchet.getI()-1, ratchet.getK());
         assertNotNull(keys);
@@ -93,7 +101,7 @@ public class DoubleRatchetTest {
 
     @Test
     public void testGenerateSendingMessageKeys() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.rotateSenderKeys();
         final MessageKeys keys = ratchet.generateSendingKeys();
         assertNotNull(keys);
@@ -104,7 +112,7 @@ public class DoubleRatchetTest {
     public void testMessageKeysCloseDoesNotZeroReturnedKeys() {
         final MessageKeys keys;
         final byte[] extraKey;
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             ratchet.rotateSenderKeys();
             keys = ratchet.generateSendingKeys();
             extraKey = keys.getExtraSymmetricKey();
@@ -117,7 +125,7 @@ public class DoubleRatchetTest {
     @Test
     public void testMessageKeysEncryptDecrypt() {
         final byte[] message = "Hello World!".getBytes(UTF_8);
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             ratchet.rotateSenderKeys();
             try (final MessageKeys keys = ratchet.generateSendingKeys()) {
                 final Result encrypted = keys.encrypt(message);
@@ -131,7 +139,7 @@ public class DoubleRatchetTest {
 
     @Test
     public void testRepeatedCloseIsAllowed() {
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             ratchet.rotateSenderKeys();
             final MessageKeys keys = ratchet.generateSendingKeys();
             keys.close();
@@ -143,7 +151,7 @@ public class DoubleRatchetTest {
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsEncryption() {
         final byte[] message = "Hello World!".getBytes(UTF_8);
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             final MessageKeys keys = ratchet.generateSendingKeys();
             keys.close();
             keys.encrypt(message);
@@ -153,7 +161,7 @@ public class DoubleRatchetTest {
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsDecryption() {
         final byte[] message = "Hello World!".getBytes(UTF_8);
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             final MessageKeys keys;
             final Result encrypted;
             try {
@@ -172,7 +180,7 @@ public class DoubleRatchetTest {
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsAuthenticate() {
         final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             final MessageKeys keys = ratchet.generateSendingKeys();
             keys.close();
             keys.authenticate(message);
@@ -182,7 +190,7 @@ public class DoubleRatchetTest {
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsVerify() throws MessageKeys.VerificationException {
         final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             final MessageKeys keys;
             final byte[] authenticator;
             try {
@@ -200,7 +208,7 @@ public class DoubleRatchetTest {
 
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsGetExtraSymmetricKey() {
-        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET)) {
+        try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             ratchet.rotateSenderKeys();
             final MessageKeys keys = ratchet.generateSendingKeys();
             keys.close();

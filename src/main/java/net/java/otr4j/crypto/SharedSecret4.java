@@ -15,6 +15,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DH_FIRST_EPHEMERAL;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ECDH_FIRST_EPHEMERAL;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SHARED_SECRET;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SSID;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.THIRD_BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static org.bouncycastle.util.Arrays.clear;
@@ -30,6 +31,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 // FIXME write tests for testing key rotation.
 public final class SharedSecret4 implements AutoCloseable {
 
+    private static final int SSID_LENGTH_BYTES = 8;
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
 
@@ -51,18 +53,6 @@ public final class SharedSecret4 implements AutoCloseable {
     private final byte[] k = new byte[K_LENGTH_BYTES];
 
     /**
-     * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
-     */
-    @Nonnull
-    private DHKeyPair dhKeyPair;
-
-    /**
-     * Other party's DH public key.
-     */
-    @Nonnull
-    private BigInteger theirDHPublicKey;
-
-    /**
      * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
      * {@link nl.dannyvanheumen.joldilocks.Point}.
      */
@@ -70,10 +60,29 @@ public final class SharedSecret4 implements AutoCloseable {
     private ECDHKeyPair ecdhKeyPair;
 
     /**
-     * Other party's ECDH public key.
+     * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
      */
     @Nonnull
+    private DHKeyPair dhKeyPair;
+
+    /**
+     * Other party's ECDH public key.
+     */
     private Point theirECDHPublicKey;
+
+    /**
+     * Other party's DH public key.
+     */
+    private BigInteger theirDHPublicKey;
+
+    SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
+                  @Nonnull final ECDHKeyPair ourECDHKeyPair) {
+        this.random = requireNonNull(random);
+        this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
+        this.dhKeyPair = requireNonNull(ourDHKeyPair);
+        this.theirECDHPublicKey = null;
+        this.theirDHPublicKey = null;
+    }
 
     SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
                           @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final BigInteger theirDHPublicKey,
@@ -95,6 +104,21 @@ public final class SharedSecret4 implements AutoCloseable {
         clear(this.braceKey);
         clear(this.k);
         // FIXME securely clear other fields
+    }
+
+    @Nonnull
+    public static byte[] generateSSID(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
+        try (final SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(),
+            params.getEcdhKeyPair(), params.getA(), params.getX())) {
+            return kdf1(SSID, exchangeSecrets.getK(), SSID_LENGTH_BYTES);
+        }
+    }
+
+    @Nonnull
+    public static byte[] generateK(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
+        final SharedSecret4 sharedSecret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
+            params.getA(), params.getX());
+        return sharedSecret.getK();
     }
 
     /**
@@ -125,7 +149,7 @@ public final class SharedSecret4 implements AutoCloseable {
         }
         switch (params.getInitializationComponent()) {
             case OURS:
-                return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, params.getA(), params.getX());
+                return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair);
             case THEIRS:
                 return new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
                     initialDHKeyPair.getPublicKey(), initialECDHKeyPair.getPublicKey());
@@ -148,6 +172,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @return Mixed shared secret K.
      */
     public byte[] getK() {
+        requireInitializationCompleted();
         return this.k.clone();
     }
 
@@ -157,6 +182,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param regenerateDHKeyPair Indicates whether we need to regenerate the DH key pair as well.
      */
     public void rotateOurKeys(final boolean regenerateDHKeyPair) {
+        requireInitializationCompleted();
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(this.random);
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         if (regenerateDHKeyPair) {
@@ -186,6 +212,7 @@ public final class SharedSecret4 implements AutoCloseable {
     }
 
     private void regenerateK(final boolean performDHRatchet) {
+        requireInitializationCompleted();
         final byte[] k_ecdh;
         try {
             k_ecdh = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encode();
@@ -202,5 +229,11 @@ public final class SharedSecret4 implements AutoCloseable {
         }
         kdf1(this.k, 0, SHARED_SECRET, concatenate(k_ecdh, this.braceKey), K_LENGTH_BYTES);
         clear(k_ecdh);
+    }
+
+    private void requireInitializationCompleted() {
+        if (this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
+            throw new IllegalStateException("Shared secrets have not been fully initialized. Other party's public keys need to be rotated first.");
+        }
     }
 }
