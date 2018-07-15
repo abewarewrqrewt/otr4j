@@ -360,11 +360,15 @@ public class SessionTest {
         final Conversation c = new Conversation();
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        // Initiate OTR by sending query message.
         c.hostAlice.sendRequest();
         assertNull(c.hostBob.receiveMessage());
+        // Expecting Identity message from Bob.
         assertNull(c.hostAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
         assertNull(c.hostBob.receiveMessage());
         assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // Expecting AUTH_I message from Bob.
         assertNull(c.hostAlice.receiveMessage());
         assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
         // FIXME extend test with final receive such that we are sure that both DoubleRatchets are fully initialized.

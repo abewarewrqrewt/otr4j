@@ -79,6 +79,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         }
         if (message instanceof AuthIMessage) {
             handleAuthIMessage(context, (AuthIMessage) message);
+            // FIXME need to send heartbeat message or queued user message in order to finalize Double Ratchet for other party.
             return null;
         }
         // OTR: "Ignore the message."
@@ -119,7 +120,6 @@ final class StateAwaitingAuthI extends AbstractAuthState {
                 this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
             context.secure(params);
         } finally {
-            // TODO should we reset state with or without preserving previous query tag?
             context.setState(StateInitial.empty());
         }
     }
