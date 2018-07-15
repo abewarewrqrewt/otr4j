@@ -111,8 +111,8 @@ public final class SharedSecret4 implements AutoCloseable {
         // Generate common shared secret using Bob's information stored in security parameters.
         final ECDHKeyPair initialECDHKeyPair;
         {
-            final byte[] r = new byte[SECRET_KEY_LENGTH_BYTES + 1];
-            kdf1(r, 1, ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES);
+            final byte[] r = new byte[SECRET_KEY_LENGTH_BYTES];
+            kdf1(r, 0, ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES);
             initialECDHKeyPair = ECDHKeyPair.generate(r);
         }
         // Generate common shared secret using Bob's information stored in security parameters.
