@@ -18,7 +18,7 @@ public final class TLV {
     /**
      * Empty array, for efficient reuse.
      */
-    public static final byte[] EMPTY = new byte[0];
+    public static final byte[] EMPTY_BODY = new byte[0];
 
     /**
      * This is just padding for the encrypted message, and should be ignored.

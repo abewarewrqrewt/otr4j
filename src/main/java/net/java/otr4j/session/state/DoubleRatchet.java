@@ -246,6 +246,7 @@ final class DoubleRatchet implements AutoCloseable {
      * <p>
      * NOTE: Please ensure that message keys are appropriately cleared by calling {@link #close()} after use.
      */
+    // FIXME do not pre-calculate the MAC. It can be derived on-the-fly from the MKenc.
     // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
     // TODO write tests that inspect private fields to discover if cleaning was successful.
     static final class MessageKeys implements AutoCloseable {

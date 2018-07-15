@@ -42,7 +42,7 @@ abstract class AbstractStateEncrypted extends AbstractState {
 
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY);
+        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
         final AbstractEncodedMessage m = transformSending(context, "", Collections.singletonList(disconnectTlv));
         try {
             context.injectMessage(m);
