@@ -116,6 +116,7 @@ public final class OtrCryptoEngine4 {
      * @param outputSize Expected output size.
      * @return Returns byte-array with KDF_1 result.
      */
+    // FIXME trace input to KDF1 that may not be cleared appropriately.
     public static byte[] kdf1(@Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
         final byte[] result = new byte[outputSize];
@@ -133,6 +134,7 @@ public final class OtrCryptoEngine4 {
      * @param offset     The offset position to start writing to the destination byte array.
      * @param input      The input data to KDF_1.
      */
+    // FIXME trace input to KDF1 that may not be cleared appropriately.
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID,
                             @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);
