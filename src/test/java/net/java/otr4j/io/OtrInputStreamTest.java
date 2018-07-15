@@ -338,7 +338,7 @@ public class OtrInputStreamTest {
     public void testReadPointShifted() throws IOException, OtrCryptoException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeByte(RANDOM.nextInt());
+            out.writeByte(0xff);
             out.writePoint(keypair.getPublicKey());
             data = out.toByteArray();
         }
