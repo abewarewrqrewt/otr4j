@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.shake256;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
@@ -24,7 +25,7 @@ public final class ECDHKeyPair {
     /**
      * Length of the secret key in bytes.
      */
-    static final int LENGTH_SECRET_KEY_BYTES = 57;
+    static final int SECRET_KEY_LENGTH_BYTES = 57;
 
     private final BigInteger secretKey;
 
@@ -46,8 +47,7 @@ public final class ECDHKeyPair {
     @Nonnull
     public static ECDHKeyPair generate(@Nonnull final SecureRandom random) {
         //  - pick a random value r (57 bytes)
-        //  - generate 'h' = KDF_1(0x01 || r, 57).
-        final byte[] r = new byte[LENGTH_SECRET_KEY_BYTES + 1];
+        final byte[] r = new byte[SECRET_KEY_LENGTH_BYTES];
         random.nextBytes(r);
         return generate(r);
     }
@@ -59,21 +59,27 @@ public final class ECDHKeyPair {
      *         process.)
      * @return Returns the generated ECDH key pair.
      */
-    // FIXME verify if spec has changed on pruning instructions for generating ECDH keys.
-    // FIXME generation algorithm has changed in recent spec changes.
     @Nonnull
     public static ECDHKeyPair generate(@Nonnull final byte[] r) {
-        requireLengthExactly(LENGTH_SECRET_KEY_BYTES + 1, r);
-        r[0] = 0x01;
-        final byte[] h = new byte[57];
-        shake256(h, 0, r, LENGTH_SECRET_KEY_BYTES);
+        //  - pick a random value r (57 bytes)
+        assert !allZeroBytes(r) : "Expected 57 bytes of random data, instead of all zeroes.";
+        requireLengthExactly(SECRET_KEY_LENGTH_BYTES, r);
+        //  - Hash the 'r' using 'SHAKE-256(r, 114)'. Store the digest in a
+        //    114-byte buffer. Only the lower 57 bytes (denoted 'h') are used for
+        //    generating the public key.
+        final byte[] h = new byte[SECRET_KEY_LENGTH_BYTES];
+        {
+            final byte[] buffer = new byte[114];
+            shake256(buffer, 0, r, buffer.length);
+            System.arraycopy(buffer, 0, h, 0, SECRET_KEY_LENGTH_BYTES);
+        }
         //  - prune 'h': the two least significant bits of the first byte are cleared, all
         //    eight bits of the last byte are cleared, and the highest bit of the second
         //    to last byte is set.
+        assert !allZeroBytes(h) : "Expected random data, instead of all-zero byte-array.";
         h[0] &= 0b11111100;
-        h[56] = 0;
-        // FIXME verify that bit manipulations are correct. Previously was incorrect and corrected on-the-fly.
-        h[55] |= 0b10000000;
+        h[SECRET_KEY_LENGTH_BYTES-1] = 0;
+        h[SECRET_KEY_LENGTH_BYTES-2] |= 0b10000000;
         //  - Interpret the buffer as the little-endian integer, forming the secret scalar
         //    's'.
         final BigInteger s = decodeLittleEndian(h);

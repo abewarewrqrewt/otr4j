@@ -133,7 +133,8 @@ public final class OtrCryptoEngine4 {
      * @param offset     The offset position to start writing to the destination byte array.
      * @param input      The input data to KDF_1.
      */
-    public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
+    public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID,
+                            @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);
         requireAtLeast(0, outputSize);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
@@ -143,7 +144,14 @@ public final class OtrCryptoEngine4 {
         digest.doFinal(dst, offset, outputSize);
     }
 
-    // TODO revew if this method is really needed? (Only needed for ECDHKeyPair AFAICT.)
+    /**
+     * SHAKE-256 hash function.
+     *
+     * @param dst        The destination for the hash digest.
+     * @param offset     The offset on which to start writing the digest.
+     * @param input      The input data for the hash function.
+     * @param outputSize The output size of the digest.
+     */
     static void shake256(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);
         requireAtLeast(0, outputSize);

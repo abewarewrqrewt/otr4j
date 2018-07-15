@@ -10,7 +10,7 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
-import static net.java.otr4j.crypto.ECDHKeyPair.LENGTH_SECRET_KEY_BYTES;
+import static net.java.otr4j.crypto.ECDHKeyPair.SECRET_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DH_FIRST_EPHEMERAL;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ECDH_FIRST_EPHEMERAL;
@@ -111,8 +111,8 @@ public final class SharedSecret4 implements AutoCloseable {
         // Generate common shared secret using Bob's information stored in security parameters.
         final ECDHKeyPair initialECDHKeyPair;
         {
-            final byte[] r = new byte[LENGTH_SECRET_KEY_BYTES + 1];
-            kdf1(r, 1, ECDH_FIRST_EPHEMERAL, k, LENGTH_SECRET_KEY_BYTES);
+            final byte[] r = new byte[SECRET_KEY_LENGTH_BYTES + 1];
+            kdf1(r, 1, ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES);
             initialECDHKeyPair = ECDHKeyPair.generate(r);
         }
         // Generate common shared secret using Bob's information stored in security parameters.
