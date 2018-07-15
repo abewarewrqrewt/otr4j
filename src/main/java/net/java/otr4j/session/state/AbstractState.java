@@ -49,7 +49,7 @@ abstract class AbstractState implements State {
             // TODO this is not a formal heartbeat message because we do not set the ignoreUnreadable flag.
             context.injectMessage(encrypted.transformSending(context, "", Collections.<TLV>emptyList()));
         } else {
-            LOGGER.log(Level.FINE, "We initialized OUR component of the Double Ratchet. We are still missing the other party's public key material, hence we cannot send messages yet.");
+            LOGGER.log(Level.FINE, "We initialized OUR component of the Double Ratchet. We are still missing the other party's public key material, hence we cannot send messages yet. Now we wait to receive a message from the other party.");
         }
     }
 }

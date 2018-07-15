@@ -26,6 +26,19 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 
+/**
+ * The Double Ratchet. (OTRv4)
+ * <p>
+ * The mechanism according to which the key rotations are performed. The rotation happen in lock-step between the two
+ * parties. The Double Ratchet recognizes 3 types of keys: root key, chain key (sending, receiving) and message keys.
+ * <p>
+ * Key rotations consist of 2 cases:
+ * <ol>
+ * <li>Every third ratchet, starting at the first ratchet: rotate the DH key and derive key material from the new DH key
+ * pair.</li>
+ * <li>Other two ratchets: rotate key material based on symmetric key (brace key) only.</li>
+ * </ol>
+ */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
 // TODO Currently we do not keep track of used MACs for later reveal.
 // FIXME need to clean up DoubleRatchet after use. (Zero memory containing secrets.)
@@ -242,12 +255,11 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     /**
-     * Encryption, MAC and Extra Symmetric key keys derived from chain key.
+     * Encrypt/decrypt and authenticate/verify using the secret key material in the MessageKeys.
      * <p>
      * NOTE: Please ensure that message keys are appropriately cleared by calling {@link #close()} after use.
      */
-    // FIXME do not pre-calculate the MAC. It can be derived on-the-fly from the MKenc.
-    // TODO consider delaying calculation of extra symmetric key (and possibly mkEnc and mkMac) to reduce the number of calculations.
+    // TODO consider delaying calculation of extra symmetric key and mkEnc to reduce the number of calculations.
     // TODO write tests that inspect private fields to discover if cleaning was successful.
     static final class MessageKeys implements AutoCloseable {
 
@@ -276,11 +288,6 @@ final class DoubleRatchet implements AutoCloseable {
         private final byte[] encrypt;
 
         /**
-         * MAC key. (MUST be cleared after use.)
-         */
-        private final byte[] mac;
-
-        /**
          * Extra Symmetric Key. (MUST be cleared after use.)
          */
         private final byte[] extraSymmetricKey;
@@ -297,17 +304,14 @@ final class DoubleRatchet implements AutoCloseable {
          * @param ratchetId         The ratchet ID on which this Message Keys set is based.
          * @param messageId         The message ID on which this Message Keys set is based.
          * @param encrypt           message key for encryption
-         * @param mac               message key for message authentication
          * @param extraSymmetricKey extra symmetric key
          */
         private MessageKeys(@Nonnull final SecureRandom random, final int ratchetId, final int messageId,
-                            @Nonnull final byte[] encrypt, @Nonnull final byte[] mac,
-                            @Nonnull final byte[] extraSymmetricKey) {
+                            @Nonnull final byte[] encrypt, @Nonnull final byte[] extraSymmetricKey) {
             this.random = requireNonNull(random);
             this.ratchetId = ratchetId;
             this.messageId = messageId;
             this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
-            this.mac = requireLengthExactly(MK_MAC_LENGTH_BYTES, mac);
             this.extraSymmetricKey = requireLengthExactly(EXTRA_SYMMETRIC_KEY_LENGTH_BYTES, extraSymmetricKey);
         }
 
@@ -322,12 +326,9 @@ final class DoubleRatchet implements AutoCloseable {
                                             final int messageId, @Nonnull final byte[] chainKey) {
             final byte[] encrypt = new byte[MK_ENC_LENGTH_BYTES];
             kdf1(encrypt, 0, MESSAGE_KEY, chainKey, MK_ENC_LENGTH_BYTES);
-            final byte[] mac = new byte[MK_MAC_LENGTH_BYTES];
-            // TODO consider delaying calculation of MAC key to when needed. (Is derived from MKenc.)
-            kdf1(mac, 0, MAC_KEY, encrypt, MK_MAC_LENGTH_BYTES);
             final byte[] extraSymmetricKey = new byte[EXTRA_SYMMETRIC_KEY_LENGTH_BYTES];
             kdf1(extraSymmetricKey, 0, EXTRA_SYMMETRIC_KEY, chainKey, EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
-            return new MessageKeys(random, ratchetId, messageId, encrypt, mac, extraSymmetricKey);
+            return new MessageKeys(random, ratchetId, messageId, encrypt, extraSymmetricKey);
         }
 
         /**
@@ -336,7 +337,6 @@ final class DoubleRatchet implements AutoCloseable {
         @Override
         public void close() {
             clear(this.encrypt);
-            clear(this.mac);
             clear(this.extraSymmetricKey);
             this.closed = true;
         }
@@ -402,7 +402,12 @@ final class DoubleRatchet implements AutoCloseable {
         @Nonnull
         byte[] authenticate(@Nonnull final byte[] dataMessageSectionsHash) {
             requireNotClosed();
-            return kdf1(AUTHENTICATOR, concatenate(this.mac, dataMessageSectionsHash), AUTHENTICATOR_LENGTH_BYTES);
+            final byte[] mac = generateMAC();
+            try {
+                return kdf1(AUTHENTICATOR, concatenate(mac, dataMessageSectionsHash), AUTHENTICATOR_LENGTH_BYTES);
+            } finally {
+                clear(mac);
+            }
         }
 
         /**
@@ -415,10 +420,19 @@ final class DoubleRatchet implements AutoCloseable {
             throws VerificationException {
             requireNotClosed();
             final byte[] expectedAuthenticator = authenticate(dataMessageSectionHash);
-            if (!constantTimeEquals(expectedAuthenticator, authenticator)) {
-                throw new VerificationException("The authenticator is invalid.");
+            try {
+                if (!constantTimeEquals(expectedAuthenticator, authenticator)) {
+                    throw new VerificationException("The authenticator is invalid.");
+                }
+            } finally {
+                clear(expectedAuthenticator);
             }
             // FIXME add MAC key to Revealed MACs after use.
+        }
+
+        @Nonnull
+        private byte[] generateMAC() {
+            return kdf1(MAC_KEY, this.encrypt, MK_MAC_LENGTH_BYTES);
         }
 
         /**
