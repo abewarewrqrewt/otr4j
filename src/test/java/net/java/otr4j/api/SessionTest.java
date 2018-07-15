@@ -395,31 +395,29 @@ public class SessionTest {
 
         for (int i = 0; i < 25; i++) {
             LOGGER.info("Iteration: " + i);
-            final String messageBob;
-            {
-                final byte[] arbitraryContentBob = new byte[RANDOM.nextInt(300)];
-                RANDOM.nextBytes(arbitraryContentBob);
-                messageBob = toBase64String(arbitraryContentBob);
-            }
+            // Bob sending a message (alternating, to enable ratchet)
+            final String messageBob = randomMessage(300);
             c.hostBob.sendMessage(messageBob);
-            if (messageBob.length() <= 0) {
-                assertNull(c.hostAlice.receiveMessage());
-            } else {
-                assertEquals(messageBob, c.hostAlice.receiveMessage());
-            }
-            final String messageAlice;
-            {
-                final byte[] arbitraryContentAlice = new byte[RANDOM.nextInt(300)];
-                RANDOM.nextBytes(arbitraryContentAlice);
-                messageAlice = toBase64String(arbitraryContentAlice);
-            }
+            assertMessage(messageBob, c.hostAlice.receiveMessage());
+            // Alice sending a message (alternating, to enable ratchet)
+            final String messageAlice = randomMessage(300);
             c.hostAlice.sendMessage(messageAlice);
-            if (messageAlice.length() <= 0) {
-                assertNull(c.hostBob.receiveMessage());
-            } else {
-                assertEquals(messageAlice, c.hostBob.receiveMessage());
-            }
+            assertMessage(messageAlice, c.hostBob.receiveMessage());
         }
+    }
+
+    private static void assertMessage(final String expected, final String actual) {
+        if (expected.length() == 0) {
+            assertNull(actual);
+        } else {
+            assertEquals(expected, actual);
+        }
+    }
+
+    private static String randomMessage(final int maxLength) {
+        final byte[] arbitraryContent = new byte[RANDOM.nextInt(maxLength)];
+        RANDOM.nextBytes(arbitraryContent);
+        return toBase64String(arbitraryContent);
     }
 
     /**
