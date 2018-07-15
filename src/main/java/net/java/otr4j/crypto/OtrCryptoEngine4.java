@@ -20,6 +20,7 @@ import java.security.SecureRandom;
 import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTH;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FINGERPRINT;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
@@ -103,15 +104,9 @@ public final class OtrCryptoEngine4 {
      * @param dst       The destination byte array to which to write the fingerprint.
      * @param publicKey The public key to fingerprint.
      */
-    // FIXME review fingerprint implementation.
     public static void fingerprint(@Nonnull final byte[] dst, @Nonnull final Point publicKey) {
         requireNonNull(dst);
-        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
-        final byte[] encodedPublicKey = publicKey.encode();
-        digest.update(encodedPublicKey, 0, encodedPublicKey.length);
-        if (digest.doFinal(dst, 0, FINGERPRINT_LENGTH_BYTES) != FINGERPRINT_LENGTH_BYTES) {
-            throw new IllegalStateException("Expected exactly " + FINGERPRINT_LENGTH_BYTES + " bytes to be produced for the fingerprint.");
-        }
+        kdf1(dst, 0, FINGERPRINT, publicKey.encode(), FINGERPRINT_LENGTH_BYTES);
     }
 
     /**
@@ -139,6 +134,7 @@ public final class OtrCryptoEngine4 {
      * @param input      The input data to KDF_1.
      */
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
+        requireNonNull(dst);
         requireAtLeast(0, outputSize);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(OTR4_PREFIX, 0, OTR4_PREFIX.length);
@@ -149,6 +145,7 @@ public final class OtrCryptoEngine4 {
 
     // TODO revew if this method is really needed? (Only needed for ECDHKeyPair AFAICT.)
     static void shake256(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
+        requireNonNull(dst);
         requireAtLeast(0, outputSize);
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(input, 0, input.length);
