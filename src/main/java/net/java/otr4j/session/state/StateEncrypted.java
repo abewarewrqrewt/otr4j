@@ -221,7 +221,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
                     break;
             }
         }
-        return content.message;
+        return content.message.length() > 0 ? content.message : null;
     }
 
     @Nullable
