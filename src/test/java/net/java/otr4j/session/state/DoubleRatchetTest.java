@@ -60,6 +60,19 @@ public class DoubleRatchetTest {
         new DoubleRatchet(RANDOM, SHARED_SECRET);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testGenerateBeforeRotationFails() {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        ratchet.generateSendingKeys();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGenerateRotateBeforeReception() {
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
+        ratchet.rotateSenderKeys();
+        ratchet.rotateSenderKeys();
+    }
+
     @Test
     public void testGenerateReceivingMessageKeys() {
         final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET);
