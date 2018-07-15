@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
+import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertThat;
 // FIXME extend with tests for alternating messaging in order to verify correct behavior of ratcheting/key rotation.
 public class SessionTest {
 
+    private static final Logger LOGGER = Logger.getLogger(SessionTest.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Before
@@ -370,6 +372,54 @@ public class SessionTest {
         assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
         assertNull(c.hostBob.receiveMessage());
+    }
+
+    @Test
+    public void testOTR4ExtensiveMessagingToVerifyRatcheting() throws OtrException {
+        final Conversation c = new Conversation();
+        c.hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.hostAlice.sendRequest();
+        assertNull(c.hostBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.hostBob.receiveMessage());
+
+        for (int i = 0; i < 25; i++) {
+            LOGGER.info("Iteration: " + i);
+            final String messageBob;
+            {
+                final byte[] arbitraryContentBob = new byte[RANDOM.nextInt(300)];
+                RANDOM.nextBytes(arbitraryContentBob);
+                messageBob = toBase64String(arbitraryContentBob);
+            }
+            c.hostBob.sendMessage(messageBob);
+            if (messageBob.length() <= 0) {
+                assertNull(c.hostAlice.receiveMessage());
+            } else {
+                assertEquals(messageBob, c.hostAlice.receiveMessage());
+            }
+            final String messageAlice;
+            {
+                final byte[] arbitraryContentAlice = new byte[RANDOM.nextInt(300)];
+                RANDOM.nextBytes(arbitraryContentAlice);
+                messageAlice = toBase64String(arbitraryContentAlice);
+            }
+            c.hostAlice.sendMessage(messageAlice);
+            if (messageAlice.length() <= 0) {
+                assertNull(c.hostBob.receiveMessage());
+            } else {
+                assertEquals(messageAlice, c.hostBob.receiveMessage());
+            }
+        }
     }
 
     /**

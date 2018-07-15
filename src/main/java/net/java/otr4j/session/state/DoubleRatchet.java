@@ -8,6 +8,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTHENTICATOR;
@@ -30,7 +32,10 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // TODO consider adding a counter/semaphore in order to verify that "at most one" (depending on circumstances) set of message keys is active at a time. Ensures that message keys are appropriately cleaned after use.
 // FIXME closing ratchet should also close any remaining message keys
 // FIXME finish writing unit tests after ratchet implementation is finished.
+// TODO is it possible to use the same Chain Key for more than 1 message?
 final class DoubleRatchet implements AutoCloseable {
+
+    private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
 
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
     private static final int CHAIN_KEY_LENGTH_BYTES = 64;
@@ -122,6 +127,7 @@ final class DoubleRatchet implements AutoCloseable {
         if (this.needSenderKeyRotation) {
             throw new IllegalStateException("Key rotation needs to be performed before new sending keys can be generated.");
         }
+        LOGGER.log(Level.FINEST, "Generating sending message keys for ratchet " + (this.i - 1) + ", message " + this.j);
         final MessageKeys keys = MessageKeys.generate(this.random, this.i - 1, this.j, this.sendingChainKey);
         kdf1(this.sendingChainKey, 0, NEXT_CHAIN_KEY, this.sendingChainKey, CHAIN_KEY_LENGTH_BYTES);
         this.j += 1;
@@ -138,6 +144,7 @@ final class DoubleRatchet implements AutoCloseable {
         if (!this.needSenderKeyRotation) {
             throw new IllegalStateException("Rotation is only allowed after new public key material was received from the other party.");
         }
+        LOGGER.log(Level.FINEST, "Rotating root key and sending chain key for ratchet " + this.i);
         this.j = 0;
         final byte[] previousRootKey = derivePreviousRootKey();
         final boolean performDHRatchet = this.i % 3 == 0;
@@ -165,6 +172,7 @@ final class DoubleRatchet implements AutoCloseable {
         if (this.i - 1 != ratchetId || this.k != messageId) {
             throw new UnsupportedOperationException("Retrieval of previous Message Keys has not been implemented yet. Only current Message Keys can be generated.");
         }
+        LOGGER.log(Level.FINEST, "Generating receiving message keys for ratchet " + ratchetId + ", message " + messageId);
         final MessageKeys keys = MessageKeys.generate(this.random, ratchetId, messageId, this.receivingChainKey);
         this.k += 1;
         kdf1(this.receivingChainKey, 0, NEXT_CHAIN_KEY, this.receivingChainKey, CHAIN_KEY_LENGTH_BYTES);
@@ -183,6 +191,7 @@ final class DoubleRatchet implements AutoCloseable {
     // FIXME preserve message keys in previous ratchet before rotating away.
     void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) {
         requireNotClosed();
+        LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet " + this.i);
         this.needSenderKeyRotation = true;
         this.k = 0;
         final byte[] previousRootKey = derivePreviousRootKey();
