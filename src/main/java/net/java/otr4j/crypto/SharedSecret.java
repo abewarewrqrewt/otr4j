@@ -57,9 +57,9 @@ public final class SharedSecret {
         return hash;
     }
 
-    // TODO consider replacing Arrays.equals with constant-time alternative. (Or alternatively, blocking use with exception.)
     @Override
     public boolean equals(Object obj) {
+        // FIXME we currently compare and accept same instance, is this really what we want? Shouldn't this be considered an issue?
         if (this == obj) {
             return true;
         }

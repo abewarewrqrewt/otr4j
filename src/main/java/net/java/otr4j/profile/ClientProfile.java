@@ -16,8 +16,6 @@ import static net.java.otr4j.util.Collections.requireElements;
 import static net.java.otr4j.util.Collections.requireMinElements;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
-// FIXME add support for multiple long-term keys with definite order. (Older keys before newer keys)
-// FIXME update Client Profile composition as specification has changed.
 public final class ClientProfile {
 
     /**
