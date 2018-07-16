@@ -344,10 +344,10 @@ public final class ClientProfilePayload implements OtrEncodable {
         /**
          * Transitional Signature (CLIENT-SIG)
          *
-         * This signature is defined as a signature over fields 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x006 and 0x007
-         * only.
+         * This signature is defined as a signature over fields 0x0001, 0x0002, 0x0003, 0x0004, 0x0005 and 0x006 only.
          */
-        TRANSITIONAL_SIGNATURE(0x0007);
+        // TODO verify that Transitional Signature type remains ID 0x0008. (i.e. 0x0007 is missing)
+        TRANSITIONAL_SIGNATURE(0x0008);
 
         private final int type;
 
