@@ -45,9 +45,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
 public final class ClientProfilePayload implements OtrEncodable {
 
-    // FIXME constant public key ID can probably be cleared once OTRv4 spec settles down on protocol design
-    private static final int SINGLE_LONG_TERM_PUBLIC_KEY_ID = 1;
-
     private final List<Field> fields;
 
     private final byte[] signature;
@@ -84,7 +81,7 @@ public final class ClientProfilePayload implements OtrEncodable {
                                             @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
-        fields.add(new ED448PublicKeyField(SINGLE_LONG_TERM_PUBLIC_KEY_ID, profile.getLongTermPublicKey()));
+        fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
         fields.add(new VersionsField(profile.getVersions()));
         fields.add(new ExpirationDateField(profile.getExpirationUnixTime()));
         final DSAPublicKey dsaPublicKey = profile.getDsaPublicKey();
@@ -139,12 +136,11 @@ public final class ClientProfilePayload implements OtrEncodable {
                     fields.add(new InstanceTagField(in.readInt()));
                     break;
                 case LONG_TERM_EdDSA_PUBLIC_KEY:
-                    final int identifier = in.readInt();
                     final int publicKeyType = in.readShort();
                     switch (publicKeyType) {
                         case ED448PublicKeyField.ED448_PUBLIC_KEY_TYPE:
                             final Point publicKey = in.readPoint();
-                            fields.add(new ED448PublicKeyField(identifier, publicKey));
+                            fields.add(new ED448PublicKeyField(publicKey));
                             break;
                         default:
                             throw new ProtocolException("Unsupported Ed448 public key type: " + publicKeyType);
@@ -411,18 +407,15 @@ public final class ClientProfilePayload implements OtrEncodable {
         private static final int ED448_PUBLIC_KEY_TYPE = 0x0010;
         private static final FieldType TYPE = FieldType.LONG_TERM_EdDSA_PUBLIC_KEY;
 
-        private final int identifier;
         private final Point publicKey;
 
-        private ED448PublicKeyField(final int identifier, @Nonnull final Point publicKey) {
-            this.identifier = identifier;
+        private ED448PublicKeyField(@Nonnull final Point publicKey) {
             this.publicKey = requireNonNull(publicKey);
         }
 
         @Override
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeShort(TYPE.type);
-            out.writeInt(this.identifier);
             out.writeShort(ED448_PUBLIC_KEY_TYPE);
             out.writePoint(this.publicKey);
         }
