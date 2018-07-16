@@ -139,6 +139,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         }
     }
 
+    // TODO why pass on public key if you're not going to use it? Seems senseless. Simplify.
     public void writeSignature(@Nonnull final byte[] signature, @Nonnull final PublicKey pubKey) {
         if (!pubKey.getAlgorithm().equals("DSA")) {
             throw new UnsupportedOperationException();
@@ -146,12 +147,14 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         this.out.write(signature, 0, signature.length);
     }
 
+    // FIXME convert to OtrEncodable
     public void writeMysteriousX(@Nonnull final SignatureX x) {
         writePublicKey(x.longTermPublicKey);
         writeInt(x.dhKeyID);
         writeSignature(x.signature, x.longTermPublicKey);
     }
 
+    // FIXME convert to OtrEncodable
     public void writeMysteriousM(@Nonnull final SignatureM m) {
         writeBigInt(m.localPubKey.getY());
         writeBigInt(m.remotePubKey.getY());
@@ -159,6 +162,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeInt(m.keyPairID);
     }
 
+    // FIXME convert to OtrEncodable
     public void writeMysteriousT(@Nonnull final MysteriousT t) {
         writeShort(t.protocolVersion);
         writeByte(t.messageType);
