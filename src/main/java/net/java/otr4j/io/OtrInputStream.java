@@ -163,7 +163,7 @@ public final class OtrInputStream extends FilterInputStream implements
      * @throws UnsupportedTypeException Thrown in case an unsupported public key type is encountered.
      */
     @Nonnull
-    public PublicKey readPublicKey() throws IOException, OtrCryptoException, UnsupportedTypeException {
+    public DSAPublicKey readPublicKey() throws IOException, OtrCryptoException, UnsupportedTypeException {
         final int type = readShort();
         switch (type) {
         case PUBLIC_KEY_TYPE_DSA:
@@ -222,7 +222,7 @@ public final class OtrInputStream extends FilterInputStream implements
      */
     @Nonnull
     public SignatureX readMysteriousX() throws IOException, OtrCryptoException, UnsupportedTypeException {
-        final PublicKey pubKey = readPublicKey();
+        final DSAPublicKey pubKey = readPublicKey();
         final int dhKeyID = readInt();
         final byte[] sig = readSignature(pubKey);
         return new SignatureX(pubKey, dhKeyID, sig);

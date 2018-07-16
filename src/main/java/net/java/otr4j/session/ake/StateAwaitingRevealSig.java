@@ -10,6 +10,7 @@ package net.java.otr4j.session.ake;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -185,7 +186,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(signatureMBytes, s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
         final byte[] signature = OtrCryptoEngine.sign(mhash, localLongTermKeyPair.getPrivate());
-        final SignatureX mysteriousX = new SignatureX(localLongTermKeyPair.getPublic(),
+        final SignatureX mysteriousX = new SignatureX((DSAPublicKey) localLongTermKeyPair.getPublic(),
                 LOCAL_DH_PRIVATE_KEY_ID, signature);
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."
         final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null,

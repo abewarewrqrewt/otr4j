@@ -6,7 +6,7 @@
  */
 package net.java.otr4j.io.messages;
 
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
@@ -18,12 +18,12 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 public final class SignatureX {
 
     // Fields.
-    public final PublicKey longTermPublicKey;
+    public final DSAPublicKey longTermPublicKey;
     public final int dhKeyID;
     public final byte[] signature;
 
     // Ctor.
-    public SignatureX(final PublicKey ourLongTermPublicKey, final int ourKeyID,
+    public SignatureX(final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
             final byte[] signature) {
         this.longTermPublicKey = ourLongTermPublicKey;
         this.dhKeyID = ourKeyID;

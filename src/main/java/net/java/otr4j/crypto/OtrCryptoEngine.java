@@ -361,7 +361,6 @@ public final class OtrCryptoEngine {
      * @param privateKey The private key.
      * @return Signature components 'r' and 's'.
      */
-    // FIXME write unit tests.
     @Nonnull
     public static DSASignature signRS(@Nonnull final byte[] b, @Nonnull final DSAPrivateKey privateKey) {
         final DSAParams dsaParams = privateKey.getParams();
@@ -406,21 +405,16 @@ public final class OtrCryptoEngine {
      * @param rs Components R and S.
      * @throws OtrCryptoException Thrown in case of failed verification.
      */
-    // TODO consider if we can modify type 'PublicKey' to 'DSAPublicKey'.
-    public static void verify(@Nonnull final byte[] b, @Nonnull final PublicKey pubKey, @Nonnull final byte[] rs)
+    public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] rs)
             throws OtrCryptoException {
-        if (!(pubKey instanceof DSAPublicKey)) {
-            throw new IllegalArgumentException("Public key instance must be of type DSAPublicKey.");
-        }
-        final DSAPublicKey dsaPublicKey = (DSAPublicKey) pubKey;
-        final DSAParams dsaParams = dsaPublicKey.getParams();
+        final DSAParams dsaParams = pubKey.getParams();
         final int qlen = dsaParams.getQ().bitLength() / 8;
         final ByteBuffer buff = ByteBuffer.wrap(rs);
         final byte[] r = new byte[qlen];
         buff.get(r);
         final byte[] s = new byte[qlen];
         buff.get(s);
-        verify(b, dsaPublicKey, r, s);
+        verify(b, pubKey, r, s);
     }
 
     private static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] r,
@@ -562,7 +556,7 @@ public final class OtrCryptoEngine {
      * @throws OtrCryptoException Throws OtrCryptoException in case of failure to create DSA public key.
      */
     @Nonnull
-    public static PublicKey createDSAPublicKey(@Nonnull final BigInteger y, @Nonnull final BigInteger p,
+    public static DSAPublicKey createDSAPublicKey(@Nonnull final BigInteger y, @Nonnull final BigInteger p,
                                                @Nonnull final BigInteger q, @Nonnull final BigInteger g)
             throws OtrCryptoException {
         final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
@@ -573,7 +567,7 @@ public final class OtrCryptoEngine {
             throw new IllegalStateException("Failed to initialize DSA key factory.", e);
         }
         try {
-            return keyFactory.generatePublic(keySpec);
+            return (DSAPublicKey) keyFactory.generatePublic(keySpec);
         } catch (final InvalidKeySpecException e) {
             throw new OtrCryptoException("Read invalid public key from input stream.", e);
         }
