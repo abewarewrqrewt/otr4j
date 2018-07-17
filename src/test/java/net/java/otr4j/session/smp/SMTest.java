@@ -7,6 +7,12 @@
 
 package net.java.otr4j.session.smp;
 
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.SharedSecret;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.Test;
+
+import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -15,20 +21,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.interfaces.DSAPublicKey;
 
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.SharedSecret;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import org.junit.Test;
-
-import javax.annotation.Nonnull;
 
 /**
  * Tests for Socialist Millionaire Protocol.
@@ -204,7 +203,7 @@ public class SMTest {
     }
 
     @Test
-    public void testSuccessfulSMPConversation() throws SMException, OtrCryptoException, Exception {
+    public void testSuccessfulSMPConversation() throws Exception {
 
         // Alice
         final SM alice = new SM(sr);
@@ -254,7 +253,7 @@ public class SMTest {
     }
 
     @Test
-    public void testUnsuccessfulSMPConversationBadSecret() throws SMException, OtrCryptoException, Exception {
+    public void testUnsuccessfulSMPConversationBadSecret() throws Exception {
 
         // Alice
         final SM alice = new SM(sr);
@@ -370,55 +369,55 @@ public class SMTest {
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect3CorrectlyAbortOnInit() throws NoSuchAlgorithmException, NoSuchProviderException, OtrCryptoException, Exception {
+    public void testVerifyStateExpect3CorrectlyAbortOnInit() throws Exception {
         final SM sm = prepareStateExpect3();
         sm.step1(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect3CorrectlyAbortOnMessage1() throws NoSuchAlgorithmException, NoSuchProviderException, OtrCryptoException, Exception {
+    public void testVerifyStateExpect3CorrectlyAbortOnMessage1() throws Exception {
         final SM sm = prepareStateExpect3();
         sm.step2a(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect3CorrectlyAbortOnMessage1Continuation() throws NoSuchAlgorithmException, NoSuchProviderException, OtrCryptoException, Exception {
+    public void testVerifyStateExpect3CorrectlyAbortOnMessage1Continuation() throws Exception {
         final SM sm = prepareStateExpect3();
         sm.step2b(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect3CorrectlyAbortOnMessage4() throws NoSuchAlgorithmException, NoSuchProviderException, OtrCryptoException, Exception {
+    public void testVerifyStateExpect3CorrectlyAbortOnMessage4() throws Exception {
         final SM sm = prepareStateExpect3();
         sm.step5(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect4CorrectlyAbortOnInit() throws NoSuchProviderException, OtrCryptoException, SMException, Exception {
+    public void testVerifyStateExpect4CorrectlyAbortOnInit() throws Exception {
         final SM sm = prepareStateExpect4();
         sm.step1(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect4CorrectlyAbortOnMessage1() throws NoSuchProviderException, OtrCryptoException, SMException, Exception {
+    public void testVerifyStateExpect4CorrectlyAbortOnMessage1() throws Exception {
         final SM sm = prepareStateExpect4();
         sm.step2a(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect4CorrectlyAbortOnMessage1Continuation() throws NoSuchProviderException, OtrCryptoException, SMException, Exception {
+    public void testVerifyStateExpect4CorrectlyAbortOnMessage1Continuation() throws Exception {
         final SM sm = prepareStateExpect4();
         sm.step2b(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect4CorrectlyAbortOnMessage2() throws NoSuchProviderException, OtrCryptoException, SMException, Exception {
+    public void testVerifyStateExpect4CorrectlyAbortOnMessage2() throws Exception {
         final SM sm = prepareStateExpect4();
         sm.step3(new byte[0]);
     }
 
     @Test(expected = SMAbortedException.class)
-    public void testVerifyStateExpect4CorrectlyAbortOnMessage3() throws NoSuchProviderException, OtrCryptoException, SMException, Exception {
+    public void testVerifyStateExpect4CorrectlyAbortOnMessage3() throws Exception {
         final SM sm = prepareStateExpect4();
         sm.step4(new byte[0]);
     }
@@ -435,13 +434,13 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep2aWithSMException() throws SMException {
+    public void testSMStep2aWithSMException() {
         final byte[] input = new byte[0];
         final SMException e = new SMException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
 
             @Override
-            void smpMessage1a(@Nonnull SM bstate, @Nonnull byte[] input) throws SMAbortedException, SMException {
+            void smpMessage1a(@Nonnull SM bstate, @Nonnull byte[] input) throws SMException {
                 throw e;
             }
 
@@ -464,13 +463,13 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep2aWithRuntimeException() throws SMException {
+    public void testSMStep2aWithRuntimeException() {
         final byte[] input = new byte[0];
         final IllegalArgumentException e = new IllegalArgumentException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
 
             @Override
-            void smpMessage1a(@Nonnull SM bstate, @Nonnull byte[] input) throws SMAbortedException, SMException {
+            void smpMessage1a(@Nonnull SM bstate, @Nonnull byte[] input) {
                 throw e;
             }
 
@@ -493,7 +492,7 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep2bWithSMException() throws SMException {
+    public void testSMStep2bWithSMException() {
         final byte[] input = new byte[0];
         final SMException e = new SMException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
@@ -523,14 +522,14 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep2bWithRuntimeException() throws SMException {
+    public void testSMStep2bWithRuntimeException() {
         final byte[] input = new byte[0];
         final IllegalArgumentException e = new IllegalArgumentException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
 
             @Nonnull
             @Override
-            byte[] smpMessage1b(@Nonnull SM bstate, @Nonnull byte[] input) throws SMException {
+            byte[] smpMessage1b(@Nonnull SM bstate, @Nonnull byte[] input) {
                 throw e;
             }
 
@@ -553,7 +552,7 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep3WithSMException() throws SMException {
+    public void testSMStep3WithSMException() {
         final byte[] input = new byte[0];
         final SMException e = new SMException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
@@ -583,14 +582,14 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep3WithRuntimeException() throws SMException {
+    public void testSMStep3WithRuntimeException() {
         final byte[] input = new byte[0];
         final IllegalArgumentException e = new IllegalArgumentException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
 
             @Nonnull
             @Override
-            byte[] smpMessage2(@Nonnull SM bstate, @Nonnull byte[] input) throws SMException {
+            byte[] smpMessage2(@Nonnull SM bstate, @Nonnull byte[] input) {
                 throw e;
             }
 
@@ -613,7 +612,7 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep4WithSMException() throws SMException {
+    public void testSMStep4WithSMException() {
         final byte[] input = new byte[0];
         final SMException e = new SMException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
@@ -643,14 +642,14 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep4WithRuntimeException() throws SMException {
+    public void testSMStep4WithRuntimeException() {
         final byte[] input = new byte[0];
         final IllegalArgumentException e = new IllegalArgumentException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
 
             @Nonnull
             @Override
-            byte[] smpMessage3(@Nonnull SM bstate, @Nonnull byte[] input) throws SMException {
+            byte[] smpMessage3(@Nonnull SM bstate, @Nonnull byte[] input) {
                 throw e;
             }
 
@@ -673,7 +672,7 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep5WithSMException() throws SMException {
+    public void testSMStep5WithSMException() {
         final byte[] input = new byte[0];
         final SMException e = new SMException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
@@ -702,13 +701,13 @@ public class SMTest {
     }
 
     @Test
-    public void testSMStep5WithRuntimeException() throws SMException {
+    public void testSMStep5WithRuntimeException() {
         final byte[] input = new byte[0];
         final IllegalArgumentException e = new IllegalArgumentException("intentionally bad");
         final AbstractSMPState s = new AbstractSMPState(sr) {
 
             @Override
-            void smpMessage4(@Nonnull SM bstate, @Nonnull byte[] input) throws SMException {
+            void smpMessage4(@Nonnull SM bstate, @Nonnull byte[] input) {
                 throw e;
             }
 
@@ -730,7 +729,7 @@ public class SMTest {
         assertEquals(SMPStatus.CHEATED, sm.status());
     }
 
-    private SM prepareStateExpect4() throws NoSuchAlgorithmException, NoSuchProviderException, OtrCryptoException, Exception {
+    private SM prepareStateExpect4() throws Exception {
         // Alice
         final SM alice = new SM(sr);
         final KeyPair aliceKeyPair = generateKeyPair();
@@ -753,7 +752,7 @@ public class SMTest {
         return alice;
     }
 
-    private SM prepareStateExpect3() throws NoSuchAlgorithmException, NoSuchProviderException, OtrCryptoException, Exception {
+    private SM prepareStateExpect3() throws Exception {
         // Alice
         final SM alice = new SM(sr);
         final KeyPair aliceKeyPair = generateKeyPair();

@@ -25,7 +25,6 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
-// FIXME clean up methods that can be done publicly
 public final class OtrOutputStream implements SerializationConstants, Closeable {
 
     private final ByteArrayOutputStream out;

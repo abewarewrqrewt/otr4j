@@ -97,7 +97,6 @@ public final class OtrCryptoEngine {
     public static final BigInteger GENERATOR = new BigInteger("2", 10);
 
     public static final int AES_KEY_BYTE_LENGTH = 16;
-    public static final int SHA256_HMAC_KEY_BYTE_LENGTH = 32;
     private static final int DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH = 320;
     private static final byte[] ZERO_CTR = new byte[] {
             0x00, 0x00, 0x00, 0x00,

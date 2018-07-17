@@ -346,7 +346,7 @@ public class SessionTest {
     }
 
     @Test
-    public void testPlainTextMessagingNewClients() throws OtrException, InterruptedException {
+    public void testPlainTextMessagingNewClients() throws OtrException {
         final Conversation c = new Conversation();
         c.hostBob.sendMessage("hello world");
         assertEquals("hello world", c.hostAlice.receiveMessage());
