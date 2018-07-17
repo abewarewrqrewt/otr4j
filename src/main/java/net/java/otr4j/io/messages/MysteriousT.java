@@ -7,6 +7,9 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrEncodable;
+import net.java.otr4j.io.OtrOutputStream;
+
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.util.Arrays;
@@ -18,7 +21,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * MysteriousT represents the T_a composite as described in "Exchanging Data" section.
  */
 // TODO Check if we can merge MysteriousT and DataMessage. MysteriousT is described in the "Exchanging Data" section as T_a. It's basically a DataMessage except without MAC as it still has to be calculated from serialized MysteriousT content.
-public final class MysteriousT {
+public final class MysteriousT implements OtrEncodable {
 
     // Fields.
     public final int protocolVersion;
@@ -110,4 +113,19 @@ public final class MysteriousT {
         return receiverInstanceTag == other.receiverInstanceTag;
     }
 
+    @Override
+    public void writeTo(@Nonnull final OtrOutputStream out) {
+        out.writeShort(this.protocolVersion);
+        out.writeByte(this.messageType);
+        if (this.protocolVersion == 3) {
+            out.writeInt(this.senderInstanceTag);
+            out.writeInt(this.receiverInstanceTag);
+        }
+        out.writeByte(this.flags);
+        out.writeInt(this.senderKeyID);
+        out.writeInt(this.recipientKeyID);
+        out.writeDHPublicKey(this.nextDH);
+        out.writeCtr(this.ctr);
+        out.writeData(this.encryptedMessage);
+    }
 }

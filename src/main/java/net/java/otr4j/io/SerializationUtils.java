@@ -132,7 +132,7 @@ public final class SerializationUtils {
     @Nonnull
     public static byte[] toByteArray(@Nonnull final MysteriousT t) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeMysteriousT(t);
+            out.write(t);
             return out.toByteArray();
         }
     }

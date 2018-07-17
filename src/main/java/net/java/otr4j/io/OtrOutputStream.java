@@ -147,22 +147,6 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         this.out.write(signature, 0, signature.length);
     }
 
-    // FIXME convert to OtrEncodable
-    public void writeMysteriousT(@Nonnull final MysteriousT t) {
-        writeShort(t.protocolVersion);
-        writeByte(t.messageType);
-        if (t.protocolVersion == 3) {
-            writeInt(t.senderInstanceTag);
-            writeInt(t.receiverInstanceTag);
-        }
-        writeByte(t.flags);
-        writeInt(t.senderKeyID);
-        writeInt(t.recipientKeyID);
-        writeDHPublicKey(t.nextDH);
-        writeCtr(t.ctr);
-        writeData(t.encryptedMessage);
-    }
-
     /**
      * Write an XSalsa20 nonce.
      *
