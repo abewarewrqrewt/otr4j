@@ -126,8 +126,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         final SignatureM sigM = new SignatureM(
                 (DHPublicKey) this.keypair.getPublic(), message.dhPublicKey,
                 longTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
-        final byte[] mhash = OtrCryptoEngine.sha256Hmac(SerializationUtils
-                    .toByteArray(sigM), s.m1());
+        final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(sigM), s.m1());
         // OTR: "Let XB be the following structure: pubB (PUBKEY), keyidB (INT), sigB(MB) (SIG)"
         final byte[] signature = OtrCryptoEngine.sign(mhash, longTermKeyPair.getPrivate());
         final SignatureX mysteriousX = new SignatureX((DSAPublicKey) longTermKeyPair.getPublic(),

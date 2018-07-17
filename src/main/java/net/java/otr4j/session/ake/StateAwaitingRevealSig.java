@@ -158,8 +158,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
                     (DHPublicKey) this.keypair.getPublic(),
                     remoteMysteriousX.longTermPublicKey, remoteMysteriousX.dhKeyID);
             // OTR: "Uses pubB to verify sigB(MB)"
-            final byte[] expectedMBytes = SerializationUtils.toByteArray(expectedM);
-            final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(expectedMBytes, s.m1());
+            final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(expectedM), s.m1());
             OtrCryptoEngine.verify(expectedSignature, remoteMysteriousX.longTermPublicKey,
                     remoteMysteriousX.signature);
             LOGGER.finest("Signature verification succeeded.");
@@ -184,8 +183,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final SignatureM signatureM = new SignatureM(
                 (DHPublicKey) this.keypair.getPublic(), remoteDHPublicKey,
                 localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
-        final byte[] signatureMBytes = SerializationUtils.toByteArray(signatureM);
-        final byte[] mhash = OtrCryptoEngine.sha256Hmac(signatureMBytes, s.m1p());
+        final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
         final byte[] signature = OtrCryptoEngine.sign(mhash, localLongTermKeyPair.getPrivate());
         final SignatureX mysteriousX = new SignatureX((DSAPublicKey) localLongTermKeyPair.getPublic(),

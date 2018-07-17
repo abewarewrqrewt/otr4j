@@ -109,16 +109,6 @@ public final class SerializationUtils {
         }
     }
 
-    // FIXME use OtrEncodables to encode directly to byte-array.
-    // Mysterious M IO.
-    @Nonnull
-    public static byte[] toByteArray(@Nonnull final SignatureM m) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.write(m);
-            return out.toByteArray();
-        }
-    }
-
     // Mysterious T IO.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final MysteriousT t) {

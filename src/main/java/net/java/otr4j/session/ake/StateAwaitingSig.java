@@ -31,6 +31,8 @@ import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureMessage;
 import net.java.otr4j.io.messages.SignatureX;
 
+import static net.java.otr4j.io.OtrEncodables.encode;
+
 /**
  * AKE state Awaiting Signature message, a.k.a. AUTHSTATE_AWAITING_SIG.
  *
@@ -143,8 +145,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey,
                     (DHPublicKey) this.localDHKeyPair.getPublic(),
                     remoteX.longTermPublicKey, remoteX.dhKeyID);
-            final byte[] remoteMBytes = SerializationUtils.toByteArray(remoteM);
-            final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(remoteMBytes, s.m1p());
+            final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(remoteM), s.m1p());
             // OTR: "Uses pubA to verify sigA(MA)"
             OtrCryptoEngine.verify(expectedSignature, remoteX.longTermPublicKey, remoteX.signature);
             // Transition to ENCRYPTED session state.
