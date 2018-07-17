@@ -6,15 +6,19 @@
  */
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrEncodable;
+import net.java.otr4j.io.OtrOutputStream;
+
 import java.security.PublicKey;
 
+import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 
 /**
  * 
  * @author George Politis
  */
-public final class SignatureM {
+public final class SignatureM implements OtrEncodable {
     // Fields.
     public final DHPublicKey localPubKey;
     public final DHPublicKey remotePubKey;
@@ -87,4 +91,11 @@ public final class SignatureM {
         return true;
     }
 
+    @Override
+    public void writeTo(@Nonnull final OtrOutputStream out) {
+        out.writeBigInt(this.localPubKey.getY());
+        out.writeBigInt(this.remotePubKey.getY());
+        out.writePublicKey(this.localLongTermPubKey);
+        out.writeInt(this.keyPairID);
+    }
 }

@@ -109,7 +109,7 @@ public final class SerializationUtils {
         }
     }
 
-    // FIXME can we remove this using OtrEncodables
+    // FIXME use OtrEncodables to encode directly to byte-array.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureX x) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
@@ -118,11 +118,12 @@ public final class SerializationUtils {
         }
     }
 
+    // FIXME use OtrEncodables to encode directly to byte-array.
     // Mysterious M IO.
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureM m) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeMysteriousM(m);
+            out.write(m);
             return out.toByteArray();
         }
     }
