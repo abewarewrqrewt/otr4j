@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.KeyPair;
 import java.security.SecureRandom;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -572,7 +573,7 @@ public class SessionTest {
         @Nonnull
         @Override
         public byte[] getLocalFingerprintRaw(@Nonnull final SessionID sessionID) {
-            return OtrCryptoEngine.getFingerprintRaw(this.dsaKeyPair.getPublic());
+            return OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) this.dsaKeyPair.getPublic());
         }
 
         @Override

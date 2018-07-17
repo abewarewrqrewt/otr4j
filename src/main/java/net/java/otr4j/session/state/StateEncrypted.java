@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,7 +66,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     /**
      * Long-term remote public key.
      */
-    private final PublicKey remotePublicKey;
+    private final DSAPublicKey remotePublicKey;
 
     /**
      * Manager for session keys that are used during encrypted message state.
@@ -101,7 +101,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
     @Override
     @Nonnull
-    public PublicKey getRemotePublicKey() {
+    public DSAPublicKey getRemotePublicKey() {
         return remotePublicKey;
     }
 

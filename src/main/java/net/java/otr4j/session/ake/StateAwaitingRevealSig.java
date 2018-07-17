@@ -180,9 +180,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // OTR: "Select keyidA, a serial number for the D-H key computed earlier. It is an INT, and must be greater than 0."
         // OTR: "Compute the 32-byte value MA to be the SHA256-HMAC of the following data, using the key m1':
         // gy (MPI), gx (MPI), pubA (PUBKEY), keyidA (INT)"
-        final SignatureM signatureM = new SignatureM(
-                (DHPublicKey) this.keypair.getPublic(), remoteDHPublicKey,
-                localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
+        final SignatureM signatureM = new SignatureM((DHPublicKey) this.keypair.getPublic(), remoteDHPublicKey,
+            (DSAPublicKey) localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
         final byte[] signature = OtrCryptoEngine.sign(mhash, localLongTermKeyPair.getPrivate());

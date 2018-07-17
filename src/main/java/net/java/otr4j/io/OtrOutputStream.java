@@ -110,22 +110,13 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeData(b);
     }
 
-    // FIXME assume DSAPublicKey type from the start.
-    public void writePublicKey(@Nonnull final PublicKey pubKey) {
-        if (!(pubKey instanceof DSAPublicKey)) {
-            throw new UnsupportedOperationException(
-                    "Key types other than DSA are not supported at the moment.");
-        }
-
-        final DSAPublicKey dsaKey = (DSAPublicKey) pubKey;
-
+    public void writePublicKey(@Nonnull final DSAPublicKey pubKey) {
         writeShort(PUBLIC_KEY_TYPE_DSA);
-
-        final DSAParams dsaParams = dsaKey.getParams();
+        final DSAParams dsaParams = pubKey.getParams();
         writeBigInt(dsaParams.getP());
         writeBigInt(dsaParams.getQ());
         writeBigInt(dsaParams.getG());
-        writeBigInt(dsaKey.getY());
+        writeBigInt(pubKey.getY());
     }
 
     public void writeTlvData(@Nullable final byte[] b) {

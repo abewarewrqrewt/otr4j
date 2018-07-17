@@ -25,7 +25,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.nio.charset.Charset;
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -135,7 +135,7 @@ public final class SerializationUtils {
 
     // Public Key IO.
     @Nonnull
-    public static byte[] writePublicKey(@Nonnull final PublicKey pubKey) {
+    public static byte[] writePublicKey(@Nonnull final DSAPublicKey pubKey) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePublicKey(pubKey);
             return out.toByteArray();

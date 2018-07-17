@@ -20,6 +20,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -379,8 +380,7 @@ public class DummyClient {
         @Override
         @Nonnull
         public byte[] getLocalFingerprintRaw(@Nonnull SessionID sessionID) {
-            return OtrCryptoEngine.getFingerprintRaw(getLocalKeyPair(sessionID)
-                    .getPublic());
+            return OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) getLocalKeyPair(sessionID).getPublic());
         }
 
         @Override

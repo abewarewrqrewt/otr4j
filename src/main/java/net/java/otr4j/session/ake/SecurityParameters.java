@@ -7,16 +7,15 @@
 
 package net.java.otr4j.session.ake;
 
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.util.Objects;
-
-import javax.annotation.Nonnull;
-import javax.crypto.interfaces.DHPublicKey;
-
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
+
+import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
+import java.security.KeyPair;
+import java.security.interfaces.DSAPublicKey;
+import java.util.Objects;
 
 /**
  * Container that stores all the security parameters that were negotiated during
@@ -28,12 +27,12 @@ public final class SecurityParameters {
 
     private final int version;
     private final KeyPair localDHKeyPair;
-    private final PublicKey remoteLongTermPublicKey;
+    private final DSAPublicKey remoteLongTermPublicKey;
     private final DHPublicKey remoteDHPublicKey;
     private final SharedSecret s;
 
     SecurityParameters(final int version, @Nonnull final KeyPair localDHKeyPair,
-            @Nonnull final PublicKey remoteLongTermPublicKey,
+            @Nonnull final DSAPublicKey remoteLongTermPublicKey,
             @Nonnull final DHPublicKey remoteDHPublicKey,
             @Nonnull final SharedSecret s) {
         if (version < 2 || version > 3) {
@@ -60,7 +59,7 @@ public final class SecurityParameters {
     }
 
     @Nonnull
-    public PublicKey getRemoteLongTermPublicKey() {
+    public DSAPublicKey getRemoteLongTermPublicKey() {
         return remoteLongTermPublicKey;
     }
 

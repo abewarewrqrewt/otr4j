@@ -443,21 +443,17 @@ public final class OtrCryptoEngine {
     }
 
     @Nonnull
-    public static String getFingerprint(@Nonnull final PublicKey pubKey) {
+    public static String getFingerprint(@Nonnull final DSAPublicKey pubKey) {
         final byte[] b = getFingerprintRaw(pubKey);
         return SerializationUtils.byteArrayToHexString(b);
     }
 
     @Nonnull
-    public static byte[] getFingerprintRaw(@Nonnull final PublicKey pubKey) {
+    public static byte[] getFingerprintRaw(@Nonnull final DSAPublicKey pubKey) {
         final byte[] bRemotePubKey = SerializationUtils.writePublicKey(pubKey);
-        if (pubKey.getAlgorithm().equals(ALGORITHM_DSA)) {
-            byte[] trimmed = new byte[bRemotePubKey.length - 2];
-            System.arraycopy(bRemotePubKey, 2, trimmed, 0, trimmed.length);
-            return OtrCryptoEngine.sha1Hash(trimmed);
-        } else {
-            return OtrCryptoEngine.sha1Hash(bRemotePubKey);
-        }
+        byte[] trimmed = new byte[bRemotePubKey.length - 2];
+        System.arraycopy(bRemotePubKey, 2, trimmed, 0, trimmed.length);
+        return OtrCryptoEngine.sha1Hash(trimmed);
     }
 
     @Nonnull

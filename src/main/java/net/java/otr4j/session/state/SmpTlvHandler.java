@@ -7,13 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import java.security.PublicKey;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SmpEngineHost;
@@ -27,6 +20,13 @@ import net.java.otr4j.session.smp.SM;
 import net.java.otr4j.session.smp.SMAbortedException;
 import net.java.otr4j.session.smp.SMException;
 import net.java.otr4j.session.smp.SMPStatus;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.security.interfaces.DSAPublicKey;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * SMP TLV Handler handles any interaction w.r.t. mutual authentication using
@@ -89,7 +89,7 @@ public final class SmpTlvHandler {
          */
         final byte[] ourFp = engineHost.getLocalFingerprintRaw(session
                 .getSessionID());
-        final PublicKey remotePublicKey = session.getRemotePublicKey();
+        final DSAPublicKey remotePublicKey = session.getRemotePublicKey();
         final byte[] theirFp = OtrCryptoEngine.getFingerprintRaw(remotePublicKey);
         final byte[] sessionId = this.s.ssid();
         final byte[] secretBytes = secret.getBytes(SerializationUtils.UTF8);
