@@ -33,6 +33,8 @@ import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureMessage;
 import net.java.otr4j.io.messages.SignatureX;
 
+import static net.java.otr4j.io.OtrEncodables.encode;
+
 /**
  * AKE state Awaiting Reveal Signature message, a.k.a.
  * AUTHSTATE_AWAITING_REVEALSIG.
@@ -189,8 +191,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final SignatureX mysteriousX = new SignatureX((DSAPublicKey) localLongTermKeyPair.getPublic(),
                 LOCAL_DH_PRIVATE_KEY_ID, signature);
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."
-        final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null,
-                SerializationUtils.toByteArray(mysteriousX));
+        final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null, encode(mysteriousX));
         // OTR: "Encode this encrypted value as the DATA field."
         final byte[] xEncryptedBytes = SerializationUtils.writeData(xEncrypted);
         // OTR: "This is the SHA256-HMAC-160 (that is, the first 160 bits of the SHA256-HMAC) of the encrypted signature field (including the four-byte length), using the key m2'."

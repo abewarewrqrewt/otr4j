@@ -7,17 +7,6 @@
 
 package net.java.otr4j.session.ake;
 
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.interfaces.DSAPublicKey;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.crypto.interfaces.DHPublicKey;
-
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -28,6 +17,18 @@ import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.RevealSignatureMessage;
 import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.crypto.interfaces.DHPublicKey;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.interfaces.DSAPublicKey;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static net.java.otr4j.io.OtrEncodables.encode;
 
 /**
  * AKE state Awaiting D-H Key message, a.k.a. AUTHSTATE_AWAITING_DHKEY.
@@ -132,8 +133,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         final SignatureX mysteriousX = new SignatureX((DSAPublicKey) longTermKeyPair.getPublic(),
                 LOCAL_DH_PRIVATE_KEY_ID, signature);
         // OTR: "Encrypt XB using AES128-CTR with key c and initial counter value 0."
-        final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.c(), null,
-                    SerializationUtils.toByteArray(mysteriousX));
+        final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.c(), null, encode(mysteriousX));
         // OTR: "This is the SHA256-HMAC-160 (that is, the first 160 bits of the SHA256-HMAC) of the encrypted signature field (including the four-byte length), using the key m2."
         final byte[] tmpEncrypted = SerializationUtils.writeData(xEncrypted);
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(tmpEncrypted, s.m2());

@@ -7,9 +7,6 @@
 
 package net.java.otr4j.io;
 
-import net.java.otr4j.io.messages.MysteriousT;
-import net.java.otr4j.io.messages.SignatureM;
-import net.java.otr4j.io.messages.SignatureX;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -114,6 +111,7 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
         writeData(b);
     }
 
+    // FIXME assume DSAPublicKey type from the start.
     public void writePublicKey(@Nonnull final PublicKey pubKey) {
         if (!(pubKey instanceof DSAPublicKey)) {
             throw new UnsupportedOperationException(
