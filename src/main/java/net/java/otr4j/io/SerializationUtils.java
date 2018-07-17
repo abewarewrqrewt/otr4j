@@ -12,10 +12,8 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.io.messages.SignatureM;
 import net.java.otr4j.io.messages.SignatureX;
 
 import javax.annotation.Nonnull;
@@ -106,15 +104,6 @@ public final class SerializationUtils {
         try (final ByteArrayInputStream in = new ByteArrayInputStream(b);
              final OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readMysteriousX();
-        }
-    }
-
-    // Mysterious T IO.
-    @Nonnull
-    public static byte[] toByteArray(@Nonnull final MysteriousT t) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.write(t);
-            return out.toByteArray();
         }
     }
 

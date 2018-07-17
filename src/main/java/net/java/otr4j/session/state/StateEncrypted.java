@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
-import static net.java.otr4j.io.SerializationUtils.toByteArray;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -145,9 +145,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Verify received MAC with a locally calculated MAC.
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
 
-        final byte[] serializedT = toByteArray(data.getT());
-        final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(serializedT,
-                matchingKeys.receivingMAC(), SerializationConstants.TYPE_LEN_MAC);
+        final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(encode(data.getT()), matchingKeys.receivingMAC(),
+            SerializationConstants.TYPE_LEN_MAC);
         if (!constantTimeEquals(computedMAC, data.mac)) {
             logger.finest("MAC verification failed, ignoring message");
             OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
@@ -293,8 +292,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
 
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
-        final byte[] serializedT = toByteArray(t);
-        final byte[] mac = OtrCryptoEngine.sha1Hmac(serializedT, sendingMACKey, SerializationConstants.TYPE_LEN_MAC);
+        final byte[] mac = OtrCryptoEngine.sha1Hmac(encode(t), sendingMACKey, SerializationConstants.TYPE_LEN_MAC);
 
         // Get old MAC keys to be revealed.
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();
