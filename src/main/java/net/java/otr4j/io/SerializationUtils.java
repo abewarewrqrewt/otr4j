@@ -109,10 +109,11 @@ public final class SerializationUtils {
         }
     }
 
+    // FIXME can we remove this using OtrEncodables
     @Nonnull
     public static byte[] toByteArray(@Nonnull final SignatureX x) {
         try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeMysteriousX(x);
+            out.write(x);
             return out.toByteArray();
         }
     }

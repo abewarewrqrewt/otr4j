@@ -6,6 +6,10 @@
  */
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.io.OtrEncodable;
+import net.java.otr4j.io.OtrOutputStream;
+
+import javax.annotation.Nonnull;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
@@ -15,7 +19,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * 
  * @author George Politis
  */
-public final class SignatureX {
+public final class SignatureX implements OtrEncodable {
 
     // Fields.
     public final DSAPublicKey longTermPublicKey;
@@ -72,4 +76,10 @@ public final class SignatureX {
         return true;
     }
 
+    @Override
+    public void writeTo(@Nonnull final OtrOutputStream out) {
+        out.writePublicKey(this.longTermPublicKey);
+        out.writeInt(this.dhKeyID);
+        out.writeSignature(this.signature, this.longTermPublicKey);
+    }
 }

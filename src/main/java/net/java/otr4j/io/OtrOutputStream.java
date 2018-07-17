@@ -148,13 +148,6 @@ public final class OtrOutputStream implements SerializationConstants, Closeable 
     }
 
     // FIXME convert to OtrEncodable
-    public void writeMysteriousX(@Nonnull final SignatureX x) {
-        writePublicKey(x.longTermPublicKey);
-        writeInt(x.dhKeyID);
-        writeSignature(x.signature, x.longTermPublicKey);
-    }
-
-    // FIXME convert to OtrEncodable
     public void writeMysteriousM(@Nonnull final SignatureM m) {
         writeBigInt(m.localPubKey.getY());
         writeBigInt(m.remotePubKey.getY());
