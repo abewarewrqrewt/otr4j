@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FindBugsFilter>
+  <And>
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Class name="net.java.otr4j.io.messages.DataMessage4"/>
+  </And>
+  <And>
+    <Class name="net.java.otr4j.api.TLV"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </And>
+  <And>
+    <Bug category="BAD_PRACTICE"/>
+    <Bug code="Nm"/>
+    <Bug pattern="NM_CONFUSING"/>
+  </And>
+</FindBugsFilter>
