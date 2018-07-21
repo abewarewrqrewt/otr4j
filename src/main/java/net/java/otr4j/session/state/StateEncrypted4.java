@@ -40,7 +40,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private static final int DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES = 64;
 
-    // TODO duplicate information, can we simplify this without breaking all structure?
     private static final byte DATA_MESSAGE_TYPE = 0x03;
 
     private static final int VERSION = Session.OTRv.FOUR;
@@ -100,7 +99,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final int ratchetId;
         final int messageId;
         final byte[] authenticator;
-        // FIXME determine when to send new ECDH (and DH) keys. Only happens upon new rotation.
         try (MessageKeys keys = this.ratchet.generateSendingKeys()) {
             ratchetId = keys.getRatchetId();
             messageId = keys.getMessageId();
@@ -128,12 +126,10 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             }
             authenticator = keys.authenticate(messageMAC);
         }
-        // FIXME should DH public key always be included? (Or only in some cases?) (Maybe we should only acquire the public keys upon rotation, and not make them independently queryable.)
-        // FIXME add revealed MACs to data message
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
-            this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce, result.ciphertext,
-            authenticator, new byte[0]);
+            this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
+            result.ciphertext, authenticator, rotation == null ? new byte[0] : rotation.revealedMacs);
     }
 
     @Nonnull
