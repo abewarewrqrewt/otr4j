@@ -13,6 +13,8 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.state.DoubleRatchet.MessageKeys;
+import net.java.otr4j.session.state.DoubleRatchet.Result;
+import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
 import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
@@ -103,9 +105,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             rotation = null;
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
         }
-        // FIXME implement accept and prepare revealed MACs here
         final byte[] msgBytes = convertTextToBytes(msgText);
-        final MessageKeys.Result result;
+        final Result result;
         final int ratchetId;
         final int messageId;
         final byte[] authenticator;
@@ -181,7 +182,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             }
             keys.verify(digest, message.getAuthenticator());
             dmc = keys.decrypt(message.getCiphertext(), message.getNonce());
-        } catch (final MessageKeys.VerificationException e) {
+        } catch (final VerificationException e) {
             // FIXME reject message (do we need to return some error code or just ignore?)
             throw new OtrException("Failed to verify message: invalid authenticator.", e);
         }

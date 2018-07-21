@@ -5,7 +5,8 @@ import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.SharedSecret4TestUtils;
 import net.java.otr4j.session.state.DoubleRatchet.MessageKeys;
-import net.java.otr4j.session.state.DoubleRatchet.MessageKeys.Result;
+import net.java.otr4j.session.state.DoubleRatchet.Result;
+import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
@@ -188,7 +189,7 @@ public class DoubleRatchetTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testMessageKeysClosedFailsVerify() throws MessageKeys.VerificationException {
+    public void testMessageKeysClosedFailsVerify() throws VerificationException {
         final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
         try (final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K)) {
             final MessageKeys keys;
