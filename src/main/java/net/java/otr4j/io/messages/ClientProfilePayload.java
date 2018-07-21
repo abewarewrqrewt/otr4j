@@ -43,6 +43,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  */
 // FIXME write unit tests
 // FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
+// FIXME support producing encoding results that contain Forger Keys field.
 public final class ClientProfilePayload implements OtrEncodable {
 
     private final List<Field> fields;

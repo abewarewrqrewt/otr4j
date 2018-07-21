@@ -12,6 +12,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Container for OTRv4 security parameters.
  */
+// FIXME migrate into Message State state machine.
 public final class SecurityParameters4 {
 
     private final Component initializationComponent;

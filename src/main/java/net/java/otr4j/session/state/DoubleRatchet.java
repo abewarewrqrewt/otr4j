@@ -47,6 +47,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
 // FIXME closing ratchet should also close any remaining message keys
 // FIXME finish writing unit tests after ratchet implementation is finished.
 // TODO is it possible to use the same Chain Key for more than 1 message?
+// FIXME add support for disclosure of MACs at session ending or session expiration.
 final class DoubleRatchet implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
@@ -133,7 +134,6 @@ final class DoubleRatchet implements AutoCloseable {
         return this.sharedSecret.getECDHPublicKey();
     }
 
-    // TODO is there ever a reason to generate something other than the *current* sending keys?
     @Nonnull
     MessageKeys generateSendingKeys() {
         requireNotClosed();
@@ -188,7 +188,8 @@ final class DoubleRatchet implements AutoCloseable {
         if (this.i - 1 != ratchetId || this.k != messageId) {
             throw new UnsupportedOperationException("Retrieval of previous Message Keys has not been implemented yet. Only current Message Keys can be generated.");
         }
-        LOGGER.log(Level.FINEST, "Generating receiving message keys for ratchet " + ratchetId + ", message " + messageId);
+        LOGGER.log(Level.FINEST, "Generating receiving message keys for ratchet {0}, message {1}.",
+            new Object[]{ratchetId, messageId});
         final MessageKeys keys = generateMessageKeys(this.receivingChainKey);
         this.k += 1;
         kdf1(this.receivingChainKey, 0, NEXT_CHAIN_KEY, this.receivingChainKey, CHAIN_KEY_LENGTH_BYTES);
@@ -261,7 +262,6 @@ final class DoubleRatchet implements AutoCloseable {
      * <p>
      * NOTE: Please ensure that message keys are appropriately cleared by calling {@link #close()} after use.
      */
-    // TODO consider delaying calculation of extra symmetric key and mkEnc to reduce the number of calculations.
     // TODO write tests that inspect private fields to discover if cleaning was successful.
     final class MessageKeys implements AutoCloseable {
 

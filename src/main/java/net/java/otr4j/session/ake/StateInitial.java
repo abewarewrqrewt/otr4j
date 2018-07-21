@@ -45,6 +45,7 @@ import static net.java.otr4j.io.messages.MysteriousT4.encode;
  *
  * @author Danny van Heumen
  */
+// FIXME migrate OTRv4 parts into Message State state machine.
 public final class StateInitial extends AbstractAuthState {
 
     private static final Logger LOGGER = Logger.getLogger(StateInitial.class.getName());

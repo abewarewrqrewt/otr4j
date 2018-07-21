@@ -7,4 +7,5 @@
 /**
  * Package containing otr message types.
  */
+// FIXME adopt use of InstanceTag class in message types
 package net.java.otr4j.io.messages;

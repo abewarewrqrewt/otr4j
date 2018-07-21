@@ -33,6 +33,7 @@ import static net.java.otr4j.io.messages.MysteriousT4.encode;
  *
  * This is a state in which Alice will be while awaiting Bob's final message.
  */
+// FIXME migrate into Message State state machine.
 final class StateAwaitingAuthI extends AbstractAuthState {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());

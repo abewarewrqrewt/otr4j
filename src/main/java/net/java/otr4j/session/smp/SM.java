@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// FIXME Add OTRv4 support: new crypto primitives, include in StateEncrypted4.
 public final class SM {
 
     private static final Logger LOGGER = Logger.getLogger(SM.class.getName());

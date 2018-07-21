@@ -31,6 +31,7 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 /**
  * OTRv4 AKE state AWAITING_AUTH_R.
  */
+// FIXME migrate into Message State state machine.
 final class StateAwaitingAuthR extends AbstractAuthState {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthR.class.getName());
