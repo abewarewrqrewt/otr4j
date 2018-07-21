@@ -4,6 +4,7 @@ import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.SharedSecret4;
 import nl.dannyvanheumen.joldilocks.Point;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -105,6 +106,7 @@ final class DoubleRatchet implements AutoCloseable {
         this.sharedSecret.close();
     }
 
+    @CheckReturnValue
     boolean isNeedSenderKeyRotation() {
         return needSenderKeyRotation;
     }
@@ -128,11 +130,6 @@ final class DoubleRatchet implements AutoCloseable {
     @Nonnull
     Point getECDHPublicKey() {
         return this.sharedSecret.getECDHPublicKey();
-    }
-
-    @Nonnull
-    BigInteger getDHPublicKey() {
-        return this.sharedSecret.getDHPublicKey();
     }
 
     // TODO is there ever a reason to generate something other than the *current* sending keys?
@@ -171,8 +168,7 @@ final class DoubleRatchet implements AutoCloseable {
         clear(previousRootKey);
         this.i += 1;
         this.needSenderKeyRotation = false;
-        return new Rotation(sharedSecret.getECDHPublicKey(), performDHRatchet ? sharedSecret.getDHPublicKey() : null,
-            new byte[0]);
+        return new Rotation(performDHRatchet ? this.sharedSecret.getDHPublicKey() : null, new byte[0]);
     }
 
     /**
@@ -237,13 +233,10 @@ final class DoubleRatchet implements AutoCloseable {
      * Field `revealedMacs` contains all the MACs that were gathered to be revealed up to now.
      */
     static final class Rotation {
-        final Point ecdhPublicKey;
         final BigInteger dhPublicKey;
         final byte[] revealedMacs;
 
-        private Rotation(@Nonnull final Point ecdhPublicKey, @Nullable final BigInteger dhPublicKey,
-                         @Nonnull final byte[] revealedMacs) {
-            this.ecdhPublicKey = requireNonNull(ecdhPublicKey);
+        private Rotation(@Nullable final BigInteger dhPublicKey, @Nonnull final byte[] revealedMacs) {
             this.dhPublicKey = dhPublicKey;
             this.revealedMacs = requireNonNull(revealedMacs);
         }

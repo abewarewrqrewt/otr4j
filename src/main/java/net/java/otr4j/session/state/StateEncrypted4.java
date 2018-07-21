@@ -92,11 +92,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
                                                    @Nonnull final List<TLV> tlvs) {
-        if (this.ratchet.isNeedSenderKeyRotation()) {
-            // FIXME implement sender key rotation here
-            final DoubleRatchet.Rotation rotation = this.ratchet.rotateSenderKeys();
-            // FIXME implement accept and prepare revealed MACs here
-        }
+        final DoubleRatchet.Rotation rotation = this.ratchet.isNeedSenderKeyRotation()
+            ? this.ratchet.rotateSenderKeys() : null;
+        // FIXME implement accept and prepare revealed MACs here
         final byte[] msgBytes = convertTextToBytes(msgText);
         final MessageKeys.Result result;
         final int ratchetId;
@@ -119,8 +117,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 out.writeInt(ratchetId);
                 out.writeInt(messageId);
                 out.writePoint(this.ratchet.getECDHPublicKey());
-                // FIXME DH public key should only be sent in some cases.
-                out.writeBigInt(this.ratchet.getDHPublicKey());
+                if (rotation == null || rotation.dhPublicKey == null) {
+                    out.writeData(new byte[0]);
+                } else {
+                    out.writeBigInt(rotation.dhPublicKey);
+                }
                 out.writeNonce(result.nonce);
                 out.writeData(result.ciphertext);
                 messageMAC = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
@@ -131,7 +132,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // FIXME add revealed MACs to data message
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
-            this.ratchet.getECDHPublicKey(), this.ratchet.getDHPublicKey(), result.nonce, result.ciphertext,
+            this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce, result.ciphertext,
             authenticator, new byte[0]);
     }
 
@@ -157,8 +158,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // FIXME try to decrypt using skipped message keys.
         // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
         // receiving ratchet are stored. A new DH ratchet is performed.
-        if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())
-            && message.getDhPublicKey() != null && !this.ratchet.getDHPublicKey().equals(message.getDhPublicKey())) {
+        if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
+            // TODO verify that we indeed do not care about equality of DH public keys
             this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
             // FIXME execute receiver key rotation - To be continued ...
         }

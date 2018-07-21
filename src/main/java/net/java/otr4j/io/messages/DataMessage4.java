@@ -4,6 +4,7 @@ import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
@@ -30,7 +31,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     // FIXME consider converting DataMessage4 to using InstanceTag instead of int types.
     public DataMessage4(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
                         final byte flags, final int pn, final int i, final int j, @Nonnull final Point ecdhPublicKey,
-                        @Nonnull final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
+                        @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
                         @Nonnull final byte[] ciphertext, @Nonnull final byte[] authenticator,
                         @Nonnull final byte[] revealedMacs) {
         super(protocolVersion, senderInstanceTag, receiverInstanceTag);
@@ -39,7 +40,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         this.i = i;
         this.j = j;
         this.ecdhPublicKey = requireNonNull(ecdhPublicKey);
-        this.dhPublicKey = requireNonNull(dhPublicKey);
+        this.dhPublicKey = dhPublicKey;
         // FIXME replace literal with constant of XSALSA20_IV_LENGTH_BYTES.
         this.nonce = requireLengthExactly(24, nonce);
         this.ciphertext = requireNonNull(ciphertext);
@@ -107,7 +108,11 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         writer.writeInt(this.i);
         writer.writeInt(this.j);
         writer.writePoint(this.ecdhPublicKey);
-        writer.writeBigInt(this.dhPublicKey);
+        if (this.dhPublicKey == null) {
+            writer.writeData(new byte[0]);
+        } else {
+            writer.writeBigInt(this.dhPublicKey);
+        }
         writer.writeNonce(this.nonce);
         writer.writeData(this.ciphertext);
     }

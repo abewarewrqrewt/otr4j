@@ -204,7 +204,6 @@ public final class SharedSecret4 implements AutoCloseable {
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         if (performDHRatchet) {
-            // FIXME we probably do not receive a new DH public key on every message. Hence we need to conditionally rotate DH public keys only on specific iterations.
             this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         }
         // FIXME securely delete our_ecdh.secret.
