@@ -8,7 +8,7 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.api.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;

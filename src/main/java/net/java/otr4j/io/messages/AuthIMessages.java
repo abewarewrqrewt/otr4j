@@ -2,7 +2,7 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.api.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;

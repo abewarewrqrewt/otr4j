@@ -1,6 +1,6 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.profile.ClientProfileTestUtils;
+import net.java.otr4j.api.ClientProfileTestUtils;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 

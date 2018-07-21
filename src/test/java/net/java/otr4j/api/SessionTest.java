@@ -4,7 +4,6 @@ package net.java.otr4j.api;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.messages.ClientProfilePayload;
-import net.java.otr4j.profile.ClientProfile;
 import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.test.dummyclient.DummyClient;
 import net.java.otr4j.test.dummyclient.PriorityServer;

@@ -1,6 +1,5 @@
-package net.java.otr4j.profile;
+package net.java.otr4j.api;
 
-import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.messages.ClientProfilePayload;

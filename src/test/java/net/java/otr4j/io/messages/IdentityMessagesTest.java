@@ -5,7 +5,7 @@ import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.api.ClientProfile;
 import org.junit.Test;
 
 import java.security.SecureRandom;

@@ -13,7 +13,7 @@ import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.ValidationException;
-import net.java.otr4j.profile.ClientProfile;
+import net.java.otr4j.api.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
