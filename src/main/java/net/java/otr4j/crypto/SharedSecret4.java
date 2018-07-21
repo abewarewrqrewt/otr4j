@@ -56,13 +56,11 @@ public final class SharedSecret4 implements AutoCloseable {
      * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
      * {@link nl.dannyvanheumen.joldilocks.Point}.
      */
-    @Nonnull
     private ECDHKeyPair ecdhKeyPair;
 
     /**
      * The 3072-bit DH shared secret computed from a DH key exchange, serialized as a big-endian unsigned integer.
      */
-    @Nonnull
     private DHKeyPair dhKeyPair;
 
     /**
@@ -158,10 +156,12 @@ public final class SharedSecret4 implements AutoCloseable {
         }
     }
 
+    @Nonnull
     public Point getECDHPublicKey() {
         return this.ecdhKeyPair.getPublicKey();
     }
 
+    @Nonnull
     public BigInteger getDHPublicKey() {
         return this.dhKeyPair.getPublicKey();
     }
@@ -171,6 +171,7 @@ public final class SharedSecret4 implements AutoCloseable {
      *
      * @return Mixed shared secret K.
      */
+    @Nonnull
     public byte[] getK() {
         requireInitializationCompleted();
         return this.k.clone();
