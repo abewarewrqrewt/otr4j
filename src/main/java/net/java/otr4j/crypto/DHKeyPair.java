@@ -12,8 +12,7 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
  * Class representing the DH key pair.
  */
 // TODO Is it okay that we perform DH value handling ourselves instead of going through the obscure JCA key factories and agreements? (Consider BC) (I'm not happy with this implementation over standard JCA stuff. However, I also currently cannot find a reason to switch. OTRv4 spec makes it look so simple that there's more risk in trying to use the JCA correctly ... Except maybe for mitigating side-channel attacks such as with timing-related requirements.)
-// FIXME consider making AutoCloseable in order to clear private key component.
-public final class DHKeyPair {
+public final class DHKeyPair implements AutoCloseable {
 
     /**
      * The expected length of DH private key.
@@ -43,7 +42,7 @@ public final class DHKeyPair {
     /**
      * The secret key of the key pair.
      */
-    private final BigInteger secretKey;
+    private BigInteger secretKey;
 
     /**
      * The corresponding public key of the key pair.
@@ -114,6 +113,9 @@ public final class DHKeyPair {
      */
     @Nonnull
     public BigInteger generateSharedSecret(@Nonnull final BigInteger otherPublicKey) {
+        if (this.secretKey == null) {
+            throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
+        }
         return otherPublicKey.modPow(this.secretKey, MODULUS);
     }
 
@@ -127,5 +129,11 @@ public final class DHKeyPair {
     public static boolean checkPublicKey(@Nonnull final BigInteger publicKey) {
         return publicKey.compareTo(G3) >= 0 && publicKey.compareTo(MODULUS_MINUS_GEN) <= 0
             && ONE.equals(publicKey.modPow(Q, MODULUS));
+    }
+
+    // TODO clearing secret key does not guarantee secret key material is lost. Just that reference is gone.
+    @Override
+    public void close() {
+        this.secretKey = null;
     }
 }

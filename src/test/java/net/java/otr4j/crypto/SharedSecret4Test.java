@@ -24,14 +24,6 @@ public class SharedSecret4Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private static final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
-
-    private static final DHKeyPair ourNextDHKeyPair = DHKeyPair.generate(RANDOM);
-
-    private static final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
-
-    private static final ECDHKeyPair ourNextECDHKeyPair = ECDHKeyPair.generate(RANDOM);
-
     private static final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
 
     private static final Point theirNextECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
@@ -42,31 +34,41 @@ public class SharedSecret4Test {
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullSecureRandom() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(null, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullDHKeyPair() {
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, null, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullECDHKeyPair() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, null, theirDHPublicKey, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullTheirDHPublicKey() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, theirECDHPublicKey);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullTheirECDHPublicKey() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, null);
     }
 
     @Test
     public void testConstruction() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         assertNotNull(ss.getECDHPublicKey());
         assertNotNull(ss.getDHPublicKey());
@@ -75,6 +77,8 @@ public class SharedSecret4Test {
 
     @Test
     public void testRotateOurKeysNoDHRatchet() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final Point firstECDHPublicKey = ss.getECDHPublicKey();
         final BigInteger firstDHPublicKey = ss.getDHPublicKey();
@@ -89,6 +93,8 @@ public class SharedSecret4Test {
 
     @Test
     public void testRotateOurKeysDHRatchet() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final Point firstECDHPublicKey = ss.getECDHPublicKey();
         final BigInteger firstDHPublicKey = ss.getDHPublicKey();
@@ -103,6 +109,8 @@ public class SharedSecret4Test {
 
     @Test
     public void testRotateTheirKeys() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
         // Rotate our key pairs.
@@ -113,12 +121,16 @@ public class SharedSecret4Test {
 
     @Test(expected = NullPointerException.class)
     public void testRotateTheirKeysNullECDH() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         ss.rotateTheirKeys(true, null, theirNextDHPublicKey);
     }
 
     @Test
     public void testRotateTheirKeysNullDHNonThirdIteration() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
         // Rotate their public keys.
@@ -129,12 +141,16 @@ public class SharedSecret4Test {
 
     @Test(expected = NullPointerException.class)
     public void testRotateTheirKeysNullDHThirdIteration() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         ss.rotateTheirKeys(true, theirNextECDHPublicKey, null);
     }
 
     @Test
     public void testGetKNotModifiable() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         ss.rotateTheirKeys(true, theirNextECDHPublicKey, theirNextDHPublicKey);
         final byte[] firstK = ss.getK();
@@ -146,14 +162,30 @@ public class SharedSecret4Test {
     // FIXME This notes that it is possible to go back to an earlier ratchet state by providing the same public keys again, ... within reason for a short while. Is this by design?
     @Test
     public void testRotateSamePublicKeysEveryThirdIteration() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        ss.rotateOurKeys(true);
         final byte[] firstK = ss.getK();
         ss.rotateTheirKeys(true, theirECDHPublicKey, theirDHPublicKey);
         assertArrayEquals(firstK, ss.getK());
     }
 
     @Test
+    public void testRotateDifferentPublicKeysEveryThirdIteration() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        ss.rotateOurKeys(true);
+        final byte[] firstK = ss.getK();
+        ss.rotateTheirKeys(true, theirNextECDHPublicKey, theirNextDHPublicKey);
+        assertFalse(Arrays.equals(firstK, ss.getK()));
+    }
+
+    @Test
     public void testRotateSamePublicKeysEveryNonThirdIteration() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
         ss.rotateTheirKeys(false, theirECDHPublicKey, null);

@@ -3,6 +3,7 @@ package net.java.otr4j.crypto;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
@@ -19,15 +20,14 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * ECDH keypair based on Ed448-Goldilocks.
  */
-// FIXME consider making AutoCloseable in order to clear private key component.
-public final class ECDHKeyPair {
+public final class ECDHKeyPair implements AutoCloseable {
 
     /**
      * Length of the secret key in bytes.
      */
     static final int SECRET_KEY_LENGTH_BYTES = 57;
 
-    private final BigInteger secretKey;
+    private BigInteger secretKey;
 
     private final Point publicKey;
 
@@ -106,10 +106,10 @@ public final class ECDHKeyPair {
      * The secret key is intentionally not made public. It should only be used in a package-local logic such that we can
      * prevent unintended exposures of secret data.
      *
-     * @return Returns the secret key.
+     * @return Returns the secret key or null if resource is already closed.
      */
     // TODO is this method really needed?
-    @Nonnull
+    @Nullable
     BigInteger getSecretKey() {
         return this.secretKey;
     }
@@ -122,11 +122,23 @@ public final class ECDHKeyPair {
      */
     @Nonnull
     public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws OtrCryptoException {
+        if (this.secretKey == null) {
+            throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
+        }
         final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
         // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.
         if (checkIdentity(sharedSecret)) {
             throw new OtrCryptoException("Illegal ECDH public key.");
         }
         return sharedSecret;
+    }
+
+    /**
+     * Clear the secret key of the ECDH key pair.
+     */
+    // TODO clearing secret key does not guarantee secret key material is lost. Just that reference is gone.
+    @Override
+    public void close() {
+        this.secretKey = null;
     }
 }
