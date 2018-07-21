@@ -64,7 +64,6 @@ final class DoubleRatchet implements AutoCloseable {
 
     private final byte[] receivingChainKey = new byte[CHAIN_KEY_LENGTH_BYTES];
 
-    // FIXME check if we can perform the rotations without needing an extra flag to indicate the status of the ratchet.
     private boolean needSenderKeyRotation = true;
 
     /**

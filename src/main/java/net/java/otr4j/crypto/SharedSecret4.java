@@ -97,7 +97,6 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Override
     public void close() {
-        // FIXME consider adding nulling public keys to prevent further use.
         clear(this.braceKey);
         clear(this.k);
         this.ecdhKeyPair.close();
