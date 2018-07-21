@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
@@ -37,6 +38,8 @@ import static org.bouncycastle.util.Arrays.clear;
 // TODO signal errors in data message using ERROR_2 indicator.
 // TODO Verify that old MACs are received ... as a way to verify your own deniability property.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
+
+    private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
 
     private static final int DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES = 64;
 
@@ -91,8 +94,15 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
                                                    @Nonnull final List<TLV> tlvs) {
-        final DoubleRatchet.Rotation rotation = this.ratchet.isNeedSenderKeyRotation()
-            ? this.ratchet.rotateSenderKeys() : null;
+        final DoubleRatchet.Rotation rotation;
+        if (this.ratchet.isNeedSenderKeyRotation()) {
+            rotation = this.ratchet.rotateSenderKeys();
+            LOGGER.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
+                new Object[]{rotation.dhPublicKey != null, rotation.revealedMacs.length});
+        } else {
+            rotation = null;
+            LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
+        }
         // FIXME implement accept and prepare revealed MACs here
         final byte[] msgBytes = convertTextToBytes(msgText);
         final MessageKeys.Result result;

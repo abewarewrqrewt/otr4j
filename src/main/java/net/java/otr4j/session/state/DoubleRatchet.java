@@ -12,6 +12,7 @@ import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.lang.Integer.MIN_VALUE;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTHENTICATOR;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.CHAIN_KEY;
@@ -42,7 +43,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
 // TODO Currently we do not keep track of used MACs for later reveal.
-// FIXME need to clean up DoubleRatchet after use. (Zero memory containing secrets.)
 // TODO consider adding a counter/semaphore in order to verify that "at most one" (depending on circumstances) set of message keys is active at a time. Ensures that message keys are appropriately cleaned after use.
 // FIXME closing ratchet should also close any remaining message keys
 // FIXME finish writing unit tests after ratchet implementation is finished.
@@ -99,7 +99,7 @@ final class DoubleRatchet implements AutoCloseable {
         clear(this.rootKey);
         clear(this.receivingChainKey);
         clear(this.sendingChainKey);
-        this.i = -1;
+        this.i = MIN_VALUE;
         this.j = 0;
         this.k = 0;
         this.pn = 0;
@@ -202,7 +202,8 @@ final class DoubleRatchet implements AutoCloseable {
     // FIXME preserve message keys in previous ratchet before rotating away.
     void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) {
         requireNotClosed();
-        LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet " + this.i);
+        LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
+            new Object[]{this.i, nextDH != null});
         this.needSenderKeyRotation = true;
         this.k = 0;
         final byte[] previousRootKey = this.rootKey.clone();

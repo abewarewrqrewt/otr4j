@@ -25,7 +25,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 /**
  * The Shared Secret mechanism used in OTRv4.
  */
-// TODO consider what we would need to do to reuse the same memory more. Right now we replace one reference by another, but we rely on the instances being cleaned up by the GC.
 // FIXME investigate what we need to clean additionally for Point and BigInteger calculations where we use temporary instances during computation.
 // FIXME use of concatenate(...) to concat byte arrays, but intermediate result is not cleared.
 // FIXME write tests for testing key rotation.
@@ -90,7 +89,7 @@ public final class SharedSecret4 implements AutoCloseable {
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
-        regenerateK(true);
+        regenerateK(Rotation.SENDER_KEYS, true);
     }
 
     /**
@@ -101,17 +100,37 @@ public final class SharedSecret4 implements AutoCloseable {
         // FIXME consider adding nulling public keys to prevent further use.
         clear(this.braceKey);
         clear(this.k);
-        // FIXME securely clear other fields
+        this.ecdhKeyPair.close();
+        this.dhKeyPair.close();
     }
 
+    /**
+     * Generate SSID from key material provided by the security parameters.
+     * <p>
+     * NOTE: we intentionally do not clear the SharedSecret4 instance, as the same key material needs to be reused, so
+     * it cannot be cleared yet.
+     *
+     * @param random Secure random instance
+     * @param params Security parameters
+     * @return Returns the SSID.
+     */
     @Nonnull
     public static byte[] generateSSID(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        try (SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(),
-            params.getEcdhKeyPair(), params.getA(), params.getX())) {
-            return kdf1(SSID, exchangeSecrets.getK(), SSID_LENGTH_BYTES);
-        }
+        final SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
+            params.getA(), params.getX());
+        return kdf1(SSID, exchangeSecrets.getK(), SSID_LENGTH_BYTES);
     }
 
+    /**
+     * Generate K from key material provided by the security parameters.
+     * <p>
+     * NOTE: we intentionally do not clear the SharedSecret4 instance, as the same key material needs to be reused, so
+     * it cannot be cleared yet.
+     *
+     * @param random Secure random instance
+     * @param params Security parameters
+     * @return Returns K.
+     */
     @Nonnull
     public static byte[] generateK(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
         final SharedSecret4 sharedSecret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
@@ -184,13 +203,11 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     public void rotateOurKeys(final boolean regenerateDHKeyPair) {
         requireInitializationCompleted();
-        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(this.random);
-        this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
+        this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
         if (regenerateDHKeyPair) {
-            final DHKeyPair ourDHKeyPair = DHKeyPair.generate(this.random);
-            this.dhKeyPair = requireNonNull(ourDHKeyPair);
+            this.dhKeyPair = DHKeyPair.generate(this.random);
         }
-        regenerateK(regenerateDHKeyPair);
+        regenerateK(Rotation.SENDER_KEYS, regenerateDHKeyPair);
     }
 
     /**
@@ -207,11 +224,11 @@ public final class SharedSecret4 implements AutoCloseable {
         if (performDHRatchet) {
             this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         }
-        // FIXME securely delete our_ecdh.secret.
-        regenerateK(performDHRatchet);
+        regenerateK(Rotation.RECEIVER_KEYS, performDHRatchet);
+        this.ecdhKeyPair.close();
     }
 
-    private void regenerateK(final boolean performDHRatchet) {
+    private void regenerateK(final Rotation rotation, final boolean performDHRatchet) {
         requireInitializationCompleted();
         final byte[] k_ecdh;
         try {
@@ -223,7 +240,9 @@ public final class SharedSecret4 implements AutoCloseable {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, THIRD_BRACE_KEY, k_dh, BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);
-            // FIXME securely delete our_dh.secret.
+            if (rotation == Rotation.RECEIVER_KEYS) {
+                this.dhKeyPair.close();
+            }
         } else {
             kdf1(this.braceKey, 0, BRACE_KEY, this.braceKey, BRACE_KEY_LENGTH_BYTES);
         }
@@ -235,5 +254,9 @@ public final class SharedSecret4 implements AutoCloseable {
         if (this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
             throw new IllegalStateException("Shared secrets have not been fully initialized. Other party's public keys need to be rotated first.");
         }
+    }
+
+    private enum Rotation {
+        SENDER_KEYS, RECEIVER_KEYS
     }
 }
