@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 
+import static java.math.BigInteger.ZERO;
 import static net.java.otr4j.api.Session.OTRv.SUPPORTED;
 import static net.java.otr4j.io.messages.AuthIMessage.MESSAGE_AUTH_I;
 import static net.java.otr4j.io.messages.AuthRMessage.MESSAGE_AUTH_R;
@@ -99,7 +100,8 @@ public final class EncodedMessageParser {
                         // Validation is delayed until a later point as we are missing context information for full
                         // validation.
                         return new DataMessage4(protocolVersion, senderInstanceTag, recipientInstanceTag, flags, pn, i,
-                            j, ecdhPublicKey, dhPublicKey, nonce, ciphertext, authenticator, revealedMacs);
+                            j, ecdhPublicKey, ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext,
+                            authenticator, revealedMacs);
                     }
                     default:
                         throw new IllegalStateException("BUG: Future protocol versions are not supported. We should not have reached this state.");
