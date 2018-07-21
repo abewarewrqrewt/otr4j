@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="Default Maven PMD Plugin Ruleset"
          xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
-    <description>Rules set based on pmd 6.5.0</description>
-    <rule ref="category/java/bestpractices.xml" />
+    <description>Rules set selection based on pmd 6.5.0</description>
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="AccessorClassGeneration"/>
+    </rule>
     <rule ref="category/java/codestyle.xml">
         <exclude name="TooManyStaticImports"/>
         <exclude name="ShortVariable"/>
@@ -13,9 +15,11 @@
         <exclude name="CommentDefaultAccessModifier"/>
         <exclude name="AvoidFinalLocalVariable"/>
         <exclude name="AvoidPrefixingMethodParameters"/>
+        <exclude name="ShortClassName"/>
+        <exclude name="ShortMethodName"/>
     </rule>
     <rule ref="category/java/design.xml">
-            <exclude name="LawOfDemeter"/>
+        <exclude name="LawOfDemeter"/>
     </rule>
     <rule ref="category/java/documentation.xml">
         <exclude name="CommentSize"/>
@@ -23,8 +27,11 @@
     </rule>
     <rule ref="category/java/errorprone.xml">
         <exclude name="BeanMembersShouldSerialize"/>
+        <exclude name="AvoidFieldNameMatchingMethodName"/>
     </rule>
     <rule ref="category/java/multithreading.xml"/>
-    <rule ref="category/java/performance.xml"/>
+    <rule ref="category/java/performance.xml">
+        <exclude name="TooFewBranchesForASwitchStatement"/>
+    </rule>
     <rule ref="category/java/security.xml"/>
 </ruleset>
