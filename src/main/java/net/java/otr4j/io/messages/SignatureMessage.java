@@ -59,7 +59,7 @@ public final class SignatureMessage extends AbstractEncodedMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        SignatureMessage other = (SignatureMessage) obj;
+        final SignatureMessage other = (SignatureMessage) obj;
         if (!constantTimeEquals(xEncrypted, other.xEncrypted)) {
             return false;
         }

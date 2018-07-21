@@ -52,7 +52,7 @@ public final class SignatureM implements OtrEncodable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -62,7 +62,7 @@ public final class SignatureM implements OtrEncodable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        SignatureM other = (SignatureM) obj;
+        final SignatureM other = (SignatureM) obj;
         if (keyPairID != other.keyPairID) {
             return false;
         }

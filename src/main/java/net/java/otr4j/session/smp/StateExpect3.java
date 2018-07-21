@@ -67,7 +67,7 @@ final class StateExpect3 extends AbstractSMPState {
 
         /* Calculate Rb and proof */
         msg4[0] = qab.modPow(x3, OtrCryptoEngine.MODULUS);
-        BigInteger[] res = proofEqualLogs(qab, x3, 8);
+        final BigInteger[] res = proofEqualLogs(qab, x3, 8);
         msg4[1] = res[0];
         msg4[2] = res[1];
 

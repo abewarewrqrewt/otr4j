@@ -375,7 +375,7 @@ public final class OtrPolicy {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj == this) {
             return true;
         }
@@ -383,7 +383,7 @@ public final class OtrPolicy {
             return false;
         }
 
-        OtrPolicy policy = (OtrPolicy) obj;
+        final OtrPolicy policy = (OtrPolicy) obj;
 
         return policy.policy == this.policy;
     }

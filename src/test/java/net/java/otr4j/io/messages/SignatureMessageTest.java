@@ -2,7 +2,6 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.io.SerializationConstants;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,12 +13,14 @@ import static org.junit.Assert.assertNotNull;
 
 public class SignatureMessageTest {
 
-    @Test
+    private final int MAC_LENGTH_BYTES = 20;
+
     /** since this test is based on randomly generated data,
      * there is a very small chance of false positives. */
+    @Test
     public void testHashCode() {
         Random r = new Random();
-        byte[] fakeEncryptedMAC = new byte[SerializationConstants.TYPE_LEN_MAC];
+        byte[] fakeEncryptedMAC = new byte[MAC_LENGTH_BYTES];
         SignatureMessage current;
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
@@ -44,12 +45,12 @@ public class SignatureMessageTest {
         }
     }
 
-    @Test
     /** since this test is based on randomly generated data,
      * there is a very small chance of false positives. */
+    @Test
     public void testEqualsObject() {
         Random r = new Random();
-        final byte[] fakeEncryptedMAC = new byte[SerializationConstants.TYPE_LEN_MAC];
+        final byte[] fakeEncryptedMAC = new byte[MAC_LENGTH_BYTES];
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
             final byte[] fakeEncrypted = new byte[i];
@@ -59,7 +60,7 @@ public class SignatureMessageTest {
             assertNotNull(sm);
             final byte[] fakeEncrypted2 = new byte[i];
             System.arraycopy(fakeEncrypted, 0, fakeEncrypted2, 0, fakeEncrypted.length);
-            final byte[] fakeEncryptedMAC2 = new byte[SerializationConstants.TYPE_LEN_MAC];
+            final byte[] fakeEncryptedMAC2 = new byte[MAC_LENGTH_BYTES];
             System.arraycopy(fakeEncryptedMAC, 0, fakeEncryptedMAC2, 0, fakeEncryptedMAC.length);
             SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted2, fakeEncryptedMAC2, 0, 0);
             assertNotNull(sm2);

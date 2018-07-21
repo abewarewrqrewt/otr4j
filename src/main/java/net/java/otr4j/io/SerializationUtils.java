@@ -39,12 +39,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static net.java.otr4j.io.SerializationConstants.ERROR_PREFIX;
-import static net.java.otr4j.io.SerializationConstants.HEAD;
-import static net.java.otr4j.io.SerializationConstants.HEAD_ENCODED;
-import static net.java.otr4j.io.SerializationConstants.HEAD_ERROR;
-import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_Q;
-import static net.java.otr4j.io.SerializationConstants.HEAD_QUERY_V;
+import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
+import static net.java.otr4j.io.EncodingConstants.HEAD;
+import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
+import static net.java.otr4j.io.EncodingConstants.HEAD_ERROR;
+import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_Q;
+import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_V;
 import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 import static org.bouncycastle.util.encoders.Base64.decode;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
@@ -101,8 +101,7 @@ public final class SerializationUtils {
     @Nonnull
     public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws IOException, OtrCryptoException,
         UnsupportedTypeException {
-        try (final ByteArrayInputStream in = new ByteArrayInputStream(b);
-             final OtrInputStream ois = new OtrInputStream(in)) {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readMysteriousX();
         }
     }
@@ -110,7 +109,7 @@ public final class SerializationUtils {
     // Basic IO.
     @Nonnull
     public static byte[] writeData(@Nonnull final byte[] b) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             out.writeData(b);
             return out.toByteArray();
         }
@@ -119,7 +118,7 @@ public final class SerializationUtils {
     // BigInteger IO.
     @Nonnull
     public static byte[] writeMpi(@Nonnull final BigInteger bigInt) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             out.writeBigInt(bigInt);
             return out.toByteArray();
         }
@@ -127,8 +126,7 @@ public final class SerializationUtils {
 
     @Nonnull
     public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException {
-        try (final ByteArrayInputStream in = new ByteArrayInputStream(b);
-             final OtrInputStream ois = new OtrInputStream(in)) {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readBigInt();
         }
     }
@@ -136,7 +134,7 @@ public final class SerializationUtils {
     // Public Key IO.
     @Nonnull
     public static byte[] writePublicKey(@Nonnull final DSAPublicKey pubKey) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             out.writePublicKey(pubKey);
             return out.toByteArray();
         }
@@ -200,7 +198,7 @@ public final class SerializationUtils {
             }
         } else if (m instanceof AbstractEncodedMessage) {
             writer.write(HEAD_ENCODED);
-            try (final OtrOutputStream out = new OtrOutputStream()) {
+            try (OtrOutputStream out = new OtrOutputStream()) {
                 out.write((AbstractEncodedMessage) m);
                 writer.write(toBase64String(out.toByteArray()));
             }
@@ -276,7 +274,7 @@ public final class SerializationUtils {
                  */
                 final ByteArrayInputStream bin = new ByteArrayInputStream(
                     decode(content.substring(0, content.length() - 1).getBytes(ASCII)));
-                try (final OtrInputStream otr = new OtrInputStream(bin)) {
+                try (OtrInputStream otr = new OtrInputStream(bin)) {
                     return read(otr);
                 }
             }
@@ -369,8 +367,8 @@ public final class SerializationUtils {
         value = value.toUpperCase(Locale.US);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         for (int index = 0; index < value.length(); index += 2) {
-            int high = HEX_DECODER.indexOf(value.charAt(index));
-            int low = HEX_DECODER.indexOf(value.charAt(index + 1));
+            final int high = HEX_DECODER.indexOf(value.charAt(index));
+            final int low = HEX_DECODER.indexOf(value.charAt(index + 1));
             out.write((high << 4) + low);
         }
         return out.toByteArray();
@@ -433,7 +431,7 @@ public final class SerializationUtils {
             System.arraycopy(messageBytes, tlvIndex, tlvsb, 0, tlvsb.length);
 
             final ByteArrayInputStream tin = new ByteArrayInputStream(tlvsb);
-            try (final OtrInputStream eois = new OtrInputStream(tin)) {
+            try (OtrInputStream eois = new OtrInputStream(tin)) {
                 while (tin.available() > 0) {
                     final int type = eois.readShort();
                     final byte[] tdata = eois.readTlvData();
@@ -476,7 +474,7 @@ public final class SerializationUtils {
         final byte[] queryTagBytes = queryTag.getBytes(ASCII);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             out.writeInt(senderInstanceTag);
             out.writeInt(receiverInstanceTag);
             out.writeData(queryTagBytes);

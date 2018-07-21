@@ -49,7 +49,7 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -59,7 +59,7 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        DHCommitMessage other = (DHCommitMessage) obj;
+        final DHCommitMessage other = (DHCommitMessage) obj;
         if (!constantTimeEquals(dhPublicKeyEncrypted, other.dhPublicKeyEncrypted)) {
             return false;
         }

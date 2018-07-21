@@ -24,6 +24,17 @@ import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
+import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
+import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_INT;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_LONG;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC_OTR4;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_NONCE;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 
 /**
  * OTR input stream.
@@ -32,8 +43,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
  * all possibilities of incomplete or bad data. Many methods throw IOException
  * to indicate for such an illegal situation.
  */
-public final class OtrInputStream extends FilterInputStream implements
-        SerializationConstants {
+public final class OtrInputStream extends FilterInputStream {
 
     private static final byte[] ZERO_BYTES = new byte[0];
 
@@ -233,7 +243,7 @@ public final class OtrInputStream extends FilterInputStream implements
         long value = 0;
         for (int i = 0; i < b.length; i++) {
             final int shift = (b.length - 1 - i) * 8;
-            value += ((b[i] & 0xFFL) << shift);
+            value += (b[i] & 0xFFL) << shift;
         }
         return value;
     }

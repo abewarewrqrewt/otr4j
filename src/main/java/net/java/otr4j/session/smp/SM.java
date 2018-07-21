@@ -83,7 +83,7 @@ public final class SM {
 
     @Nonnull
     static byte[] serialize(@Nonnull final BigInteger[] ints) {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             out.writeInt(ints.length);
             for (final BigInteger i : ints) {
                 out.writeBigInt(i);
@@ -212,6 +212,7 @@ public final class SM {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
         }
+        // FIXME consider removing the RuntimeException catch-block
         catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
@@ -251,6 +252,7 @@ public final class SM {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
         }
+        // FIXME consider removing the RuntimeException catch-block
         catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
@@ -287,6 +289,7 @@ public final class SM {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
         }
+        // FIXME consider removing the RuntimeException catch-block
         catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
@@ -323,6 +326,7 @@ public final class SM {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
         }
+        // FIXME consider removing the RuntimeException catch-block
         catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
@@ -356,6 +360,7 @@ public final class SM {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
         }
+        // FIXME consider removing the RuntimeException catch-block
         catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);

@@ -108,7 +108,7 @@ public final class SharedSecret4 implements AutoCloseable {
 
     @Nonnull
     public static byte[] generateSSID(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        try (final SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(),
+        try (SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(),
             params.getEcdhKeyPair(), params.getA(), params.getX())) {
             return kdf1(SSID, exchangeSecrets.getK(), SSID_LENGTH_BYTES);
         }

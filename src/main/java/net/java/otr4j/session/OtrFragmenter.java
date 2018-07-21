@@ -166,7 +166,7 @@ final class OtrFragmenter {
 
             previous = end;
         }
-        return fragments.toArray(new String[fragments.size()]);
+        return fragments.toArray(new String[0]);
     }
 
     /**

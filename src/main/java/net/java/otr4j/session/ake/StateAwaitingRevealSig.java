@@ -55,6 +55,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     StateAwaitingRevealSig(final int version, @Nonnull final KeyPair keypair,
             @Nonnull final byte[] remotePublicKeyHash,
             @Nonnull final byte[] remotePublicKeyEncrypted) {
+        super();
         if (version < 2 || version > 3) {
             throw new IllegalArgumentException("unsupported version specified");
         }

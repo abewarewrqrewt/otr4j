@@ -37,6 +37,7 @@ final class StateFinished extends AbstractState {
     private final SessionID sessionId;
 
     StateFinished(final SessionID sessionId) {
+        super();
         this.sessionId = Objects.requireNonNull(sessionId);
     }
 

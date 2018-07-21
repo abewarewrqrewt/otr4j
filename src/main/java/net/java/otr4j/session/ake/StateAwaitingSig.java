@@ -58,6 +58,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             @Nonnull final DHPublicKey remoteDHPublicKey,
             @Nonnull final SharedSecret s,
             @Nonnull final RevealSignatureMessage previousRevealSigMessage) {
+        super();
         if (version < 2 || version > 3) {
             throw new IllegalArgumentException("unsupported version specified");
         }

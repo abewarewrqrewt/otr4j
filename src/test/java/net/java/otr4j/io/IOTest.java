@@ -140,7 +140,7 @@ public class IOTest {
 	public void testIORevealSignature() throws Exception {
 		int protocolVersion = 2;
 		byte[] xEncrypted = new byte[] { 1, 2, 3, 4 };
-		byte[] xEncryptedMAC = new byte[SerializationConstants.TYPE_LEN_MAC];
+		byte[] xEncryptedMAC = new byte[EncodingConstants.TYPE_LEN_MAC];
 		for (int i = 0; i < xEncryptedMAC.length; i++)
 			xEncryptedMAC[i] = (byte) i;
 

@@ -321,7 +321,7 @@ public final class OtrCryptoEngine4 {
         }
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
-        try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
             A1.encodeTo(buffer);
@@ -388,7 +388,7 @@ public final class OtrCryptoEngine4 {
         final Point T3 = multiplyByBase(sigma.r3).add(A3.multiply(sigma.c3));
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
         final BigInteger c;
-        try (final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             basePoint().encodeTo(buffer);
             encodeLittleEndianTo(buffer, q);
             A1.encodeTo(buffer);

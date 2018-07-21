@@ -52,9 +52,6 @@ public final class AuthRMessages {
         // FIXME Check that the receiver's instance tag matches your sender's instance tag. (Really needed? I would expect this to happen earlier.)
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
-        final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
-            receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
-            message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         final ClientProfile theirProfile = message.getClientProfile().validate();
         if (theirProfile.getInstanceTag().getValue() != message.senderInstanceTag) {
             throw new ValidationException("The message sender's instance tag is different from the client profile's instance tag.");
@@ -62,6 +59,9 @@ public final class AuthRMessages {
         // TODO how should we handle the case where our own client profile is not valid (anymore)?
         final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
+        final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
+            receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
+            message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
             message.getSigma(), t);
     }

@@ -51,7 +51,7 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -61,7 +61,7 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        RevealSignatureMessage other = (RevealSignatureMessage) obj;
+        final RevealSignatureMessage other = (RevealSignatureMessage) obj;
         if (!constantTimeEquals(revealedKey, other.revealedKey)) {
             return false;
         }

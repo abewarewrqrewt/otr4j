@@ -302,7 +302,7 @@ abstract class AbstractSMPState {
 
         /* Compute the value of c, as c = h(g1^r, (Qa/Qb)^r) */
         BigInteger temp1 = G1.modPow(r, OtrCryptoEngine.MODULUS);
-        BigInteger temp2 = qab.modPow(r, OtrCryptoEngine.MODULUS);
+        final BigInteger temp2 = qab.modPow(r, OtrCryptoEngine.MODULUS);
         final BigInteger c = SM.hash(version, temp1, temp2);
 
         /* Compute the d values, as d = r - x3 c */

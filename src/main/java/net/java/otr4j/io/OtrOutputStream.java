@@ -21,11 +21,23 @@ import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
+import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
+import static net.java.otr4j.io.EncodingConstants.TLV_LEN;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_INT;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_LONG;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC_OTR4;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_NONCE;
+import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 // TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
-public final class OtrOutputStream implements SerializationConstants, Closeable {
+public final class OtrOutputStream implements Closeable {
 
     private final ByteArrayOutputStream out;
 

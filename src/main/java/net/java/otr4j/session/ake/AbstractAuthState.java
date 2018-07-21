@@ -34,6 +34,9 @@ abstract class AbstractAuthState implements AuthState {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractAuthState.class.getName());
 
+    AbstractAuthState() {
+    }
+
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
@@ -55,9 +58,6 @@ abstract class AbstractAuthState implements AuthState {
         // OTR: "Choose a random value x (at least 320 bits)"
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
-        // OTR: "Choose a random value r (128 bits)"
-        final byte[] r = OtrCryptoEngine.random(context.secureRandom(),
-                new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
         final DHPublicKey localDHPublicKey = (DHPublicKey) keypair.getPublic();
         try {
             OtrCryptoEngine.verify(localDHPublicKey);
@@ -72,6 +72,8 @@ abstract class AbstractAuthState implements AuthState {
         final byte[] publicKeyHash = OtrCryptoEngine.sha256Hash(publicKeyBytes);
         // OTR: "Encrypt gxmpi using AES128-CTR, with key r and initial counter value 0. The result will be the same length as gxmpi."
         final byte[] publicKeyEncrypted;
+        // OTR: "Choose a random value r (128 bits)"
+        final byte[] r = OtrCryptoEngine.random(context.secureRandom(), new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
         try {
             publicKeyEncrypted = OtrCryptoEngine.aesEncrypt(r, null, publicKeyBytes);
         } catch (final OtrCryptoException ex) {

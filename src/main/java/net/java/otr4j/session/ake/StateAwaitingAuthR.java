@@ -62,6 +62,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
                        @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
+        super();
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
         this.queryTag = requireNonNull(queryTag);

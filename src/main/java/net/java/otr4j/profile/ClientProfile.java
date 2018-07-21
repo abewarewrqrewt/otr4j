@@ -45,7 +45,7 @@ public final class ClientProfile {
 
     public ClientProfile(@Nonnull final InstanceTag instanceTag, @Nonnull final Point longTermPublicKey,
                          @Nonnull final Set<Integer> versions, final long expirationUnixTime,
-                         @Nullable DSAPublicKey dsaPublicKey) {
+                         @Nullable final DSAPublicKey dsaPublicKey) {
         this.instanceTag = requireNonNull(instanceTag);
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
         this.versions = requireMinElements(1, requireElements(singletonList(OTRv.FOUR),

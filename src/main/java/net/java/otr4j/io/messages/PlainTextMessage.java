@@ -42,7 +42,7 @@ public final class PlainTextMessage extends QueryMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -52,7 +52,7 @@ public final class PlainTextMessage extends QueryMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        PlainTextMessage other = (PlainTextMessage) obj;
+        final PlainTextMessage other = (PlainTextMessage) obj;
         if (cleanText == null) {
             if (other.cleanText != null) {
                 return false;

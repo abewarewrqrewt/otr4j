@@ -41,7 +41,7 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -51,7 +51,7 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        DHKeyMessage other = (DHKeyMessage) obj;
+        final DHKeyMessage other = (DHKeyMessage) obj;
         if (dhPublicKey == null) {
             if (other.dhPublicKey != null) {
                 return false;

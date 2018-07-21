@@ -49,7 +49,7 @@ public final class SignatureX implements OtrEncodable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -59,7 +59,7 @@ public final class SignatureX implements OtrEncodable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        SignatureX other = (SignatureX) obj;
+        final SignatureX other = (SignatureX) obj;
         if (dhKeyID != other.dhKeyID) {
             return false;
         }

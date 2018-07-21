@@ -58,7 +58,7 @@ public final class SharedSecret {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         // FIXME we currently compare and accept same instance, is this really what we want? Shouldn't this be considered an issue?
         if (this == obj) {
             return true;

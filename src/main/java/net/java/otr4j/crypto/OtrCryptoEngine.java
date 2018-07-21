@@ -7,7 +7,6 @@
 
 package net.java.otr4j.crypto;
 
-import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.SerializationUtils;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -96,6 +95,7 @@ public final class OtrCryptoEngine {
     public static final BigInteger MODULUS_MINUS_TWO = MODULUS.subtract(BIGINTEGER_TWO);
     public static final BigInteger GENERATOR = new BigInteger("2", 10);
 
+    private static final int MAC_LENGTH_BYTES = 20;
     public static final int AES_KEY_BYTE_LENGTH = 16;
     private static final int DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH = 320;
     private static final byte[] ZERO_CTR = new byte[] {
@@ -209,8 +209,7 @@ public final class OtrCryptoEngine {
     }
 
     @Nonnull
-    public static byte[] sha1Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
-            throws OtrCryptoException {
+    public static byte[] sha1Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
         final byte[] macBytes;
         try {
             final Mac mac = Mac.getInstance(HMAC_SHA1);
@@ -221,19 +220,15 @@ public final class OtrCryptoEngine {
         } catch (final InvalidKeyException ex) {
             throw new OtrCryptoException("Invalid key, results in invalid keyspec.", ex);
         }
-
-        if (length > 0) {
-            final byte[] bytes = new byte[length];
-            ByteBuffer.wrap(macBytes).get(bytes);
-            return bytes;
-        } else {
-            return macBytes;
-        }
+        // TODO verify if we need to take x bytes from the total package. Most likely HMAC_SHA1 already produces a 20-byte result.
+        final byte[] bytes = new byte[MAC_LENGTH_BYTES];
+        ByteBuffer.wrap(macBytes).get(bytes);
+        return bytes;
     }
 
     @Nonnull
     public static byte[] sha256Hmac160(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
-        return sha256Hmac(b, key, SerializationConstants.TYPE_LEN_MAC);
+        return sha256Hmac(b, key, MAC_LENGTH_BYTES);
     }
 
     @Nonnull
@@ -451,7 +446,7 @@ public final class OtrCryptoEngine {
     @Nonnull
     public static byte[] getFingerprintRaw(@Nonnull final DSAPublicKey pubKey) {
         final byte[] bRemotePubKey = SerializationUtils.writePublicKey(pubKey);
-        byte[] trimmed = new byte[bRemotePubKey.length - 2];
+        final byte[] trimmed = new byte[bRemotePubKey.length - 2];
         System.arraycopy(bRemotePubKey, 2, trimmed, 0, trimmed.length);
         return OtrCryptoEngine.sha1Hash(trimmed);
     }

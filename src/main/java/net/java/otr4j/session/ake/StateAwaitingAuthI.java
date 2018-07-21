@@ -60,6 +60,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     StateAwaitingAuthI(@Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
                        @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
                        @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
+        super();
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
         this.ourDHKeyPair = requireNonNull(ourDHKeyPair);

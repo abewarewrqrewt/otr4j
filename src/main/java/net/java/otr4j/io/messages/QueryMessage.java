@@ -28,7 +28,7 @@ public class QueryMessage implements Message {
     public QueryMessage(@Nonnull final Set<Integer> versions) {
         this.versions = requireNonNull(versions);
         // FIXME !!! bad workaround because we generate the actually sent Query-string in SerializationUtils.toString(m)!
-        StringBuilder tag = new StringBuilder("?OTRv");
+        final StringBuilder tag = new StringBuilder("?OTRv");
         for(final int version : versions) {
             tag.append(version);
         }
@@ -65,7 +65,7 @@ public class QueryMessage implements Message {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }

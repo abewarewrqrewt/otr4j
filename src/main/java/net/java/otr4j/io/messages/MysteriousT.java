@@ -72,7 +72,7 @@ public final class MysteriousT implements OtrEncodable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -82,7 +82,7 @@ public final class MysteriousT implements OtrEncodable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        MysteriousT other = (MysteriousT) obj;
+        final MysteriousT other = (MysteriousT) obj;
         if (!constantTimeEquals(ctr, other.ctr)) {
             return false;
         }

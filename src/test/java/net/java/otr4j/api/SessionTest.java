@@ -404,6 +404,7 @@ public class SessionTest {
             final String messageAlice = randomMessage(300);
             c.hostAlice.sendMessage(messageAlice);
             assertMessage(messageAlice, c.hostBob.receiveMessage());
+            // FIXME consider adding a check that verifies that ratcheting is actually performed. This is currently completely internal.
         }
     }
 

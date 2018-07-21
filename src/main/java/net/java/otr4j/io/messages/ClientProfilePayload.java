@@ -89,14 +89,16 @@ public final class ClientProfilePayload implements OtrEncodable {
             fields.add(new DSAPublicKeyField(dsaPublicKey));
         }
         final byte[] partialM;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             for (final Field field : fields) {
                 out.write(field);
             }
             partialM = out.toByteArray();
         }
         final byte[] m;
-        if (dsaPrivateKey != null) {
+        if (dsaPrivateKey == null) {
+            m = partialM;
+        } else {
             if (dsaPublicKey == null) {
                 throw new IllegalArgumentException("DSA private key provided for transitional signature, but DSA public key is not present in the client profile.");
             }
@@ -104,8 +106,6 @@ public final class ClientProfilePayload implements OtrEncodable {
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
             fields.add(sigField);
             m = concatenate(partialM, encode(sigField));
-        } else {
-            m = partialM;
         }
         final byte[] signature = eddsaKeyPair.sign(m);
         return new ClientProfilePayload(fields, signature);
@@ -272,7 +272,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             throw new ValidationException("Client Profile has expired.");
         }
         final byte[] partialM;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
+        try (OtrOutputStream out = new OtrOutputStream()) {
             out.write(instanceTagFields.get(0));
             out.write(publicKeyFields.get(0));
             out.write(versionsFields.get(0));

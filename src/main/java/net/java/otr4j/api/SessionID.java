@@ -12,6 +12,12 @@ package net.java.otr4j.api;
  */
 public final class SessionID {
 
+    private final String localAccountID;
+    private final String remoteUserID;
+    private final String protocolName;
+
+    public static final SessionID EMPTY = new SessionID(null, null, null);
+
     /**
      * A unique ID for an OTR session between two accounts.
      *
@@ -19,17 +25,11 @@ public final class SessionID {
      * @param remoteUserID the remote user on the other side of the conversation
      * @param protocolName the messaging protocol used for the conversation
      */
-    public SessionID(String localAccountID, String remoteUserID, String protocolName) {
+    public SessionID(final String localAccountID, final String remoteUserID, final String protocolName) {
         this.localAccountID = localAccountID;
         this.remoteUserID = remoteUserID;
         this.protocolName = protocolName;
     }
-
-    private final String localAccountID;
-    private final String remoteUserID;
-    private final String protocolName;
-
-    public static final SessionID EMPTY = new SessionID(null, null, null);
 
     /**
      *
@@ -69,7 +69,7 @@ public final class SessionID {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -79,7 +79,7 @@ public final class SessionID {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        SessionID other = (SessionID) obj;
+        final SessionID other = (SessionID) obj;
         if (localAccountID == null) {
             if (other.localAccountID != null) {
                 return false;

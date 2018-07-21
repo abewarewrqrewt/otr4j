@@ -25,6 +25,7 @@ abstract class AbstractStateEncrypted extends AbstractState {
     final OtrEngineHost host;
 
     AbstractStateEncrypted(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
+        super();
         this.sessionID = requireNonNull(sessionID);
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
         this.host = requireNonNull(host);

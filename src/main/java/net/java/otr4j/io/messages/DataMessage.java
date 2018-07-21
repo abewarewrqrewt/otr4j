@@ -81,7 +81,7 @@ public final class DataMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -91,7 +91,7 @@ public final class DataMessage extends AbstractEncodedMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        DataMessage other = (DataMessage) obj;
+        final DataMessage other = (DataMessage) obj;
         if (!constantTimeEquals(ctr, other.ctr)) {
             return false;
         }

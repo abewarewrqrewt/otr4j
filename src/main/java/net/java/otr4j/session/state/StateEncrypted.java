@@ -17,7 +17,6 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
@@ -145,8 +144,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Verify received MAC with a locally calculated MAC.
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
 
-        final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(encode(data.getT()), matchingKeys.receivingMAC(),
-            SerializationConstants.TYPE_LEN_MAC);
+        final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(encode(data.getT()), matchingKeys.receivingMAC());
         if (!constantTimeEquals(computedMAC, data.mac)) {
             logger.finest("MAC verification failed, ignoring message");
             OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
@@ -265,8 +263,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Append tlvs
         if (!tlvs.isEmpty()) {
             out.write((byte) 0x00);
-            try (final OtrOutputStream eoos = new OtrOutputStream(out)) {
-                for (TLV tlv : tlvs) {
+            try (OtrOutputStream eoos = new OtrOutputStream(out)) {
+                for (final TLV tlv : tlvs) {
                     eoos.writeShort(tlv.getType());
                     eoos.writeTlvData(tlv.getValue());
                 }
@@ -292,7 +290,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
 
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
-        final byte[] mac = OtrCryptoEngine.sha1Hmac(encode(t), sendingMACKey, SerializationConstants.TYPE_LEN_MAC);
+        final byte[] mac = OtrCryptoEngine.sha1Hmac(encode(t), sendingMACKey);
 
         // Get old MAC keys to be revealed.
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();

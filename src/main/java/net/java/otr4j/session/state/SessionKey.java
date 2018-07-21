@@ -112,7 +112,7 @@ final class SessionKey {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -211,7 +211,8 @@ final class SessionKey {
                 "Incrementing counter for (localkeyID, remoteKeyID) = ({0},{1})",
                 new Object[]{this.localKeyID, remoteKeyID});
         for (int i = this.sendingCtr.length - 1; i >= 0; i--) {
-            if (++sendingCtr[i] != 0) {
+            sendingCtr[i]++;
+            if (this.sendingCtr[i] != 0) {
                 break;
             }
         }

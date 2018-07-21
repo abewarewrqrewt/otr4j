@@ -100,6 +100,7 @@ public final class SmpTlvHandler {
             combinedSecret = OtrCryptoEngine.sha256Hash(VERSION_BYTE, theirFp, ourFp, sessionId, secretBytes);
         }
 
+        // TODO very ugly exception handling. We should see if we can simplify this.
         byte[] smpmsg;
         if (initiating) {
             try {

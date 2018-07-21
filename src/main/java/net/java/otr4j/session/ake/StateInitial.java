@@ -58,6 +58,7 @@ public final class StateInitial extends AbstractAuthState {
 
     // FIXME we should ensure that everywhere a whitespace tag or query message is sent, we update the initial state to reflect the last such hint.
     public StateInitial(@Nonnull final String queryTag) {
+        super();
         this.queryTag = requireNonNull(queryTag);
     }
 

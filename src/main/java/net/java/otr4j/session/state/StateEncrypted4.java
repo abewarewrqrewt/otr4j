@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SSID;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.SharedSecret4.generateK;
 import static net.java.otr4j.crypto.SharedSecret4.generateSSID;
@@ -104,13 +103,13 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final int messageId;
         final byte[] authenticator;
         // FIXME determine when to send new ECDH (and DH) keys. Only happens upon new rotation.
-        try (final MessageKeys keys = this.ratchet.generateSendingKeys()) {
+        try (MessageKeys keys = this.ratchet.generateSendingKeys()) {
             ratchetId = keys.getRatchetId();
             messageId = keys.getMessageId();
             result = keys.encrypt(msgBytes);
             // TODO consider moving to separate method for readability
             final byte[] messageMAC;
-            try (final OtrOutputStream out = new OtrOutputStream()) {
+            try (OtrOutputStream out = new OtrOutputStream()) {
                 out.writeShort(VERSION);
                 out.writeByte(DATA_MESSAGE_TYPE);
                 out.writeInt(context.getSenderInstanceTag().getValue());
@@ -159,7 +158,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
         // receiving ratchet are stored. A new DH ratchet is performed.
         if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())
-            && (message.getDhPublicKey() != null && !this.ratchet.getDHPublicKey().equals(message.getDhPublicKey()))) {
+            && message.getDhPublicKey() != null && !this.ratchet.getDHPublicKey().equals(message.getDhPublicKey())) {
             this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
             // FIXME execute receiver key rotation - To be continued ...
         }
@@ -167,9 +166,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // messages from the same ratchet are stored, and a symmetric-key ratchet is performed to derive the current
         // message key and the next receiving chain key. The message is then verified and decrypted.
         final byte[] dmc;
-        try (final MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
+        try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
             final byte[] digest;
-            try (final OtrOutputStream out = new OtrOutputStream()) {
+            try (OtrOutputStream out = new OtrOutputStream()) {
                 message.writeAuthenticatedMessageDigest(out);
                 digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             }

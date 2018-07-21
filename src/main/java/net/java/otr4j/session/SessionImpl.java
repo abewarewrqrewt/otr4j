@@ -22,7 +22,6 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.SerializationConstants;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ClientProfilePayload;
@@ -105,6 +104,8 @@ import static net.java.otr4j.io.SerializationUtils.toMessage;
  * @author Danny van Heumen
  */
 final class SessionImpl implements Session, Context, AuthContext {
+
+    private static final String DEFAULT_FALLBACK_MESSAGE = "Your contact is requesting to start an encrypted chat. Please install an app that supports OTR: https://github.com/otr4j/otr4j/wiki/Apps";
 
     /**
      * Session state contains the currently active message state of the session.
@@ -656,7 +657,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     private String getFallbackMessage(final SessionID sessionId) {
         String fallback = OtrEngineHostUtil.getFallbackMessage(this.host, sessionId);
         if (fallback == null || fallback.isEmpty()) {
-            fallback = SerializationConstants.DEFAULT_FALLBACK_MESSAGE;
+            fallback = DEFAULT_FALLBACK_MESSAGE;
         }
         return fallback;
     }
@@ -882,7 +883,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     @Override
-    public void addOtrEngineListener(@Nonnull OtrEngineListener l) {
+    public void addOtrEngineListener(@Nonnull final OtrEngineListener l) {
         synchronized (listeners) {
             if (!listeners.contains(l)) {
                 listeners.add(l);
@@ -891,7 +892,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     @Override
-    public void removeOtrEngineListener(@Nonnull OtrEngineListener l) {
+    public void removeOtrEngineListener(@Nonnull final OtrEngineListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }

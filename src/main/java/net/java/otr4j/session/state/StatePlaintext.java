@@ -42,6 +42,7 @@ public final class StatePlaintext extends AbstractState {
     private final SessionID sessionId;
 
     public StatePlaintext(final SessionID sessionId) {
+        super();
         this.sessionId = Objects.requireNonNull(sessionId);
     }
 
