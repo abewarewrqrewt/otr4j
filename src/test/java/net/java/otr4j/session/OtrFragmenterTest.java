@@ -250,7 +250,7 @@ public class OtrFragmenterTest {
 
     @Test
     public void testFragmentPatternsV3() throws ProtocolException {
-        final Pattern OTRv3_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR\\|[0-9abcdef]{8}\\|[0-9abcdef]{8},\\d{5},\\d{5},[a-zA-Z0-9\\+/=\\?:]+,$");
+        final Pattern OTRv3_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR\\|[0-9abcdef]{8}\\|[0-9abcdef]{8},\\d{5},\\d{5},[a-zA-Z0-9+/=?:.]+,$");
         final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(1700).getBytes(UTF8));
         final OtrEngineHost host = host(150);
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0x0a73a599, 0x00010007);
@@ -268,7 +268,7 @@ public class OtrFragmenterTest {
 
     @Test
     public void testFragmentPatternsV2() throws ProtocolException {
-        final Pattern OTRv2_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR,\\d{1,5},\\d{1,5},[a-zA-Z0-9\\+/=\\?:]+,$");
+        final Pattern OTRv2_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR,\\d{1,5},\\d{1,5},[a-zA-Z0-9+/=?:.]+,$");
         final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(700).getBytes(UTF8));
         final OtrEngineHost host = host(150);
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0, 0);
@@ -332,6 +332,46 @@ public class OtrFragmenterTest {
         final OtrFragmenter fragmenter = new OtrFragmenter(fakeRandom, host, this.sessionID, this.senderTagOTRv4,
             this.receiverTagOTRv4);
         assertArrayEquals(specV4MessageParts208, fragmenter.fragment(4, getSpecV4MessageFull));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentOTRv4SizeTooSmall() throws ProtocolException {
+        final OtrEngineHost host = host(45);
+        final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, this.senderTagOTRv4,
+            this.receiverTagOTRv4);
+        fragmenter.fragment(4, getSpecV4MessageFull);
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentOTRv4SizeTooSmallForHeader() throws ProtocolException {
+        final OtrEngineHost host = host(44);
+        final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, this.senderTagOTRv4,
+            this.receiverTagOTRv4);
+        fragmenter.fragment(4, getSpecV4MessageFull);
+    }
+
+    @Test
+    public void testFragmentOTRv4MessageSizeExactlyRight() throws ProtocolException {
+        final String message = "?OTR:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
+        final OtrEngineHost host = host(46);
+        final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, this.senderTagOTRv4,
+            this.receiverTagOTRv4);
+        assertArrayEquals(new String[]{message}, fragmenter.fragment(4, message));
+    }
+
+    @Test
+    public void testFragmentOTRv4MessageSizeRequiresFragmentation() throws ProtocolException {
+        final Pattern OTRv4_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR\\|[0-9abcdef]{8}\\|[0-9abcdef]{8}\\|[0-9abcdef]{8},\\d{5},\\d{5},[a-zA-Z0-9+/=?:.]+,$");
+        final String message = "?OTR:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
+        final OtrEngineHost host = host(46);
+        final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, this.senderTagOTRv4,
+            this.receiverTagOTRv4);
+        final String[] fragments = fragmenter.fragment(4, message);
+        assertEquals(47, fragments.length);
+        for (final String fragment : fragments) {
+            assertEquals(46, fragment.length());
+            assertTrue(OTRv4_FRAGMENT_PATTERN.matcher(fragment).matches());
+        }
     }
 
     /**
