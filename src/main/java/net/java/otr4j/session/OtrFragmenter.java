@@ -145,14 +145,11 @@ final class OtrFragmenter {
      */
     @Nonnull
     String[] fragment(final int version, @Nonnull final String message) throws ProtocolException {
-        if (!otrEncoded(message)) {
-            throw new IllegalArgumentException("Message must be an OTR-encoded message and fragments are not allowed.");
+        if (version < Session.OTRv.TWO || !otrEncoded(message)) {
+            return new String[]{message};
         }
         if (version > Session.OTRv.FOUR) {
             throw new UnsupportedOperationException("Unsupported protocol version encountered: " + version);
-        }
-        if (version < Session.OTRv.TWO) {
-            return new String[]{message};
         }
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
         return fragment(version, message, fragmentSize);

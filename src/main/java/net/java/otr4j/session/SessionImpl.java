@@ -630,26 +630,21 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     public void injectMessage(@Nonnull final Message m) throws OtrException {
-        String msg = SerializationUtils.toString(m);
         final SessionID sessionId = this.sessionState.getSessionID();
-        if (SerializationUtils.otrEncoded(msg)) {
-            // Content is OTR encoded, so we are allowed to partition.
-            try {
-                final String[] fragments = this.fragmenter.fragment(this.sessionState.getVersion(), msg);
-                for (final String fragment : fragments) {
-                    this.host.injectMessage(sessionId, fragment);
-                }
-            } catch (final ProtocolException e) {
-                throw new OtrException("Failed to fragment message according to provided instructions.", e);
+        String msg = SerializationUtils.toString(m);
+        if (m instanceof QueryMessage) {
+            // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
+            assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
+            setState(new StateInitial(((QueryMessage) m).getTag()));
+            msg += getFallbackMessage(sessionId);
+        }
+        try {
+            final String[] fragments = this.fragmenter.fragment(this.sessionState.getVersion(), msg);
+            for (final String fragment : fragments) {
+                this.host.injectMessage(sessionId, fragment);
             }
-        } else {
-            if (m instanceof QueryMessage) {
-                // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
-                assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
-                setState(new StateInitial(((QueryMessage) m).getTag()));
-                msg += getFallbackMessage(sessionId);
-            }
-            this.host.injectMessage(sessionId, msg);
+        } catch (final ProtocolException e) {
+            throw new OtrException("Failed to fragment message according to provided instructions.", e);
         }
     }
 
@@ -788,7 +783,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Override
     @Nonnull
-    public String[] transformSending(@Nonnull final String msgText, final @Nonnull List<TLV> tlvs)
+    public String[] transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs)
             throws OtrException {
         if (masterSession == this && outgoingSession != this) {
             return outgoingSession.transformSending(msgText, tlvs);

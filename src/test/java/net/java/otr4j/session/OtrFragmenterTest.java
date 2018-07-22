@@ -285,18 +285,18 @@ public class OtrFragmenterTest {
         verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPreventFragmentationOfPlainTextMessage() throws ProtocolException {
         final OtrEngineHost host = host(150);
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0, 0);
-        fragmenter.fragment(3, "Hello world!");
+        assertArrayEquals(new String[]{"Hello world!"}, fragmenter.fragment(3, "Hello world!"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPreventFragmentationOfMessageFragment() throws ProtocolException {
         final OtrEngineHost host = host(150);
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0, 0);
-        fragmenter.fragment(3, specV3MessageParts199[0]);
+        assertArrayEquals(new String[]{specV3MessageParts199[0]}, fragmenter.fragment(3, specV3MessageParts199[0]));
     }
 
     @Test
