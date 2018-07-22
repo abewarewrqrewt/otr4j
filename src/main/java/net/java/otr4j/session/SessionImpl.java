@@ -294,8 +294,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         outgoingSession = this;
         // Initialize fragmented message support.
         assembler = new OtrAssembler(this.senderTag);
-        fragmenter = new OtrFragmenter(host, this.sessionState.getSessionID(), this.senderTag.getValue(),
-            this.receiverTag.getValue());
+        fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID(),
+            this.senderTag.getValue(), this.receiverTag.getValue());
     }
 
     /**

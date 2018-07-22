@@ -12,6 +12,7 @@ import net.java.otr4j.api.SessionID;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
+import java.security.SecureRandom;
 import java.util.LinkedList;
 
 import static java.util.Objects.requireNonNull;
@@ -23,12 +24,18 @@ import static net.java.otr4j.io.SerializationUtils.otrEncoded;
  * @author Danny van Heumen
  */
 // FIXME extend with support for OTRv4: https://github.com/otrv4/otrv4/blob/master/otrv4.md#fragmentation
+// TODO keep limited history of used identifiers to ensure short-term uniqueness for identifiers used during fragmentation.
 final class OtrFragmenter {
 
     /**
      * The maximum number of fragments supported by the OTR (v3) protocol.
      */
     private static final int MAXIMUM_NUMBER_OF_FRAGMENTS = 65535;
+
+    /**
+     * The message format of an OTRv4 message fragment.
+     */
+    private static final String OTRV4_MESSAGE_FRAGMENT_FORMAT = "?OTR|%08x|%08x|%08x,%05d,%05d,%s,";
 
     /**
      * The message format of an OTRv3 message fragment.
@@ -56,6 +63,11 @@ final class OtrFragmenter {
     private static final int OTRV4_HEADER_SIZE = 45;
 
     /**
+     * Secure random instance.
+     */
+    private final SecureRandom random;
+
+    /**
      * Instructions on how to fragment the input message.
      */
     private final OtrEngineHost host;
@@ -71,7 +83,9 @@ final class OtrFragmenter {
      *
      * @param host OTR engine host calling upon OTR session
      */
-    OtrFragmenter(@Nonnull final OtrEngineHost host, @Nonnull final SessionID sessionID, final int senderTag, final int receiverTag) {
+    OtrFragmenter(@Nonnull final SecureRandom random, @Nonnull final OtrEngineHost host,
+                  @Nonnull final SessionID sessionID, final int senderTag, final int receiverTag) {
+        this.random = requireNonNull(random);
         this.host = requireNonNull(host, "host cannot be null");
         this.sessionID = requireNonNull(sessionID);
         this.senderTag = senderTag;
@@ -166,6 +180,7 @@ final class OtrFragmenter {
             throw new ProtocolException("Number of necessary fragments exceeds limit.");
         }
         final int payloadSize = fragmentSize - computeHeaderSize(version);
+        final int id = this.random.nextInt();
         int previous = 0;
         final LinkedList<String> fragments = new LinkedList<>();
         while (previous < message.length()) {
@@ -173,7 +188,7 @@ final class OtrFragmenter {
             final int end = Math.min(previous + payloadSize, message.length());
 
             final String partialContent = message.substring(previous, end);
-            fragments.add(createMessageFragment(version, fragments.size(), num, partialContent));
+            fragments.add(createMessageFragment(version, id, fragments.size(), num, partialContent));
 
             previous = end;
         }
@@ -183,6 +198,7 @@ final class OtrFragmenter {
     /**
      * Create a message fragment.
      *
+     * @param id             the current message's identifier used in all created fragments (only relevant for OTRv4)
      * @param count          the current fragment number
      * @param total          the total number of fragments
      * @param partialContent the content for this fragment
@@ -190,7 +206,7 @@ final class OtrFragmenter {
      * @throws UnsupportedOperationException in case v1 is only allowed in policy
      */
     @Nonnull
-    private String createMessageFragment(final int version, final int count, final int total,
+    private String createMessageFragment(final int version, final int id, final int count, final int total,
                                          @Nonnull final String partialContent) {
         switch (version) {
             case Session.OTRv.TWO:
@@ -198,11 +214,25 @@ final class OtrFragmenter {
             case Session.OTRv.THREE:
                 return createV3MessageFragment(count, total, partialContent);
             case Session.OTRv.FOUR:
-                // FIXME implement OTRv4 support.
-                throw new UnsupportedOperationException("Protocol version 4 support has not been implemented yet.");
+                return createV4MessageFragment(id, count, total, partialContent);
             default:
                 throw new IllegalArgumentException("Unsupported protocol version: " + version);
         }
+    }
+
+    /**
+     * Create a message fragment according to the v4 message format.
+     *
+     * @param id             the current message's identifier
+     * @param count          the current fragment number
+     * @param total          the total number of fragments
+     * @param partialContent the content for this fragment
+     * @return returns the full message fragment
+     */
+    @Nonnull
+    private String createV4MessageFragment(final int id, final int count, final int total, @Nonnull final String partialContent) {
+        return String.format(OTRV4_MESSAGE_FRAGMENT_FORMAT, id, this.senderTag, this.receiverTag, count + 1, total,
+            partialContent);
     }
 
     /**
