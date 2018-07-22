@@ -55,6 +55,7 @@ public final class ByteArrays {
      * @param data2 The second byte array.
      * @return Returns true iff both byte arrays have same contents (and same length).
      */
+    // TODO constantTimeEquals is applied in all reasonable cases. We need to ensure 'equals' methods are also considerate of same instances. Do we really want to accept same instances everywhere?
     @CheckReturnValue
     public static boolean constantTimeEquals(@Nonnull final byte[] data1, @Nonnull final byte[] data2) {
         if (requireNonNull(data1) == requireNonNull(data2)) {

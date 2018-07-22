@@ -9,7 +9,6 @@ package net.java.otr4j.session;
 
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.SessionID;
-import net.java.otr4j.io.SerializationUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
@@ -17,6 +16,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Danny van Heumen
  */
+// FIXME add tests rejecting OTR fragment as input message.
 public class OtrFragmenterTest {
 
 	private static final String specV3MessageFull = "?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8vjPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2ipkTtquknfx6HodLvk3RAAAAAA==.";
@@ -88,8 +89,7 @@ public class OtrFragmenterTest {
 	public void testFragmentNullInstructionsFragment() throws IOException {
 		final OtrEngineHost host = mock(OtrEngineHost.class);
 		when(host.getMaxFragmentSize(any(SessionID.class))).thenReturn(Integer.MAX_VALUE);
-		final String message = "Some message that shouldn't be fragmented.";
-		
+		final String message = "?OTR:" + Base64.toBase64String("Some message that shouldn't be fragmented.".getBytes(UTF8));
 		final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
 		final String[] fragments = fragmenter.fragment(3, message);
 		assertArrayEquals(new String[] {message}, fragments);
@@ -224,7 +224,7 @@ public class OtrFragmenterTest {
 
 	@Test(expected = IOException.class)
 	public void testExceedProtocolMaximumNumberOfFragments() throws IOException {
-		final String veryLongString = new String(new char[65537]).replace('\0', 'a');
+		final String veryLongString = "?OTR:" + new String(new char[65537]).replace('\0', 'a');
 		OtrFragmenter fragmenter = new OtrFragmenter(host(37), this.sessionID, 0, 0);
 		fragmenter.fragment(3, veryLongString);
 	}
@@ -232,9 +232,8 @@ public class OtrFragmenterTest {
 	@Test
 	public void testFragmentPatternsV3() throws IOException {		
 		final Pattern OTRv3_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR\\|[0-9abcdef]{8}\\|[0-9abcdef]{8},\\d{5},\\d{5},[a-zA-Z0-9\\+/=\\?:]+,$");
-		final String payload = new String(Base64.encode(RandomStringUtils.random(1700).getBytes(SerializationUtils.UTF8)), SerializationUtils.ASCII);
+		final String payload = "?OTR:"+Base64.toBase64String(RandomStringUtils.random(1700).getBytes(UTF8));
 		final OtrEngineHost host = host(150);
-		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0x0a73a599, 0x00010007);
 		String[] msg = fragmenter.fragment(3, payload);
 		int count = 1;
@@ -251,16 +250,15 @@ public class OtrFragmenterTest {
 	@Test
 	public void testFragmentPatternsV2() throws IOException {		
 		final Pattern OTRv2_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR,\\d{1,5},\\d{1,5},[a-zA-Z0-9\\+/=\\?:]+,$");
-		final String payload = new String(Base64.encode(RandomStringUtils.random(700).getBytes(SerializationUtils.UTF8)), SerializationUtils.ASCII);
+		final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(700).getBytes(UTF8));
 		final OtrEngineHost host = host(150);
-		
-		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
-		String[] msg = fragmenter.fragment(2, payload);
+		final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
+		final String[] msg = fragmenter.fragment(2, payload);
 		int count = 1;
-		for (String part : msg) {
+		for (final String part : msg) {
 			assertTrue(OTRv2_FRAGMENT_PATTERN.matcher(part).matches());
 			// Test monotonic increase of part numbers ...
-			String temp = part.substring(5, 11);
+			final String temp = part.substring(5, 11);
 			int partNumber = Integer.parseInt(temp.substring(0, temp.indexOf(',')), 10);
 			assertEquals(count, partNumber);
 			count++;

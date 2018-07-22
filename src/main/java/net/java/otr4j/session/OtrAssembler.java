@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import net.java.otr4j.api.InstanceTag;
 
 /**
+ * Support for re-assembling fragmented OTR-encoded messages.
  *
  * @author Felix Eckhofer
  */

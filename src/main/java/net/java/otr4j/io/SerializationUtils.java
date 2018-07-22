@@ -16,6 +16,7 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.io.messages.SignatureX;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -43,6 +44,7 @@ import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ERROR;
+import static net.java.otr4j.io.EncodingConstants.HEAD_FRAGMENTED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_Q;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_V;
 import static net.java.otr4j.io.messages.EncodedMessageParser.read;
@@ -392,10 +394,10 @@ public final class SerializationUtils {
     /**
      * Check whether the provided content is OTR encoded.
      *
-     * @param content
-     *            the content to investigate
-     * @return returns true if content is OTR encoded, or false otherwise
+     * @param content the content to investigate
+     * @return Returns true if content is OTR encoded, or false otherwise
      */
+    @CheckReturnValue
     public static boolean otrEncoded(@Nonnull final String content) {
         return content.startsWith(HEAD + HEAD_ENCODED);
     }

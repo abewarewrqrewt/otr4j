@@ -15,6 +15,7 @@ import java.net.ProtocolException;
 import java.util.LinkedList;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.io.SerializationUtils.otrEncoded;
 
 /**
  * OTR fragmenter.
@@ -124,9 +125,14 @@ final class OtrFragmenter {
      * least 1 message fragment, or more if fragmentation is necessary.
      * @throws ProtocolException if the fragment size is too small or if the maximum number of fragments is exceeded.
      */
-    // TODO verify that we fragment an original message, not a message fragment itself.
     @Nonnull
     String[] fragment(final int version, @Nonnull final String message) throws ProtocolException {
+        if (!otrEncoded(message)) {
+            throw new IllegalArgumentException("Message must be an OTR-encoded message.");
+        }
+        if (version > Session.OTRv.FOUR) {
+            throw new UnsupportedOperationException("Unsupported protocol version encountered: " + version);
+        }
         if (version < Session.OTRv.TWO) {
             return new String[]{message};
         }
