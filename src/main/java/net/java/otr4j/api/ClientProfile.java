@@ -1,6 +1,5 @@
 package net.java.otr4j.api;
 
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import nl.dannyvanheumen.joldilocks.Point;
 

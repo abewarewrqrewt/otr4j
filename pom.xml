@@ -108,6 +108,10 @@
                             <version>6.5.0</version>
                         </dependency>
                     </dependencies>
+                    <configuration>
+                        <analysisCache>false</analysisCache>
+                        <!--<analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation> &lt;!&ndash; Optional: points to this location by default &ndash;&gt;-->
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

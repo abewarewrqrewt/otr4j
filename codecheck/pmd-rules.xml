@@ -33,6 +33,7 @@
     <rule ref="category/java/multithreading.xml"/>
     <rule ref="category/java/performance.xml">
         <exclude name="TooFewBranchesForASwitchStatement"/>
+        <exclude name="RedundantFieldInitializer"/>
     </rule>
     <rule ref="category/java/security.xml"/>
 </ruleset>
