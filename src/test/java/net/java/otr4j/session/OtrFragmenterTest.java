@@ -13,7 +13,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.net.ProtocolException;
 import java.util.regex.Pattern;
 
 import static net.java.otr4j.io.SerializationUtils.UTF8;
@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
  *
  * @author Danny van Heumen
  */
-// FIXME add tests rejecting OTR fragment as input message.
 public class OtrFragmenterTest {
 
 	private static final String specV3MessageFull = "?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8vjPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2ipkTtquknfx6HodLvk3RAAAAAA==.";
@@ -73,7 +72,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testFragmentNullInstructionsCompute() throws IOException {
+	public void testFragmentNullInstructionsCompute() throws ProtocolException {
 		final OtrEngineHost host = mock(OtrEngineHost.class);
 		when(host.getMaxFragmentSize(any(SessionID.class))).thenReturn(Integer.MAX_VALUE);
 		final String message = "Some message that shouldn't be fragmented.";
@@ -86,7 +85,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testFragmentNullInstructionsFragment() throws IOException {
+	public void testFragmentNullInstructionsFragment() throws ProtocolException {
 		final OtrEngineHost host = mock(OtrEngineHost.class);
 		when(host.getMaxFragmentSize(any(SessionID.class))).thenReturn(Integer.MAX_VALUE);
 		final String message = "?OTR:" + Base64.toBase64String("Some message that shouldn't be fragmented.".getBytes(UTF8));
@@ -97,7 +96,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testUnlimitedSizedFragmentToSingleMessage() throws IOException {
+	public void testUnlimitedSizedFragmentToSingleMessage() throws ProtocolException {
 		final OtrEngineHost host = host(Integer.MAX_VALUE);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -107,7 +106,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testUnlimitedSizedFragmentToSingleMessageV2() throws IOException {
+	public void testUnlimitedSizedFragmentToSingleMessageV2() throws ProtocolException {
 		final OtrEngineHost host = host(Integer.MAX_VALUE);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -117,7 +116,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testLargeEnoughFragmentToSingleMessage() throws IOException {
+	public void testLargeEnoughFragmentToSingleMessage() throws ProtocolException {
 		final OtrEngineHost host = host(354);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -127,7 +126,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testLargeEnoughFragmentToSingleMessageV2() throws IOException {
+	public void testLargeEnoughFragmentToSingleMessageV2() throws ProtocolException {
 		final OtrEngineHost host = host(830);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -137,7 +136,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testCalculateNumberOfFragmentsUnlimitedSize() throws IOException {
+	public void testCalculateNumberOfFragmentsUnlimitedSize() throws ProtocolException {
 		final OtrEngineHost host = host(Integer.MAX_VALUE);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -147,7 +146,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testCalculateNumberOfFragmentsLargeEnoughSize() throws IOException {
+	public void testCalculateNumberOfFragmentsLargeEnoughSize() throws ProtocolException {
 		final OtrEngineHost host = host(1000);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -157,7 +156,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testCalculateNumberOfFragmentsNumFragmentsSmallFragmentSize() throws IOException {
+	public void testCalculateNumberOfFragmentsNumFragmentsSmallFragmentSize() throws ProtocolException {
 		final OtrEngineHost host = host(199);
 
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -167,7 +166,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testCalculateNumberOfFragmentsNumFragmentsSmallFragmentSize2() throws IOException {
+	public void testCalculateNumberOfFragmentsNumFragmentsSmallFragmentSize2() throws ProtocolException {
 		final OtrEngineHost host = host(80);
 
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -176,22 +175,22 @@ public class OtrFragmenterTest {
 		verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
 	}
 
-	@Test(expected = IOException.class)
-	public void testFragmentSizeTooSmallForOverhead() throws IOException {
+	@Test(expected = ProtocolException.class)
+	public void testFragmentSizeTooSmallForOverhead() throws ProtocolException {
 		final OtrEngineHost host = host(35);
 
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
 		fragmenter.numberOfFragments(3, specV3MessageFull);
 	}
 	
-	@Test(expected = IOException.class)
-	public void testFragmentSizeTooSmallForPayload() throws IOException {
+	@Test(expected = ProtocolException.class)
+	public void testFragmentSizeTooSmallForPayload() throws ProtocolException {
 		OtrFragmenter fragmenter = new OtrFragmenter(host(36), this.sessionID, 0, 0);
 		fragmenter.numberOfFragments(3, specV3MessageFull);
 	}
 
 	@Test
-	public void testV3MessageToSplit() throws IOException {
+	public void testV3MessageToSplit() throws ProtocolException {
 		final OtrEngineHost host = host(199);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, this.senderTag, this.receiverTag);
@@ -201,7 +200,7 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testV2MessageToSplit() throws IOException {
+	public void testV2MessageToSplit() throws ProtocolException {
 		final OtrEngineHost host = host(318);
 		
 		OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
@@ -211,26 +210,26 @@ public class OtrFragmenterTest {
 	}
 
 	@Test
-	public void testV1ComputeHeaderSize() throws IOException {
+	public void testV1ComputeHeaderSize() throws ProtocolException {
 		OtrFragmenter fragmenter = new OtrFragmenter(host(310), this.sessionID, 0, 0);
 		assertEquals(1, fragmenter.numberOfFragments(1, specV2MessageFull));
 	}
 
 	@Test
-	public void testV1MessageToSplit() throws IOException {
+	public void testV1MessageToSplit() throws ProtocolException {
 		OtrFragmenter fragmenter = new OtrFragmenter(host(310), this.sessionID, 0, 0);
 		assertArrayEquals(new String[]{specV2MessageFull}, fragmenter.fragment(1, specV2MessageFull));
 	}
 
-	@Test(expected = IOException.class)
-	public void testExceedProtocolMaximumNumberOfFragments() throws IOException {
+	@Test(expected = ProtocolException.class)
+	public void testExceedProtocolMaximumNumberOfFragments() throws ProtocolException {
 		final String veryLongString = "?OTR:" + new String(new char[65537]).replace('\0', 'a');
 		OtrFragmenter fragmenter = new OtrFragmenter(host(37), this.sessionID, 0, 0);
 		fragmenter.fragment(3, veryLongString);
 	}
 	
 	@Test
-	public void testFragmentPatternsV3() throws IOException {		
+	public void testFragmentPatternsV3() throws ProtocolException {
 		final Pattern OTRv3_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR\\|[0-9abcdef]{8}\\|[0-9abcdef]{8},\\d{5},\\d{5},[a-zA-Z0-9\\+/=\\?:]+,$");
 		final String payload = "?OTR:"+Base64.toBase64String(RandomStringUtils.random(1700).getBytes(UTF8));
 		final OtrEngineHost host = host(150);
@@ -248,7 +247,7 @@ public class OtrFragmenterTest {
 	}
 	
 	@Test
-	public void testFragmentPatternsV2() throws IOException {		
+	public void testFragmentPatternsV2() throws ProtocolException {
 		final Pattern OTRv2_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR,\\d{1,5},\\d{1,5},[a-zA-Z0-9\\+/=\\?:]+,$");
 		final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(700).getBytes(UTF8));
 		final OtrEngineHost host = host(150);
@@ -265,7 +264,21 @@ public class OtrFragmenterTest {
 		}
 		verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
 	}
-	
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPreventFragmentationOfPlainTextMessage() throws ProtocolException {
+        final OtrEngineHost host = host(150);
+        final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
+        fragmenter.fragment(3, "Hello world!");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPreventFragmentationOfMessageFragment() throws ProtocolException {
+        final OtrEngineHost host = host(150);
+        final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
+        fragmenter.fragment(3, specV3MessageParts199[0]);
+    }
+
 	/**
 	 * Create mock OtrEngineHost which returns the provided instructions.
 	 *

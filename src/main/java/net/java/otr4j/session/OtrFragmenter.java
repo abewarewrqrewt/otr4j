@@ -128,7 +128,7 @@ final class OtrFragmenter {
     @Nonnull
     String[] fragment(final int version, @Nonnull final String message) throws ProtocolException {
         if (!otrEncoded(message)) {
-            throw new IllegalArgumentException("Message must be an OTR-encoded message.");
+            throw new IllegalArgumentException("Message must be an OTR-encoded message and fragments are not allowed.");
         }
         if (version > Session.OTRv.FOUR) {
             throw new UnsupportedOperationException("Unsupported protocol version encountered: " + version);
