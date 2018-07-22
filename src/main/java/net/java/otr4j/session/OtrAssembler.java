@@ -19,6 +19,7 @@ import net.java.otr4j.api.InstanceTag;
  * @author Felix Eckhofer
  */
 // FIXME add support for assembling the OTRv4 fragmentation format.
+// TODO trace control flow to confirm that we can drop the sender tag from the Assember.
 final class OtrAssembler {
 
     private static final int MAX_FRAGMENTS = 65535;
