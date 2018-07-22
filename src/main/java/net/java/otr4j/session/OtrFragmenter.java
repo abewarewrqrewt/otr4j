@@ -23,7 +23,6 @@ import static net.java.otr4j.io.SerializationUtils.otrEncoded;
  *
  * @author Danny van Heumen
  */
-// FIXME extend with support for OTRv4: https://github.com/otrv4/otrv4/blob/master/otrv4.md#fragmentation
 // TODO keep limited history of used identifiers to ensure short-term uniqueness for identifiers used during fragmentation.
 final class OtrFragmenter {
 
