@@ -109,6 +109,9 @@
                         </dependency>
                     </dependencies>
                     <configuration>
+                        <!--linkXRef seems to require org.apache.maven.plugins:maven-jxr-plugin, which is not currently
+                        available. -->
+                        <linkXRef>false</linkXRef>
                         <analysisCache>false</analysisCache>
                         <!--<analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation> &lt;!&ndash; Optional: points to this location by default &ndash;&gt;-->
                     </configuration>
