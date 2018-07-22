@@ -374,6 +374,7 @@ public class SessionTest {
         assertNull(c.hostBob.receiveMessage());
     }
 
+    // TODO add a test similar to this but with a restricted size messaging channel, to ensure proper operation of message fragmentation and reassembly.
     @Test
     public void testOTR4ExtensiveMessagingToVerifyRatcheting() throws OtrException {
         final Conversation c = new Conversation();
