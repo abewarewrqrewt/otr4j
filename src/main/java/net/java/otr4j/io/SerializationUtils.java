@@ -44,7 +44,6 @@ import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ERROR;
-import static net.java.otr4j.io.EncodingConstants.HEAD_FRAGMENTED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_Q;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_V;
 import static net.java.otr4j.io.messages.EncodedMessageParser.read;

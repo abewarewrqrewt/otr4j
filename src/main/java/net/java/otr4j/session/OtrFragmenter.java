@@ -41,14 +41,19 @@ final class OtrFragmenter {
     private static final String OTRV2_MESSAGE_FRAGMENT_FORMAT = "?OTR,%d,%d,%s,";
 
     /**
-     * OTRv2 header size (overhead in fragmentation).
+     * OTRv2 header size (overhead of fragmentation).
      */
     private static final int OTRV2_HEADER_SIZE = 18;
 
     /**
-     * OTRv3 header size (overhead in fragmentation).
+     * OTRv3 header size (overhead of fragmentation).
      */
     private static final int OTRV3_HEADER_SIZE = 36;
+
+    /**
+     * OTRv4 header size (overhead of fragmentation).
+     */
+    private static final int OTRV4_HEADER_SIZE = 45;
 
     /**
      * Instructions on how to fragment the input message.
@@ -240,8 +245,7 @@ final class OtrFragmenter {
             case Session.OTRv.THREE:
                 return OTRV3_HEADER_SIZE;
             case Session.OTRv.FOUR:
-                // FIXME implement OTRv4 support.
-                throw new UnsupportedOperationException("Protocol version 4 support has not been implemented yet.");
+                return OTRV4_HEADER_SIZE;
             default:
                 throw new UnsupportedOperationException("Unsupported protocol version: " + version);
         }

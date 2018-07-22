@@ -279,6 +279,27 @@ public class OtrFragmenterTest {
         fragmenter.fragment(3, specV3MessageParts199[0]);
     }
 
+    @Test
+    public void testMessageFitsWithoutFragmentation() throws ProtocolException {
+        final OtrEngineHost host = host(45);
+        final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
+        assertEquals(1, fragmenter.numberOfFragments(4, "?OTR:abc"));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testOTRv4OverheadTooLarge() throws ProtocolException {
+        final OtrEngineHost host = host(45);
+        final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
+        assertEquals(0, fragmenter.numberOfFragments(4, "?OTR:abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
+    }
+
+    @Test
+    public void testNumberOfFragmentsForOTRv4() throws ProtocolException {
+        final OtrEngineHost host = host(46);
+        final OtrFragmenter fragmenter = new OtrFragmenter(host, this.sessionID, 0, 0);
+        assertEquals(57, fragmenter.numberOfFragments(4, "?OTR:abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
+    }
+
 	/**
 	 * Create mock OtrEngineHost which returns the provided instructions.
 	 *
