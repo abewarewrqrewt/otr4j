@@ -20,7 +20,7 @@ import static net.java.otr4j.io.SerializationUtils.otrEncoded;
 
 /**
  * OTR fragmenter.
- * 
+ *
  * @author Danny van Heumen
  */
 // FIXME extend with support for OTRv4: https://github.com/otrv4/otrv4/blob/master/otrv4.md#fragmentation
@@ -238,8 +238,8 @@ final class OtrFragmenter {
     /**
      * Create a message fragment according to the v3 message format.
      *
-     * @param count the current fragment number
-     * @param total the total number of fragments
+     * @param count          the current fragment number
+     * @param total          the total number of fragments
      * @param partialContent the content for this fragment
      * @return returns the full message fragment
      */
@@ -252,8 +252,8 @@ final class OtrFragmenter {
     /**
      * Create a message fragment according to the v2 message format.
      *
-     * @param count the current fragment number
-     * @param total the total number of fragments
+     * @param count          the current fragment number
+     * @param total          the total number of fragments
      * @param partialContent the content for this fragment
      * @return returns the full message fragment
      */
