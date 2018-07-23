@@ -395,24 +395,22 @@ public class SessionTest {
         assertNull(c.hostBob.receiveMessage());
 
         for (int i = 0; i < 25; i++) {
-            LOGGER.info("Iteration: " + i);
             // Bob sending a message (alternating, to enable ratchet)
             final String messageBob = randomMessage(300);
             c.hostBob.sendMessage(messageBob);
-            assertMessage(messageBob, c.hostAlice.receiveMessage());
+            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.hostAlice.receiveMessage());
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(300);
             c.hostAlice.sendMessage(messageAlice);
-            assertMessage(messageAlice, c.hostBob.receiveMessage());
-            // FIXME consider adding a check that verifies that ratcheting is actually performed. This is currently completely internal.
+            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
         }
     }
 
-    private static void assertMessage(final String expected, final String actual) {
+    private static void assertMessage(final String message, final String expected, final String actual) {
         if (expected.length() == 0) {
-            assertNull(actual);
+            assertNull(message, actual);
         } else {
-            assertEquals(expected, actual);
+            assertEquals(message, expected, actual);
         }
     }
 

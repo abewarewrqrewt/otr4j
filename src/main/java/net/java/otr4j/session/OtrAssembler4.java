@@ -18,6 +18,8 @@ import static net.java.otr4j.util.Strings.join;
 // TODO consider doing some fuzzing for this user input, if we can find a decent fuzzing library.
 // TODO consider if needed to keep track of recently completed fragments in case another message arrives?
 // FIXME is it still required to check the sender tag before accepting?
+// FIXME still needs to be integrated with SessionImpl
+// TODO consider implementing OTRv3 fragmentation in similar fashion and throw away old assembling logic
 final class OtrAssembler4 {
 
     private static final Logger LOGGER = Logger.getLogger(OtrAssembler4.class.getName());
@@ -43,7 +45,6 @@ final class OtrAssembler4 {
         // No further preparation needed.
     }
 
-    // FIXME write unit tests for cases: incorrect format, bad data, data causing huge allocations, many different ids, incorrect indexes (too high, too low), incorrect totals, differing totals, nulls(?), ...
     @Nullable
     String assemble(@Nonnull final String message) {
         final Matcher pattern = PATTERN.matcher(message);
