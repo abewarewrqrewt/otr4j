@@ -4,8 +4,10 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+// FIXME add exclusions for any violated rules and enable fail-on-build for pmd, SpotBugs.
+// FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305.
+// TODO Verify rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
 // TODO Use maven-site-plugin (or similar) to generate a full report on the status of otr4j project.
-// TODO Verify configuration for SpotBugs, pmd.
 // TODO Investigate use of SpotBugs and its annotation to manage "resources" and correct closing.
 // FIXME consider planning with custom Ed448 implementation during development and switch to OpenJDK implementation afterwards.
 // TODO Upgrade to use of JUnit5 for unit tests. (May not be possible due to language level restrictions, Java 8+?)
