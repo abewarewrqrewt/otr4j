@@ -128,7 +128,7 @@
                     <target>1.7</target>
                     <showWarnings>true</showWarnings>
                     <failOnWarning>true</failOnWarning>
-                    <compilerArgument>-Xlint:all,-options,-path,-deprecation</compilerArgument>
+                    <compilerArgument>-Xlint:all,-options,-deprecation</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
