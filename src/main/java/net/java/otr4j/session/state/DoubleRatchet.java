@@ -454,7 +454,8 @@ final class DoubleRatchet implements AutoCloseable {
      * The VerificationException indicates a failure to verify the authenticator.
      */
     static final class VerificationException extends Exception {
-        private static final long serialVersionUID = 1L;
+
+        private static final long serialVersionUID = 2169901253478095348L;
 
         private VerificationException(@Nonnull final String message) {
             super(message);
