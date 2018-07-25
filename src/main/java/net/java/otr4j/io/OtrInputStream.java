@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.SignatureX;
@@ -14,15 +15,16 @@ import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.FilterInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
@@ -38,113 +40,78 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 
 /**
  * OTR input stream.
- *
+ * <p>
  * The input is based on the InputStream type as we take into account any and
  * all possibilities of incomplete or bad data. Many methods throw IOException
  * to indicate for such an illegal situation.
  */
-public final class OtrInputStream extends FilterInputStream {
+// FIXME get rid of special-case exceptions indicating maximum length/unsupported length of input data.
+// FIXME consider changing to ByteBuffer as we always act on in-memory byte-arrays anyways.
+public final class OtrInputStream implements Closeable {
 
     private static final byte[] ZERO_BYTES = new byte[0];
 
-    /**
-     * Constant indicating limit for data lengths that are accepted
-     * unconditionally. Data lengths read from OtrInputStream that are smaller
-     * than this amount will be accepted unconditionally. For any value of the
-     * limit or higher, we do additional sanity checking.
-     */
-    private static final int LIMIT_UNCONDITIONAL_DATA_LENGTH = 65536;
+    private final ByteArrayInputStream in;
 
     /**
      * Construct OtrInputStream based on existing, provided source input stream.
      *
      * @param in the source input stream
      */
-    public OtrInputStream(@Nonnull final InputStream in) {
-        super(in);
+    public OtrInputStream(@Nonnull final ByteArrayInputStream in) {
+        this.in = requireNonNull(in);
     }
 
-    /**
-     * Reads from the stream while checking possible border and error conditions
-     * like a requested size of zero or the stream does not contain enough data.
-     *
-     * @param length
-     *            amount of bytes to read from the stream
-     * @return the read bytes
-     * @throws IOException
-     *             the exact amount of requested bytes could not be read from
-     *             the stream.
-     */
-    @Nonnull
-    private byte[] checkedRead(final int length) throws IOException {
-        if (length == 0) {
-            return ZERO_BYTES;
+    @Override
+    public void close() {
+        try {
+            this.in.close();
+        } catch (final IOException e) {
+            throw new IllegalStateException("ByteArrayInputStream should never generate an IOException on close.", e);
         }
-        final byte[] b = new byte[length];
-        final int bytesRead = read(b);
-        if (bytesRead != length) {
-            throw new ProtocolException(
-                    "Unable to read the required amount of bytes from the stream. Expected were "
-                            + length + " bytes but I could only read "
-                            + bytesRead + " bytes.");
-        }
-        return b;
     }
 
-    private int readNumber(final int length) throws IOException {
-        final byte[] b = checkedRead(length);
-
-        int value = 0;
-        for (int i = 0; i < b.length; i++) {
-            final int shift = (b.length - 1 - i) * 8;
-            value += (b[i] & 0x000000FF) << shift;
-        }
-
-        return value;
-    }
-
-    public byte readByte() throws IOException {
+    public byte readByte() throws ProtocolException {
         return (byte) readNumber(TYPE_LEN_BYTE);
     }
 
     /**
      * Read an integer value from OtrInputStream.
-     *
+     * <p>
      * NOTE that OTR specifies 4-byte unsigned int values are supported.
      * However, Java by default interprets these values as signed. When using
      * readInt, make sure that your use case will consider negative values and
      * interpret them correctly.
      *
      * @return Returns int value as read from input stream.
-     * @throws IOException Throws IOException in case of read errors.
      */
-    public int readInt() throws IOException {
+    public int readInt() throws ProtocolException {
         return readNumber(TYPE_LEN_INT);
     }
 
-    public int readShort() throws IOException {
+    public int readShort() throws ProtocolException {
         return readNumber(TYPE_LEN_SHORT);
     }
 
     @Nonnull
-    public byte[] readCtr() throws IOException {
+    public byte[] readCtr() throws ProtocolException {
         return checkedRead(TYPE_LEN_CTR);
     }
 
     @Nonnull
-    public byte[] readMac() throws IOException {
+    public byte[] readMac() throws ProtocolException {
         return checkedRead(TYPE_LEN_MAC);
     }
 
     @Nonnull
-    public BigInteger readBigInt() throws IOException {
+    public BigInteger readBigInt() throws ProtocolException, UnsupportedLengthException {
         final byte[] b = readData();
         return new BigInteger(1, b);
     }
 
     /**
      * Read data (bytes) from OtrInputStream.
-     *
+     * <p>
      * NOTE that at this time, the maximum data length supported by otr4j is
      * limited by the Java max. integer size. Data lengths that use full 32
      * bits, will be interpreted as negative values and furthermore array are
@@ -153,13 +120,14 @@ public final class OtrInputStream extends FilterInputStream {
      * {@link UnsupportedLengthException} is thrown.
      *
      * @return Returns byte[] with data read.
-     * @throws IOException Throws IOException in case of read errors.
+     * @throws ProtocolException          Throws IOException in case of read errors.
      * @throws UnsupportedLengthException Throws UnsupportedLengthException in
-     * case of data with length > {@link Integer#MAX_VALUE}, as this is
-     * currently unsupported by otr4j.
+     *                                    case of data with length > {@link Integer#MAX_VALUE}, as this is
+     *                                    currently unsupported by otr4j.
      */
+    // FIXME consider handling UnsupportedLengthException internally for fields that should never grow to that size, like with DH and DSA public keys.
     @Nonnull
-    public byte[] readData() throws IOException {
+    public byte[] readData() throws ProtocolException, UnsupportedLengthException {
         final int dataLen = checkDataLength(readNumber(DATA_LEN));
         return checkedRead(dataLen);
     }
@@ -168,39 +136,41 @@ public final class OtrInputStream extends FilterInputStream {
      * Read public key from OTR data stream.
      *
      * @return Returns public key components.
-     * @throws IOException Throws IOException in case of failing to read full public key from input data.
-     * @throws OtrCryptoException Throws OtrCryptoException if failed to reconstruct corresponding public key.
-     * @throws UnsupportedTypeException Thrown in case an unsupported public key type is encountered.
+     * @throws ProtocolException          Throws IOException in case of failing to read full public key from input data.
+     * @throws OtrCryptoException         Throws OtrCryptoException if failed to reconstruct corresponding public key.
+     * @throws UnsupportedTypeException   Thrown in case an unsupported public key type is encountered.
+     * @throws UnsupportedLengthException In case a data field with length > 31 bits was encountered.
      */
     @Nonnull
-    public DSAPublicKey readPublicKey() throws IOException, OtrCryptoException, UnsupportedTypeException {
+    public DSAPublicKey readPublicKey() throws OtrCryptoException, UnsupportedTypeException, ProtocolException, UnsupportedLengthException {
         final int type = readShort();
         switch (type) {
-        case PUBLIC_KEY_TYPE_DSA:
-            final BigInteger p = readBigInt();
-            final BigInteger q = readBigInt();
-            final BigInteger g = readBigInt();
-            final BigInteger y = readBigInt();
-            return OtrCryptoEngine.createDSAPublicKey(y, p, q, g);
-        default:
-            throw new UnsupportedTypeException("Unsupported type for public key: " + type);
+            case PUBLIC_KEY_TYPE_DSA:
+                final BigInteger p = readBigInt();
+                final BigInteger q = readBigInt();
+                final BigInteger g = readBigInt();
+                final BigInteger y = readBigInt();
+                return OtrCryptoEngine.createDSAPublicKey(y, p, q, g);
+            default:
+                throw new UnsupportedTypeException("Unsupported type for public key: " + type);
         }
     }
 
     /**
      * Read DH Public Key from the input stream.
-     *
+     * <p>
      * Apart from reading the DH public key from the byte stream, it also
      * verifies that the public key satisfies all requirements.
      *
      * @return Returns (verified) DH Public Key instance.
-     * @throws IOException Throws exception in case of problems while reading DH
-     * Public Key instance from input stream.
-     * @throws OtrCryptoException Throws exception in case of illegal DH public
-     * key.
+     * @throws ProtocolException          Throws exception in case of problems while reading DH
+     *                                    Public Key instance from input stream.
+     * @throws OtrCryptoException         Throws exception in case of illegal DH public
+     *                                    key.
+     * @throws UnsupportedLengthException In case data field with length > 31 bits was encountered.
      */
     @Nonnull
-    public DHPublicKey readDHPublicKey() throws IOException, OtrCryptoException {
+    public DHPublicKey readDHPublicKey() throws OtrCryptoException, ProtocolException, UnsupportedLengthException {
         final BigInteger gyMpi = readBigInt();
         return OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(gyMpi));
     }
@@ -212,7 +182,7 @@ public final class OtrInputStream extends FilterInputStream {
     }
 
     @Nonnull
-    public byte[] readSignature(@Nonnull final PublicKey pubKey) throws IOException {
+    public byte[] readSignature(@Nonnull final PublicKey pubKey) throws ProtocolException {
         if (!pubKey.getAlgorithm().equals("DSA")) {
             throw new UnsupportedOperationException("Unsupported public key instance type encountered. Cannot read signature.");
         }
@@ -225,13 +195,14 @@ public final class OtrInputStream extends FilterInputStream {
      * Read Mysterious X signature data.
      *
      * @return Returns Mysterious X instance.
-     * @throws IOException In case of failure in reading the message.
-     * @throws OtrCryptoException In case of failures while processing the
-     * message content.
-     * @throws UnsupportedTypeException In case of unsupported public key type.
+     * @throws ProtocolException          In case of failure in reading the message.
+     * @throws OtrCryptoException         In case of failures while processing the
+     *                                    message content.
+     * @throws UnsupportedTypeException   In case of unsupported public key type.
+     * @throws UnsupportedLengthException In case of data field with length > 31 bits.
      */
     @Nonnull
-    public SignatureX readMysteriousX() throws IOException, OtrCryptoException, UnsupportedTypeException {
+    public SignatureX readMysteriousX() throws OtrCryptoException, UnsupportedTypeException, ProtocolException, UnsupportedLengthException {
         final DSAPublicKey pubKey = readPublicKey();
         final int dhKeyID = readInt();
         final byte[] sig = readSignature(pubKey);
@@ -252,10 +223,10 @@ public final class OtrInputStream extends FilterInputStream {
      * Read XSalsa20 nonce.
      *
      * @return Returns XSalsa20 nonce.
-     * @throws IOException In case of failure to read nonce.
+     * @throws ProtocolException In case of failure to read nonce.
      */
     @Nonnull
-    public byte[] readNonce() throws IOException {
+    public byte[] readNonce() throws ProtocolException {
         return checkedRead(TYPE_LEN_NONCE);
     }
 
@@ -263,10 +234,10 @@ public final class OtrInputStream extends FilterInputStream {
      * Read OTRv4 MAC.
      *
      * @return Returns MAC.
-     * @throws IOException In case of failure to read OTRv4 MAC.
+     * @throws ProtocolException In case of failure to read OTRv4 MAC.
      */
     @Nonnull
-    public byte[] readMacOTR4() throws IOException {
+    public byte[] readMacOTR4() throws ProtocolException {
         return checkedRead(TYPE_LEN_MAC_OTR4);
     }
 
@@ -274,11 +245,12 @@ public final class OtrInputStream extends FilterInputStream {
      * Read Ed448 point.
      *
      * @return Returns Ed448 point.
-     * @throws IOException        In case of failure to read from input stream.
-     * @throws OtrCryptoException In case of failure decoding Point, meaning point data is invalid.
+     * @throws ProtocolException          In case of failure to read from input stream.
+     * @throws OtrCryptoException         In case of failure decoding Point, meaning point data is invalid.
+     * @throws UnsupportedLengthException In case of data record with length > 31 bits.
      */
     @Nonnull
-    public Point readPoint() throws IOException, OtrCryptoException {
+    public Point readPoint() throws OtrCryptoException, ProtocolException, UnsupportedLengthException {
         return decodePoint(readData());
     }
 
@@ -286,37 +258,82 @@ public final class OtrInputStream extends FilterInputStream {
      * Read an EdDSA signature payload.
      *
      * @return Returns an EdDSA signature as bytes, expecting exactly 114 bytes.
-     * @throws IOException Throws an error in case of failure to read.
+     * @throws ProtocolException Throws an error in case of failure to read.
      */
     @Nonnull
-    public byte[] readEdDSASignature() throws IOException {
+    public byte[] readEdDSASignature() throws ProtocolException {
         return checkedRead(EDDSA_SIGNATURE_LENGTH_BYTES);
     }
 
     /**
-     * Sanity check on read data length.
+     * Read a number of specified length from the input stream.
      *
+     * @param length The length to read.
+     * @return Returns the read value in bytes.
+     * @throws ProtocolException In case of failure to read specified amount of bytes.
+     */
+    private int readNumber(final int length) throws ProtocolException {
+        final byte[] b = checkedRead(length);
+
+        int value = 0;
+        for (int i = 0; i < b.length; i++) {
+            final int shift = (b.length - 1 - i) * 8;
+            value += (b[i] & 0x000000FF) << shift;
+        }
+
+        return value;
+    }
+
+    /**
+     * Reads from the stream while checking possible border and error conditions
+     * like a requested size of zero or the stream does not contain enough data.
+     *
+     * @param length amount of bytes to read from the stream
+     * @return the read bytes
+     * @throws ProtocolException the exact amount of requested bytes could not be read from
+     *                           the stream.
+     */
+    @Nonnull
+    private byte[] checkedRead(final int length) throws ProtocolException {
+        if (length == 0) {
+            return ZERO_BYTES;
+        }
+        final byte[] b = new byte[length];
+        final int bytesRead = this.in.read(b, 0, b.length);
+        if (bytesRead != length) {
+            throw new ProtocolException("Unable to read the required amount of bytes from the stream. Expected were "
+                + length + " bytes but I could only read " + bytesRead + " bytes.");
+        }
+        return b;
+    }
+
+    /**
+     * Sanity check on read data length.
+     * <p>
      * In case of an invalid message, it may be possible that the data length is
      * very large. For example, because we interpreted ASCII chars as a number.
      * Do a quick sanity check to ensure that we do allocate massive amounts of
      * memory for a small amount of (bad) message bytes.
      *
      * @param length the requested length to be verified
+     * @throws ProtocolException          In case the length read from the data field does not match with the remaining
+     *                                    amount of data available in the buffer.
+     * @throws UnsupportedLengthException In case a length of over 31 bits is received. This is not supported due to
+     *                                    Java interpreting these values as negative by default.
      */
-    private int checkDataLength(final int length) throws IOException {
+    private int checkDataLength(final int length) throws UnsupportedLengthException, ProtocolException {
         if (length < 0) {
+            // 'length < 0' may reasonably happen because Java interprets 32-bit values as signed 31-bit values. otr4j
+            // does not support values with lengths over 31 bits, due to this restriction in Java. Since there are no
+            // common use cases who suffer due to this limitation, it remains unfixed for now.
             throw new UnsupportedLengthException(length);
         }
-        // Note that checking available bytes only works under the assumption
-        // that large amounts of available data are known in advance. Since
-        // otr4j uses ByteArrayInputStream this is the case. In many other cases
-        // this would fail.
-        if (length < LIMIT_UNCONDITIONAL_DATA_LENGTH || length <= this.in.available()) {
-            // Immediately accept small amounts. Accept larger amounts if at
-            // least that amount of data is available to be read.
-            return length;
+        final int available = this.in.available();
+        if (length > available) {
+            throw new ProtocolException("Insufficient data in buffer for the length specified in the data field. (Specified: "
+                + length + ", available: " + available);
         }
-        throw new UnverifiableLargeLengthException(length);
+        return length;
     }
 
     /**
@@ -324,26 +341,12 @@ public final class OtrInputStream extends FilterInputStream {
      * length is currently supported by otr4j due to limitations in its current
      * implementation.
      */
-    public static final class UnsupportedLengthException extends IOException {
+    public static final class UnsupportedLengthException extends OtrException {
 
         private static final long serialVersionUID = 3929379089911298862L;
 
         private UnsupportedLengthException(final int length) {
             super("An unsupported length is encountered. This is a limitation in the current implementation of otr4j. (Length: " + length + ", should be interpreted as an unsigned int.)");
-        }
-    }
-
-    /**
-     * Exception indicating case where a very large amount of data is requested
-     * and it cannot be verified as a necessary/required amount with some sanity
-     * checking.
-     */
-    public static final class UnverifiableLargeLengthException extends IOException {
-
-        private static final long serialVersionUID = 7390243594500513199L;
-
-        private UnverifiableLargeLengthException(final int length) {
-            super("Large amount of data requested and not all is immediately available. This is considered an invalid data length. (Length: " + length + ")");
         }
     }
 }

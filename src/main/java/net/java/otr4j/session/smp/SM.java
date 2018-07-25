@@ -23,6 +23,7 @@ package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationUtils;
 
@@ -94,10 +95,8 @@ public final class SM {
     }
 
     @Nonnull
-    static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException {
-        final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        final OtrInputStream ois = new OtrInputStream(in);
-        try {
+    static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException, UnsupportedLengthException {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes); OtrInputStream ois = new OtrInputStream(in)) {
             final int len = ois.readInt();
             if (len < 0) {
                 // Length is read into (signed) int. Bit shifting is used to
@@ -117,18 +116,12 @@ public final class SM {
                 throw new SMException("Too many ints");
             }
             final BigInteger[] ints = new BigInteger[len];
-            for (int i = 0 ; i < len ; i++) {
+            for (int i = 0; i < len; i++) {
                 ints[i] = ois.readBigInt();
             }
             return ints;
         } catch (final IOException ex) {
             throw new SMException("cannot deserialize bigints", ex);
-        } finally {
-            try {
-                ois.close();
-            } catch (final IOException e) {
-                throw new SMException("failed to close OtrInputStream", e);
-            }
         }
     }
 

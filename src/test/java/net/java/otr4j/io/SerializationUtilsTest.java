@@ -94,7 +94,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testNoFailureOnPlainMessage() throws IOException, OtrCryptoException {
+    public void testNoFailureOnPlainMessage() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final Message msg = SerializationUtils.toMessage("Hello world");
         assertTrue(msg instanceof PlainTextMessage);
         final PlainTextMessage plainMsg = (PlainTextMessage) msg;
@@ -104,14 +104,14 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV1() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t ");
         assertTrue(msg.getVersions().isEmpty());
         assertEquals("", msg.getCleanText());
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV2() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV2() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t ");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -119,7 +119,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV3() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV3() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -127,7 +127,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV4() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t \t  ");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
@@ -135,7 +135,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV2V3V4() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV2V3V4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(3, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -145,7 +145,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -154,7 +154,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1V2V4() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV1V2V4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t \t  ");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -163,7 +163,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1AndV2() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV1AndV2() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t ");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -171,7 +171,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1V3V4() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV1V3V4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -180,7 +180,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -188,7 +188,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1V2V3V4() throws IOException, OtrCryptoException {
+    public void testCorrectIdentificationOfWhitespaceTagV1V2V3V4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(3, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -198,7 +198,7 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectWhitespaceErasure() throws IOException, OtrCryptoException {
+    public void testCorrectWhitespaceErasure() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage("Hello \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t world!");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -237,50 +237,50 @@ public class SerializationUtilsTest {
     }
 
     @Test
-    public void testCorrectDeduplicationOfVersionsWhileParsingQueryMessage() throws IOException, OtrCryptoException {
+    public void testCorrectDeduplicationOfVersionsWhileParsingQueryMessage() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRv2222222?");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
     }
 
     @Test
-    public void testEnsureEmptyVersionStringIsCorrectlyParsed() throws IOException, OtrCryptoException {
+    public void testEnsureEmptyVersionStringIsCorrectlyParsed() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRv?");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureOTRv1VersionStringIsIgnored() throws IOException, OtrCryptoException {
+    public void testEnsureOTRv1VersionStringIsIgnored() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTR?");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored1() throws IOException, OtrCryptoException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored1() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored2() throws IOException, OtrCryptoException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored2() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?O");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored3() throws IOException, OtrCryptoException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored3() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRa");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored4() throws IOException, OtrCryptoException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTR ");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test(expected = IOException.class)
-    public void testIncompleteMessageMissingEnding() throws IOException, OtrCryptoException {
+    public void testIncompleteMessageMissingEnding() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
 	    SerializationUtils.toMessage("?OTR:BADBASE64CODEMISSINGDOT");
     }
 

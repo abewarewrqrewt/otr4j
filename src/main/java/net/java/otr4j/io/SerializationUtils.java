@@ -9,6 +9,7 @@ package net.java.otr4j.io;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
@@ -101,7 +102,7 @@ public final class SerializationUtils {
     // Mysterious X IO.
     @Nonnull
     public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws IOException, OtrCryptoException,
-        UnsupportedTypeException {
+        UnsupportedTypeException, UnsupportedLengthException {
         try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readMysteriousX();
         }
@@ -126,7 +127,7 @@ public final class SerializationUtils {
     }
 
     @Nonnull
-    public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException {
+    public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException, UnsupportedLengthException {
         try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readBigInt();
         }
@@ -223,7 +224,7 @@ public final class SerializationUtils {
      */
     // TODO remove OTRv2 support in due time
     @Nullable
-    public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, IOException {
+    public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, IOException, UnsupportedLengthException {
         if (s.length() == 0) {
             return null;
         }

@@ -7,6 +7,7 @@ import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.api.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -121,7 +122,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @throws OtrCryptoException In case of failure to restore cryptographic components in the payload.
      */
     @Nonnull
-    static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws IOException, OtrCryptoException {
+    static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws IOException, OtrCryptoException,
+        UnsupportedLengthException {
         final int numFields = in.readInt();
         if (numFields <= 0) {
             throw new ProtocolException("Invalid number of fields: " + numFields);

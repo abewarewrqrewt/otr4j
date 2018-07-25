@@ -4,6 +4,7 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import org.junit.Test;
 
@@ -26,22 +27,22 @@ public class EncodedMessageParserTest {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test(expected = NullPointerException.class)
-    public void testParsingNullInputStream() throws IOException, OtrCryptoException {
+    public void testParsingNullInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
         read(null);
     }
 
     @Test(expected = ProtocolException.class)
-    public void testParsingEmptyInputStream() throws IOException, OtrCryptoException {
+    public void testParsingEmptyInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
         read(new OtrInputStream(new ByteArrayInputStream(new byte[0])));
     }
 
     @Test(expected = ProtocolException.class)
-    public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException {
+    public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
         read(new OtrInputStream(new ByteArrayInputStream(new byte[] { 0x00, 0x03 })));
     }
 
     @Test
-    public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException {
+    public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
@@ -56,7 +57,7 @@ public class EncodedMessageParserTest {
     }
 
     @Test(expected = ProtocolException.class)
-    public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException {
+    public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.FOUR, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
@@ -70,7 +71,7 @@ public class EncodedMessageParserTest {
     }
 
     @Test
-    public void testConstructAndParsePartialDHKeyMessage() throws IOException {
+    public void testConstructAndParsePartialDHKeyMessage() throws IOException, UnsupportedLengthException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);

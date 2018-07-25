@@ -4,6 +4,7 @@ import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -48,7 +49,7 @@ public final class EncodedMessageParser {
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
     @Nonnull
-    public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException {
+    public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException, UnsupportedLengthException {
         final int protocolVersion = input.readShort();
         if (!SUPPORTED.contains(protocolVersion)) {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);

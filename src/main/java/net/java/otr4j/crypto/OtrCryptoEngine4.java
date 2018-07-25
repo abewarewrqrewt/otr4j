@@ -435,7 +435,7 @@ public final class OtrCryptoEngine4 {
          * @param in the OTR input stream
          * @return Returns sigma as parsed from the data.
          */
-        public static Sigma readFrom(@Nonnull final OtrInputStream in) throws IOException {
+        public static Sigma readFrom(@Nonnull final OtrInputStream in) throws IOException, OtrInputStream.UnsupportedLengthException {
             final BigInteger c1 = decodeLittleEndian(in.readData());
             final BigInteger r1 = decodeLittleEndian(in.readData());
             final BigInteger c2 = decodeLittleEndian(in.readData());

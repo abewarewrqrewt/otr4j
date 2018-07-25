@@ -10,6 +10,7 @@ package net.java.otr4j.io;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.messages.SignatureX;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
@@ -54,14 +55,14 @@ public class OtrInputStreamTest {
     private final EdDSAKeyPair keypair = EdDSAKeyPair.generate(RANDOM);
 
     @Test
-    public void testDataLengthOkay() throws IOException {
+    public void testDataLengthOkay() throws IOException, UnsupportedLengthException {
         final byte[] data = new byte[] { 0, 0, 0, 1, 0x6a };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(new byte[] { 0x6a }, ois.readData());
     }
 
-    @Test(expected = OtrInputStream.UnsupportedLengthException.class)
-    public void testDataLengthTooLarge() throws IOException {
+    @Test(expected = UnsupportedLengthException.class)
+    public void testDataLengthTooLarge() throws IOException, UnsupportedLengthException {
         // Verify that the limitation of Java's signed int is in place as
         // expected. 0xffffffff is too large and would have been interpreted as
         // a negative value, thus a negative array size for the byte[]
@@ -98,26 +99,29 @@ public class OtrInputStreamTest {
     @Test
     public void testReadInt() throws IOException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x10 };
-        final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
+        final ByteArrayInputStream in = new ByteArrayInputStream(data);
+        final OtrInputStream ois = new OtrInputStream(in);
         assertEquals(16, ois.readInt());
-        assertEquals(0, ois.available());
+        assertEquals(0, in.available());
     }
 
     @Test
     public void testReadIntDataLeft() throws IOException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x10, 0x3f};
-        final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
+        final ByteArrayInputStream in = new ByteArrayInputStream(data);
+        final OtrInputStream ois = new OtrInputStream(in);
         assertEquals(16, ois.readInt());
-        assertEquals(1, ois.available());
+        assertEquals(1, in.available());
     }
 
     @Test
     public void testReadShorts() throws IOException {
         final byte[] data = new byte[] { 0x0, 0x0, 0xf, 0x0, 0x3f};
-        final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
+        final ByteArrayInputStream in = new ByteArrayInputStream(data);
+        final OtrInputStream ois = new OtrInputStream(in);
         assertEquals(0, ois.readShort());
         assertEquals(3840, ois.readShort());
-        assertEquals(1, ois.available());
+        assertEquals(1, in.available());
     }
 
     @Test
@@ -135,21 +139,21 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadBigInteger() throws IOException {
+    public void testReadBigInteger() throws IOException, UnsupportedLengthException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x1, 0x55 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertEquals(BigInteger.valueOf(85L), ois.readBigInt());
     }
 
     @Test(expected = UnsupportedTypeException.class)
-    public void testReadBadPublicKeyType() throws IOException, OtrCryptoException, UnsupportedTypeException {
+    public void testReadBadPublicKeyType() throws IOException, OtrCryptoException, UnsupportedTypeException, UnsupportedLengthException {
         final byte[] data = new byte[] { 0x0, 0x55 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readPublicKey();
     }
 
     @Test
-    public void testReadPUblicKeyType() throws IOException, OtrCryptoException, UnsupportedTypeException {
+    public void testReadPUblicKeyType() throws IOException, OtrCryptoException, UnsupportedTypeException, UnsupportedLengthException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x1, 0x0, 0x0, 0x0, 0x1, 0x2, 0x0, 0x0, 0x0, 0x1, 0x3, 0x0, 0x0, 0x0, 0x1, 0x4 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         final PublicKey key = ois.readPublicKey();
@@ -157,14 +161,14 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadDHPublicKeyType() throws IOException, OtrCryptoException {
+    public void testReadDHPublicKeyType() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x1, 0x55 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertEquals(OtrCryptoEngine.getDHPublicKey(BigInteger.valueOf(0x55)), ois.readDHPublicKey());
     }
 
     @Test(expected = IOException.class)
-    public void testReadBadDHPublicKeyType() throws IOException, OtrCryptoException {
+    public void testReadBadDHPublicKeyType() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final byte[] data = new byte[] { 0x0, 0x0 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readDHPublicKey();
@@ -200,7 +204,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadMysteriousXOtrInputStreamReadBehavior() throws IOException, OtrCryptoException, UnsupportedTypeException {
+    public void testReadMysteriousXOtrInputStreamReadBehavior() throws IOException, OtrCryptoException, UnsupportedTypeException, UnsupportedLengthException {
         // This test uses nonsensicle data and as such it does not verify
         // correct parsing of the read public key material. However, it does
         // test the reading behavior of OtrInputStream expected for such a read
@@ -225,13 +229,6 @@ public class OtrInputStreamTest {
         assertEquals(5, sigX.dhKeyID);
         assertNotNull(sigX.signature);
         assertArrayEquals(new byte[] { 8 }, sigX.signature);
-    }
-
-    @Test(expected = OtrInputStream.UnverifiableLargeLengthException.class)
-    public void testVeryLargeDataLengthThrowsException() throws IOException {
-        final byte[] data = new byte[]{0x01, (byte) 0xdd, (byte) 0xee, (byte) 0xff, 0x00, 0x00, 0x00};
-        final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
-        ois.readData();
     }
 
     @Test
@@ -306,7 +303,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadPoint() throws IOException, OtrCryptoException {
+    public void testReadPoint() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePoint(keypair.getPublicKey());
@@ -320,7 +317,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadPointWithExcessData() throws IOException, OtrCryptoException {
+    public void testReadPointWithExcessData() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePoint(keypair.getPublicKey());
@@ -334,8 +331,8 @@ public class OtrInputStreamTest {
         assertEquals(this.keypair.getPublicKey().y(), result.y());
     }
 
-    @Test(expected = IOException.class)
-    public void testReadPointShifted() throws IOException, OtrCryptoException {
+    @Test(expected = UnsupportedLengthException.class)
+    public void testReadPointShifted() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writeByte(0xff);
@@ -346,7 +343,7 @@ public class OtrInputStreamTest {
     }
 
     @Test(expected = IOException.class)
-    public void testReadPointPartial() throws IOException, OtrCryptoException {
+    public void testReadPointPartial() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final byte[] data = new byte[60];
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePoint(keypair.getPublicKey());
