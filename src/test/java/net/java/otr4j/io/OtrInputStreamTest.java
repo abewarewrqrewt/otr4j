@@ -16,7 +16,6 @@ import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.KeyPair;
@@ -55,14 +54,14 @@ public class OtrInputStreamTest {
     private final EdDSAKeyPair keypair = EdDSAKeyPair.generate(RANDOM);
 
     @Test
-    public void testDataLengthOkay() throws IOException, UnsupportedLengthException {
+    public void testDataLengthOkay() throws UnsupportedLengthException, ProtocolException {
         final byte[] data = new byte[] { 0, 0, 0, 1, 0x6a };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(new byte[] { 0x6a }, ois.readData());
     }
 
     @Test(expected = UnsupportedLengthException.class)
-    public void testDataLengthTooLarge() throws IOException, UnsupportedLengthException {
+    public void testDataLengthTooLarge() throws UnsupportedLengthException, ProtocolException {
         // Verify that the limitation of Java's signed int is in place as
         // expected. 0xffffffff is too large and would have been interpreted as
         // a negative value, thus a negative array size for the byte[]
@@ -76,28 +75,28 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadByte() throws IOException {
+    public void testReadByte() throws ProtocolException {
         final byte[] data = new byte[] { 0x20 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertEquals(' ', ois.readByte());
     }
 
-    @Test(expected = IOException.class)
-    public void testReadByteEmptyBuffer() throws IOException {
+    @Test(expected = ProtocolException.class)
+    public void testReadByteEmptyBuffer() throws ProtocolException {
         final byte[] data = new byte[0];
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readByte();
     }
 
-    @Test(expected = IOException.class)
-    public void testReadIntInsufficientData() throws IOException {
+    @Test(expected = ProtocolException.class)
+    public void testReadIntInsufficientData() throws ProtocolException {
         final byte[] data = new byte[] { 0x1, 0x2, 0x3 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readInt();
     }
 
     @Test
-    public void testReadInt() throws IOException {
+    public void testReadInt() throws ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x10 };
         final ByteArrayInputStream in = new ByteArrayInputStream(data);
         final OtrInputStream ois = new OtrInputStream(in);
@@ -106,7 +105,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadIntDataLeft() throws IOException {
+    public void testReadIntDataLeft() throws ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x10, 0x3f};
         final ByteArrayInputStream in = new ByteArrayInputStream(data);
         final OtrInputStream ois = new OtrInputStream(in);
@@ -115,7 +114,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadShorts() throws IOException {
+    public void testReadShorts() throws ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0xf, 0x0, 0x3f};
         final ByteArrayInputStream in = new ByteArrayInputStream(data);
         final OtrInputStream ois = new OtrInputStream(in);
@@ -125,35 +124,35 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadCounter() throws IOException {
+    public void testReadCounter() throws ProtocolException {
         final byte[] data = new byte[] { 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(data, ois.readCtr());
     }
 
     @Test
-    public void testReadMAC() throws IOException {
+    public void testReadMAC() throws ProtocolException {
         final byte[] data = new byte[] { 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00, 0x77, 0x66, 0x55, 0x44 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(data, ois.readMac());
     }
 
     @Test
-    public void testReadBigInteger() throws IOException, UnsupportedLengthException {
+    public void testReadBigInteger() throws ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x1, 0x55 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertEquals(BigInteger.valueOf(85L), ois.readBigInt());
     }
 
     @Test(expected = UnsupportedTypeException.class)
-    public void testReadBadPublicKeyType() throws IOException, OtrCryptoException, UnsupportedTypeException, UnsupportedLengthException {
+    public void testReadBadPublicKeyType() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x55 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readPublicKey();
     }
 
     @Test
-    public void testReadPUblicKeyType() throws IOException, OtrCryptoException, UnsupportedTypeException, UnsupportedLengthException {
+    public void testReadPUblicKeyType() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x1, 0x0, 0x0, 0x0, 0x1, 0x2, 0x0, 0x0, 0x0, 0x1, 0x3, 0x0, 0x0, 0x0, 0x1, 0x4 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         final PublicKey key = ois.readPublicKey();
@@ -161,35 +160,35 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadDHPublicKeyType() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testReadDHPublicKeyType() throws OtrCryptoException, ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x1, 0x55 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertEquals(OtrCryptoEngine.getDHPublicKey(BigInteger.valueOf(0x55)), ois.readDHPublicKey());
     }
 
-    @Test(expected = IOException.class)
-    public void testReadBadDHPublicKeyType() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    @Test(expected = ProtocolException.class)
+    public void testReadBadDHPublicKeyType() throws OtrCryptoException, ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         ois.readDHPublicKey();
     }
 
     @Test
-    public void testReadTLV() throws IOException {
+    public void testReadTLV() throws ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x2, 0x1, 0x2 };
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(new byte[] { 0x1, 0x2 }, ois.readTlvData());
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testReadSignatureBadPublicKey() throws IOException {
+    public void testReadSignatureBadPublicKey() throws ProtocolException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         final OtrInputStream ois = new OtrInputStream(new ByteArrayInputStream(new byte[0]));
         ois.readSignature(keypair.getPublic());
     }
 
     @Test
-    public void testReadSignature() throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    public void testReadSignature() throws NoSuchAlgorithmException, NoSuchProviderException, ProtocolException {
         final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA", "BC");
         keyGen.initialize(1024);
         final KeyPair keypair = keyGen.generateKeyPair();
@@ -204,7 +203,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadMysteriousXOtrInputStreamReadBehavior() throws IOException, OtrCryptoException, UnsupportedTypeException, UnsupportedLengthException {
+    public void testReadMysteriousXOtrInputStreamReadBehavior() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         // This test uses nonsensicle data and as such it does not verify
         // correct parsing of the read public key material. However, it does
         // test the reading behavior of OtrInputStream expected for such a read
@@ -232,7 +231,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadLong() throws IOException {
+    public void testReadLong() throws ProtocolException {
         final long expected = Long.MAX_VALUE;
         final byte[] data = new byte[] {127, -1, -1, -1, -1, -1, -1, -1};
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
@@ -240,20 +239,20 @@ public class OtrInputStreamTest {
     }
 
     @Test(expected = ProtocolException.class)
-    public void testReadNonce() throws IOException {
+    public void testReadNonce() throws ProtocolException {
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(new byte[23]));
         in.readNonce();
     }
 
     @Test
-    public void testReadNonceAllZero() throws IOException {
+    public void testReadNonceAllZero() throws ProtocolException {
         final byte[] data = new byte[24];
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(data, in.readNonce());
     }
 
     @Test
-    public void testReadNonceGenerated() throws IOException {
+    public void testReadNonceGenerated() throws ProtocolException {
         final byte[] data = new byte[24];
         RANDOM.nextBytes(data);
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
@@ -261,7 +260,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadNonceOversized() throws IOException {
+    public void testReadNonceOversized() throws ProtocolException {
         final byte[] data = new byte[25];
         data[24] = (byte) 0xff;
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
@@ -271,21 +270,21 @@ public class OtrInputStreamTest {
     }
 
     @Test(expected = ProtocolException.class)
-    public void testReadOTR4MacMissingData() throws IOException {
+    public void testReadOTR4MacMissingData() throws ProtocolException {
         final byte[] data = new byte[63];
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
         in.readMacOTR4();
     }
 
     @Test
-    public void testReadOTR4MacAllZero() throws IOException {
+    public void testReadOTR4MacAllZero() throws ProtocolException {
         final byte[] data = new byte[64];
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
         assertArrayEquals(data, in.readMacOTR4());
     }
 
     @Test
-    public void testReadOTR4Mac() throws IOException {
+    public void testReadOTR4Mac() throws ProtocolException {
         final byte[] data = new byte[64];
         RANDOM.nextBytes(data);
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
@@ -293,7 +292,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadOTR4MacWithSpareData() throws IOException {
+    public void testReadOTR4MacWithSpareData() throws ProtocolException {
         final byte[] data = new byte[65];
         data[64] = (byte) 0xff;
         final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(data));
@@ -303,7 +302,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadPoint() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testReadPoint() throws OtrCryptoException, ProtocolException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePoint(keypair.getPublicKey());
@@ -317,7 +316,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadPointWithExcessData() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testReadPointWithExcessData() throws OtrCryptoException, ProtocolException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePoint(keypair.getPublicKey());
@@ -331,8 +330,8 @@ public class OtrInputStreamTest {
         assertEquals(this.keypair.getPublicKey().y(), result.y());
     }
 
-    @Test(expected = UnsupportedLengthException.class)
-    public void testReadPointShifted() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    @Test(expected = ProtocolException.class)
+    public void testReadPointShifted() throws OtrCryptoException, ProtocolException {
         final byte[] data;
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writeByte(0xff);
@@ -342,8 +341,8 @@ public class OtrInputStreamTest {
         new OtrInputStream(new ByteArrayInputStream(data)).readPoint();
     }
 
-    @Test(expected = IOException.class)
-    public void testReadPointPartial() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    @Test(expected = ProtocolException.class)
+    public void testReadPointPartial() throws OtrCryptoException, ProtocolException {
         final byte[] data = new byte[60];
         try (final OtrOutputStream out = new OtrOutputStream()) {
             out.writePoint(keypair.getPublicKey());
@@ -358,7 +357,7 @@ public class OtrInputStreamTest {
     }
 
     @Test(expected = ProtocolException.class)
-    public void testReadEdDSASignatureBytesMissing() throws IOException {
+    public void testReadEdDSASignatureBytesMissing() throws ProtocolException {
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
         final byte[] data = new byte[113];
         System.arraycopy(sig, 0, data, 0, data.length);
@@ -368,7 +367,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadEdDSASignature() throws IOException {
+    public void testReadEdDSASignature() throws ProtocolException {
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
         final byte[] result;
         try (final OtrInputStream in = new OtrInputStream(new ByteArrayInputStream(sig))) {
@@ -378,7 +377,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadEdDSASignatureExcessData() throws IOException {
+    public void testReadEdDSASignatureExcessData() throws ProtocolException {
         final byte[] data = new byte[115];
         RANDOM.nextBytes(data);
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
@@ -391,7 +390,7 @@ public class OtrInputStreamTest {
     }
 
     @Test
-    public void testReadEdDSASignatureOffset() throws IOException {
+    public void testReadEdDSASignatureOffset() throws ProtocolException {
         final byte[] data = new byte[115];
         data[0] = (byte) 0xff;
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));

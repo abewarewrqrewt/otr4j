@@ -11,7 +11,6 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
-import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.UnsupportedTypeException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
@@ -127,7 +126,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
      */
     @Nonnull
     private SignatureMessage handleRevealSignatureMessage(@Nonnull final AuthContext context, @Nonnull final RevealSignatureMessage message)
-        throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException, UnsupportedLengthException {
+        throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException {
         // OTR: "Use the received value of r to decrypt the value of gx received in the D-H Commit Message, and verify
         // the hash therein. Decrypt the encrypted signature, and verify the signature and the MACs."
         final DHPublicKey remoteDHPublicKey;

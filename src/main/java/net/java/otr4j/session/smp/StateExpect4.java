@@ -1,7 +1,6 @@
 package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.io.OtrInputStream;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
@@ -37,12 +36,7 @@ final class StateExpect4 extends AbstractSMPState {
     @Override
     void smpMessage4(@Nonnull final SM astate, @Nonnull final byte[] input) throws SMException {
         /* Read from input to find the mpis */
-        final BigInteger[] msg4;
-        try {
-            msg4 = SM.unserialize(input);
-        } catch (final OtrInputStream.UnsupportedLengthException e) {
-            throw new SMException("Unsupported situation by otr4j.", e);
-        }
+        final BigInteger[] msg4 = SM.unserialize(input);
 
         /* Verify parameters and let checks throw exceptions in case of failure.*/
         checkGroupElem(msg4[0]);

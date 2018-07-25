@@ -9,7 +9,6 @@ package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
-import net.java.otr4j.io.OtrInputStream;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 
@@ -167,7 +166,7 @@ public class SMTest {
     }
 
     @Test
-    public void testUnserializeSerializedBigIntArray() throws SMException, OtrInputStream.UnsupportedLengthException {
+    public void testUnserializeSerializedBigIntArray() throws SMException {
         final BigInteger[] target = new BigInteger[] {
             BigInteger.ZERO,
             BigInteger.ONE,
@@ -178,7 +177,7 @@ public class SMTest {
     }
 
     @Test
-    public void testUnserializeZeroLength() throws SMException, OtrInputStream.UnsupportedLengthException {
+    public void testUnserializeZeroLength() throws SMException {
         final byte[] data = new byte[] { 0, 0, 0, 0 };
         final BigInteger[] result = SM.unserialize(data);
         assertNotNull(result);
@@ -186,7 +185,7 @@ public class SMTest {
     }
 
     @Test(expected = SMException.class)
-    public void testUnserializeLargeSignedLength() throws SMException, OtrInputStream.UnsupportedLengthException {
+    public void testUnserializeLargeSignedLength() throws SMException {
         final byte[] data = new byte[] { (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff };
         SM.unserialize(data);
     }

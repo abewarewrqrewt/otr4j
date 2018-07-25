@@ -11,7 +11,6 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
-import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.UnsupportedTypeException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
@@ -132,7 +131,7 @@ final class StateAwaitingSig extends AbstractAuthState {
 
     @Nullable
     private SignatureMessage handleSignatureMessage(@Nonnull final AuthContext context, @Nonnull final SignatureMessage message)
-        throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException, UnsupportedLengthException {
+        throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException {
         // OTR: "Decrypt the encrypted signature, and verify the signature and the MACs."
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"

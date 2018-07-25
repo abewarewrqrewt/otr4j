@@ -9,7 +9,6 @@ import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 
@@ -42,14 +41,15 @@ public final class EncodedMessageParser {
      *
      * @param input OTR input stream
      * @return Returns an OTR-encoded message as in-memory object.
-     * @throws IOException        In case of issues during reading of the message bytes. (For example, missing bytes or
+     * @throws ProtocolException  In case of issues during reading of the message bytes. (For example, missing bytes or
      *                            unexpected values.)
      * @throws OtrCryptoException In case of issues during reconstruction of cryptographic components of a message. (For
      *                            example, a bad public key.)
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
     @Nonnull
-    public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws OtrCryptoException,
+        UnsupportedLengthException, ProtocolException {
         final int protocolVersion = input.readShort();
         if (!SUPPORTED.contains(protocolVersion)) {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);

@@ -94,8 +94,9 @@ public final class SM {
         }
     }
 
+    // TODO rename method from 'unserialize' to 'deserialize'.
     @Nonnull
-    static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException, UnsupportedLengthException {
+    static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException {
         try (ByteArrayInputStream in = new ByteArrayInputStream(bytes); OtrInputStream ois = new OtrInputStream(in)) {
             final int len = ois.readInt();
             if (len < 0) {

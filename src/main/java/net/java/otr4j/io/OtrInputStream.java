@@ -45,8 +45,6 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
  * all possibilities of incomplete or bad data. Many methods throw IOException
  * to indicate for such an illegal situation.
  */
-// FIXME get rid of special-case exceptions indicating maximum length/unsupported length of input data.
-// FIXME consider changing to ByteBuffer as we always act on in-memory byte-arrays anyways.
 public final class OtrInputStream implements Closeable {
 
     private static final byte[] ZERO_BYTES = new byte[0];
@@ -103,10 +101,20 @@ public final class OtrInputStream implements Closeable {
         return checkedRead(TYPE_LEN_MAC);
     }
 
+    /**
+     * Read an Big Integer (MPI) value from the OTR input stream.
+     *
+     * @return Returns MPI value as Big Integer.
+     * @throws ProtocolException In case of bad input data resulting in failure to parse Big Integer value.
+     */
     @Nonnull
-    public BigInteger readBigInt() throws ProtocolException, UnsupportedLengthException {
-        final byte[] b = readData();
-        return new BigInteger(1, b);
+    public BigInteger readBigInt() throws ProtocolException {
+        try {
+            final byte[] b = readData();
+            return new BigInteger(1, b);
+        } catch (final UnsupportedLengthException e) {
+            throw new ProtocolException("Unexpectedly large MPI value encountered. This is most likely not according to specification.");
+        }
     }
 
     /**
@@ -125,7 +133,6 @@ public final class OtrInputStream implements Closeable {
      *                                    case of data with length > {@link Integer#MAX_VALUE}, as this is
      *                                    currently unsupported by otr4j.
      */
-    // FIXME consider handling UnsupportedLengthException internally for fields that should never grow to that size, like with DH and DSA public keys.
     @Nonnull
     public byte[] readData() throws ProtocolException, UnsupportedLengthException {
         final int dataLen = checkDataLength(readNumber(DATA_LEN));
@@ -139,10 +146,9 @@ public final class OtrInputStream implements Closeable {
      * @throws ProtocolException          Throws IOException in case of failing to read full public key from input data.
      * @throws OtrCryptoException         Throws OtrCryptoException if failed to reconstruct corresponding public key.
      * @throws UnsupportedTypeException   Thrown in case an unsupported public key type is encountered.
-     * @throws UnsupportedLengthException In case a data field with length > 31 bits was encountered.
      */
     @Nonnull
-    public DSAPublicKey readPublicKey() throws OtrCryptoException, UnsupportedTypeException, ProtocolException, UnsupportedLengthException {
+    public DSAPublicKey readPublicKey() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         final int type = readShort();
         switch (type) {
             case PUBLIC_KEY_TYPE_DSA:
@@ -167,16 +173,15 @@ public final class OtrInputStream implements Closeable {
      *                                    Public Key instance from input stream.
      * @throws OtrCryptoException         Throws exception in case of illegal DH public
      *                                    key.
-     * @throws UnsupportedLengthException In case data field with length > 31 bits was encountered.
      */
     @Nonnull
-    public DHPublicKey readDHPublicKey() throws OtrCryptoException, ProtocolException, UnsupportedLengthException {
+    public DHPublicKey readDHPublicKey() throws OtrCryptoException, ProtocolException {
         final BigInteger gyMpi = readBigInt();
         return OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(gyMpi));
     }
 
     @Nonnull
-    public byte[] readTlvData() throws IOException {
+    public byte[] readTlvData() throws ProtocolException {
         final int len = readNumber(TYPE_LEN_SHORT);
         return checkedRead(len);
     }
@@ -199,17 +204,16 @@ public final class OtrInputStream implements Closeable {
      * @throws OtrCryptoException         In case of failures while processing the
      *                                    message content.
      * @throws UnsupportedTypeException   In case of unsupported public key type.
-     * @throws UnsupportedLengthException In case of data field with length > 31 bits.
      */
     @Nonnull
-    public SignatureX readMysteriousX() throws OtrCryptoException, UnsupportedTypeException, ProtocolException, UnsupportedLengthException {
+    public SignatureX readMysteriousX() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         final DSAPublicKey pubKey = readPublicKey();
         final int dhKeyID = readInt();
         final byte[] sig = readSignature(pubKey);
         return new SignatureX(pubKey, dhKeyID, sig);
     }
 
-    public long readLong() throws IOException {
+    public long readLong() throws ProtocolException {
         final byte[] b = checkedRead(TYPE_LEN_LONG);
         long value = 0;
         for (int i = 0; i < b.length; i++) {
@@ -247,11 +251,14 @@ public final class OtrInputStream implements Closeable {
      * @return Returns Ed448 point.
      * @throws ProtocolException          In case of failure to read from input stream.
      * @throws OtrCryptoException         In case of failure decoding Point, meaning point data is invalid.
-     * @throws UnsupportedLengthException In case of data record with length > 31 bits.
      */
     @Nonnull
-    public Point readPoint() throws OtrCryptoException, ProtocolException, UnsupportedLengthException {
-        return decodePoint(readData());
+    public Point readPoint() throws OtrCryptoException, ProtocolException {
+        try {
+            return decodePoint(readData());
+        } catch (final UnsupportedLengthException e) {
+            throw new ProtocolException("Data field that should contain Point data is exceptionally large.");
+        }
     }
 
     /**

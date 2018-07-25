@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.EdDSAKeyPair;
@@ -9,12 +10,10 @@ import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.api.ClientProfile;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.interfaces.DSAPrivateKey;
@@ -118,12 +117,11 @@ public final class ClientProfilePayload implements OtrEncodable {
      *
      * @param in The OTR-encoded input stream.
      * @return Returns ClientProfilePayload as read from input stream.
-     * @throws IOException        Throws IOException in case of reading failure.
+     * @throws ProtocolException  Throws IOException in case of reading failure.
      * @throws OtrCryptoException In case of failure to restore cryptographic components in the payload.
      */
     @Nonnull
-    static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws IOException, OtrCryptoException,
-        UnsupportedLengthException {
+    static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws OtrCryptoException, ProtocolException {
         final int numFields = in.readInt();
         if (numFields <= 0) {
             throw new ProtocolException("Invalid number of fields: " + numFields);
@@ -150,8 +148,12 @@ public final class ClientProfilePayload implements OtrEncodable {
                     }
                     break;
                 case VERSIONS:
-                    final Set<Integer> versions = parseVersionString(new String(in.readData(), ASCII));
-                    fields.add(new VersionsField(versions));
+                    try {
+                        final Set<Integer> versions = parseVersionString(new String(in.readData(), ASCII));
+                        fields.add(new VersionsField(versions));
+                    } catch (UnsupportedLengthException e) {
+                        throw new ProtocolException("Versions are not expected in an exceptionally large data field. This is not according to specification.");
+                    }
                     break;
                 case PROFILE_EXPIRATION:
                     fields.add(new ExpirationDateField(in.readLong()));

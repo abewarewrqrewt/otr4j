@@ -102,7 +102,7 @@ public final class SerializationUtils {
     // Mysterious X IO.
     @Nonnull
     public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws IOException, OtrCryptoException,
-        UnsupportedTypeException, UnsupportedLengthException {
+        UnsupportedTypeException {
         try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readMysteriousX();
         }
@@ -127,7 +127,7 @@ public final class SerializationUtils {
     }
 
     @Nonnull
-    public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException, UnsupportedLengthException {
+    public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException {
         try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
             return ois.readBigInt();
         }

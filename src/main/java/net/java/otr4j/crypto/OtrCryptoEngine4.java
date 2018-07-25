@@ -2,10 +2,12 @@ package net.java.otr4j.crypto;
 
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
+import nl.dannyvanheumen.joldilocks.Points.InvalidDataException;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -15,6 +17,7 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.security.SecureRandom;
 
 import static java.math.BigInteger.ZERO;
@@ -203,7 +206,7 @@ public final class OtrCryptoEngine4 {
     public static Point decodePoint(@Nonnull final byte[] pointBytes) throws OtrCryptoException {
         try {
             return Points.decode(pointBytes);
-        } catch (final Points.InvalidDataException ex) {
+        } catch (final InvalidDataException ex) {
             throw new OtrCryptoException("Invalid Ed448 point data.", ex);
         }
     }
@@ -434,15 +437,20 @@ public final class OtrCryptoEngine4 {
          *
          * @param in the OTR input stream
          * @return Returns sigma as parsed from the data.
+         * @throws ProtocolException In case of failure to read sigma from input.
          */
-        public static Sigma readFrom(@Nonnull final OtrInputStream in) throws IOException, OtrInputStream.UnsupportedLengthException {
-            final BigInteger c1 = decodeLittleEndian(in.readData());
-            final BigInteger r1 = decodeLittleEndian(in.readData());
-            final BigInteger c2 = decodeLittleEndian(in.readData());
-            final BigInteger r2 = decodeLittleEndian(in.readData());
-            final BigInteger c3 = decodeLittleEndian(in.readData());
-            final BigInteger r3 = decodeLittleEndian(in.readData());
-            return new Sigma(c1, r1, c2, r2, c3, r3);
+        public static Sigma readFrom(@Nonnull final OtrInputStream in) throws ProtocolException {
+            try {
+                final BigInteger c1 = decodeLittleEndian(in.readData());
+                final BigInteger r1 = decodeLittleEndian(in.readData());
+                final BigInteger c2 = decodeLittleEndian(in.readData());
+                final BigInteger r2 = decodeLittleEndian(in.readData());
+                final BigInteger c3 = decodeLittleEndian(in.readData());
+                final BigInteger r3 = decodeLittleEndian(in.readData());
+                return new Sigma(c1, r1, c2, r2, c3, r3);
+            } catch (final UnsupportedLengthException e) {
+                throw new ProtocolException("Either a c or r value contains an exceptionally large value. This is not according to specification.");
+            }
         }
 
         /**
