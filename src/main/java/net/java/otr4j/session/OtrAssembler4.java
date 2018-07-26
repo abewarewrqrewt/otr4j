@@ -46,7 +46,7 @@ final class OtrAssembler4 {
     }
 
     @Nullable
-    String assemble(@Nonnull final String message) {
+    String accumulate(@Nonnull final String message) {
         final Matcher pattern = PATTERN.matcher(message);
         if (!pattern.matches()) {
             return message;

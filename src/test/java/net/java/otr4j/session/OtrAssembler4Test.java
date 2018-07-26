@@ -21,28 +21,28 @@ public final class OtrAssembler4Test {
     @Test(expected = NullPointerException.class)
     public void testNullMessage() {
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assembler.assemble(null);
+        assembler.accumulate(null);
     }
 
     @Test
     public void testEmptyMessage() {
         final String msg = "";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertSame(msg, assembler.assemble(msg));
+        assertSame(msg, assembler.accumulate(msg));
     }
 
     @Test
     public void testArbitraryMessage() {
         final String msg = "This is an arbitrary message that definitely is not fragmented.";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertSame(msg, assembler.assemble(msg));
+        assertSame(msg, assembler.accumulate(msg));
     }
 
     @Test
     public void testAssemblySingleFragment() {
         final String fragment = String.format("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64);
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertEquals(helloWorldBase64, assembler.assemble(fragment));
+        assertEquals(helloWorldBase64, assembler.accumulate(fragment));
         // FIXME consider testing correct removal of completed fragments.
     }
 
@@ -51,8 +51,8 @@ public final class OtrAssembler4Test {
         final String part1 = "?OTR|3c5b5f03|5a73a599|27e31597,00001,00002," + helloWorldBase64.substring(0, 8) + ",";
         final String part2 = "?OTR|3c5b5f03|5a73a599|27e31597,00002,00002," + helloWorldBase64.substring(8) + ",";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(part1));
-        assertEquals(helloWorldBase64, assembler.assemble(part2));
+        assertNull(assembler.accumulate(part1));
+        assertEquals(helloWorldBase64, assembler.accumulate(part2));
     }
 
     @Test
@@ -77,23 +77,23 @@ public final class OtrAssembler4Test {
         };
         final OtrAssembler4 assembler = new OtrAssembler4();
         for (int i = 0; i < parts.length-1; i++) {
-            assertNull(assembler.assemble(parts[i]));
+            assertNull(assembler.accumulate(parts[i]));
         }
-        assertEquals(helloWorldBase64, assembler.assemble(parts[parts.length-1]));
+        assertEquals(helloWorldBase64, assembler.accumulate(parts[parts.length-1]));
     }
 
     @Test
     public void testAssemblyEmptyFragment() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertEquals("", assembler.assemble(fragment));
+        assertEquals("", assembler.accumulate(fragment));
     }
 
     @Test
     public void testOTRv3FormattedFragmentIgnored() {
         final String fragment = String.format("?OTR|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64);
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertSame(fragment, assembler.assemble(fragment));
+        assertSame(fragment, assembler.accumulate(fragment));
     }
 
     @Test
@@ -102,9 +102,9 @@ public final class OtrAssembler4Test {
         final OtrAssembler4 assembler = new OtrAssembler4();
         for (int i = 0; i < source.length()-1; i++) {
             final String fragment = source.substring(0, i);
-            assertSame("Failed to reject fragment: " + fragment, fragment, assembler.assemble(fragment));
+            assertSame("Failed to reject fragment: " + fragment, fragment, assembler.accumulate(fragment));
         }
-        assertEquals(helloWorldBase64, assembler.assemble(source));
+        assertEquals(helloWorldBase64, assembler.accumulate(source));
     }
 
     @Test
@@ -144,7 +144,7 @@ public final class OtrAssembler4Test {
         final OtrAssembler4 assembler = new OtrAssembler4();
         for (final String variant : variants) {
             final String input = String.format(variant, helloWorldBase64);
-            assertEquals("Variant failed: " + variant, helloWorldBase64, assembler.assemble(input));
+            assertEquals("Variant failed: " + variant, helloWorldBase64, assembler.accumulate(input));
         }
     }
 
@@ -185,7 +185,7 @@ public final class OtrAssembler4Test {
         final OtrAssembler4 assembler = new OtrAssembler4();
         for (final String variant : variants) {
             final String input = String.format(variant, helloWorldBase64);
-            assertSame("Variant failed: " + variant, input, assembler.assemble(input));
+            assertSame("Variant failed: " + variant, input, assembler.accumulate(input));
         }
     }
 
@@ -193,42 +193,42 @@ public final class OtrAssembler4Test {
     public void testFragmentIndexZero() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,00000,00001,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 
     @Test
     public void testFragmentTotalZero() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,00001,00000,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 
     @Test
     public void testFragmentIndexLargerThanTotal() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,00002,00001,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 
     @Test
     public void testFragmentIndexMuchLargerThanTotal() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,11111,00001,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 
     @Test
     public void testFragmentIndexOverMaximum() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,65536,00001,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 
     @Test
     public void testFragmentTotalOverMaximum() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,00001,65536,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 
     @Test
@@ -236,15 +236,15 @@ public final class OtrAssembler4Test {
         final String part1 = "?OTR|3c5b5f03|5a73a599|27e31597,00001,00003," + helloWorldBase64.substring(0, 8) + ",";
         final String part2 = "?OTR|3c5b5f03|5a73a599|27e31597,00002,00002," + helloWorldBase64.substring(8) + ",";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(part1));
-        assertNull(assembler.assemble(part2));
+        assertNull(assembler.accumulate(part1));
+        assertNull(assembler.accumulate(part2));
     }
 
     @Test
     public void testFragmentReceivedMultipleTimesIgnoring() {
         final String fragment = "?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,,";
         final OtrAssembler4 assembler = new OtrAssembler4();
-        assertNull(assembler.assemble(fragment));
-        assertNull(assembler.assemble(fragment));
+        assertNull(assembler.accumulate(fragment));
+        assertNull(assembler.accumulate(fragment));
     }
 }
