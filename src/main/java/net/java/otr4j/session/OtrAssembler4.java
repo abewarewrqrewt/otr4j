@@ -37,7 +37,7 @@ final class OtrAssembler4 {
      * Group 6: message fragment.
      */
     // FIXME verify pattern completeness: capital, small letters, whitespaces, prefixed 0 or not, values with length < 8 (or max), null (?), ...
-    private final Pattern PATTERN = Pattern.compile("^\\?OTR\\|([0-9abcdefABCDEF]{1,8})\\|([0-9abcdefABCDEF]{1,8})\\|([0-9abcdefABCDEF]{1,8}),(\\d{1,5}),(\\d{1,5}),([a-zA-Z0-9+/=?:.]*),$");
+    private static final Pattern PATTERN = Pattern.compile("^\\?OTR\\|([0-9abcdefABCDEF]{1,8})\\|([0-9abcdefABCDEF]{1,8})\\|([0-9abcdefABCDEF]{1,8}),(\\d{1,5}),(\\d{1,5}),([a-zA-Z0-9+/=?:.]*),$");
 
     private final HashMap<Integer, String[]> fragments = new HashMap<>();
 
