@@ -283,8 +283,6 @@ public final class SerializationUtils {
                 try (OtrInputStream otr = new OtrInputStream(bin)) {
                     return read(otr);
                 }
-            } else {
-                LOGGER.log(Level.INFO, "Unknown type of OTR message: {}", s);
             }
         }
 

@@ -269,19 +269,24 @@ public class SerializationUtilsTest {
 
     @Test
     public void testEnsureFakeOTRHeadersCorrectlyIgnored3() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
-        final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTRa");
+        final PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage("?OTRa");
         assertTrue(msg.getVersions().isEmpty());
+        assertEquals("?OTRa", msg.getCleanText());
     }
 
     @Test
     public void testEnsureFakeOTRHeadersCorrectlyIgnored4() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
-        final QueryMessage msg = (QueryMessage) SerializationUtils.toMessage("?OTR ");
+        final PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage("?OTR ");
         assertTrue(msg.getVersions().isEmpty());
+        assertEquals("?OTR ", msg.getCleanText());
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testIncompleteMessageMissingEnding() throws IOException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
-	    SerializationUtils.toMessage("?OTR:BADBASE64CODEMISSINGDOT");
+        final String message = "?OTR:BADBASE64CODEMISSINGDOT";
+        final PlainTextMessage msg = (PlainTextMessage) SerializationUtils.toMessage(message);
+        assertTrue(msg.getVersions().isEmpty());
+        assertEquals(message, msg.getCleanText());
     }
 
     @Test

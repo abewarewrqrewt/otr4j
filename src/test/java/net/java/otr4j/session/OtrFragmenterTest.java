@@ -108,7 +108,7 @@ public class OtrFragmenterTest {
     public void testFragmentNullInstructionsFragment() throws ProtocolException {
         final OtrEngineHost host = mock(OtrEngineHost.class);
         when(host.getMaxFragmentSize(any(SessionID.class))).thenReturn(Integer.MAX_VALUE);
-        final String message = "?OTR:" + Base64.toBase64String("Some message that shouldn't be fragmented.".getBytes(UTF8));
+        final String message = "?OTR:" + Base64.toBase64String("Some message that shouldn't be fragmented.".getBytes(UTF8)) + ".";
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0, 0);
         final String[] fragments = fragmenter.fragment(3, message);
         assertArrayEquals(new String[]{message}, fragments);
@@ -243,7 +243,7 @@ public class OtrFragmenterTest {
 
     @Test(expected = ProtocolException.class)
     public void testExceedProtocolMaximumNumberOfFragments() throws ProtocolException {
-        final String veryLongString = "?OTR:" + new String(new char[65537]).replace('\0', 'a');
+        final String veryLongString = "?OTR:" + new String(new char[65537]).replace('\0', 'a') + ".";
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host(37), this.sessionID, 0, 0);
         fragmenter.fragment(3, veryLongString);
     }
@@ -251,7 +251,7 @@ public class OtrFragmenterTest {
     @Test
     public void testFragmentPatternsV3() throws ProtocolException {
         final Pattern OTRv3_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR\\|[0-9abcdef]{8}\\|[0-9abcdef]{8},\\d{5},\\d{5},[a-zA-Z0-9+/=?:.]+,$");
-        final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(1700).getBytes(UTF8));
+        final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(1700).getBytes(UTF8)) + ".";
         final OtrEngineHost host = host(150);
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0x0a73a599, 0x00010007);
         String[] msg = fragmenter.fragment(3, payload);
@@ -269,7 +269,7 @@ public class OtrFragmenterTest {
     @Test
     public void testFragmentPatternsV2() throws ProtocolException {
         final Pattern OTRv2_FRAGMENT_PATTERN = Pattern.compile("^\\?OTR,\\d{1,5},\\d{1,5},[a-zA-Z0-9+/=?:.]+,$");
-        final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(700).getBytes(UTF8));
+        final String payload = "?OTR:" + Base64.toBase64String(RandomStringUtils.random(700).getBytes(UTF8)) + ".";
         final OtrEngineHost host = host(150);
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID, 0, 0);
         final String[] msg = fragmenter.fragment(2, payload);

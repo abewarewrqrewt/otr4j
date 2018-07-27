@@ -417,6 +417,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
 
         try {
+            // FIXME This way of assembling a fragmented message cannot work correctly in OTRv3+. Assembling is done at the master session which receives messages for multiple instances. Assembling will throw away one instances message parts when next instance's message parts come in.
             msgText = assembler.accumulate(msgText);
             if (msgText == null) {
                 return null; // Not a complete message (yet).
