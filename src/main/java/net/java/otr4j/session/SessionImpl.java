@@ -34,6 +34,7 @@ import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
+import net.java.otr4j.session.OtrAssembler.UnknownInstanceException;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
@@ -420,7 +421,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             if (msgText == null) {
                 return null; // Not a complete message (yet).
             }
-        } catch (final OtrAssembler.UnknownInstanceException e) {
+        } catch (final UnknownInstanceException e) {
             // The fragment is not intended for us
             logger.finest(e.getMessage());
             messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
