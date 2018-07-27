@@ -45,8 +45,11 @@ import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ERROR;
+import static net.java.otr4j.io.EncodingConstants.HEAD_FRAGMENTED_V2;
+import static net.java.otr4j.io.EncodingConstants.HEAD_FRAGMENTED_V3;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_Q;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_V;
+import static net.java.otr4j.io.EncodingConstants.TAIL_FRAGMENTED;
 import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 import static org.bouncycastle.util.encoders.Base64.decode;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
@@ -223,6 +226,7 @@ public final class SerializationUtils {
      * @throws net.java.otr4j.crypto.OtrCryptoException error of cryptographic nature
      */
     // TODO remove OTRv2 support in due time
+    // FIXME consider restructuring/rewriting this class. Seems to be much too sensitive to variation.
     @Nullable
     public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, IOException, UnsupportedLengthException {
         if (s.length() == 0) {
@@ -261,7 +265,7 @@ public final class SerializationUtils {
                 }
                 final Set<Integer> versions = parseVersionString(versionString);
                 return new QueryMessage(s.substring(idxHead, s.indexOf('?', idxHeaderBody) + 1), versions);
-            } else if (idxHead == 0 && contentType == HEAD_ENCODED) {
+            } else if (otrEncoded(s)) {
                 // Data message found.
 
                 if (content.charAt(content.length() - 1) != '.') {
@@ -279,6 +283,8 @@ public final class SerializationUtils {
                 try (OtrInputStream otr = new OtrInputStream(bin)) {
                     return read(otr);
                 }
+            } else {
+                LOGGER.log(Level.INFO, "Unknown type of OTR message: {}", s);
             }
         }
 
@@ -395,11 +401,24 @@ public final class SerializationUtils {
      * Check whether the provided content is OTR encoded.
      *
      * @param content the content to investigate
-     * @return Returns true if content is OTR encoded, or false otherwise
+     * @return Returns true if content is OTR encoded, or false otherwise.
      */
     @CheckReturnValue
     public static boolean otrEncoded(@Nonnull final String content) {
-        return content.startsWith(HEAD + HEAD_ENCODED);
+        return content.startsWith(HEAD + HEAD_ENCODED) && content.endsWith(".");
+    }
+
+    /**
+     * Check whether the provided content is OTR-fragment encoded.
+     *
+     * @param content the content to investigate
+     * @return Returns true if content is OTR fragment, or false otherwise.
+     */
+    // FIXME write unit tests
+    @CheckReturnValue
+    public static boolean otrFragmented(@Nonnull final String content) {
+        return (content.startsWith(HEAD + HEAD_FRAGMENTED_V2) || content.startsWith(HEAD + HEAD_FRAGMENTED_V3))
+            && content.endsWith("" + TAIL_FRAGMENTED);
     }
 
     /**
