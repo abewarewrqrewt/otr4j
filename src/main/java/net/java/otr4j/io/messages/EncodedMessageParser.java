@@ -87,7 +87,6 @@ public final class EncodedMessageParser {
                             encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
                     }
                     case OTRv.FOUR: {
-                        // FIXME support parsing messages containing Forger Keys.
                         final byte flags = input.readByte();
                         final int pn = input.readInt();
                         final int i = input.readInt();

@@ -43,7 +43,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  */
 // FIXME write unit tests
 // FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
-// FIXME support producing encoding results that contain Forger Keys field.
 public final class ClientProfilePayload implements OtrEncodable {
 
     private final List<Field> fields;
@@ -287,6 +286,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             }
             partialM = out.toByteArray();
         }
+        // FIXME verify that we only add the DSA long-term public key after successful verification of the transitional signature.
         final byte[] m;
         if (transitionalSignatureFields.size() > 1) {
             throw new ValidationException("Expected at most one transitional signature, got: " + transitionalSignatureFields.size());
