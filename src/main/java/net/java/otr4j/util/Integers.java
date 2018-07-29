@@ -27,7 +27,14 @@ public final class Integers {
         return value;
     }
 
-    // FIXME write unit tests
+    /**
+     * Parse unsigned integer textual value-representation. All 32 bits are used, the resulting integer may have a
+     * negative value.
+     *
+     * @param text Textual representation of integer value.
+     * @param radix Radix for parsing.
+     * @return Returns integer value between 0 and 0xffffffff. (That is, all 32 bits are used. So might be negative.)
+     */
     public static int parseUnsignedInt(@Nonnull final String text, final int radix) {
         return new BigInteger(text, radix).intValue();
     }
