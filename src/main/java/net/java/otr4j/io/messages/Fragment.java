@@ -8,9 +8,11 @@ import java.net.ProtocolException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_VALUE;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
+import static net.java.otr4j.util.Integers.parseUnsignedInt;
 
 /**
  * An OTR message that represents a fragment of an OTR-encoded message.
@@ -21,6 +23,9 @@ public final class Fragment implements Message {
      * Maximum supported number of fragments.
      */
     private static final int MAX_FRAGMENTS = 65535;
+
+    private static final int DECIMAL_SYSTEM = 10;
+    private static final int HEXADECIMAL_SYSTEM = 16;
 
     /**
      * OTRv2 fragment pattern.
@@ -96,41 +101,27 @@ public final class Fragment implements Message {
         Matcher matcher;
         if ((matcher = PATTERN_V4.matcher(message)).matches()) {
             version = OTRv.FOUR;
-            try {
-                // FIXME probably results in bad tag value due to signed instead of unsigned read.
-                identifier = Integer.valueOf(matcher.group(1), 16);
-                sendertagValue = Integer.valueOf(matcher.group(2), 16);
-                receivertagValue = Integer.valueOf(matcher.group(3), 16);
-                index = Integer.valueOf(matcher.group(4), 10);
-                total = Integer.valueOf(matcher.group(5), 10);
-            } catch (final NumberFormatException e) {
-                throw new ProtocolException("Illegal value in version 4 fragment: " + e.getMessage());
-            }
+            identifier = parseUnsignedInt(matcher.group(1), HEXADECIMAL_SYSTEM);
+            sendertagValue = parseUnsignedInt(matcher.group(2), HEXADECIMAL_SYSTEM);
+            receivertagValue = parseUnsignedInt(matcher.group(3), HEXADECIMAL_SYSTEM);
+            index = parseInt(matcher.group(4), DECIMAL_SYSTEM);
+            total = parseInt(matcher.group(5), DECIMAL_SYSTEM);
             content = matcher.group(6);
         } else if ((matcher = PATTERN_V3.matcher(message)).matches()) {
             version = OTRv.THREE;
             identifier = ZERO_IDENTIFIER;
-            try {
-                // FIXME probably results in bad tag value due to signed instead of unsigned read.
-                sendertagValue = Integer.valueOf(matcher.group(1), 16);
-                receivertagValue = Integer.valueOf(matcher.group(2), 16);
-                index = Integer.valueOf(matcher.group(3), 10);
-                total = Integer.valueOf(matcher.group(4), 10);
-            } catch (final NumberFormatException e) {
-                throw new ProtocolException("Illegal value in version 3 fragment: " + e.getMessage());
-            }
+            sendertagValue = parseUnsignedInt(matcher.group(1), HEXADECIMAL_SYSTEM);
+            receivertagValue = parseUnsignedInt(matcher.group(2), HEXADECIMAL_SYSTEM);
+            index = parseInt(matcher.group(3), DECIMAL_SYSTEM);
+            total = parseInt(matcher.group(4), DECIMAL_SYSTEM);
             content = matcher.group(5);
         } else if ((matcher = PATTERN_V2.matcher(message)).matches()) {
             version = OTRv.TWO;
             identifier = ZERO_IDENTIFIER;
             sendertagValue = ZERO_VALUE;
             receivertagValue = ZERO_VALUE;
-            try {
-                index = Integer.valueOf(matcher.group(1), 10);
-                total = Integer.valueOf(matcher.group(2), 10);
-            } catch (final NumberFormatException e) {
-                throw new ProtocolException("Illegal value in version 2 fragment: " + e.getMessage());
-            }
+            index = parseInt(matcher.group(1), DECIMAL_SYSTEM);
+            total = parseInt(matcher.group(2), DECIMAL_SYSTEM);
             content = matcher.group(3);
         } else {
             throw new ProtocolException("Illegal fragment format.");

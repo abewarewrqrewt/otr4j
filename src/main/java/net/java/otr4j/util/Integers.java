@@ -1,5 +1,8 @@
 package net.java.otr4j.util;
 
+import javax.annotation.Nonnull;
+import java.math.BigInteger;
+
 /**
  * Utility methods for integers.
  */
@@ -22,5 +25,10 @@ public final class Integers {
             throw new IllegalArgumentException("value is expected to be at minimum " + minInclusive + ", but was " + value);
         }
         return value;
+    }
+
+    // FIXME write unit tests
+    public static int parseUnsignedInt(@Nonnull final String text, final int radix) {
+        return new BigInteger(text, radix).intValue();
     }
 }
