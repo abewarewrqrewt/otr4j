@@ -12,6 +12,7 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
+import net.java.otr4j.io.messages.Fragment;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
@@ -265,6 +266,8 @@ public final class SerializationUtils {
                 }
                 final Set<Integer> versions = parseVersionString(versionString);
                 return new QueryMessage(s.substring(idxHead, s.indexOf('?', idxHeaderBody) + 1), versions);
+            } else if (otrFragmented(s)) {
+                return Fragment.parse(s);
             } else if (otrEncoded(s)) {
                 // Data message found.
 
