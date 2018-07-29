@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 
 import javax.annotation.Nonnull;
@@ -57,18 +58,19 @@ public final class Fragment implements Message {
 
     private final int version;
     private final int identifier;
-    private final int sendertag;
-    private final int receivertag;
+    private final InstanceTag sendertag;
+    private final InstanceTag receivertag;
     private final int index;
     private final int total;
     private final String content;
 
-    private Fragment(final int version, final int identifier, final int sendertag, final int receivertag,
-                     final int index, final int total, @Nonnull final String content) {
+    private Fragment(final int version, final int identifier, @Nonnull final InstanceTag sendertag,
+                     @Nonnull final InstanceTag receivertag, final int index, final int total,
+                     @Nonnull final String content) {
         this.version = version;
         this.identifier = identifier;
-        this.sendertag = sendertag;
-        this.receivertag = receivertag;
+        this.sendertag = requireNonNull(sendertag);
+        this.receivertag = requireNonNull(receivertag);
         this.index = index;
         this.total = total;
         this.content = requireNonNull(content);
@@ -85,8 +87,8 @@ public final class Fragment implements Message {
     public static Fragment parse(@Nonnull final String message) throws ProtocolException {
         final int version;
         final int identifier;
-        final int sendertag;
-        final int receivertag;
+        final int sendertagValue;
+        final int receivertagValue;
         final int index;
         final int total;
         final String content;
@@ -96,8 +98,8 @@ public final class Fragment implements Message {
             version = OTRv.FOUR;
             try {
                 identifier = Integer.valueOf(matcher.group(1), 16);
-                sendertag = Integer.valueOf(matcher.group(2), 16);
-                receivertag = Integer.valueOf(matcher.group(3), 16);
+                sendertagValue = Integer.valueOf(matcher.group(2), 16);
+                receivertagValue = Integer.valueOf(matcher.group(3), 16);
                 index = Integer.valueOf(matcher.group(4), 10);
                 total = Integer.valueOf(matcher.group(5), 10);
             } catch (final NumberFormatException e) {
@@ -108,8 +110,8 @@ public final class Fragment implements Message {
             version = OTRv.THREE;
             identifier = ZERO_IDENTIFIER;
             try {
-                sendertag = Integer.valueOf(matcher.group(1), 16);
-                receivertag = Integer.valueOf(matcher.group(2), 16);
+                sendertagValue = Integer.valueOf(matcher.group(1), 16);
+                receivertagValue = Integer.valueOf(matcher.group(2), 16);
                 index = Integer.valueOf(matcher.group(3), 10);
                 total = Integer.valueOf(matcher.group(4), 10);
             } catch (final NumberFormatException e) {
@@ -119,8 +121,8 @@ public final class Fragment implements Message {
         } else if ((matcher = PATTERN_V2.matcher(message)).matches()) {
             version = OTRv.TWO;
             identifier = ZERO_IDENTIFIER;
-            sendertag = ZERO_VALUE;
-            receivertag = ZERO_VALUE;
+            sendertagValue = ZERO_VALUE;
+            receivertagValue = ZERO_VALUE;
             try {
                 index = Integer.valueOf(matcher.group(1), 10);
                 total = Integer.valueOf(matcher.group(2), 10);
@@ -132,10 +134,10 @@ public final class Fragment implements Message {
             throw new ProtocolException("Illegal fragment format.");
         }
         // Verify data from fragment message.
-        if (isValidInstanceTag(sendertag)) {
+        if (isValidInstanceTag(sendertagValue)) {
             throw new ProtocolException("Illegal sender instance tag.");
         }
-        if (isValidInstanceTag(receivertag)) {
+        if (isValidInstanceTag(receivertagValue)) {
             throw new ProtocolException("Illegal receiver instance tag.");
         }
         if (index <= 0 || index > MAX_FRAGMENTS) {
@@ -144,7 +146,8 @@ public final class Fragment implements Message {
         if (total < index || total > MAX_FRAGMENTS) {
             throw new ProtocolException("Illegal fragment total.");
         }
-        return new Fragment(version, identifier, sendertag, receivertag, index, total, content);
+        return new Fragment(version, identifier, new InstanceTag(sendertagValue), new InstanceTag(receivertagValue),
+            index, total, content);
     }
 
     public int getVersion() {
@@ -155,11 +158,13 @@ public final class Fragment implements Message {
         return identifier;
     }
 
-    public int getSendertag() {
+    @Nonnull
+    public InstanceTag getSendertag() {
         return sendertag;
     }
 
-    public int getReceivertag() {
+    @Nonnull
+    public InstanceTag getReceivertag() {
         return receivertag;
     }
 
@@ -171,6 +176,7 @@ public final class Fragment implements Message {
         return total;
     }
 
+    @Nonnull
     public String getContent() {
         return content;
     }

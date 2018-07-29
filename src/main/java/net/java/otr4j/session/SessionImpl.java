@@ -64,7 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.api.InstanceTag.ZERO_VALUE;
+import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
 import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
@@ -454,13 +454,12 @@ final class SessionImpl implements Session, Context, AuthContext {
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
         if (masterSession == this && m instanceof Fragment && ((Fragment) m).getVersion() > OTRv.TWO) {
             final Fragment fragment = (Fragment) m;
-            if (fragment.getSendertag() == ZERO_VALUE) {
+            if (ZERO_TAG.equals(fragment.getSendertag())) {
                 logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
                     new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
                 return null;
             }
             // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
-            // FIXME need to convert to InstanceTag type instead of long value.
             final SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
             if (slave == null) {
                 logger.log(Level.INFO, "Message fragment arrived for unknown instance tag. Ignoring message. (Sender-instance: {})",
