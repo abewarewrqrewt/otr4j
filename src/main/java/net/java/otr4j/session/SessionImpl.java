@@ -641,12 +641,13 @@ final class SessionImpl implements Session, Context, AuthContext {
             msg += getFallbackMessage(sessionId);
         }
         try {
+            // FIXME probable issue with fragmenter not following the negotiated protocol version in case of slave sessions.
             final String[] fragments = this.fragmenter.fragment(this.sessionState.getVersion(), msg);
             for (final String fragment : fragments) {
                 this.host.injectMessage(sessionId, fragment);
             }
         } catch (final ProtocolException e) {
-            throw new OtrException("Failed to fragment message according to provided instructions.", e);
+            throw new OtrException("Failed to fragment message to specified protocol maximum size.", e);
         }
     }
 
