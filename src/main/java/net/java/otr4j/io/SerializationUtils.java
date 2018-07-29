@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.nio.charset.Charset;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
@@ -217,18 +218,15 @@ public final class SerializationUtils {
     /**
      * Parses an encoded OTR string into an instance of {@link Message}.
      *
-     * @param s
-     *            the string to parse
+     * @param s the string to parse
      * @return the parsed message
-     * @throws IOException
-     *             error parsing the string to a message, either format mismatch
-     *             or real IO error
-     * @throws net.java.otr4j.crypto.OtrCryptoException error of cryptographic nature
+     * @throws ProtocolException  Error parsing the string to a message: format mismatch or data error.
+     * @throws OtrCryptoException Error of cryptographic nature.
      */
     // TODO remove OTRv2 support in due time
     // FIXME consider restructuring/rewriting this class. Seems to be much too sensitive to variation.
     @Nullable
-    public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, IOException, UnsupportedLengthException {
+    public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, ProtocolException, UnsupportedLengthException {
         if (s.length() == 0) {
             return null;
         }
