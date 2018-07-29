@@ -30,11 +30,11 @@ import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
+import net.java.otr4j.io.messages.Fragment;
 import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.session.OtrAssembler.UnknownInstanceException;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.api.InstanceTag.ZERO_VALUE;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
 import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
@@ -416,22 +417,23 @@ final class SessionImpl implements Session, Context, AuthContext {
             return msgText;
         }
 
-        try {
-            // FIXME This way of assembling a fragmented message cannot work correctly in OTRv3+. Assembling is done at the master session which receives messages for multiple instances. Assembling will throw away one instances message parts when next instance's message parts come in.
-            msgText = assembler.accumulate(msgText);
-            if (msgText == null) {
-                return null; // Not a complete message (yet).
-            }
-        } catch (final UnknownInstanceException e) {
-            // The fragment is not intended for us
-            logger.finest(e.getMessage());
-            messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
-            return null;
-        } catch (final ProtocolException e) {
-            // TODO consider downgrading to INFO message, as it is not an issue in any way to our local handling. Just a bad message.
-            logger.log(Level.WARNING, "An invalid message fragment was discarded.", e);
-            return null;
-        }
+        // FIXME use appropriate exception handling to either discard bad fragment or return as (untouched) plaintext message.
+//        try {
+//            // FIXME This way of assembling a fragmented message cannot work correctly in OTRv3+. Assembling is done at the master session which receives messages for multiple instances. Assembling will throw away one instances message parts when next instance's message parts come in.
+//            msgText = assembler.accumulate(msgText);
+//            if (msgText == null) {
+//                return null; // Not a complete message (yet).
+//            }
+//        } catch (final UnknownInstanceException e) {
+//            // The fragment is not intended for us
+//            logger.finest(e.getMessage());
+//            messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
+//            return null;
+//        } catch (final ProtocolException e) {
+//            // TODO consider downgrading to INFO message, as it is not an issue in any way to our local handling. Just a bad message.
+//            logger.log(Level.WARNING, "An invalid message fragment was discarded.", e);
+//            return null;
+//        }
 
         final Message m;
         try {
@@ -450,7 +452,23 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
 
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
-        if (masterSession == this && m instanceof AbstractEncodedMessage
+        if (masterSession == this && m instanceof Fragment && ((Fragment) m).getVersion() > OTRv.TWO) {
+            final Fragment fragment = (Fragment) m;
+            if (fragment.getSendertag() == ZERO_VALUE) {
+                logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
+                    new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
+                return null;
+            }
+            // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
+            // FIXME need to convert to InstanceTag type instead of long value.
+            final SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
+            if (slave == null) {
+                logger.log(Level.INFO, "Message fragment arrived for unknown instance tag. Ignoring message. (Sender-instance: {})",
+                    fragment.getSendertag());
+                return null;
+            }
+            return slave.handleFragment(fragment);
+        } else if (masterSession == this && m instanceof AbstractEncodedMessage
                 && (((AbstractEncodedMessage) m).protocolVersion == OTRv.THREE
                     || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
             // In case of OTRv3 delegate message processing to dedicated slave
@@ -532,7 +550,9 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
 
         logger.log(Level.FINE, "Received message with type {0}", m.getClass());
-        if (m instanceof AbstractEncodedMessage) {
+        if (m instanceof Fragment) {
+            return handleFragment((Fragment) m);
+        } else if (m instanceof AbstractEncodedMessage) {
             return handleEncodedMessage((AbstractEncodedMessage) m);
         } else if (m instanceof ErrorMessage) {
             handleErrorMessage((ErrorMessage) m);
@@ -548,6 +568,13 @@ final class SessionImpl implements Session, Context, AuthContext {
             // Unknown messages are caught earlier.
             throw new UnsupportedOperationException("This message type is not supported. Support is expected to be implemented for all known message types.");
         }
+    }
+
+    @Nullable
+    private String handleFragment(@Nonnull final Fragment fragment) {
+        assert this.masterSession != this || fragment.getVersion() == OTRv.TWO : "Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
+        // FIXME implement handling of fragment content and assembling
+        throw new UnsupportedOperationException("To be implemented");
     }
 
     /**

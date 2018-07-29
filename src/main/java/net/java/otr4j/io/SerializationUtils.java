@@ -225,6 +225,7 @@ public final class SerializationUtils {
     // FIXME consider restructuring/rewriting this class. Seems to be much too sensitive to variation.
     @Nullable
     public static Message toMessage(@Nonnull final String s) throws OtrCryptoException, ProtocolException, UnsupportedLengthException {
+        // FIXME consider moving zero-length check outside of 'toMessage'. Seems to make more sense, it's the only potential null situation.
         if (s.length() == 0) {
             return null;
         }
