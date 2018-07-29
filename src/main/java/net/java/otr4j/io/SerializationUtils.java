@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.net.ProtocolException;
 import java.nio.charset.Charset;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
@@ -269,12 +268,8 @@ public final class SerializationUtils {
             } else if (otrFragmented(s)) {
                 return Fragment.parse(s);
             } else if (otrEncoded(s)) {
+                // TODO in case of slight errors in format, e.g. OTR-encoded message missing trailing '.', do we consider this incorrect message and return as plaintext or do we want to throw ProtocolException?
                 // Data message found.
-
-                if (content.charAt(content.length() - 1) != '.') {
-                    throw new ProtocolException("Invalid end to OTR encoded message.");
-                }
-
                 /*
                  * BC 1.48 added a check to throw an exception if a non-base64 character is encountered.
                  * An OTR message consists of ?OTR:AbcDefFe. (note the terminating point).
