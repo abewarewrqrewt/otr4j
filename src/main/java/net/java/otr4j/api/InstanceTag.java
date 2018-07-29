@@ -138,10 +138,8 @@ public final class InstanceTag {
         if (!(other instanceof InstanceTag)) {
             return false;
         }
-
         final InstanceTag otherInstanceTag = (InstanceTag) other;
-
-        return this.value == otherInstanceTag.getValue();
+        return this.value == otherInstanceTag.value;
     }
 
     @Override
