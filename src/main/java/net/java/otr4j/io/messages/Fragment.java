@@ -11,6 +11,9 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_VALUE;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 
+/**
+ * An OTR message that represents a fragment of an OTR-encoded message.
+ */
 public final class Fragment implements Message {
 
     /**
@@ -20,16 +23,16 @@ public final class Fragment implements Message {
 
     /**
      * OTRv2 fragment pattern.
-     *
+     * <p>
      * Group 1: current message part index.
      * Group 2: total number of message parts.
      * Group 3: fragment content.
      */
-    private static final Pattern PATTERN_V2= Pattern.compile("^\\?OTR,(\\d{1,5}),(\\d{1,5}),([a-zA-Z0-9+/=?:.]*),$");
+    private static final Pattern PATTERN_V2 = Pattern.compile("^\\?OTR,(\\d{1,5}),(\\d{1,5}),([a-zA-Z0-9+/=?:.]*),$");
 
     /**
      * OTRv3 fragment pattern.
-     *
+     * <p>
      * Group 1: sender tag.
      * Group 2: receiver tag.
      * Group 3: current message part index.
@@ -40,7 +43,7 @@ public final class Fragment implements Message {
 
     /**
      * OTRv4 fragment pattern.
-     *
+     * <p>
      * Group 1: message identifier.
      * Group 2: sender tag.
      * Group 3: receiver tag.
@@ -71,6 +74,13 @@ public final class Fragment implements Message {
         this.content = requireNonNull(content);
     }
 
+    /**
+     * Parse message that is a fragment and verify its contents.
+     *
+     * @param message the raw message
+     * @return Returns a fragment.
+     * @throws ProtocolException In case of invalid fragment format, or in case of bad data in the fragment.
+     */
     @Nonnull
     public static Fragment parse(@Nonnull final String message) throws ProtocolException {
         final int version;
@@ -80,6 +90,7 @@ public final class Fragment implements Message {
         final int index;
         final int total;
         final String content;
+        // Acquire data from fragment message.
         Matcher matcher;
         if ((matcher = PATTERN_V4.matcher(message)).matches()) {
             version = OTRv.FOUR;
@@ -120,6 +131,7 @@ public final class Fragment implements Message {
         } else {
             throw new ProtocolException("Illegal fragment format.");
         }
+        // Verify data from fragment message.
         if (isValidInstanceTag(sendertag)) {
             throw new ProtocolException("Illegal sender instance tag.");
         }
