@@ -412,7 +412,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // special handling of messages should be done at all."
         final OtrPolicy policy = getSessionPolicy();
         if (!policy.viable()) {
-            logger.warning("Policy does not allow any version of OTR. OTR messages will not be processed at all.");
+            logger.info("Policy does not allow any version of OTR. OTR messages will not be processed at all.");
             return msgText;
         }
 
