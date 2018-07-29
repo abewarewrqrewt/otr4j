@@ -1,12 +1,14 @@
 package net.java.otr4j.session;
 
+import net.java.otr4j.io.messages.Fragment;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
 /**
- * Assembler for OTRv4 message fragments.
+ * Assembler for OTRv4 (out-of-order) message fragments.
  */
 // TODO introduce some kind of clean-up such that fragments list does not grow infinitely.
 // TODO consider doing some fuzzing for this user input, if we can find a decent fuzzing library.
@@ -14,18 +16,18 @@ import java.util.logging.Logger;
 // FIXME is it still required to check the sender tag before accepting?
 // FIXME still needs to be integrated with SessionImpl
 // TODO consider implementing OTRv3 fragmentation in similar fashion and throw away old assembling logic
-final class OtrAssembler4 {
+final class OutOfOrderAssembler {
 
-    private static final Logger LOGGER = Logger.getLogger(OtrAssembler4.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OutOfOrderAssembler.class.getName());
 
     private final HashMap<Integer, String[]> fragments = new HashMap<>();
 
-    OtrAssembler4() {
+    OutOfOrderAssembler() {
         // No further preparation needed.
     }
 
     @Nullable
-    String accumulate(@Nonnull final String message) {
+    String accumulate(@Nonnull final Fragment message) {
 //        String[] parts = fragments.get(id);
 //        if (parts == null) {
 //            parts = new String[total];

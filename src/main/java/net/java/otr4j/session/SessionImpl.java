@@ -22,6 +22,7 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ClientProfilePayload;
@@ -71,7 +72,9 @@ import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
+import static net.java.otr4j.io.SerializationUtils.ASCII;
 import static net.java.otr4j.io.SerializationUtils.toMessage;
+import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 
 /**
  * Implementation of the OTR session.
@@ -466,7 +469,12 @@ final class SessionImpl implements Session, Context, AuthContext {
                     fragment.getSendertag());
                 return null;
             }
-            return slave.handleFragment(fragment);
+            try {
+                return slave.handleFragment(fragment);
+            } catch (final ProtocolException e) {
+                // TODO should we handle bad messages silently or return OtrException?
+                throw new OtrException("Failed to process fragment or joined message.", e);
+            }
         } else if (masterSession == this && m instanceof AbstractEncodedMessage
                 && (((AbstractEncodedMessage) m).protocolVersion == OTRv.THREE
                     || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
@@ -550,7 +558,12 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         logger.log(Level.FINE, "Received message with type {0}", m.getClass());
         if (m instanceof Fragment) {
-            return handleFragment((Fragment) m);
+            try {
+                return handleFragment((Fragment) m);
+            } catch (final ProtocolException e) {
+                // TODO should we handle bad messages silently or return OtrException?
+                throw new OtrException("Failed to process fragment or joined message.", e);
+            }
         } else if (m instanceof AbstractEncodedMessage) {
             return handleEncodedMessage((AbstractEncodedMessage) m);
         } else if (m instanceof ErrorMessage) {
@@ -569,13 +582,26 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
     }
 
+    /**
+     * Handle message that is an OTR fragment.
+     *
+     * @param fragment fragment message.
+     * @return Returns assembled and processed result of message fragment, in case fragment is final fragment. Or return
+     * null in case fragment is not the last fragment and processing is delayed until remaining fragments are received.
+     */
     @Nullable
-    private String handleFragment(@Nonnull final Fragment fragment) {
-        assert (this.masterSession == this && fragment.getVersion() == OTRv.TWO)
+    private String handleFragment(@Nonnull final Fragment fragment) throws OtrException, ProtocolException {
+        assert (this.masterSession == this && fragment.getVersion() <= OTRv.TWO)
             || (this.masterSession != this && fragment.getVersion() > OTRv.TWO)
-            : "Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
-        // FIXME implement handling of fragment content and assembling
-        throw new UnsupportedOperationException("To be implemented");
+            : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
+        // FIXME implement handling of fragment content and assembling (move OutOfOrderAssembler)
+        final String assembledMessageContent = new OutOfOrderAssembler().accumulate(fragment);
+        if (assembledMessageContent == null) {
+            return null;
+        }
+        final AbstractEncodedMessage encoded = read(new OtrInputStream(assembledMessageContent.getBytes(ASCII)));
+        // FIXME should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
+        return handleEncodedMessage(encoded);
     }
 
     /**
@@ -603,7 +629,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     private void handleQueryMessage(@Nonnull final QueryMessage queryMessage) throws OtrException {
-        assert this.masterSession == this : "handleQueryMessage should only ever be called from the master session, as no instance tags are known.";
+        assert this.masterSession == this : "BUG: handleQueryMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a query message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
@@ -625,7 +651,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     private void handleErrorMessage(@Nonnull final ErrorMessage errorMessage)
             throws OtrException {
-        assert this.masterSession == this : "handleErrorMessage should only ever be called from the master session, as no instance tags are known.";
+        assert this.masterSession == this : "BUG: handleErrorMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received an error message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
@@ -690,7 +716,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nonnull
     private String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
-        assert this.masterSession == this : "handlePlainTextMessage should only ever be called from the master session, as no instance tags are known.";
+        assert this.masterSession == this : "BUG: handlePlainTextMessage should only ever be called from the master session, as no instance tags are known.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a plaintext message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
