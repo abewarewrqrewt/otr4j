@@ -40,6 +40,10 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * <p>
  * This is the client profile in a representation that is easily serializable and that is able to carry the signatures
  * corresponding to the client profile.
+ * <p>
+ * The client profile payload is the unverified container for the data received from other parties. {@link #validate()}
+ * will validate on success convert the type to the actual {@link ClientProfile} data-type. This split ensures that
+ * client profiles are validated before trusted use.
  */
 // FIXME write unit tests
 // FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
@@ -271,6 +275,10 @@ public final class ClientProfilePayload implements OtrEncodable {
         }
         if (dsaPublicKeyFields.size() > 1) {
             throw new ValidationException("Expect either no or single DSA public key field. Found more than one.");
+        }
+        // TODO should we fail validation or drop DSA public key in case DSA public key comes without transitional signature?
+        if (dsaPublicKeyFields.size() == 1 && transitionalSignatureFields.size() == 0) {
+            throw new ValidationException("DSA public key encountered without corresponding transitional signature.");
         }
         if (!now.before(new Date(expirationDateFields.get(0).timestamp * 1000))) {
             throw new ValidationException("Client Profile has expired.");
