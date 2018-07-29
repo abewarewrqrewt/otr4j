@@ -97,6 +97,7 @@ public final class Fragment implements Message {
         if ((matcher = PATTERN_V4.matcher(message)).matches()) {
             version = OTRv.FOUR;
             try {
+                // FIXME probably results in bad tag value due to signed instead of unsigned read.
                 identifier = Integer.valueOf(matcher.group(1), 16);
                 sendertagValue = Integer.valueOf(matcher.group(2), 16);
                 receivertagValue = Integer.valueOf(matcher.group(3), 16);
@@ -110,6 +111,7 @@ public final class Fragment implements Message {
             version = OTRv.THREE;
             identifier = ZERO_IDENTIFIER;
             try {
+                // FIXME probably results in bad tag value due to signed instead of unsigned read.
                 sendertagValue = Integer.valueOf(matcher.group(1), 16);
                 receivertagValue = Integer.valueOf(matcher.group(2), 16);
                 index = Integer.valueOf(matcher.group(3), 10);
@@ -134,17 +136,17 @@ public final class Fragment implements Message {
             throw new ProtocolException("Illegal fragment format.");
         }
         // Verify data from fragment message.
-        if (isValidInstanceTag(sendertagValue)) {
-            throw new ProtocolException("Illegal sender instance tag.");
+        if (!isValidInstanceTag(sendertagValue)) {
+            throw new ProtocolException("Illegal sender instance tag: " + sendertagValue);
         }
-        if (isValidInstanceTag(receivertagValue)) {
-            throw new ProtocolException("Illegal receiver instance tag.");
+        if (!isValidInstanceTag(receivertagValue)) {
+            throw new ProtocolException("Illegal receiver instance tag: " + receivertagValue);
         }
         if (index <= 0 || index > MAX_FRAGMENTS) {
-            throw new ProtocolException("Illegal fragment index.");
+            throw new ProtocolException("Illegal fragment index: " + index);
         }
         if (total < index || total > MAX_FRAGMENTS) {
-            throw new ProtocolException("Illegal fragment total.");
+            throw new ProtocolException("Illegal fragment total: " + total);
         }
         return new Fragment(version, identifier, new InstanceTag(sendertagValue), new InstanceTag(receivertagValue),
             index, total, content);
