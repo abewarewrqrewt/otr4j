@@ -571,7 +571,9 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nullable
     private String handleFragment(@Nonnull final Fragment fragment) {
-        assert this.masterSession != this || fragment.getVersion() == OTRv.TWO : "Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
+        assert (this.masterSession == this && fragment.getVersion() == OTRv.TWO)
+            || (this.masterSession != this && fragment.getVersion() > OTRv.TWO)
+            : "Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
         // FIXME implement handling of fragment content and assembling
         throw new UnsupportedOperationException("To be implemented");
     }
