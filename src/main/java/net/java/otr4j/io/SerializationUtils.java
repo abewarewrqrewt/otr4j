@@ -21,9 +21,7 @@ import net.java.otr4j.io.messages.SignatureX;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.ProtocolException;
@@ -105,9 +103,9 @@ public final class SerializationUtils {
 
     // Mysterious X IO.
     @Nonnull
-    public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws IOException, OtrCryptoException,
-        UnsupportedTypeException {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
+    public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws OtrCryptoException, UnsupportedTypeException,
+        ProtocolException {
+        try (OtrInputStream ois = new OtrInputStream(b)) {
             return ois.readMysteriousX();
         }
     }
@@ -131,8 +129,8 @@ public final class SerializationUtils {
     }
 
     @Nonnull
-    public static BigInteger readMpi(@Nonnull final byte[] b) throws IOException {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(b); OtrInputStream ois = new OtrInputStream(in)) {
+    public static BigInteger readMpi(@Nonnull final byte[] b) throws ProtocolException {
+        try (OtrInputStream ois = new OtrInputStream(b)) {
             return ois.readBigInt();
         }
     }
@@ -274,9 +272,8 @@ public final class SerializationUtils {
                  * Otr4j doesn't strip this point before passing the content to the base64 decoder.
                  * So in order to decode the content string we have to get rid of the '.' first.
                  */
-                final ByteArrayInputStream bin = new ByteArrayInputStream(
-                    decode(content.substring(0, content.length() - 1).getBytes(ASCII)));
-                try (OtrInputStream otr = new OtrInputStream(bin)) {
+                final byte[] contentBytes = decode(content.substring(0, content.length() - 1).getBytes(ASCII));
+                try (OtrInputStream otr = new OtrInputStream(contentBytes)) {
                     return read(otr);
                 }
             }
@@ -421,10 +418,10 @@ public final class SerializationUtils {
      * @param messageBytes Bytes of the message (decrypted)
      * @return Returns Content instances containing both the message content
      * and any TLVs that are extracted.
-     * @throws IOException In case of incomplete or bad message bytes.
+     * @throws ProtocolException In case of incomplete or bad message bytes.
      */
     @Nonnull
-    public static Content extractContents(@Nonnull final byte[] messageBytes) throws IOException {
+    public static Content extractContents(@Nonnull final byte[] messageBytes) throws ProtocolException {
 
         // find the null TLV separator in the package, or just use the end value
         int tlvIndex = messageBytes.length;
@@ -445,9 +442,8 @@ public final class SerializationUtils {
             final byte[] tlvsb = new byte[messageBytes.length - tlvIndex];
             System.arraycopy(messageBytes, tlvIndex, tlvsb, 0, tlvsb.length);
 
-            final ByteArrayInputStream tin = new ByteArrayInputStream(tlvsb);
-            try (OtrInputStream eois = new OtrInputStream(tin)) {
-                while (tin.available() > 0) {
+            try (OtrInputStream eois = new OtrInputStream(tlvsb)) {
+                while (eois.available() > 0) {
                     final int type = eois.readShort();
                     final byte[] tdata = eois.readTlvData();
                     tlvs.add(new TLV(type, tdata));

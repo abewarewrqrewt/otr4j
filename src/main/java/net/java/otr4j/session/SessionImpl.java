@@ -439,7 +439,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             if (m == null) {
                 return msgText;
             }
-        } catch (final IOException e) {
+        } catch (final ProtocolException e) {
             throw new OtrException("Invalid message.", e);
         }
 

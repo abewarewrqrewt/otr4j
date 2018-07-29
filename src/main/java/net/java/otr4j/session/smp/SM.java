@@ -23,13 +23,11 @@ package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.OtrInputStream;
-import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -97,7 +95,7 @@ public final class SM {
     // TODO rename method from 'unserialize' to 'deserialize'.
     @Nonnull
     static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes); OtrInputStream ois = new OtrInputStream(in)) {
+        try (OtrInputStream ois = new OtrInputStream(bytes)) {
             final int len = ois.readInt();
             if (len < 0) {
                 // Length is read into (signed) int. Bit shifting is used to

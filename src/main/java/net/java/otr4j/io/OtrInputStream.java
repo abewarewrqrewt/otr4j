@@ -24,7 +24,6 @@ import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
-import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
@@ -41,9 +40,11 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 /**
  * OTR input stream.
  * <p>
- * The input is based on the InputStream type as we take into account any and
- * all possibilities of incomplete or bad data. Many methods throw IOException
- * to indicate for such an illegal situation.
+ * The input is based on the InputStream type as we take into account any and all possibilities of incomplete or bad
+ * data. Many methods throw ProtocolException to indicate for such an illegal situation.
+ * <p>
+ * OtrInputStream provides only for the primitive types to be read. Composite objects should be read through use of the
+ * primitive read methods and implemented outside of this class.
  */
 public final class OtrInputStream implements Closeable {
 
@@ -56,8 +57,8 @@ public final class OtrInputStream implements Closeable {
      *
      * @param in the source input stream
      */
-    public OtrInputStream(@Nonnull final ByteArrayInputStream in) {
-        this.in = requireNonNull(in);
+    public OtrInputStream(@Nonnull final byte[] in) {
+        this.in = new ByteArrayInputStream(in);
     }
 
     @Override
@@ -67,6 +68,11 @@ public final class OtrInputStream implements Closeable {
         } catch (final IOException e) {
             throw new IllegalStateException("ByteArrayInputStream should never generate an IOException on close.", e);
         }
+    }
+
+    // FIXME write unit tests
+    public int available() {
+        return this.in.available();
     }
 
     public byte readByte() throws ProtocolException {

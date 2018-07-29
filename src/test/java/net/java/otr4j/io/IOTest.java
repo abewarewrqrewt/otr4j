@@ -1,20 +1,19 @@
 package net.java.otr4j.io;
 
-import java.io.ByteArrayInputStream;
+import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.io.messages.DHKeyMessage;
+import net.java.otr4j.io.messages.RevealSignatureMessage;
+import org.junit.Test;
+
+import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
-import javax.crypto.interfaces.DHPublicKey;
-
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.io.messages.DHKeyMessage;
-import net.java.otr4j.io.messages.RevealSignatureMessage;
-import net.java.otr4j.api.Session.OTRv;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class IOTest {
 
@@ -53,8 +52,7 @@ public class IOTest {
 
 			byte[] converted = out.toByteArray();
 
-			ByteArrayInputStream bin = new ByteArrayInputStream(converted);
-			try (OtrInputStream ois = new OtrInputStream(bin)) {
+			try (OtrInputStream ois = new OtrInputStream(converted)) {
 				int result = ois.readShort();
 
 				assertEquals(source, result);
@@ -72,8 +70,7 @@ public class IOTest {
 
 			byte[] converted = out.toByteArray();
 
-			ByteArrayInputStream bin = new ByteArrayInputStream(converted);
-			try (OtrInputStream ois = new OtrInputStream(bin)) {
+			try (OtrInputStream ois = new OtrInputStream(converted)) {
 				byte[] result = ois.readData();
 
 				assertTrue(java.util.Arrays.equals(source, result));
@@ -93,8 +90,7 @@ public class IOTest {
 
 			byte[] converted = out.toByteArray();
 
-			ByteArrayInputStream bin = new ByteArrayInputStream(converted);
-			try (OtrInputStream ois = new OtrInputStream(bin)) {
+			try (OtrInputStream ois = new OtrInputStream(converted)) {
 				BigInteger result = ois.readBigInt();
 
 				assertTrue(source.compareTo(result) == 0);
@@ -114,8 +110,7 @@ public class IOTest {
 
 			byte[] converted = out.toByteArray();
 
-			ByteArrayInputStream bin = new ByteArrayInputStream(converted);
-			try (OtrInputStream ois = new OtrInputStream(bin)) {
+			try (OtrInputStream ois = new OtrInputStream(converted)) {
 				DHPublicKey result = ois.readDHPublicKey();
 
 				assertTrue(source.getY().compareTo(result.getY()) == 0);
