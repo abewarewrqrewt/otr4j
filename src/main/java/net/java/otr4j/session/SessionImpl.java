@@ -692,6 +692,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
             setState(new StateInitial(((QueryMessage) m).getTag()));
+            // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
             msg += getFallbackMessage(sessionId);
         }
         try {

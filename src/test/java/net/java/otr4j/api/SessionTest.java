@@ -37,12 +37,11 @@ import static org.junit.Assert.assertThat;
 
 // FIXME extend with tests for one party sending many messages in a row.
 // FIXME extend with tests for alternating messaging in order to verify correct behavior of ratcheting/key rotation.
-// FIXME add test to prove that interchanged message parts from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
+// FIXME add test to prove that interchanged message fragments from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 can be used interchangeably.
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 message fragments can be sent interchangeably as long as different sender instances are involved.
 public class SessionTest {
 
-    private static final Logger LOGGER = Logger.getLogger(SessionTest.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Before
