@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+// FIXME tests disabled because of redesign of fragmentation logic
 @SuppressWarnings("ConstantConditions")
 public final class OutOfOrderAssemblerTest {
 

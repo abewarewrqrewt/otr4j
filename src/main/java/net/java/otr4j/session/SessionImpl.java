@@ -299,8 +299,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         outgoingSession = this;
         // Initialize fragmented message support.
         assembler = new OtrAssembler(this.senderTag);
-        fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID(),
-            this.senderTag.getValue(), this.receiverTag.getValue());
+        fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
     }
 
     /**
@@ -687,22 +686,25 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     public void injectMessage(@Nonnull final Message m) throws OtrException {
         final SessionID sessionId = this.sessionState.getSessionID();
-        String msg = SerializationUtils.toString(m);
+        final String[] fragments;
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
             setState(new StateInitial(((QueryMessage) m).getTag()));
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
-            msg += getFallbackMessage(sessionId);
-        }
-        try {
-            // FIXME probable issue with fragmenter not following the negotiated protocol version in case of slave sessions.
-            final String[] fragments = this.fragmenter.fragment(this.sessionState.getVersion(), msg);
-            for (final String fragment : fragments) {
-                this.host.injectMessage(sessionId, fragment);
+            fragments = new String[]{SerializationUtils.toString(m) + getFallbackMessage(sessionId)};
+        } else if (m instanceof AbstractEncodedMessage) {
+            try {
+                fragments = this.fragmenter.fragment((AbstractEncodedMessage) m, SerializationUtils.toString(m));
+            } catch (final ProtocolException e) {
+                throw new OtrException("Failed to fragment OTR-encoded message to specified protocol parameters.", e);
             }
-        } catch (final ProtocolException e) {
-            throw new OtrException("Failed to fragment message to specified protocol maximum size.", e);
+        } else {
+            fragments = new String[]{SerializationUtils.toString(m)};
+        }
+        // FIXME probable issue with fragmenter not following the negotiated protocol version in case of slave sessions.
+        for (final String fragment : fragments) {
+            this.host.injectMessage(sessionId, fragment);
         }
     }
 
@@ -850,11 +852,15 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (m == null) {
             return new String[0];
         }
-        final String msgtext = SerializationUtils.toString(m);
-        try {
-            return this.fragmenter.fragment(this.sessionState.getVersion(), msgtext);
-        } catch (final ProtocolException ex) {
-            throw new OtrException("Failed to fragment message.", ex);
+        final String serialized = SerializationUtils.toString(m);
+        if (m instanceof AbstractEncodedMessage) {
+            try {
+                return this.fragmenter.fragment((AbstractEncodedMessage) m, serialized);
+            } catch (final ProtocolException ex) {
+                throw new OtrException("Failed to fragment message according to protocol parameters.", ex);
+            }
+        } else {
+            return new String[]{serialized};
         }
     }
 

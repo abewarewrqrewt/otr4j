@@ -9,6 +9,7 @@ package net.java.otr4j.session;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
@@ -71,11 +72,10 @@ final class OtrFragmenter {
      */
     private final OtrEngineHost host;
 
+    /**
+     * Session ID used to request specific infrastructure message limit.
+     */
     private final SessionID sessionID;
-
-    private final int senderTag;
-
-    private final int receiverTag;
 
     /**
      * Constructor.
@@ -83,12 +83,10 @@ final class OtrFragmenter {
      * @param host OTR engine host calling upon OTR session
      */
     OtrFragmenter(@Nonnull final SecureRandom random, @Nonnull final OtrEngineHost host,
-                  @Nonnull final SessionID sessionID, final int senderTag, final int receiverTag) {
+                  @Nonnull final SessionID sessionID) {
         this.random = requireNonNull(random);
         this.host = requireNonNull(host, "host cannot be null");
         this.sessionID = requireNonNull(sessionID);
-        this.senderTag = senderTag;
-        this.receiverTag = receiverTag;
     }
 
     /**
@@ -137,28 +135,33 @@ final class OtrFragmenter {
     /**
      * Fragment the given message into pieces.
      *
-     * @param version the session's negotiated protocol version
-     * @param message the original message
+     * @param original the original message instance, used to discover the protocol version and instance tags
+     * @param message  the original message
      * @return returns an array of message fragments. The array will contain at
      * least 1 message fragment, or more if fragmentation is necessary.
      * @throws ProtocolException if the fragment size is too small or if the maximum number of fragments is exceeded.
      */
+    // TODO method signature is not ideal. This can probably be simplified, once other parts related to fragmentation are redesigned.
     @Nonnull
-    String[] fragment(final int version, @Nonnull final String message) throws ProtocolException {
-        if (version < Session.OTRv.TWO || !otrEncoded(message)) {
+    String[] fragment(@Nonnull final AbstractEncodedMessage original, @Nonnull final String message)
+        throws ProtocolException {
+        if (original.protocolVersion < Session.OTRv.TWO || !otrEncoded(message)) {
             return new String[]{message};
         }
-        if (version > Session.OTRv.FOUR) {
-            throw new UnsupportedOperationException("Unsupported protocol version encountered: " + version);
+        if (original.protocolVersion > Session.OTRv.FOUR) {
+            throw new UnsupportedOperationException("Unsupported protocol version encountered: " + original.protocolVersion);
         }
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
-        return fragment(version, message, fragmentSize);
+        return fragment(original.protocolVersion, original.senderInstanceTag, original.receiverInstanceTag, message,
+            fragmentSize);
     }
 
     /**
      * Fragment a message according to the specified instructions.
      *
      * @param version      current session's negotiated protocol version
+     * @param sendertag    the sender instance tag
+     * @param receivertag  the receiver instance tag
      * @param message      the message
      * @param fragmentSize the maximum fragment size
      * @return Returns the fragmented message. The array will contain at least 1
@@ -167,7 +170,8 @@ final class OtrFragmenter {
      *                           instructions.
      */
     @Nonnull
-    private String[] fragment(final int version, @Nonnull final String message, final int fragmentSize) throws ProtocolException {
+    private String[] fragment(final int version, final int sendertag, final int receivertag,
+                              @Nonnull final String message, final int fragmentSize) throws ProtocolException {
         if (fragmentSize >= message.length()) {
             return new String[]{message};
         }
@@ -184,7 +188,8 @@ final class OtrFragmenter {
             final int end = Math.min(previous + payloadSize, message.length());
 
             final String partialContent = message.substring(previous, end);
-            fragments.add(createMessageFragment(version, id, fragments.size(), num, partialContent));
+            fragments.add(createMessageFragment(version, id, sendertag, receivertag, fragments.size(), num,
+                partialContent));
 
             previous = end;
         }
@@ -194,7 +199,10 @@ final class OtrFragmenter {
     /**
      * Create a message fragment.
      *
+     * @param version        the protocol version to use for these fragments
      * @param id             the current message's identifier used in all created fragments (only relevant for OTRv4)
+     * @param sendertag      the current message's sender tag
+     * @param receivertag    the current message's receiver tag
      * @param count          the current fragment number
      * @param total          the total number of fragments
      * @param partialContent the content for this fragment
@@ -202,15 +210,15 @@ final class OtrFragmenter {
      * @throws UnsupportedOperationException in case v1 is only allowed in policy
      */
     @Nonnull
-    private String createMessageFragment(final int version, final int id, final int count, final int total,
-                                         @Nonnull final String partialContent) {
+    private String createMessageFragment(final int version, final int id, final int sendertag, final int receivertag,
+                                         final int count, final int total, @Nonnull final String partialContent) {
         switch (version) {
             case Session.OTRv.TWO:
                 return createV2MessageFragment(count, total, partialContent);
             case Session.OTRv.THREE:
-                return createV3MessageFragment(count, total, partialContent);
+                return createV3MessageFragment(sendertag, receivertag, count, total, partialContent);
             case Session.OTRv.FOUR:
-                return createV4MessageFragment(id, count, total, partialContent);
+                return createV4MessageFragment(id, sendertag, receivertag, count, total, partialContent);
             default:
                 throw new IllegalArgumentException("Unsupported protocol version: " + version);
         }
@@ -226,9 +234,9 @@ final class OtrFragmenter {
      * @return returns the full message fragment
      */
     @Nonnull
-    private String createV4MessageFragment(final int id, final int count, final int total, @Nonnull final String partialContent) {
-        return String.format(OTRV4_MESSAGE_FRAGMENT_FORMAT, id, this.senderTag, this.receiverTag, count + 1, total,
-            partialContent);
+    private String createV4MessageFragment(final int id, final int sendertag, final int receivertag, final int count,
+                                           final int total, @Nonnull final String partialContent) {
+        return String.format(OTRV4_MESSAGE_FRAGMENT_FORMAT, id, sendertag, receivertag, count + 1, total, partialContent);
     }
 
     /**
@@ -240,9 +248,9 @@ final class OtrFragmenter {
      * @return returns the full message fragment
      */
     @Nonnull
-    private String createV3MessageFragment(final int count, final int total, @Nonnull final String partialContent) {
-        return String.format(OTRV3_MESSAGE_FRAGMENT_FORMAT, this.senderTag, this.receiverTag, count + 1, total,
-            partialContent);
+    private String createV3MessageFragment(final int sendertag, final int receivertag, final int count, final int total,
+                                           @Nonnull final String partialContent) {
+        return String.format(OTRV3_MESSAGE_FRAGMENT_FORMAT, sendertag, receivertag, count + 1, total, partialContent);
     }
 
     /**
