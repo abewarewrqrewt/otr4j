@@ -9,6 +9,8 @@ import net.java.otr4j.test.dummyclient.DummyClient;
 import net.java.otr4j.test.dummyclient.PriorityServer;
 import net.java.otr4j.test.dummyclient.ProcessedTestMessage;
 import net.java.otr4j.test.dummyclient.Server;
+import net.java.otr4j.util.ConditionalBlockingQueue;
+import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -376,7 +378,6 @@ public class SessionTest {
         assertNull(c.hostBob.receiveMessage());
     }
 
-    // TODO add a test similar to this but with a restricted size messaging channel, to ensure proper operation of message fragmentation and reassembly.
     @Test
     public void testOTR4ExtensiveMessagingToVerifyRatcheting() throws OtrException {
         final Conversation c = new Conversation();
@@ -408,6 +409,69 @@ public class SessionTest {
         }
     }
 
+    @Test
+    public void testOTR4ExtensiveMessagingFragmentation() throws OtrException {
+        final Conversation c = new Conversation(new MaxMessageSize(150));
+        c.hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.hostAlice.sendRequest();
+        assertNull(c.hostBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.hostBob.receiveMessage());
+
+        for (int i = 0; i < 25; i++) {
+            // Bob sending a message (alternating, to enable ratchet)
+            final String messageBob = randomMessage(500);
+            c.hostBob.sendMessage(messageBob);
+            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.hostAlice.receiveMessage());
+            // Alice sending a message (alternating, to enable ratchet)
+            final String messageAlice = randomMessage(500);
+            c.hostAlice.sendMessage(messageAlice);
+            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
+        }
+    }
+
+    // TODO add a test similar to this but with a restricted size messaging channel, to ensure proper operation of message fragmentation and reassembly.
+    @Test
+    public void testOTR4SmallConversationWithHugeMessages() throws OtrException {
+        final Conversation c = new Conversation();
+        c.hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.hostAlice.sendRequest();
+        assertNull(c.hostBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.hostBob.receiveMessage());
+
+        for (int i = 0; i < 5; i++) {
+            // Bob sending a message (alternating, to enable ratchet)
+            final String messageBob = randomMessage(1000000);
+            c.hostBob.sendMessage(messageBob);
+            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.hostAlice.receiveMessage());
+            // Alice sending a message (alternating, to enable ratchet)
+            final String messageAlice = randomMessage(1000000);
+            c.hostAlice.sendMessage(messageAlice);
+            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
+        }
+    }
+
     private static void assertMessage(final String message, final String expected, final String actual) {
         if (expected.length() == 0) {
             assertNull(message, actual);
@@ -427,22 +491,51 @@ public class SessionTest {
      */
     private static final class Conversation {
 
-        private final LinkedBlockingQueue<String> channelAlice;
-        private final LinkedBlockingQueue<String> channelBob;
+        private final BlockingQueue<String> channelAlice;
+        private final BlockingQueue<String> channelBob;
         private final Client hostAlice;
         private final Client hostBob;
 
         private Conversation() {
             channelAlice = new LinkedBlockingQueue<>(1);
             channelBob = new LinkedBlockingQueue<>(1);
-            final SessionID sessionIDBob = new SessionID("bob@DummyNetwork4", "alice@DummyNetwork4",
-                "DummyNetwork4");
-            final SessionID sessionIDAlice = new SessionID("alice@DummyNetwork4", "bob@DummyNetwork4",
-                "DummyNetwork4");
+            final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
+                "InMemoryNetwork4");
+            final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
+                "InMemoryNetwork4");
             this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
                 channelAlice, channelBob);
             this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
                 RANDOM, channelBob, channelAlice);
+        }
+
+        private Conversation(final Predicate<String> condition) {
+            channelAlice = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(1), condition);
+            channelBob = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(1), condition);
+            final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
+                "InMemoryNetwork4");
+            final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
+                "InMemoryNetwork4");
+            this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
+                channelAlice, channelBob);
+            this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
+                RANDOM, channelBob, channelAlice);
+        }
+    }
+
+    /**
+     * Predicate to verify maximum message size.
+     */
+    private static final class MaxMessageSize implements Predicate<String> {
+        private final int maximum;
+
+        private MaxMessageSize(final int maximum) {
+            this.maximum = maximum;
+        }
+
+        @Override
+        public boolean test(@Nonnull final String s) {
+            return s.length() <= maximum;
         }
     }
 
