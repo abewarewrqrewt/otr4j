@@ -411,7 +411,7 @@ public class SessionTest {
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentation() throws OtrException {
-        final Conversation c = new Conversation(new MaxMessageSize(150));
+        final Conversation c = new Conversation(150, 10);
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -509,17 +509,20 @@ public class SessionTest {
                 RANDOM, channelBob, channelAlice);
         }
 
-        private Conversation(final Predicate<String> condition) {
-            channelAlice = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(1), condition);
-            channelBob = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(1), condition);
+        private Conversation(final int maxMessageSize, final int channelCapacity) {
+            final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
+            channelAlice = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(channelCapacity), condition);
+            channelBob = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(channelCapacity), condition);
             final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
                 channelAlice, channelBob);
+            this.hostBob.setMessageSize(maxMessageSize);
             this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
                 RANDOM, channelBob, channelAlice);
+            this.hostAlice.setMessageSize(maxMessageSize);
         }
     }
 
@@ -561,6 +564,8 @@ public class SessionTest {
 
         private final Session session;
 
+        private int messageSize = Integer.MAX_VALUE;
+
         private Client(@Nonnull final String label, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
                        @Nonnull final SecureRandom random, @Nonnull final BlockingQueue<String> sendChannel,
                        @Nonnull final BlockingQueue<String> receiptChannel) {
@@ -579,21 +584,25 @@ public class SessionTest {
             this.session = createSession(sessionID, this, senderInstanceTag);
         }
 
-        public String receiveMessage() throws OtrException {
+        void setMessageSize(final int messageSize) {
+            this.messageSize = messageSize;
+        }
+
+        String receiveMessage() throws OtrException {
             final String msg = this.receiptChannel.remove();
             return this.session.transformReceiving(msg);
         }
 
-        public void sendMessage(@Nonnull final String msg) throws OtrException {
+        void sendMessage(@Nonnull final String msg) throws OtrException {
             this.sendChannel.addAll(Arrays.asList(this.session.transformSending(msg)));
         }
 
-        public void sendRequest() throws OtrException {
+        void sendRequest() throws OtrException {
             this.session.startSession();
         }
 
         @Nonnull
-        public SessionStatus getMessageState() {
+        SessionStatus getMessageState() {
             return this.session.getSessionStatus();
         }
 
@@ -634,7 +643,7 @@ public class SessionTest {
 
         @Override
         public int getMaxFragmentSize(@Nonnull final SessionID sessionID) {
-            return MAX_VALUE;
+            return this.messageSize;
         }
 
         @Nonnull
