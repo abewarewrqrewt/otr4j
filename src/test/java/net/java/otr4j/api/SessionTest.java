@@ -599,11 +599,7 @@ public class SessionTest {
 
         @Override
         public void injectMessage(@Nonnull final SessionID sessionID, @Nonnull final String msg) {
-            try {
-                this.sendChannel.put(msg);
-            } catch (final InterruptedException e) {
-                throw new IllegalStateException("Failed to inject message into simulated chat receiptChannel.", e);
-            }
+            this.sendChannel.add(msg);
         }
 
         @Override
