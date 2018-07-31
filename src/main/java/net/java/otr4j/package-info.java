@@ -32,6 +32,7 @@
 //  * In section When receiving a Data Message: Derive the next receiving chain key: chain_key_r[i-1][k+1] = KDF_1(0x17 || chain_key_r[i-1][k], 64). (0x17 used in 2 locations)
 //  * Error in: "Derive chain_key_r[i][k+1] = KDF_1(usageNextChainKey || chain_key_r[i][k], 64) and MKenc = KDF_1(usageMessageKey || chain_key_r[i][k], 32)" Should be 'i-1' instead of 'i'.
 //  * "Set their_ecdh as the 'Public ECDH key' from the message. Set their_dh as the 'Public DH Key' from the message, if it is not empty." are duplicate. Already included as part of Rotation instructions.
+//  * OTRv4 ClientProfile verification does not clearly state what to do if DSA public key *without* transitional signature is found. (Drop DSA Public Key or reject profile completely.)
 
 /**
  * otr4j.

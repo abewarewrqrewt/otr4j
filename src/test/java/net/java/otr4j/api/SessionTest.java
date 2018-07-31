@@ -27,7 +27,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.lang.Integer.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
@@ -496,6 +495,9 @@ public class SessionTest {
         private final Client hostAlice;
         private final Client hostBob;
 
+        /**
+         * Constructor with defaults. Unlimited-length messages and single-message channel capacity.
+         */
         private Conversation() {
             channelAlice = new LinkedBlockingQueue<>(1);
             channelBob = new LinkedBlockingQueue<>(1);
@@ -509,6 +511,13 @@ public class SessionTest {
                 RANDOM, channelBob, channelAlice);
         }
 
+        /**
+         * Constructor with configurable maximum message size and channel capacity (maximum number of messages
+         * simultaneously stored).
+         *
+         * @param maxMessageSize  Maximum size of message allowed.
+         * @param channelCapacity Maximum number of messages allowed to be in transit simultaneously.
+         */
         private Conversation(final int maxMessageSize, final int channelCapacity) {
             final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
             channelAlice = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(channelCapacity), condition);

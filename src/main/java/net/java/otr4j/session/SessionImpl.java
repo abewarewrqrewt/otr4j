@@ -686,23 +686,24 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     public void injectMessage(@Nonnull final Message m) throws OtrException {
         final SessionID sessionId = this.sessionState.getSessionID();
+        final String serialized = SerializationUtils.toString(m);
         final String[] fragments;
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
             setState(new StateInitial(((QueryMessage) m).getTag()));
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
-            fragments = new String[]{SerializationUtils.toString(m) + getFallbackMessage(sessionId)};
+            fragments = new String[]{serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
+            // FIXME consider moving fragmenter inside some kind of Serializer-class such that fragmenting becomes a detail of the serialization implementation.
             try {
-                fragments = this.fragmenter.fragment((AbstractEncodedMessage) m, SerializationUtils.toString(m));
+                fragments = this.fragmenter.fragment((AbstractEncodedMessage) m, serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment OTR-encoded message to specified protocol parameters.", e);
             }
         } else {
-            fragments = new String[]{SerializationUtils.toString(m)};
+            fragments = new String[]{serialized};
         }
-        // FIXME probable issue with fragmenter not following the negotiated protocol version in case of slave sessions.
         for (final String fragment : fragments) {
             this.host.injectMessage(sessionId, fragment);
         }
