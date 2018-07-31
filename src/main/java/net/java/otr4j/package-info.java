@@ -4,6 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+// TODO verify that logging with parameters ('{}') works correctly.
 // FIXME add exclusions for any violated rules and enable fail-on-build for pmd, SpotBugs.
 // FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305.
 // TODO Verify rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
