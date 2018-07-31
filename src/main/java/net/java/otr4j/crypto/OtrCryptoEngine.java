@@ -54,6 +54,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.toHexString;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
@@ -440,7 +441,7 @@ public final class OtrCryptoEngine {
     @Nonnull
     public static String getFingerprint(@Nonnull final DSAPublicKey pubKey) {
         final byte[] b = getFingerprintRaw(pubKey);
-        return SerializationUtils.byteArrayToHexString(b);
+        return toHexString(b);
     }
 
     @Nonnull

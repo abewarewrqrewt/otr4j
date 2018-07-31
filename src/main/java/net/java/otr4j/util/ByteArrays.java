@@ -3,6 +3,9 @@ package net.java.otr4j.util;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Locale;
+
 import static java.util.Objects.requireNonNull;
 import static org.bouncycastle.util.Arrays.constantTimeAreEqual;
 
@@ -10,6 +13,17 @@ import static org.bouncycastle.util.Arrays.constantTimeAreEqual;
  * Utility methods for byte arrays.
  */
 public final class ByteArrays {
+
+    /**
+     * Index for hexadecimal symbols.
+     */
+    private static final char HEX_ENCODER[] = {'0', '1', '2', '3', '4', '5',
+        '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    /**
+     * Index for decoding hexadecimal values.
+     */
+    private static final String HEX_DECODER = "0123456789ABCDEF";
 
     private ByteArrays() {
         // No need to instantiate utility class.
@@ -62,5 +76,27 @@ public final class ByteArrays {
             throw new IllegalArgumentException("BUG: Same instance is compared.");
         }
         return constantTimeAreEqual(data1, data2);
+    }
+
+    @Nonnull
+    public static String toHexString(@Nonnull final byte in[]) {
+        final StringBuilder out = new StringBuilder(in.length * 2);
+        for (final byte b : in) {
+            out.append(HEX_ENCODER[(b >>> 4) & 0x0F]);
+            out.append(HEX_ENCODER[b & 0x0F]);
+        }
+        return out.toString();
+    }
+
+    @Nonnull
+    public static byte[] fromHexString(@Nonnull String value) {
+        value = value.toUpperCase(Locale.US);
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        for (int index = 0; index < value.length(); index += 2) {
+            final int high = HEX_DECODER.indexOf(value.charAt(index));
+            final int low = HEX_DECODER.indexOf(value.charAt(index + 1));
+            out.write((high << 4) + low);
+        }
+        return out.toByteArray();
     }
 }

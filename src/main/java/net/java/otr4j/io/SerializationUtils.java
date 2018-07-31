@@ -21,7 +21,6 @@ import net.java.otr4j.io.messages.SignatureX;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.ProtocolException;
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -77,17 +75,6 @@ public final class SerializationUtils {
      * checks such as c &gt;= '0' and c &lt;= '9'.
      */
     private static final String NUMBERINDEX = "0123456789";
-
-    /**
-     * Index for hexadecimal symbols.
-     */
-    private static final char HEX_ENCODER[] = {'0', '1', '2', '3', '4', '5',
-            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-    /**
-     * Index for decoding hexadecimal values.
-     */
-    private static final String HEX_DECODER = "0123456789ABCDEF";
 
     /**
      * PATTERN_WHITESPACE recognizes OTR v1, v2, v3 and v4 whitespace tags. We will continue to recognize OTR v1
@@ -350,28 +337,6 @@ public final class SerializationUtils {
             }
         }
         return versions;
-    }
-
-    @Nonnull
-    public static String byteArrayToHexString(@Nonnull final byte in[]) {
-        final StringBuilder out = new StringBuilder(in.length * 2);
-        for (final byte b : in) {
-            out.append(HEX_ENCODER[(b >>> 4) & 0x0F]);
-            out.append(HEX_ENCODER[b & 0x0F]);
-        }
-        return out.toString();
-    }
-
-    @Nonnull
-    public static byte[] hexStringToByteArray(@Nonnull String value) {
-        value = value.toUpperCase(Locale.US);
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        for (int index = 0; index < value.length(); index += 2) {
-            final int high = HEX_DECODER.indexOf(value.charAt(index));
-            final int low = HEX_DECODER.indexOf(value.charAt(index + 1));
-            out.write((high << 4) + low);
-        }
-        return out.toByteArray();
     }
 
     /**

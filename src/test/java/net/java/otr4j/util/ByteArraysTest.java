@@ -4,9 +4,14 @@ import org.junit.Test;
 
 import java.security.SecureRandom;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.fromHexString;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static net.java.otr4j.util.ByteArrays.toHexString;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -109,5 +114,26 @@ public class ByteArraysTest {
     @Test(expected = NullPointerException.class)
     public void testCompareNullWithNull() {
         constantTimeEquals(null, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testByteArrayToHexStringNullArray() {
+        toHexString(null);
+    }
+
+    @Test
+    public void testByteArrayToHexStringEmptyArray() {
+        assertEquals("", toHexString(new byte[0]));
+    }
+
+    @Test
+    public void testByteArrayToHexStringSmallArray() {
+        assertEquals("616230212F", toHexString(new byte[] { 'a', 'b', '0', '!', '/'}));
+    }
+
+    @Test
+    public void testByteArrayToHexStringAndBack() {
+        final byte[] line = "This is a line of text for testing out methods used for byte array to hex string conversions.".getBytes(UTF_8);
+        assertArrayEquals(line, fromHexString(toHexString(line)));
     }
 }
