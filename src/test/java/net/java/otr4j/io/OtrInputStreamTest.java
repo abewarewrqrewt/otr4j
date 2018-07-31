@@ -11,7 +11,6 @@ import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
-import net.java.otr4j.io.messages.SignatureX;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
@@ -196,34 +195,6 @@ public class OtrInputStreamTest {
         };
         final OtrInputStream ois = new OtrInputStream(data);
         assertArrayEquals(data, ois.readSignature(keypair.getPublic()));
-    }
-
-    @Test
-    public void testReadMysteriousXOtrInputStreamReadBehavior() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
-        // This test uses nonsensicle data and as such it does not verify
-        // correct parsing of the read public key material. However, it does
-        // test the reading behavior of OtrInputStream expected for such a read
-        // operation.
-        final byte[] data = new byte[] {
-            0, 0, // public key -> type
-            0, 0, 0, 1, // public key -> p -> size
-            1, // public key -> p
-            0, 0, 0, 1, // public key -> q -> size
-            16, // public key -> q (needs certain size such that signature of public key has length > 0)
-            0, 0, 0, 1, // public key -> g -> size
-            3, // public key -> g
-            0, 0, 0, 1, // public key -> y -> size
-            4, // public key -> y
-            0, 0, 0, 5, // dhKeyID
-            8, // read signature of public key
-        };
-        final OtrInputStream ois = new OtrInputStream(data);
-        final SignatureX sigX = ois.readMysteriousX();
-        assertNotNull(sigX);
-        assertNotNull(sigX.longTermPublicKey);
-        assertEquals(5, sigX.dhKeyID);
-        assertNotNull(sigX.signature);
-        assertArrayEquals(new byte[] { 8 }, sigX.signature);
     }
 
     @Test

@@ -16,7 +16,6 @@ import net.java.otr4j.io.messages.Fragment;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.io.messages.SignatureX;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -86,15 +85,6 @@ public final class SerializationUtils {
 
     private SerializationUtils() {
         // Utility class cannot be instantiated.
-    }
-
-    // Mysterious X IO.
-    @Nonnull
-    public static SignatureX toMysteriousX(@Nonnull final byte[] b) throws OtrCryptoException, UnsupportedTypeException,
-        ProtocolException {
-        try (OtrInputStream ois = new OtrInputStream(b)) {
-            return ois.readMysteriousX();
-        }
     }
 
     // Basic IO.

@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.io.OtrEncodables.encode;
+import static net.java.otr4j.io.messages.SignatureXs.readSignatureX;
 
 /**
  * AKE state Awaiting Reveal Signature message, a.k.a.
@@ -141,8 +142,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             OtrCryptoEngine.checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
             // OTR: "Verifies that Bob's gx is a legal value (2 <= gx <= modulus-2)"
             final BigInteger remotePublicKeyMPI = SerializationUtils.readMpi(remotePublicKeyBytes);
-            remoteDHPublicKey = OtrCryptoEngine.verify(
-                    OtrCryptoEngine.getDHPublicKey(remotePublicKeyMPI));
+            remoteDHPublicKey = OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(remotePublicKeyMPI));
             // OTR: "Compute the Diffie-Hellman shared secret s."
             // OTR: "Use s to compute an AES key c' and two MAC keys m1' and m2', as specified below."
             s = OtrCryptoEngine.generateSecret(this.keypair.getPrivate(), remoteDHPublicKey);
@@ -152,15 +152,13 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             OtrCryptoEngine.checkEquals(message.xEncryptedMAC, expectedXEncryptedMAC, "xEncryptedMAC failed validation.");
             // OTR: "Uses c to decrypt AESc(XB) to obtain XB = pubB, keyidB, sigB(MB)"
             final byte[] remoteMysteriousXBytes = OtrCryptoEngine.aesDecrypt(s.c(), null, message.xEncrypted);
-            remoteMysteriousX = SerializationUtils.toMysteriousX(remoteMysteriousXBytes);
+            remoteMysteriousX = readSignatureX(remoteMysteriousXBytes);
             // OTR: "Computes MB = MACm1(gx, gy, pubB, keyidB)"
-            final SignatureM expectedM = new SignatureM(remoteDHPublicKey,
-                    (DHPublicKey) this.keypair.getPublic(),
+            final SignatureM expectedM = new SignatureM(remoteDHPublicKey, (DHPublicKey) this.keypair.getPublic(),
                     remoteMysteriousX.longTermPublicKey, remoteMysteriousX.dhKeyID);
             // OTR: "Uses pubB to verify sigB(MB)"
             final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(expectedM), s.m1());
-            OtrCryptoEngine.verify(expectedSignature, remoteMysteriousX.longTermPublicKey,
-                    remoteMysteriousX.signature);
+            OtrCryptoEngine.verify(expectedSignature, remoteMysteriousX.longTermPublicKey, remoteMysteriousX.signature);
             LOGGER.finest("Signature verification succeeded.");
         } finally {
             // Ensure transition to AUTHSTATE_NONE.
@@ -170,9 +168,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         }
         // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
         // Transition to ENCRYPTED message state.
-        final SecurityParameters params = new SecurityParameters(this.version,
-                this.keypair, remoteMysteriousX.longTermPublicKey,
-                remoteDHPublicKey, s);
+        final SecurityParameters params = new SecurityParameters(this.version, this.keypair,
+            remoteMysteriousX.longTermPublicKey, remoteDHPublicKey, s);
         context.secure(params);
         // OTR: "Reply with a Signature Message."
         // Start construction of Signature message.
@@ -195,8 +192,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedBytes, s.m2p());
         LOGGER.finest("Creating signature message for response.");
         // OTR: "Sends Bob AESc'(XA), MACm2'(AESc'(XA))"
-        return new SignatureMessage(this.version, xEncrypted, xEncryptedHash,
-                context.getSenderInstanceTag().getValue(),
+        return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderInstanceTag().getValue(),
                 context.getReceiverInstanceTag().getValue());
     }
 }

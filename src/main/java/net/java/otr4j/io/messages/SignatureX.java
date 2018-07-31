@@ -13,28 +13,27 @@ import javax.annotation.Nonnull;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
  * 
  * @author George Politis
  */
+// FIXME consider making the fields private (instead of public, what is the impact?)
 public final class SignatureX implements OtrEncodable {
 
-    // Fields.
     public final DSAPublicKey longTermPublicKey;
     public final int dhKeyID;
     public final byte[] signature;
 
-    // Ctor.
-    public SignatureX(final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
-            final byte[] signature) {
-        this.longTermPublicKey = ourLongTermPublicKey;
+    public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
+            @Nonnull  final byte[] signature) {
+        this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.dhKeyID = ourKeyID;
-        this.signature = signature;
+        this.signature = requireNonNull(signature);
     }
 
-    // Methods.
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -70,10 +69,7 @@ public final class SignatureX implements OtrEncodable {
         } else if (!longTermPublicKey.equals(other.longTermPublicKey)) {
             return false;
         }
-        if (!constantTimeEquals(signature, other.signature)) {
-            return false;
-        }
-        return true;
+        return constantTimeEquals(signature, other.signature);
     }
 
     @Override

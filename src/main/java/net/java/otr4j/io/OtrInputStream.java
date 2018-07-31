@@ -10,7 +10,6 @@ package net.java.otr4j.io;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.SignatureX;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -200,23 +199,6 @@ public final class OtrInputStream implements Closeable {
         final DSAPublicKey dsaPubKey = (DSAPublicKey) pubKey;
         final DSAParams dsaParams = dsaPubKey.getParams();
         return checkedRead(dsaParams.getQ().bitLength() / 4);
-    }
-
-    /**
-     * Read Mysterious X signature data.
-     *
-     * @return Returns Mysterious X instance.
-     * @throws ProtocolException          In case of failure in reading the message.
-     * @throws OtrCryptoException         In case of failures while processing the
-     *                                    message content.
-     * @throws UnsupportedTypeException   In case of unsupported public key type.
-     */
-    @Nonnull
-    public SignatureX readMysteriousX() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
-        final DSAPublicKey pubKey = readPublicKey();
-        final int dhKeyID = readInt();
-        final byte[] sig = readSignature(pubKey);
-        return new SignatureX(pubKey, dhKeyID, sig);
     }
 
     public long readLong() throws ProtocolException {

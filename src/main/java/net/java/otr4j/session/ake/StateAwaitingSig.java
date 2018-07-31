@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.io.OtrEncodables.encode;
+import static net.java.otr4j.io.messages.SignatureXs.readSignatureX;
 
 /**
  * AKE state Awaiting Signature message, a.k.a. AUTHSTATE_AWAITING_SIG.
@@ -140,7 +141,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             OtrCryptoEngine.checkEquals(xEncryptedMAC, message.xEncryptedMAC, "xEncryptedMAC failed verification.");
             // OTR: "Uses c' to decrypt AESc'(XA) to obtain XA = pubA, keyidA, sigA(MA)"
             final byte[] remoteXBytes = OtrCryptoEngine.aesDecrypt(s.cp(), null, message.xEncrypted);
-            final SignatureX remoteX = SerializationUtils.toMysteriousX(remoteXBytes);
+            final SignatureX remoteX = readSignatureX(remoteXBytes);
             // OTR: "Computes MA = MACm1'(gy, gx, pubA, keyidA)"
             final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey,
                     (DHPublicKey) this.localDHKeyPair.getPublic(),
