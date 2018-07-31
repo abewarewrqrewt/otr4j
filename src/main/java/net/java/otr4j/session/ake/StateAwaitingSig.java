@@ -145,15 +145,14 @@ final class StateAwaitingSig extends AbstractAuthState {
             // OTR: "Computes MA = MACm1'(gy, gx, pubA, keyidA)"
             final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey,
                     (DHPublicKey) this.localDHKeyPair.getPublic(),
-                    remoteX.longTermPublicKey, remoteX.dhKeyID);
+                    remoteX.getLongTermPublicKey(), remoteX.getDhKeyID());
             final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(remoteM), s.m1p());
             // OTR: "Uses pubA to verify sigA(MA)"
-            OtrCryptoEngine.verify(expectedSignature, remoteX.longTermPublicKey, remoteX.signature);
+            remoteX.verify(expectedSignature);
             // Transition to ENCRYPTED session state.
             // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
-            final SecurityParameters params = new SecurityParameters(this.version,
-                    this.localDHKeyPair, remoteX.longTermPublicKey,
-                    remoteDHPublicKey, this.s);
+            final SecurityParameters params = new SecurityParameters(this.version, this.localDHKeyPair,
+                remoteX.getLongTermPublicKey(), remoteDHPublicKey, this.s);
             context.secure(params);
             return null;
         } finally {

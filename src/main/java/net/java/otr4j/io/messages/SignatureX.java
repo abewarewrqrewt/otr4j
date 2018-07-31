@@ -6,6 +6,8 @@
  */
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -20,18 +22,26 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * 
  * @author George Politis
  */
-// FIXME consider making the fields private (instead of public, what is the impact?)
 public final class SignatureX implements OtrEncodable {
 
-    public final DSAPublicKey longTermPublicKey;
-    public final int dhKeyID;
-    public final byte[] signature;
+    private final DSAPublicKey longTermPublicKey;
+    private final int dhKeyID;
+    private final byte[] signature;
 
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
             @Nonnull  final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.dhKeyID = ourKeyID;
         this.signature = requireNonNull(signature);
+    }
+
+    @Nonnull
+    public DSAPublicKey getLongTermPublicKey() {
+        return longTermPublicKey;
+    }
+
+    public int getDhKeyID() {
+        return dhKeyID;
     }
 
     @Override
@@ -70,6 +80,10 @@ public final class SignatureX implements OtrEncodable {
             return false;
         }
         return constantTimeEquals(signature, other.signature);
+    }
+
+    public void verify(@Nonnull final byte[] expectedSignature) throws OtrCryptoException {
+        OtrCryptoEngine.verify(expectedSignature, this.longTermPublicKey, this.signature);
     }
 
     @Override

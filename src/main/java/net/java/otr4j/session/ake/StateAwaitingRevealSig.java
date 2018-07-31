@@ -155,10 +155,10 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             remoteMysteriousX = readSignatureX(remoteMysteriousXBytes);
             // OTR: "Computes MB = MACm1(gx, gy, pubB, keyidB)"
             final SignatureM expectedM = new SignatureM(remoteDHPublicKey, (DHPublicKey) this.keypair.getPublic(),
-                    remoteMysteriousX.longTermPublicKey, remoteMysteriousX.dhKeyID);
+                    remoteMysteriousX.getLongTermPublicKey(), remoteMysteriousX.getDhKeyID());
             // OTR: "Uses pubB to verify sigB(MB)"
             final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(expectedM), s.m1());
-            OtrCryptoEngine.verify(expectedSignature, remoteMysteriousX.longTermPublicKey, remoteMysteriousX.signature);
+            remoteMysteriousX.verify(expectedSignature);
             LOGGER.finest("Signature verification succeeded.");
         } finally {
             // Ensure transition to AUTHSTATE_NONE.
@@ -169,7 +169,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
         // Transition to ENCRYPTED message state.
         final SecurityParameters params = new SecurityParameters(this.version, this.keypair,
-            remoteMysteriousX.longTermPublicKey, remoteDHPublicKey, s);
+            remoteMysteriousX.getLongTermPublicKey(), remoteDHPublicKey, s);
         context.secure(params);
         // OTR: "Reply with a Signature Message."
         // Start construction of Signature message.
