@@ -13,28 +13,27 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.security.interfaces.DSAPublicKey;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * 
  * @author George Politis
  */
 public final class SignatureM implements OtrEncodable {
-    // Fields.
-    public final DHPublicKey localPubKey;
-    public final DHPublicKey remotePubKey;
-    public final DSAPublicKey localLongTermPubKey;
-    public final int keyPairID;
 
-    // Ctor.
-    public SignatureM(final DHPublicKey localPubKey, final DHPublicKey remotePublicKey,
-            final DSAPublicKey localLongTermPublicKey, final int keyPairID) {
+    private final DHPublicKey localPubKey;
+    private final DHPublicKey remotePubKey;
+    private final DSAPublicKey localLongTermPubKey;
+    private final int keyPairID;
 
-        this.localPubKey = localPubKey;
-        this.remotePubKey = remotePublicKey;
-        this.localLongTermPubKey = localLongTermPublicKey;
+    public SignatureM(@Nonnull final DHPublicKey localPubKey, @Nonnull final DHPublicKey remotePublicKey,
+            @Nonnull final DSAPublicKey localLongTermPublicKey, final int keyPairID) {
+        this.localPubKey = requireNonNull(localPubKey);
+        this.remotePubKey = requireNonNull(remotePublicKey);
+        this.localLongTermPubKey = requireNonNull(localLongTermPublicKey);
         this.keyPairID = keyPairID;
     }
 
-    // Methods.
     @Override
     public int hashCode() {
         final int prime = 31;
