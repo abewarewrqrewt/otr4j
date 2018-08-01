@@ -41,6 +41,7 @@ import static org.junit.Assert.assertThat;
 // FIXME add test to prove that interchanged message fragments from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 can be used interchangeably.
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 message fragments can be sent interchangeably as long as different sender instances are involved.
+// FIXME restructure existing OTRv3 tests as they now cause annoying hard-to-debug problems.
 public class SessionTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();

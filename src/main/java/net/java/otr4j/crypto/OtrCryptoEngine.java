@@ -424,9 +424,9 @@ public final class OtrCryptoEngine {
 
     public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final BigInteger r,
             @Nonnull final BigInteger s) throws OtrCryptoException {
+        requireNonNull(b);
         final DSAParams dsaParams = pubKey.getParams();
         final BigInteger q = dsaParams.getQ();
-        requireLengthExactly(q.bitLength() / 8 * 2, b);
         final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q, dsaParams.getG());
         final DSAPublicKeyParameters dsaPubParams = new DSAPublicKeyParameters(pubKey.getY(), bcDSAParams);
 

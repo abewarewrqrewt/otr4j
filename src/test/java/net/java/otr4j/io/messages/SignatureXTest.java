@@ -32,13 +32,6 @@ public final class SignatureXTest {
         sig.verify(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testVerifySignatureZeroLengthSignature() throws OtrCryptoException {
-        final int signatureLength = publicKey.getParams().getQ().bitLength() / 8 * 2;
-        final SignatureX sig = new SignatureX(publicKey, 0, new byte[signatureLength]);
-        sig.verify(new byte[0]);
-    }
-
     @Test(expected = OtrCryptoException.class)
     public void testVerifySignature() throws OtrCryptoException {
         final int signatureLength = publicKey.getParams().getQ().bitLength() / 8 * 2;
