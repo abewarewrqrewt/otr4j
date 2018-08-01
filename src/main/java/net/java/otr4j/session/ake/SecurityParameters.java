@@ -49,25 +49,50 @@ public final class SecurityParameters {
         this.s = Objects.requireNonNull(s);
     }
 
+    /**
+     * Get the protocol version.
+     *
+     * @return Returns protocol version.
+     */
     public int getVersion() {
         return version;
     }
 
+    /**
+     * Get the local DH keypair.
+     *
+     * @return The local DH keypair.
+     */
     @Nonnull
     public KeyPair getLocalDHKeyPair() {
         return localDHKeyPair;
     }
 
+    /**
+     * Get the remote long-term DSA public key.
+     *
+     * @return Returns the DSA public key.
+     */
     @Nonnull
     public DSAPublicKey getRemoteLongTermPublicKey() {
         return remoteLongTermPublicKey;
     }
 
+    /**
+     * Get the remote DH public key.
+     *
+     * @return Returns the DH public key.
+     */
     @Nonnull
     public DHPublicKey getRemoteDHPublicKey() {
         return remoteDHPublicKey;
     }
 
+    /**
+     * Get the shared secret 's'.
+     *
+     * @return The shared secret 's'.
+     */
     @Nonnull
     public SharedSecret getS() {
         return s;

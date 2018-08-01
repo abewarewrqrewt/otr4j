@@ -11,6 +11,8 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Container for OTRv4 security parameters.
+ * <p>
+ * Container that contains the negotiated security parameters during an OTRv4 Interactive DAKE session.
  */
 // FIXME migrate into Message State state machine.
 public final class SecurityParameters4 {
@@ -41,26 +43,51 @@ public final class SecurityParameters4 {
         this.a = requireNonNull(a);
     }
 
+    /**
+     * Get the component that should be initialized in the Double Ratchet.
+     *
+     * @return Returns initialization component.
+     */
     @Nonnull
     public Component getInitializationComponent() {
         return initializationComponent;
     }
 
+    /**
+     * Get local ephemeral ECDH key pair.
+     *
+     * @return Returns ECDH key pair.
+     */
     @Nonnull
     public ECDHKeyPair getEcdhKeyPair() {
         return ecdhKeyPair;
     }
 
+    /**
+     * Get local ephemeral DH key pair.
+     *
+     * @return Returns DH key pair.
+     */
     @Nonnull
     public DHKeyPair getDhKeyPair() {
         return dhKeyPair;
     }
 
+    /**
+     * Get the Ephemeral ECDH public key.
+     *
+     * @return Returns ECDH public key.
+     */
     @Nonnull
     public Point getX() {
         return x;
     }
 
+    /**
+     * Get the Ephemeral DH public key.
+     *
+     * @return Returns DH public key.
+     */
     @Nonnull
     public BigInteger getA() {
         return a;

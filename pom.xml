@@ -128,7 +128,10 @@
                     <target>1.7</target>
                     <showWarnings>true</showWarnings>
                     <failOnWarning>true</failOnWarning>
-                    <compilerArgument>-Xlint:all,-options,-deprecation</compilerArgument>
+                    <compilerArgs>
+                        <arg>-Xlint:all,-options,-deprecation</arg>
+                        <arg>-Xdoclint:all/protected</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
