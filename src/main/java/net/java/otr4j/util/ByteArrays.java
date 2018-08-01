@@ -40,7 +40,7 @@ public final class ByteArrays {
     @Nonnull
     public static byte[] requireLengthExactly(final int length, @Nonnull final byte[] bytes) {
         if (bytes.length != length) {
-            throw new IllegalArgumentException("Illegal array length");
+            throw new IllegalArgumentException("Illegal array length: " + bytes.length);
         }
         return bytes;
     }
