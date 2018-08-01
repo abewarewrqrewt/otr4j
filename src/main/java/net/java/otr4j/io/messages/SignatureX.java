@@ -82,6 +82,12 @@ public final class SignatureX implements OtrEncodable {
         return constantTimeEquals(signature, other.signature);
     }
 
+    /**
+     * Verify expected signature with signature in SignatureX.
+     *
+     * @param expectedSignature the expected signature to verify against the SignatureX signature
+     * @throws OtrCryptoException In case of failures of a cryptographic nature.
+     */
     public void verify(@Nonnull final byte[] expectedSignature) throws OtrCryptoException {
         OtrCryptoEngine.verify(expectedSignature, this.longTermPublicKey, this.signature);
     }

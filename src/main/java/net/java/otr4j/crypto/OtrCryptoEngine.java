@@ -54,6 +54,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
@@ -96,7 +97,11 @@ public final class OtrCryptoEngine {
     public static final BigInteger MODULUS_MINUS_TWO = MODULUS.subtract(BIGINTEGER_TWO);
     public static final BigInteger GENERATOR = new BigInteger("2", 10);
 
+    /**
+     * Length of MAC in bytes.
+     */
     private static final int MAC_LENGTH_BYTES = 20;
+
     public static final int AES_KEY_BYTE_LENGTH = 16;
     private static final int DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH = 320;
     private static final byte[] ZERO_CTR = new byte[] {
@@ -402,8 +407,8 @@ public final class OtrCryptoEngine {
      */
     public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] rs)
             throws OtrCryptoException {
-        final DSAParams dsaParams = pubKey.getParams();
-        final int qlen = dsaParams.getQ().bitLength() / 8;
+        final int qlen = pubKey.getParams().getQ().bitLength() / 8;
+        requireLengthExactly(2 * qlen, rs);
         final ByteBuffer buff = ByteBuffer.wrap(rs);
         final byte[] r = new byte[qlen];
         buff.get(r);
@@ -421,6 +426,7 @@ public final class OtrCryptoEngine {
             @Nonnull final BigInteger s) throws OtrCryptoException {
         final DSAParams dsaParams = pubKey.getParams();
         final BigInteger q = dsaParams.getQ();
+        requireLengthExactly(q.bitLength() / 8 * 2, b);
         final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q, dsaParams.getG());
         final DSAPublicKeyParameters dsaPubParams = new DSAPublicKeyParameters(pubKey.getY(), bcDSAParams);
 
