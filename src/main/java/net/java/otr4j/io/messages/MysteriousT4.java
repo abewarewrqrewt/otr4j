@@ -8,8 +8,9 @@ import nl.dannyvanheumen.joldilocks.Point;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.io.SerializationUtils.generatePhi;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -71,9 +72,38 @@ public final class MysteriousT4 {
             out.writeBigInt(a);
             aEncoded = out.toByteArray();
         }
+        // FIXME double-check if phi is now a mix of phi and phi' values.
         final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
         return concatenate(new byte[][]{new byte[]{0x00}, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
             bEncoded, aEncoded, sharedSessionDerivative});
+    }
+
+    /**
+     * Generate the shared session state that is used in verification the session consistency. Note that this part is
+     * basically only concerned with the correct serialization of provided data.
+     *
+     * @param senderInstanceTag   The sender instance tag.
+     * @param receiverInstanceTag The receiver instance tag.
+     * @param queryTag            The query message.
+     * @param senderContactID     The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
+     * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
+     * @return Returns generate Phi value.
+     */
+    // TODO generatePhi is package-private only for purpose of testing. Consider if we want to make this private and test only through MysteriousT4-encoding.
+    @Nonnull
+    static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag, @Nonnull final String queryTag,
+                              @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
+        final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
+        final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
+        final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writeInt(senderInstanceTag);
+            out.writeInt(receiverInstanceTag);
+            out.writeData(queryTagBytes);
+            out.writeData(senderIDBytes);
+            out.writeData(receiverIDBytes);
+            return out.toByteArray();
+        }
     }
 }

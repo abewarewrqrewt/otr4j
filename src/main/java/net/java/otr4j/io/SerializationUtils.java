@@ -377,32 +377,4 @@ public final class SerializationUtils {
             this.tlvs = Objects.requireNonNull(tlvs);
         }
     }
-
-    /**
-     * Generate the shared session state that is used in verification the session consistency. Note that this part is
-     * basically only concerned with the correct serialization of provided data.
-     *
-     * @param senderInstanceTag   The sender instance tag.
-     * @param receiverInstanceTag The receiver instance tag.
-     * @param queryTag            The query message.
-     * @param senderContactID     The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
-     * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
-     * @return Returns generate Phi value.
-     */
-    @Nonnull
-    public static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag,
-                                     @Nonnull final String queryTag, @Nonnull final String senderContactID,
-                                     @Nonnull final String receiverContactID) {
-        final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
-        final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
-        final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeInt(senderInstanceTag);
-            out.writeInt(receiverInstanceTag);
-            out.writeData(queryTagBytes);
-            out.writeData(senderIDBytes);
-            out.writeData(receiverIDBytes);
-            return out.toByteArray();
-        }
-    }
 }
