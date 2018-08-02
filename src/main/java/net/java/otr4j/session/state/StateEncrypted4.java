@@ -105,6 +105,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             rotation = null;
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
         }
+        // FIXME TLVs are not yet included in the message payload!
         final byte[] msgBytes = convertTextToBytes(msgText);
         final Result result;
         final int ratchetId;

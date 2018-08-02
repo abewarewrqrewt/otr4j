@@ -254,24 +254,28 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Increment CTR.
         final byte[] ctr = encryptionKeys.acquireSendingCtr();
 
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        if (msgText.length() > 0) {
-            final byte[] msgBytes = convertTextToBytes(msgText);
-            out.write(msgBytes, 0, msgBytes.length);
-        }
+        final byte[] data;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            if (msgText.length() > 0) {
+                final byte[] msgBytes = convertTextToBytes(msgText);
+                out.write(msgBytes, 0, msgBytes.length);
+            }
 
-        // Append tlvs
-        if (!tlvs.isEmpty()) {
-            out.write((byte) 0x00);
-            try (OtrOutputStream eoos = new OtrOutputStream(out)) {
-                for (final TLV tlv : tlvs) {
-                    eoos.writeShort(tlv.getType());
-                    eoos.writeTlvData(tlv.getValue());
+            // Append tlvs
+            if (!tlvs.isEmpty()) {
+                out.write((byte) 0x00);
+                try (OtrOutputStream eoos = new OtrOutputStream(out)) {
+                    for (final TLV tlv : tlvs) {
+                        eoos.writeShort(tlv.getType());
+                        eoos.writeTlvData(tlv.getValue());
+                    }
                 }
             }
-        }
 
-        final byte[] data = out.toByteArray();
+            data = out.toByteArray();
+        } catch (final IOException e) {
+            throw new IllegalStateException("Unexpected failure while closing ByteArrayOutputStream.", e);
+        }
         // Encrypt message.
         logger.log(Level.FINEST, "Encrypting message with keyids (localKeyID, remoteKeyID) = ({0}, {1})",
                 new Object[]{senderKeyID, recipientKeyID});

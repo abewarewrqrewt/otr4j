@@ -318,7 +318,7 @@ public final class SerializationUtils {
      */
     // FIXME write unit tests
     @CheckReturnValue
-    public static boolean otrFragmented(@Nonnull final String content) {
+    private static boolean otrFragmented(@Nonnull final String content) {
         return (content.startsWith(HEAD + HEAD_FRAGMENTED_V2) || content.startsWith(HEAD + HEAD_FRAGMENTED_V3))
             && content.endsWith("" + TAIL_FRAGMENTED);
     }
