@@ -35,7 +35,7 @@ public final class MysteriousT4 {
     public static byte[] encode(@Nonnull final Purpose purpose, @Nonnull final ClientProfilePayload profileAlice,
                                 @Nonnull final ClientProfilePayload profileBob, @Nonnull final Point x,
                                 @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
-                                @Nonnull final int senderInstanceTag, @Nonnull final int receiverInstanceTag,
+                                final int senderInstanceTag, final int receiverInstanceTag,
                                 @Nonnull final String queryTag, @Nonnull final String senderContactID,
                                 @Nonnull final String receiverContactID) {
         final KDFUsage bobsProfileUsage;
