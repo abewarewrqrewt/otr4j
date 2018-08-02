@@ -23,7 +23,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
-import static net.java.otr4j.io.SerializationUtils.UTF8;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
@@ -228,7 +227,7 @@ public class OtrCryptoEngine4Test {
 
     @Test
     public void testEncryptMessage() {
-        final byte[] message = "hello world".getBytes(UTF8);
+        final byte[] message = "hello world".getBytes(UTF_8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
         final byte[] nonce = generateNonce(RANDOM);
@@ -239,7 +238,7 @@ public class OtrCryptoEngine4Test {
 
     @Test
     public void testEncryptionAndDecryption() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
         final byte[] iv = new byte[24];
@@ -250,7 +249,7 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncryptInvalidKeySize() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[31];
         RANDOM.nextBytes(key);
         final byte[] iv = new byte[24];
@@ -260,7 +259,7 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncryptInvalidIVSize() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
         final byte[] iv = new byte[23];
@@ -270,7 +269,7 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDecryptInvalidKeySize() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[31];
         RANDOM.nextBytes(key);
         final byte[] iv = new byte[24];
@@ -280,7 +279,7 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDecryptInvalidIVSize() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF8);
+        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
         final byte[] iv = new byte[23];

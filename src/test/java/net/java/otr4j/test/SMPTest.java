@@ -1,24 +1,23 @@
 
 package net.java.otr4j.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.test.dummyclient.DummyClient;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import net.java.otr4j.api.OtrException;
-import net.java.otr4j.io.SerializationUtils;
-import net.java.otr4j.api.Session;
-import net.java.otr4j.test.dummyclient.DummyClient;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test that Socialist Millionaire Protocol verification is working.
@@ -101,10 +100,8 @@ public class SMPTest {
         assertEquals(question, bobReceivedQuestion);
         if (question != null) {
             assertEquals(question.length(), bobReceivedQuestion.length());
-            assertEquals(question.getBytes(SerializationUtils.UTF8).length,
-                    bobReceivedQuestion.getBytes(SerializationUtils.UTF8).length);
-            assertEquals(question.getBytes(SerializationUtils.UTF8).length,
-                    bobReceivedQuestion.getBytes(SerializationUtils.UTF8).length);
+            assertEquals(question.getBytes(UTF_8).length, bobReceivedQuestion.getBytes(UTF_8).length);
+            assertEquals(question.getBytes(UTF_8).length, bobReceivedQuestion.getBytes(UTF_8).length);
         }
 
         bobSession.respondSmp(question, bobPassword);

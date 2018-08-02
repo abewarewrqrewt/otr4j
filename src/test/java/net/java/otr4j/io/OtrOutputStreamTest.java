@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static net.java.otr4j.io.SerializationUtils.UTF8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -128,7 +128,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteEncodable() {
-        final byte[] data = "Hello world!".getBytes(UTF8);
+        final byte[] data = "Hello world!".getBytes(UTF_8);
         final byte[] expected = concatenate(new byte[]{0, 0, 0, 0xc}, data);
         final byte[] result;
         try (final OtrOutputStream out = new OtrOutputStream()) {

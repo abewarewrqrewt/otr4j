@@ -1,22 +1,27 @@
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.messages.Message;
+import net.java.otr4j.io.messages.PlainTextMessage;
+import net.java.otr4j.io.messages.QueryMessage;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
-import net.java.otr4j.api.Session;
-import net.java.otr4j.api.Session.OTRv;
-import org.junit.Test;
-
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
 import static net.java.otr4j.io.SerializationUtils.generatePhi;
 import static net.java.otr4j.io.SerializationUtils.parseVersionString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("ConstantConditions")
 public class SerializationUtilsTest {
@@ -69,7 +74,7 @@ public class SerializationUtilsTest {
 
     @Test
     public void testBytesConversionNullMangling() {
-        assertArrayEquals("This is a test with ? null ? values.".getBytes(SerializationUtils.UTF8),
+        assertArrayEquals("This is a test with ? null ? values.".getBytes(UTF_8),
                 SerializationUtils.convertTextToBytes("This is a test with \0 null \0 values."));
     }
 
@@ -315,7 +320,7 @@ public class SerializationUtilsTest {
 
     @Test
     public void testExtractContentsMessageOnly() throws IOException {
-        final SerializationUtils.Content content = SerializationUtils.extractContents("Hello world!".getBytes(SerializationUtils.UTF8));
+        final SerializationUtils.Content content = SerializationUtils.extractContents("Hello world!".getBytes(UTF_8));
         assertNotNull(content);
         assertEquals("Hello world!", content.message);
         assertTrue(content.tlvs.isEmpty());
@@ -323,7 +328,7 @@ public class SerializationUtilsTest {
 
     @Test
     public void testExtractContentsMessageAndDisconnect() throws IOException {
-        final byte[] textBytes = "Hello world!".getBytes(SerializationUtils.UTF8);
+        final byte[] textBytes = "Hello world!".getBytes(UTF_8);
         final byte[] messageBytes = new byte[textBytes.length + 5];
         System.arraycopy(textBytes, 0, messageBytes, 0, textBytes.length);
         messageBytes[textBytes.length+2] = 1;
@@ -339,7 +344,7 @@ public class SerializationUtilsTest {
 
     @Test
     public void testExtractContentsMessageAndPaddingValue() throws IOException {
-        final byte[] textBytes = "Hello world!".getBytes(SerializationUtils.UTF8);
+        final byte[] textBytes = "Hello world!".getBytes(UTF_8);
         final byte[] messageBytes = new byte[textBytes.length + 7];
         System.arraycopy(textBytes, 0, messageBytes, 0, textBytes.length);
         messageBytes[textBytes.length + 2] = 0;
@@ -358,7 +363,7 @@ public class SerializationUtilsTest {
 
     @Test
     public void testExtractContentsMessageAndDisconnectAndPaddingValue() throws IOException {
-        final byte[] textBytes = "Hello world!".getBytes(SerializationUtils.UTF8);
+        final byte[] textBytes = "Hello world!".getBytes(UTF_8);
         final byte[] messageBytes = new byte[textBytes.length + 11];
         System.arraycopy(textBytes, 0, messageBytes, 0, textBytes.length);
         messageBytes[textBytes.length + 2] = 0;

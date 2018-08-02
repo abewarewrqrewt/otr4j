@@ -9,18 +9,12 @@ package net.java.otr4j.session;
 
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.SessionID;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
 
 import java.net.ProtocolException;
 import java.security.SecureRandom;
-import java.util.regex.Pattern;
 
-import static net.java.otr4j.io.SerializationUtils.UTF8;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;

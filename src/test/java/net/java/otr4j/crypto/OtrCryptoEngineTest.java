@@ -7,21 +7,25 @@
 
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
+import org.junit.Test;
+
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
-import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
-import org.junit.Test;
-
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
-import static net.java.otr4j.io.SerializationUtils.UTF8;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for OtrCryptoEngine.
@@ -121,7 +125,7 @@ public class OtrCryptoEngineTest {
 
     @Test
     public void testSignRS() throws OtrCryptoException {
-        final byte[] m = "hello".getBytes(UTF8);
+        final byte[] m = "hello".getBytes(UTF_8);
         final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
         verify(m, (DSAPublicKey) DSA_KEYPAIR.getPublic(), sig.r, sig.s);
     }

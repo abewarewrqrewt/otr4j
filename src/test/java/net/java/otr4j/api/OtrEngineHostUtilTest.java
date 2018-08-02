@@ -7,14 +7,15 @@
 
 package net.java.otr4j.api;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import net.java.otr4j.io.SerializationUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doThrow;
@@ -214,8 +215,8 @@ public class OtrEngineHostUtilTest {
     public void testExtraSymmetricKeyDiscoveredOnFaultyHost() throws OtrException {
         final String message = "My message.";
         final SessionID sessionID = new SessionID(null, null, null);
-        final byte[] key = "MyPassW0rd".getBytes(SerializationUtils.ASCII);
-        final byte[] tlvData = "Use in file transfer!".getBytes(SerializationUtils.UTF8);
+        final byte[] key = "MyPassW0rd".getBytes(US_ASCII);
+        final byte[] tlvData = "Use in file transfer!".getBytes(UTF_8);
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).getReplyForUnreadableMessage(sessionID);
         OtrEngineHostUtil.extraSymmetricKeyDiscovered(host, sessionID, message, key, tlvData);

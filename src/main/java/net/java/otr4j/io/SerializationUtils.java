@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.StringWriter;
 import java.net.ProtocolException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,6 +34,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
@@ -54,16 +55,6 @@ import static org.bouncycastle.util.encoders.Base64.toBase64String;
 public final class SerializationUtils {
 
     private static final Logger LOGGER = Logger.getLogger(SerializationUtils.class.getName());
-
-    /**
-     * Charset for base64-encoded content.
-     */
-    public static final Charset ASCII = Charset.forName("US-ASCII");
-
-    /**
-     * Charset for message content according to OTR spec.
-     */
-    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     /**
      * Index of numbers such that we can easily translate from number character
@@ -214,7 +205,7 @@ public final class SerializationUtils {
                  * Otr4j doesn't strip this point before passing the content to the base64 decoder.
                  * So in order to decode the content string we have to get rid of the '.' first.
                  */
-                final byte[] contentBytes = decode(content.substring(0, content.length() - 1).getBytes(ASCII));
+                final byte[] contentBytes = decode(content.substring(0, content.length() - 1).getBytes(US_ASCII));
                 try (OtrInputStream otr = new OtrInputStream(contentBytes)) {
                     return read(otr);
                 }
@@ -305,7 +296,7 @@ public final class SerializationUtils {
      */
     @Nonnull
     public static byte[] convertTextToBytes(@Nonnull final String msg) {
-        return msg.replace('\0', '?').getBytes(UTF8);
+        return msg.replace('\0', '?').getBytes(UTF_8);
     }
 
     /**
@@ -353,7 +344,7 @@ public final class SerializationUtils {
         }
 
         // get message body without trailing 0x00, expect UTF-8 bytes
-        final String message = new String(messageBytes, 0, tlvIndex, UTF8);
+        final String message = new String(messageBytes, 0, tlvIndex, UTF_8);
 
         // if the null TLV separator is somewhere in the middle, there are TLVs
         final ArrayList<TLV> tlvs = new ArrayList<>();
@@ -402,9 +393,9 @@ public final class SerializationUtils {
     public static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag,
                                      @Nonnull final String queryTag, @Nonnull final String senderContactID,
                                      @Nonnull final String receiverContactID) {
-        final byte[] queryTagBytes = queryTag.getBytes(ASCII);
-        final byte[] senderIDBytes = senderContactID.getBytes(UTF8);
-        final byte[] receiverIDBytes = receiverContactID.getBytes(UTF8);
+        final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
+        final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
+        final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
         try (OtrOutputStream out = new OtrOutputStream()) {
             out.writeInt(senderInstanceTag);
             out.writeInt(receiverInstanceTag);

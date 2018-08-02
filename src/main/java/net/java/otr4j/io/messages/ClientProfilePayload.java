@@ -23,13 +23,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.io.OtrEncodables.encode;
-import static net.java.otr4j.io.SerializationUtils.ASCII;
 import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
 import static net.java.otr4j.io.SerializationUtils.parseVersionString;
 import static net.java.otr4j.util.Iterables.findByType;
@@ -152,7 +152,7 @@ public final class ClientProfilePayload implements OtrEncodable {
                     break;
                 case VERSIONS:
                     try {
-                        final Set<Integer> versions = parseVersionString(new String(in.readData(), ASCII));
+                        final Set<Integer> versions = parseVersionString(new String(in.readData(), US_ASCII));
                         fields.add(new VersionsField(versions));
                     } catch (UnsupportedLengthException e) {
                         throw new ProtocolException("Versions are not expected in an exceptionally large data field. This is not according to specification.");
@@ -450,7 +450,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         @Override
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeShort(TYPE.type);
-            out.writeData(encodeVersionString(versions).getBytes(ASCII));
+            out.writeData(encodeVersionString(versions).getBytes(US_ASCII));
         }
     }
 

@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
@@ -72,7 +73,6 @@ import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
-import static net.java.otr4j.io.SerializationUtils.ASCII;
 import static net.java.otr4j.io.SerializationUtils.toMessage;
 import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 
@@ -598,7 +598,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (assembledMessageContent == null) {
             return null;
         }
-        final AbstractEncodedMessage encoded = read(new OtrInputStream(assembledMessageContent.getBytes(ASCII)));
+        final AbstractEncodedMessage encoded = read(new OtrInputStream(assembledMessageContent.getBytes(US_ASCII)));
         // FIXME should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
         return handleEncodedMessage(encoded);
     }

@@ -14,7 +14,6 @@ import net.java.otr4j.api.SmpEngineHostUtil;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
-import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.session.smp.SM;
 import net.java.otr4j.session.smp.SMAbortedException;
@@ -27,6 +26,8 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * SMP TLV Handler handles any interaction w.r.t. mutual authentication using
@@ -92,7 +93,7 @@ public final class SmpTlvHandler {
         final DSAPublicKey remotePublicKey = session.getRemotePublicKey();
         final byte[] theirFp = OtrCryptoEngine.getFingerprintRaw(remotePublicKey);
         final byte[] sessionId = this.s.ssid();
-        final byte[] secretBytes = secret.getBytes(SerializationUtils.UTF8);
+        final byte[] secretBytes = secret.getBytes(UTF_8);
         final byte[] combinedSecret;
         if (initiating) {
             combinedSecret = OtrCryptoEngine.sha256Hash(VERSION_BYTE, ourFp, theirFp, sessionId, secretBytes);
@@ -140,7 +141,7 @@ public final class SmpTlvHandler {
 
         // If we've got a question, attach it to the smpmsg
         if (question != null && initiating){
-            final byte[] questionBytes = question.getBytes(SerializationUtils.UTF8);
+            final byte[] questionBytes = question.getBytes(UTF_8);
             final byte[] qsmpmsg = new byte[questionBytes.length + 1 + smpmsg.length];
             System.arraycopy(questionBytes, 0, qsmpmsg, 0, questionBytes.length);
             System.arraycopy(smpmsg, 0, qsmpmsg, questionBytes.length + 1, smpmsg.length);
@@ -199,7 +200,7 @@ public final class SmpTlvHandler {
             }
             final byte[] plainq = new byte[qlen];
             System.arraycopy(question, 0, plainq, 0, qlen);
-            final String questionUTF = new String(plainq, SerializationUtils.UTF8);
+            final String questionUTF = new String(plainq, UTF_8);
             SmpEngineHostUtil.askForSecret(engineHost, session.getSessionID(),
                     this.receiverInstanceTag, questionUTF);
         }
