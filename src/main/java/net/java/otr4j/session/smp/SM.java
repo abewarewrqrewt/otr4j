@@ -73,10 +73,13 @@ public final class SM {
     static BigInteger hash(final int version, @Nonnull final BigInteger a,
             @Nullable final BigInteger b) {
         final MessageDigest sha256 = OtrCryptoEngine.createSHA256MessageDigest();
-        sha256.update((byte)version);
-        sha256.update(SerializationUtils.writeMpi(a));
-        if (b != null) {
-            sha256.update(SerializationUtils.writeMpi(b));
+        sha256.update((byte) version);
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writeBigInt(a);
+            if (b != null) {
+                out.writeBigInt(b);
+            }
+            sha256.update(out.toByteArray());
         }
         return new BigInteger(1, sha256.digest());
     }

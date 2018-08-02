@@ -7,7 +7,7 @@
 
 package net.java.otr4j.crypto;
 
-import net.java.otr4j.io.SerializationUtils;
+import net.java.otr4j.io.OtrOutputStream;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -452,10 +452,14 @@ public final class OtrCryptoEngine {
 
     @Nonnull
     public static byte[] getFingerprintRaw(@Nonnull final DSAPublicKey pubKey) {
-        final byte[] bRemotePubKey = SerializationUtils.writePublicKey(pubKey);
+        final byte[] bRemotePubKey;
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writePublicKey(pubKey);
+            bRemotePubKey = out.toByteArray();
+        }
         final byte[] trimmed = new byte[bRemotePubKey.length - 2];
         System.arraycopy(bRemotePubKey, 2, trimmed, 0, trimmed.length);
-        return OtrCryptoEngine.sha1Hash(trimmed);
+        return sha1Hash(trimmed);
     }
 
     @Nonnull

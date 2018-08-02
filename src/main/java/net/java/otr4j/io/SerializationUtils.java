@@ -21,10 +21,8 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.StringWriter;
-import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.nio.charset.Charset;
-import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -85,40 +83,6 @@ public final class SerializationUtils {
 
     private SerializationUtils() {
         // Utility class cannot be instantiated.
-    }
-
-    // Basic IO.
-    @Nonnull
-    public static byte[] writeData(@Nonnull final byte[] b) {
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeData(b);
-            return out.toByteArray();
-        }
-    }
-
-    // BigInteger IO.
-    @Nonnull
-    public static byte[] writeMpi(@Nonnull final BigInteger bigInt) {
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(bigInt);
-            return out.toByteArray();
-        }
-    }
-
-    @Nonnull
-    public static BigInteger readMpi(@Nonnull final byte[] b) throws ProtocolException {
-        try (OtrInputStream ois = new OtrInputStream(b)) {
-            return ois.readBigInt();
-        }
-    }
-
-    // Public Key IO.
-    @Nonnull
-    public static byte[] writePublicKey(@Nonnull final DSAPublicKey pubKey) {
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writePublicKey(pubKey);
-            return out.toByteArray();
-        }
     }
 
     // Message IO.

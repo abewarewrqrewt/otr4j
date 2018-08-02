@@ -2,6 +2,7 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage;
 import net.java.otr4j.io.OtrEncodables;
+import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -9,7 +10,6 @@ import java.math.BigInteger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.io.SerializationUtils.generatePhi;
-import static net.java.otr4j.io.SerializationUtils.writeMpi;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -61,8 +61,16 @@ public final class MysteriousT4 {
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] yEncoded = y.encode();
         final byte[] xEncoded = x.encode();
-        final byte[] bEncoded = writeMpi(b);
-        final byte[] aEncoded = writeMpi(a);
+        final byte[] bEncoded;
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writeBigInt(b);
+            bEncoded = out.toByteArray();
+        }
+        final byte[] aEncoded;
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writeBigInt(a);
+            aEncoded = out.toByteArray();
+        }
         final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
         return concatenate(new byte[][]{new byte[]{0x00}, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,

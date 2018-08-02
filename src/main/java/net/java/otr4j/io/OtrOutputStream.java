@@ -36,7 +36,7 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
-// TODO Reconcile two serialization mechanisms (OtrOutputStream and SerializationUtils)
+// FIXME evaluate a streaming construction such that you can serialize individual items on a single line.
 public final class OtrOutputStream implements Closeable {
 
     private final ByteArrayOutputStream out;

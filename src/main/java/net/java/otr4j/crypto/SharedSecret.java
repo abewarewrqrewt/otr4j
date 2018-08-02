@@ -7,14 +7,13 @@
 
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.io.OtrOutputStream;
+
+import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.logging.Logger;
-
-import javax.annotation.Nonnull;
-
-import net.java.otr4j.io.SerializationUtils;
 
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
@@ -46,7 +45,10 @@ public final class SharedSecret {
 
     SharedSecret(@Nonnull final byte[] secret) {
         final BigInteger s = new BigInteger(1, secret);
-        this.secbytes = SerializationUtils.writeMpi(s);
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writeBigInt(s);
+            this.secbytes = out.toByteArray();
+        }
         LOGGER.finest("Generated shared secret s.");
     }
 

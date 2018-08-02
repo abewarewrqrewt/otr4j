@@ -11,7 +11,7 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
-import net.java.otr4j.io.SerializationUtils;
+import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.UnsupportedTypeException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
@@ -136,8 +136,11 @@ final class StateAwaitingSig extends AbstractAuthState {
         // OTR: "Decrypt the encrypted signature, and verify the signature and the MACs."
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"
-            final byte[] xEncryptedBytes = SerializationUtils.writeData(message.xEncrypted);
-            final byte[] xEncryptedMAC = OtrCryptoEngine.sha256Hmac160(xEncryptedBytes, s.m2p());
+            final byte[] xEncryptedMAC;
+            try (OtrOutputStream out = new OtrOutputStream()) {
+                out.writeData(message.xEncrypted);
+                xEncryptedMAC = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2p());
+            }
             OtrCryptoEngine.checkEquals(xEncryptedMAC, message.xEncryptedMAC, "xEncryptedMAC failed verification.");
             // OTR: "Uses c' to decrypt AESc'(XA) to obtain XA = pubA, keyidA, sigA(MA)"
             final byte[] remoteXBytes = OtrCryptoEngine.aesDecrypt(s.cp(), null, message.xEncrypted);

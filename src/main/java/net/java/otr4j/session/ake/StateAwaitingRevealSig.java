@@ -11,7 +11,8 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
-import net.java.otr4j.io.SerializationUtils;
+import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.UnsupportedTypeException;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DHCommitMessage;
@@ -25,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
@@ -141,14 +141,18 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             final byte[] expectedRemotePublicKeyHash = OtrCryptoEngine.sha256Hash(remotePublicKeyBytes);
             OtrCryptoEngine.checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
             // OTR: "Verifies that Bob's gx is a legal value (2 <= gx <= modulus-2)"
-            final BigInteger remotePublicKeyMPI = SerializationUtils.readMpi(remotePublicKeyBytes);
-            remoteDHPublicKey = OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(remotePublicKeyMPI));
+            try (OtrInputStream in = new OtrInputStream(remotePublicKeyBytes)) {
+                remoteDHPublicKey = OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(in.readBigInt()));
+            }
             // OTR: "Compute the Diffie-Hellman shared secret s."
             // OTR: "Use s to compute an AES key c' and two MAC keys m1' and m2', as specified below."
             s = OtrCryptoEngine.generateSecret(this.keypair.getPrivate(), remoteDHPublicKey);
             // OTR: "Uses m2 to verify MACm2(AESc(XB))"
-            final byte[] remoteXEncryptedBytes = SerializationUtils.writeData(message.xEncrypted);
-            final byte[] expectedXEncryptedMAC = OtrCryptoEngine.sha256Hmac160(remoteXEncryptedBytes, s.m2());
+            final byte[] expectedXEncryptedMAC;
+            try (OtrOutputStream out = new OtrOutputStream()) {
+                out.writeData(message.xEncrypted);
+                expectedXEncryptedMAC = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2());
+            }
             OtrCryptoEngine.checkEquals(message.xEncryptedMAC, expectedXEncryptedMAC, "xEncryptedMAC failed validation.");
             // OTR: "Uses c to decrypt AESc(XB) to obtain XB = pubB, keyidB, sigB(MB)"
             final byte[] remoteMysteriousXBytes = OtrCryptoEngine.aesDecrypt(s.c(), null, message.xEncrypted);
@@ -187,9 +191,12 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."
         final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null, encode(mysteriousX));
         // OTR: "Encode this encrypted value as the DATA field."
-        final byte[] xEncryptedBytes = SerializationUtils.writeData(xEncrypted);
         // OTR: "This is the SHA256-HMAC-160 (that is, the first 160 bits of the SHA256-HMAC) of the encrypted signature field (including the four-byte length), using the key m2'."
-        final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedBytes, s.m2p());
+        final byte[] xEncryptedHash;
+        try (OtrOutputStream out = new OtrOutputStream()) {
+            out.writeData(xEncrypted);
+            xEncryptedHash = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2p());
+        }
         LOGGER.finest("Creating signature message for response.");
         // OTR: "Sends Bob AESc'(XA), MACm2'(AESc'(XA))"
         return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderInstanceTag().getValue(),
