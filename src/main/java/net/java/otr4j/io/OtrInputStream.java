@@ -15,8 +15,6 @@ import nl.dannyvanheumen.joldilocks.Point;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.PublicKey;
@@ -45,8 +43,7 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
  * OtrInputStream provides only for the primitive types to be read. Composite objects should be read through use of the
  * primitive read methods and implemented outside of this class.
  */
-// FIXME consider removing Close method as we solely rely on byte-array as source.
-public final class OtrInputStream implements Closeable {
+public final class OtrInputStream {
 
     private static final byte[] ZERO_BYTES = new byte[0];
 
@@ -59,15 +56,6 @@ public final class OtrInputStream implements Closeable {
      */
     public OtrInputStream(@Nonnull final byte[] in) {
         this.in = new ByteArrayInputStream(in);
-    }
-
-    @Override
-    public void close() {
-        try {
-            this.in.close();
-        } catch (final IOException e) {
-            throw new IllegalStateException("ByteArrayInputStream should never generate an IOException on close.", e);
-        }
     }
 
     // FIXME write unit tests

@@ -45,20 +45,16 @@ public class IOTest {
 	public void testIOShort() throws Exception {
 		int source = 10;
 		final byte[] converted = new OtrOutputStream().writeShort(source).toByteArray();
-        try (OtrInputStream ois = new OtrInputStream(converted)) {
-            int result = ois.readShort();
-            assertEquals(source, result);
-        }
+        int result = new OtrInputStream(converted).readShort();
+        assertEquals(source, result);
 	}
 
 	@Test
 	public void testIOData() throws Exception {
 		byte[] source = new byte[] { 1, 1, 1, 1 };
         byte[] converted = new OtrOutputStream().writeData(source).toByteArray();
-        try (OtrInputStream ois = new OtrInputStream(converted)) {
-            byte[] result = ois.readData();
-            assertArrayEquals(source, result);
-        }
+        byte[] result = new OtrInputStream(converted).readData();
+        assertArrayEquals(source, result);
 	}
 
     @Test
@@ -66,10 +62,8 @@ public class IOTest {
         KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
         BigInteger source = ((DHPublicKey) pair.getPublic()).getY();
         byte[] converted = new OtrOutputStream().writeBigInt(source).toByteArray();
-        try (OtrInputStream ois = new OtrInputStream(converted)) {
-            BigInteger result = ois.readBigInt();
-            assertEquals(source, result);
-        }
+        BigInteger result = new OtrInputStream(converted).readBigInt();
+        assertEquals(source, result);
     }
 
 	@Test
@@ -77,10 +71,8 @@ public class IOTest {
         KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
         DHPublicKey source = (DHPublicKey) pair.getPublic();
         byte[] converted = new OtrOutputStream().writeDHPublicKey(source).toByteArray();
-        try (OtrInputStream ois = new OtrInputStream(converted)) {
-            DHPublicKey result = ois.readDHPublicKey();
-            assertEquals(source.getY(), result.getY());
-        }
+        DHPublicKey result = new OtrInputStream(converted).readDHPublicKey();
+        assertEquals(source.getY(), result.getY());
 	}
 
 	@Test

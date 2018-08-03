@@ -87,8 +87,9 @@ public final class SM {
     // TODO rename method from 'unserialize' to 'deserialize'.
     @Nonnull
     static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException {
-        try (OtrInputStream ois = new OtrInputStream(bytes)) {
-            final int len = ois.readInt();
+        try {
+            final OtrInputStream in = new OtrInputStream(bytes);
+            final int len = in.readInt();
             if (len < 0) {
                 // Length is read into (signed) int. Bit shifting is used to
                 // compose the final int value, but bit shifting does not
@@ -108,7 +109,7 @@ public final class SM {
             }
             final BigInteger[] ints = new BigInteger[len];
             for (int i = 0; i < len; i++) {
-                ints[i] = ois.readBigInt();
+                ints[i] = in.readBigInt();
             }
             return ints;
         } catch (final IOException ex) {

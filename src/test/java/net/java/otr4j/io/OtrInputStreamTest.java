@@ -271,10 +271,7 @@ public class OtrInputStreamTest {
     @Test
     public void testReadPoint() throws OtrCryptoException, ProtocolException {
         final byte[] data = new OtrOutputStream().writePoint(keypair.getPublicKey()).toByteArray();
-        final Point result;
-        try (final OtrInputStream in = new OtrInputStream(data)) {
-            result = in.readPoint();
-        }
+        final Point result = new OtrInputStream(data).readPoint();
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());
@@ -284,10 +281,7 @@ public class OtrInputStreamTest {
     public void testReadPointWithExcessData() throws OtrCryptoException, ProtocolException {
         final byte[] data = new OtrOutputStream().writePoint(keypair.getPublicKey()).writeByte(RANDOM.nextInt())
             .toByteArray();
-        final Point result;
-        try (final OtrInputStream in = new OtrInputStream(data)) {
-            result = in.readPoint();
-        }
+        final Point result = new OtrInputStream(data).readPoint();
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());
@@ -296,9 +290,7 @@ public class OtrInputStreamTest {
     @Test(expected = ProtocolException.class)
     public void testReadPointShifted() throws OtrCryptoException, ProtocolException {
         final byte[] data = new OtrOutputStream().writeByte(0xff).writePoint(keypair.getPublicKey()).toByteArray();
-        try (OtrInputStream in = new OtrInputStream(data)) {
-            in.readPoint();
-        }
+        new OtrInputStream(data).readPoint();
     }
 
     @Test(expected = ProtocolException.class)
@@ -306,10 +298,7 @@ public class OtrInputStreamTest {
         final byte[] data = new byte[60];
         final byte[] full = new OtrOutputStream().writePoint(keypair.getPublicKey()).toByteArray();
         System.arraycopy(full, 0, data, 0, full.length-1);
-        final Point result;
-        try (final OtrInputStream in = new OtrInputStream(data)) {
-            result = in.readPoint();
-        }
+        final Point result = new OtrInputStream(data).readPoint();
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());
@@ -320,18 +309,13 @@ public class OtrInputStreamTest {
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
         final byte[] data = new byte[113];
         System.arraycopy(sig, 0, data, 0, data.length);
-        try (final OtrInputStream in = new OtrInputStream(data)) {
-            in.readEdDSASignature();
-        }
+        new OtrInputStream(data).readEdDSASignature();
     }
 
     @Test
     public void testReadEdDSASignature() throws ProtocolException {
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
-        final byte[] result;
-        try (final OtrInputStream in = new OtrInputStream(sig)) {
-            result = in.readEdDSASignature();
-        }
+        final byte[] result = new OtrInputStream(sig).readEdDSASignature();
         assertArrayEquals(sig, result);
     }
 
@@ -341,10 +325,7 @@ public class OtrInputStreamTest {
         RANDOM.nextBytes(data);
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
         System.arraycopy(sig, 0, data, 0, sig.length);
-        final byte[] result;
-        try (final OtrInputStream in = new OtrInputStream(data)) {
-            result = in.readEdDSASignature();
-        }
+        final byte[] result = new OtrInputStream(data).readEdDSASignature();
         assertArrayEquals(sig, result);
     }
 
@@ -354,10 +335,7 @@ public class OtrInputStreamTest {
         data[0] = (byte) 0xff;
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
         System.arraycopy(sig, 0, data, 1, sig.length);
-        final byte[] result;
-        try (final OtrInputStream in = new OtrInputStream(data)) {
-            result = in.readEdDSASignature();
-        }
+        final byte[] result = new OtrInputStream(data).readEdDSASignature();
         assertFalse(Arrays.equals(sig, result));
     }
 }

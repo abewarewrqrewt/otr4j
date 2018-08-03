@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
@@ -141,9 +142,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             final byte[] expectedRemotePublicKeyHash = OtrCryptoEngine.sha256Hash(remotePublicKeyBytes);
             OtrCryptoEngine.checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
             // OTR: "Verifies that Bob's gx is a legal value (2 <= gx <= modulus-2)"
-            try (OtrInputStream in = new OtrInputStream(remotePublicKeyBytes)) {
-                remoteDHPublicKey = OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(in.readBigInt()));
-            }
+            final BigInteger dhPublicKeyMpi = new OtrInputStream(remotePublicKeyBytes).readBigInt();
+            remoteDHPublicKey = OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(dhPublicKeyMpi));
             // OTR: "Compute the Diffie-Hellman shared secret s."
             // OTR: "Use s to compute an AES key c' and two MAC keys m1' and m2', as specified below."
             s = OtrCryptoEngine.generateSecret(this.keypair.getPrivate(), remoteDHPublicKey);

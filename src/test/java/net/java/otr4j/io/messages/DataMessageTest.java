@@ -50,7 +50,7 @@ public class DataMessageTest {
 
     @Test
     public void testWhackUnicodeWithNull() throws OtrException {
-        String msg = null;
+        String msg;
         DummyClient[] convo = DummyClient.getConversation();
         DummyClient alice = convo[0];
         DummyClient bob = convo[1];
@@ -83,7 +83,7 @@ public class DataMessageTest {
 
     @Test
     public void testWithRandomlyGeneratedUnicode() throws OtrException {
-        String msg = null;
+        String msg;
         String sent;
         String received;
         DummyClient[] convo = DummyClient.getConversation();

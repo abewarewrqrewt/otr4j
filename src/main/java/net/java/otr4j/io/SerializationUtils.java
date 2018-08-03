@@ -204,9 +204,7 @@ public final class SerializationUtils {
                  * So in order to decode the content string we have to get rid of the '.' first.
                  */
                 final byte[] contentBytes = decode(content.substring(0, content.length() - 1).getBytes(US_ASCII));
-                try (OtrInputStream otr = new OtrInputStream(contentBytes)) {
-                    return read(otr);
-                }
+                return read(new OtrInputStream(contentBytes));
             }
         }
 
@@ -351,13 +349,9 @@ public final class SerializationUtils {
         if (tlvIndex < messageBytes.length) {
             final byte[] tlvsb = new byte[messageBytes.length - tlvIndex];
             System.arraycopy(messageBytes, tlvIndex, tlvsb, 0, tlvsb.length);
-
-            try (OtrInputStream eois = new OtrInputStream(tlvsb)) {
-                while (eois.available() > 0) {
-                    final int type = eois.readShort();
-                    final byte[] tdata = eois.readTlvData();
-                    tlvs.add(new TLV(type, tdata));
-                }
+            final OtrInputStream in = new OtrInputStream(tlvsb);
+            while (in.available() > 0) {
+                tlvs.add(new TLV(in.readShort(), in.readTlvData()));
             }
         }
 

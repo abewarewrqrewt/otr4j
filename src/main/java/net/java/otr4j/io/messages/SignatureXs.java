@@ -27,11 +27,10 @@ public final class SignatureXs {
      */
     @Nonnull
     public static SignatureX readSignatureX(@Nonnull final byte[] bytes) throws ProtocolException, OtrCryptoException, UnsupportedTypeException {
-        try (OtrInputStream in = new OtrInputStream(bytes)) {
-            final DSAPublicKey pubKey = in.readPublicKey();
-            final int dhKeyID = in.readInt();
-            final byte[] sig = in.readSignature(pubKey);
-            return new SignatureX(pubKey, dhKeyID, sig);
-        }
+        final OtrInputStream in = new OtrInputStream(bytes);
+        final DSAPublicKey pubKey = in.readPublicKey();
+        final int dhKeyID = in.readInt();
+        final byte[] sig = in.readSignature(pubKey);
+        return new SignatureX(pubKey, dhKeyID, sig);
     }
 }

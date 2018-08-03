@@ -81,8 +81,8 @@ public class EncodedMessageParserTest {
             // Try every possible partial message by starting with 0 length message up to the full-length message and
             // try every substring in between.
             final byte[] partial = copyOf(message, i);
-            try (final OtrInputStream partialStream = new OtrInputStream(partial)) {
-                read(partialStream);
+            try {
+                read(new OtrInputStream(partial));
                 fail("Expected exception due to parsing an incomplete message.");
             } catch (final ProtocolException | OtrCryptoException expected) {
                 // Expected behavior for partial messages being parsed.
