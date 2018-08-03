@@ -136,11 +136,8 @@ final class StateAwaitingSig extends AbstractAuthState {
         // OTR: "Decrypt the encrypted signature, and verify the signature and the MACs."
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"
-            final byte[] xEncryptedMAC;
-            try (OtrOutputStream out = new OtrOutputStream()) {
-                out.writeData(message.xEncrypted);
-                xEncryptedMAC = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2p());
-            }
+            final OtrOutputStream out = new OtrOutputStream().writeData(message.xEncrypted);
+            final byte[] xEncryptedMAC = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2p());
             OtrCryptoEngine.checkEquals(xEncryptedMAC, message.xEncryptedMAC, "xEncryptedMAC failed verification.");
             // OTR: "Uses c' to decrypt AESc'(XA) to obtain XA = pubA, keyidA, sigA(MA)"
             final byte[] remoteXBytes = OtrCryptoEngine.aesDecrypt(s.cp(), null, message.xEncrypted);

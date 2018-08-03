@@ -45,10 +45,7 @@ public final class SharedSecret {
 
     SharedSecret(@Nonnull final byte[] secret) {
         final BigInteger s = new BigInteger(1, secret);
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(s);
-            this.secbytes = out.toByteArray();
-        }
+        this.secbytes = new OtrOutputStream().writeBigInt(s).toByteArray();
         LOGGER.finest("Generated shared secret s.");
     }
 

@@ -270,13 +270,11 @@ public class OtrInputStreamTest {
 
     @Test
     public void testReadPoint() throws OtrCryptoException, ProtocolException {
-        final byte[] data;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writePoint(keypair.getPublicKey());
-            data = out.toByteArray();
+        final byte[] data = new OtrOutputStream().writePoint(keypair.getPublicKey()).toByteArray();
+        final Point result;
+        try (final OtrInputStream in = new OtrInputStream(data)) {
+            result = in.readPoint();
         }
-        final OtrInputStream in = new OtrInputStream(data);
-        final Point result = in.readPoint();
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());
@@ -284,14 +282,12 @@ public class OtrInputStreamTest {
 
     @Test
     public void testReadPointWithExcessData() throws OtrCryptoException, ProtocolException {
-        final byte[] data;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writePoint(keypair.getPublicKey());
-            out.writeByte(RANDOM.nextInt());
-            data = out.toByteArray();
+        final byte[] data = new OtrOutputStream().writePoint(keypair.getPublicKey()).writeByte(RANDOM.nextInt())
+            .toByteArray();
+        final Point result;
+        try (final OtrInputStream in = new OtrInputStream(data)) {
+            result = in.readPoint();
         }
-        final OtrInputStream in = new OtrInputStream(data);
-        final Point result = in.readPoint();
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());
@@ -299,25 +295,21 @@ public class OtrInputStreamTest {
 
     @Test(expected = ProtocolException.class)
     public void testReadPointShifted() throws OtrCryptoException, ProtocolException {
-        final byte[] data;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeByte(0xff);
-            out.writePoint(keypair.getPublicKey());
-            data = out.toByteArray();
+        final byte[] data = new OtrOutputStream().writeByte(0xff).writePoint(keypair.getPublicKey()).toByteArray();
+        try (OtrInputStream in = new OtrInputStream(data)) {
+            in.readPoint();
         }
-        new OtrInputStream(data).readPoint();
     }
 
     @Test(expected = ProtocolException.class)
     public void testReadPointPartial() throws OtrCryptoException, ProtocolException {
         final byte[] data = new byte[60];
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writePoint(keypair.getPublicKey());
-            final byte[] full = out.toByteArray();
-            System.arraycopy(full, 0, data, 0, full.length-1);
+        final byte[] full = new OtrOutputStream().writePoint(keypair.getPublicKey()).toByteArray();
+        System.arraycopy(full, 0, data, 0, full.length-1);
+        final Point result;
+        try (final OtrInputStream in = new OtrInputStream(data)) {
+            result = in.readPoint();
         }
-        final OtrInputStream in = new OtrInputStream(data);
-        final Point result = in.readPoint();
         assertNotNull(result);
         assertEquals(this.keypair.getPublicKey().x(), result.x());
         assertEquals(this.keypair.getPublicKey().y(), result.y());

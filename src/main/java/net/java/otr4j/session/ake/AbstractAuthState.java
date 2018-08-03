@@ -67,11 +67,7 @@ abstract class AbstractAuthState implements AuthState {
             throw new IllegalStateException("Failed to generate valid local DH keypair.", ex);
         }
         // OTR: "Serialize gx as an MPI, gxmpi. [gxmpi will probably be 196 bytes long, starting with "\x00\x00\x00\xc0".]"
-        final byte[] publicKeyBytes;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(localDHPublicKey.getY());
-            publicKeyBytes = out.toByteArray();
-        }
+        final byte[] publicKeyBytes = new OtrOutputStream().writeBigInt(localDHPublicKey.getY()).toByteArray();
         // OTR: "This is the SHA256 hash of gxmpi."
         final byte[] publicKeyHash = OtrCryptoEngine.sha256Hash(publicKeyBytes);
         // OTR: "Encrypt gxmpi using AES128-CTR, with key r and initial counter value 0. The result will be the same length as gxmpi."

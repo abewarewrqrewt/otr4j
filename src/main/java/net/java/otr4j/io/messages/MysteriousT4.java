@@ -62,16 +62,8 @@ public final class MysteriousT4 {
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] yEncoded = y.encode();
         final byte[] xEncoded = x.encode();
-        final byte[] bEncoded;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(b);
-            bEncoded = out.toByteArray();
-        }
-        final byte[] aEncoded;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(a);
-            aEncoded = out.toByteArray();
-        }
+        final byte[] bEncoded = new OtrOutputStream().writeBigInt(b).toByteArray();
+        final byte[] aEncoded = new OtrOutputStream().writeBigInt(a).toByteArray();
         // FIXME double-check if phi is now a mix of phi and phi' values.
         final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
@@ -97,13 +89,7 @@ public final class MysteriousT4 {
         final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeInt(senderInstanceTag);
-            out.writeInt(receiverInstanceTag);
-            out.writeData(queryTagBytes);
-            out.writeData(senderIDBytes);
-            out.writeData(receiverIDBytes);
-            return out.toByteArray();
-        }
+        return new OtrOutputStream().writeInt(senderInstanceTag).writeInt(receiverInstanceTag).writeData(queryTagBytes)
+            .writeData(senderIDBytes).writeData(receiverIDBytes).toByteArray();
     }
 }

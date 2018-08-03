@@ -7,13 +7,12 @@ import net.java.otr4j.io.messages.RevealSignatureMessage;
 import org.junit.Test;
 
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class IOTest {
 
@@ -45,90 +44,53 @@ public class IOTest {
 	@Test
 	public void testIOShort() throws Exception {
 		int source = 10;
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try (OtrOutputStream oos = new OtrOutputStream(out)) {
-			oos.writeShort(source);
-
-			byte[] converted = out.toByteArray();
-
-			try (OtrInputStream ois = new OtrInputStream(converted)) {
-				int result = ois.readShort();
-
-				assertEquals(source, result);
-			}
-		}
+		final byte[] converted = new OtrOutputStream().writeShort(source).toByteArray();
+        try (OtrInputStream ois = new OtrInputStream(converted)) {
+            int result = ois.readShort();
+            assertEquals(source, result);
+        }
 	}
 
 	@Test
 	public void testIOData() throws Exception {
 		byte[] source = new byte[] { 1, 1, 1, 1 };
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try (OtrOutputStream oos = new OtrOutputStream(out)) {
-			oos.writeData(source);
-
-			byte[] converted = out.toByteArray();
-
-			try (OtrInputStream ois = new OtrInputStream(converted)) {
-				byte[] result = ois.readData();
-
-				assertTrue(java.util.Arrays.equals(source, result));
-			}
-		}
+        byte[] converted = new OtrOutputStream().writeData(source).toByteArray();
+        try (OtrInputStream ois = new OtrInputStream(converted)) {
+            byte[] result = ois.readData();
+            assertArrayEquals(source, result);
+        }
 	}
 
-	@Test
-	public void testIOBigInt() throws Exception {
-
-		KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
-		BigInteger source = ((DHPublicKey) pair.getPublic()).getY();
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try (OtrOutputStream oos = new OtrOutputStream(out)) {
-			oos.writeBigInt(source);
-
-			byte[] converted = out.toByteArray();
-
-			try (OtrInputStream ois = new OtrInputStream(converted)) {
-				BigInteger result = ois.readBigInt();
-
-				assertTrue(source.compareTo(result) == 0);
-			}
-		}
-	}
+    @Test
+    public void testIOBigInt() throws Exception {
+        KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
+        BigInteger source = ((DHPublicKey) pair.getPublic()).getY();
+        byte[] converted = new OtrOutputStream().writeBigInt(source).toByteArray();
+        try (OtrInputStream ois = new OtrInputStream(converted)) {
+            BigInteger result = ois.readBigInt();
+            assertEquals(source, result);
+        }
+    }
 
 	@Test
 	public void testIODHPublicKey() throws Exception {
-		KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
-
-		DHPublicKey source = (DHPublicKey) pair.getPublic();
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try (OtrOutputStream oos = new OtrOutputStream(out)) {
-			oos.writeDHPublicKey(source);
-
-			byte[] converted = out.toByteArray();
-
-			try (OtrInputStream ois = new OtrInputStream(converted)) {
-				DHPublicKey result = ois.readDHPublicKey();
-
-				assertTrue(source.getY().compareTo(result.getY()) == 0);
-			}
-		}
+        KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
+        DHPublicKey source = (DHPublicKey) pair.getPublic();
+        byte[] converted = new OtrOutputStream().writeDHPublicKey(source).toByteArray();
+        try (OtrInputStream ois = new OtrInputStream(converted)) {
+            DHPublicKey result = ois.readDHPublicKey();
+            assertEquals(source.getY(), result.getY());
+        }
 	}
 
 	@Test
 	public void testIODHKeyMessage() throws Exception {
 		KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
-
 		DHKeyMessage source = new DHKeyMessage(OTRv.THREE, (DHPublicKey) pair.getPublic(), 0, 0);
-
 		String base64 = SerializationUtils.toString(source);
 		DHKeyMessage result = (DHKeyMessage) SerializationUtils
 				.toMessage(base64);
-
-		assertTrue(source.equals(result));
+        assertEquals(source, result);
 	}
 
 	@Test
@@ -138,16 +100,12 @@ public class IOTest {
 		byte[] xEncryptedMAC = new byte[EncodingConstants.TYPE_LEN_MAC];
 		for (int i = 0; i < xEncryptedMAC.length; i++)
 			xEncryptedMAC[i] = (byte) i;
-
 		byte[] revealedKey = new byte[] { 1, 2, 3, 4 };
-
 		RevealSignatureMessage source = new RevealSignatureMessage(
 				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, 0, 0);
-
 		String base64 = SerializationUtils.toString(source);
 		RevealSignatureMessage result = (RevealSignatureMessage) SerializationUtils
 				.toMessage(base64);
-
-		assertTrue(source.equals(result));
+        assertEquals(source, result);
 	}
 }

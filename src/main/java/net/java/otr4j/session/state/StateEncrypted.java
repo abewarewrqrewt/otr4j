@@ -263,12 +263,11 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
             // Append tlvs
             if (!tlvs.isEmpty()) {
+                // TODO should we only write '\0' in case TLVs exist?
                 out.write((byte) 0x00);
-                try (OtrOutputStream eoos = new OtrOutputStream(out)) {
-                    for (final TLV tlv : tlvs) {
-                        eoos.writeShort(tlv.getType());
-                        eoos.writeTlvData(tlv.getValue());
-                    }
+                final OtrOutputStream eoos = new OtrOutputStream(out);
+                for (final TLV tlv : tlvs) {
+                    eoos.writeShort(tlv.getType()).writeTlvData(tlv.getValue());
                 }
             }
 

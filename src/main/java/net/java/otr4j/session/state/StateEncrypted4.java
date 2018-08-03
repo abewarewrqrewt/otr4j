@@ -116,26 +116,24 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             messageId = keys.getMessageId();
             result = keys.encrypt(msgBytes);
             // TODO consider moving to separate method for readability
-            final byte[] messageMAC;
-            try (OtrOutputStream out = new OtrOutputStream()) {
-                out.writeShort(VERSION);
-                out.writeByte(DATA_MESSAGE_TYPE);
-                out.writeInt(context.getSenderInstanceTag().getValue());
-                out.writeInt(context.getReceiverInstanceTag().getValue());
-                out.writeByte(0x00);
-                out.writeInt(this.ratchet.getPn());
-                out.writeInt(ratchetId);
-                out.writeInt(messageId);
-                out.writePoint(this.ratchet.getECDHPublicKey());
-                if (rotation == null || rotation.dhPublicKey == null) {
-                    out.writeData(new byte[0]);
-                } else {
-                    out.writeBigInt(rotation.dhPublicKey);
-                }
-                out.writeNonce(result.nonce);
-                out.writeData(result.ciphertext);
-                messageMAC = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
+            final OtrOutputStream out = new OtrOutputStream()
+                .writeShort(VERSION)
+                .writeByte(DATA_MESSAGE_TYPE)
+                .writeInt(context.getSenderInstanceTag().getValue())
+                .writeInt(context.getReceiverInstanceTag().getValue())
+                .writeByte(0x00)
+                .writeInt(this.ratchet.getPn())
+                .writeInt(ratchetId)
+                .writeInt(messageId)
+                .writePoint(this.ratchet.getECDHPublicKey());
+            if (rotation == null || rotation.dhPublicKey == null) {
+                out.writeData(new byte[0]);
+            } else {
+                out.writeBigInt(rotation.dhPublicKey);
             }
+            out.writeNonce(result.nonce)
+                .writeData(result.ciphertext);
+            final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             authenticator = keys.authenticate(messageMAC);
         }
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
@@ -176,11 +174,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // message key and the next receiving chain key. The message is then verified and decrypted.
         final byte[] dmc;
         try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
-            final byte[] digest;
-            try (OtrOutputStream out = new OtrOutputStream()) {
-                message.writeAuthenticatedMessageDigest(out);
-                digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
-            }
+            final OtrOutputStream out = new OtrOutputStream();
+            message.writeAuthenticatedMessageDigest(out);
+            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             keys.verify(digest, message.getAuthenticator());
             dmc = keys.decrypt(message.getCiphertext(), message.getNonce());
         } catch (final VerificationException e) {

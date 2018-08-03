@@ -87,11 +87,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         // to your correspondent, but that he either didn't receive it, or just didn't receive it yet, and has sent you one as well.
         // The symmetry will be broken by comparing the hashed gx you sent in your D-H Commit Message with the one you received,
         // considered as 32-byte unsigned big-endian values."
-        final byte[] publicKeyBytes;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(((DHPublicKey) keypair.getPublic()).getY());
-            publicKeyBytes = out.toByteArray();
-        }
+        final byte[] publicKeyBytes = new OtrOutputStream().writeBigInt(((DHPublicKey) keypair.getPublic()).getY())
+            .toByteArray();
         final byte[] publicKeyHash = OtrCryptoEngine.sha256Hash(publicKeyBytes);
         final BigInteger localKeyHashBigInt = new BigInteger(1, publicKeyHash);
         final BigInteger remoteKeyHashBigInt = new BigInteger(1, message.dhPublicKeyHash);
@@ -138,11 +135,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         // OTR: "Encrypt XB using AES128-CTR with key c and initial counter value 0."
         final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.c(), null, encode(mysteriousX));
         // OTR: "This is the SHA256-HMAC-160 (that is, the first 160 bits of the SHA256-HMAC) of the encrypted signature field (including the four-byte length), using the key m2."
-        final byte[] xEncryptedHash;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeData(xEncrypted);
-            xEncryptedHash = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2());
-        }
+        final OtrOutputStream xEncryptedEncoded = new OtrOutputStream().writeData(xEncrypted);
+        final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
         // OTR: "Sends Alice r, AESc(XB), MACm2(AESc(XB))"
         final RevealSignatureMessage revealSigMessage = new RevealSignatureMessage(
                 this.version, xEncrypted, xEncryptedHash, this.r,

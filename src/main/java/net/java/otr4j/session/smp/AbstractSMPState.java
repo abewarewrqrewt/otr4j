@@ -202,7 +202,7 @@ abstract class AbstractSMPState {
     final BigInteger[] proofKnowLog(@Nonnull final BigInteger x, final int version) {
         final BigInteger r = randomExponent();
         BigInteger temp = G1.modPow(r, OtrCryptoEngine.MODULUS);
-        final BigInteger c = SM.hash(version, temp, null);
+        final BigInteger c = SM.hash(version, temp);
         temp = x.multiply(c).mod(ORDER_S);
         final BigInteger d = r.subtract(temp).mod(ORDER_S);
         return new BigInteger[] {c, d};
@@ -223,7 +223,7 @@ abstract class AbstractSMPState {
         final BigInteger gd = G1.modPow(d, OtrCryptoEngine.MODULUS);
         final BigInteger xc = x.modPow(c, OtrCryptoEngine.MODULUS);
         final BigInteger gdxc = gd.multiply(xc).mod(OtrCryptoEngine.MODULUS);
-        final BigInteger hgdxc = SM.hash(version, gdxc, null);
+        final BigInteger hgdxc = SM.hash(version, gdxc);
 
         if (hgdxc.compareTo(c) != 0) {
             throw new SMException("Proof checking failed");

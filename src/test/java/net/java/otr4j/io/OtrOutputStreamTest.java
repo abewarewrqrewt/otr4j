@@ -35,70 +35,47 @@ public class OtrOutputStreamTest {
     }
 
     @Test
-    public void testCloseStream() {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(BigInteger.ONE);
-        }
-    }
-
-    @Test
     public void testProduceEmptyResult() {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            assertArrayEquals(new byte[0], out.toByteArray());
-        }
+        assertArrayEquals(new byte[0], new OtrOutputStream().toByteArray());
     }
 
     @Test
     public void testProduceDataResult() {
         final byte[] data = new byte[20];
         RANDOM.nextBytes(data);
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeData(data);
-            assertArrayEquals(concatenate(new byte[] {0, 0, 0, 20}, data), out.toByteArray());
-        }
+        assertArrayEquals(concatenate(new byte[]{0, 0, 0, 20}, data),
+            new OtrOutputStream().writeData(data).toByteArray());
     }
 
     @Test
     public void testProduceBigIntResult() {
         final BigInteger value = new BigInteger("9876543211234567890");
         final byte[] expected = concatenate(new byte[] { 0, 0, 0, 8}, BigIntegers.asUnsignedByteArray(value));
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(value);
-            assertArrayEquals(expected, out.toByteArray());
-        }
+        assertArrayEquals(expected, new OtrOutputStream().writeBigInt(value).toByteArray());
     }
 
     @Test
     public void testProduceShortResult() {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeShort(0xffff);
-            assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff}, out.toByteArray());
-        }
+        assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff},
+            new OtrOutputStream().writeShort(0xffff).toByteArray());
     }
 
     @Test
     public void testProduceShortResultOverflowing() {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeShort(0x0001ffff);
-            assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff}, out.toByteArray());
-        }
+        assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff},
+            new OtrOutputStream().writeShort(0x0001ffff).toByteArray());
     }
 
     @Test
     public void testProduceIntResult() {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeInt(0xffffffff);
-            assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff}, out.toByteArray());
-        }
+        assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff},
+            new OtrOutputStream().writeInt(0xffffffff).toByteArray());
     }
 
     @Test
     public void testProduceByteResult() {
         final byte value = (byte) 0xf5;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeByte(value);
-            assertArrayEquals(new byte[] {value}, out.toByteArray());
-        }
+        assertArrayEquals(new byte[] {value}, new OtrOutputStream().writeByte(value).toByteArray());
     }
 
     @Test
@@ -113,33 +90,24 @@ public class OtrOutputStreamTest {
             (byte) ((value & 0xff0000L) >>> 16),
             (byte) ((value & 0xff00L) >>> 8),
             (byte) (value & 0xffL)};
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.writeLong(value);
-            assertArrayEquals(expected, out.toByteArray());
-        }
+        assertArrayEquals(expected, new OtrOutputStream().writeLong(value).toByteArray());
     }
 
     @Test(expected = NullPointerException.class)
     public void testWriteEncodableNull() {
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.write(null);
-        }
+        new OtrOutputStream().write(null);
     }
 
     @Test
     public void testWriteEncodable() {
         final byte[] data = "Hello world!".getBytes(UTF_8);
         final byte[] expected = concatenate(new byte[]{0, 0, 0, 0xc}, data);
-        final byte[] result;
-        try (final OtrOutputStream out = new OtrOutputStream()) {
-            out.write(new OtrEncodable() {
-                @Override
-                public void writeTo(@Nonnull final OtrOutputStream out) {
-                    out.writeData(data);
-                }
-            });
-            result = out.toByteArray();
-        }
+        final byte[] result = new OtrOutputStream().write(new OtrEncodable() {
+            @Override
+            public void writeTo(@Nonnull final OtrOutputStream out) {
+                out.writeData(data);
+            }
+        }).toByteArray();
         assertArrayEquals(expected, result);
     }
 }

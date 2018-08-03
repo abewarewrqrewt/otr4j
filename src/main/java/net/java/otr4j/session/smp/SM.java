@@ -24,10 +24,8 @@ package net.java.otr4j.session.smp;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.io.SerializationUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -60,39 +58,30 @@ public final class SM {
         this.state = Objects.requireNonNull(state);
     }
 
-    /**
-     * Hash one or two BigIntegers. To hash only one BigInteger, b may be set to
-     * NULL.
-     *
-     * @param version the prefix to use (byte)
-     * @param a The 1st BigInteger to hash.
-     * @param b The 2nd BigInteger to hash.
-     * @return the BigInteger for the resulting hash value.
-     */
     @Nonnull
-    static BigInteger hash(final int version, @Nonnull final BigInteger a,
-            @Nullable final BigInteger b) {
+    static BigInteger hash(final int version, @Nonnull final BigInteger a) {
         final MessageDigest sha256 = OtrCryptoEngine.createSHA256MessageDigest();
         sha256.update((byte) version);
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeBigInt(a);
-            if (b != null) {
-                out.writeBigInt(b);
-            }
-            sha256.update(out.toByteArray());
-        }
+        sha256.update(new OtrOutputStream().writeBigInt(a).toByteArray());
+        return new BigInteger(1, sha256.digest());
+    }
+
+    @Nonnull
+    static BigInteger hash(final int version, @Nonnull final BigInteger a, @Nonnull final BigInteger b) {
+        final MessageDigest sha256 = OtrCryptoEngine.createSHA256MessageDigest();
+        sha256.update((byte) version);
+        sha256.update(new OtrOutputStream().writeBigInt(a).writeBigInt(b).toByteArray());
         return new BigInteger(1, sha256.digest());
     }
 
     @Nonnull
     static byte[] serialize(@Nonnull final BigInteger[] ints) {
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeInt(ints.length);
-            for (final BigInteger i : ints) {
-                out.writeBigInt(i);
-            }
-            return out.toByteArray();
+        final OtrOutputStream serialization = new OtrOutputStream()
+            .writeInt(ints.length);
+        for (final BigInteger i : ints) {
+            serialization.writeBigInt(i);
         }
+        return serialization.toByteArray();
     }
 
     // TODO rename method from 'unserialize' to 'deserialize'.

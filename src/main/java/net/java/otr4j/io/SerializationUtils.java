@@ -134,10 +134,8 @@ public final class SerializationUtils {
             }
         } else if (m instanceof AbstractEncodedMessage) {
             writer.write(HEAD_ENCODED);
-            try (OtrOutputStream out = new OtrOutputStream()) {
-                out.write((AbstractEncodedMessage) m);
-                writer.write(toBase64String(out.toByteArray()));
-            }
+            final byte[] otrEncodedMessage = new OtrOutputStream().write((AbstractEncodedMessage) m).toByteArray();
+            writer.write(toBase64String(otrEncodedMessage));
             writer.write(".");
         } else {
             throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());
@@ -294,6 +292,7 @@ public final class SerializationUtils {
      * @param msg the plain text message being sent
      * @return byte[] the incoming message converted to OTR-safe bytes
      */
+    // TODO consider moving this method into OtrOutputStream, as this is basically requirements for correct OTR encoding plaintext message body
     @Nonnull
     public static byte[] convertTextToBytes(@Nonnull final String msg) {
         return msg.replace('\0', '?').getBytes(UTF_8);

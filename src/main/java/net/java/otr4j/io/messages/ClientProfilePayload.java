@@ -92,13 +92,11 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (dsaPublicKey != null) {
             fields.add(new DSAPublicKeyField(dsaPublicKey));
         }
-        final byte[] partialM;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            for (final Field field : fields) {
-                out.write(field);
-            }
-            partialM = out.toByteArray();
+        final OtrOutputStream out = new OtrOutputStream();
+        for (final Field field : fields) {
+            out.write(field);
         }
+        final byte[] partialM = out.toByteArray();
         final byte[] m;
         if (dsaPrivateKey == null) {
             m = partialM;
@@ -283,17 +281,15 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (!now.before(new Date(expirationDateFields.get(0).timestamp * 1000))) {
             throw new ValidationException("Client Profile has expired.");
         }
-        final byte[] partialM;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.write(instanceTagFields.get(0));
-            out.write(publicKeyFields.get(0));
-            out.write(versionsFields.get(0));
-            out.write(expirationDateFields.get(0));
-            if (dsaPublicKeyFields.size() == 1) {
-                out.write(dsaPublicKeyFields.get(0));
-            }
-            partialM = out.toByteArray();
+        final OtrOutputStream out = new OtrOutputStream()
+            .write(instanceTagFields.get(0))
+            .write(publicKeyFields.get(0))
+            .write(versionsFields.get(0))
+            .write(expirationDateFields.get(0));
+        if (dsaPublicKeyFields.size() == 1) {
+            out.write(dsaPublicKeyFields.get(0));
         }
+        final byte[] partialM = out.toByteArray();
         // FIXME verify that we only add the DSA long-term public key after successful verification of the transitional signature.
         final byte[] m;
         if (transitionalSignatureFields.size() > 1) {

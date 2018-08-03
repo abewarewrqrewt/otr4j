@@ -45,6 +45,7 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
  * OtrInputStream provides only for the primitive types to be read. Composite objects should be read through use of the
  * primitive read methods and implemented outside of this class.
  */
+// FIXME consider removing Close method as we solely rely on byte-array as source.
 public final class OtrInputStream implements Closeable {
 
     private static final byte[] ZERO_BYTES = new byte[0];

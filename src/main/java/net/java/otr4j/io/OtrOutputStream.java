@@ -13,8 +13,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
@@ -36,8 +34,8 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
-// FIXME evaluate a streaming construction such that you can serialize individual items on a single line.
-public final class OtrOutputStream implements Closeable {
+// TODO consider adding write-method for Iterable<OtrEncodable>
+public final class OtrOutputStream {
 
     private final ByteArrayOutputStream out;
 
@@ -49,102 +47,103 @@ public final class OtrOutputStream implements Closeable {
         this.out = requireNonNull(out);
     }
 
-    @Override
-    public void close() {
-        try {
-            this.out.close();
-        } catch (final IOException e) {
-            throw new IllegalStateException("ByteArrayOutputStream should never generate an IOException on close.", e);
-        }
-    }
-
     @Nonnull
     public byte[] toByteArray() {
         return this.out.toByteArray();
     }
 
-    public void write(@Nonnull final OtrEncodable encodable) {
+    public OtrOutputStream write(@Nonnull final OtrEncodable encodable) {
         encodable.writeTo(this);
+        return this;
     }
 
-    public void writeBigInt(@Nonnull final BigInteger bi) {
-        final byte[] b = asUnsignedByteArray(bi);
-        writeData(b);
+    public OtrOutputStream writeBigInt(@Nonnull final BigInteger bi) {
+        writeData(asUnsignedByteArray(bi));
+        return this;
     }
 
-    public void writeByte(final int b) {
+    public OtrOutputStream writeByte(final int b) {
         writeNumber(b, TYPE_LEN_BYTE);
+        return this;
     }
 
-    public void writeData(@Nonnull final byte[] b) {
+    public OtrOutputStream writeData(@Nonnull final byte[] b) {
         writeNumber(b.length, DATA_LEN);
         if (b.length > 0) {
             this.out.write(b, 0, b.length);
         }
+        return this;
     }
 
-    public void writeInt(final int i) {
+    public OtrOutputStream writeInt(final int i) {
         writeNumber(i, TYPE_LEN_INT);
-
+        return this;
     }
 
-    public void writeShort(final int s) {
+    public OtrOutputStream writeShort(final int s) {
         writeNumber(s, TYPE_LEN_SHORT);
+        return this;
     }
 
-    public void writeLong(final long value) {
+    public OtrOutputStream writeLong(final long value) {
         final byte[] b = new byte[TYPE_LEN_LONG];
         for (int i = 0; i < TYPE_LEN_LONG; i++) {
             final int offset = (b.length - 1 - i) * 8;
             b[i] = (byte) ((value >>> offset) & 0xFF);
         }
         this.out.write(b, 0, b.length);
+        return this;
     }
 
-    public void writeMac(@Nonnull final byte[] mac) {
+    public OtrOutputStream writeMac(@Nonnull final byte[] mac) {
         requireLengthExactly(TYPE_LEN_MAC, mac);
         this.out.write(mac, 0, mac.length);
+        return this;
     }
 
-    public void writeCtr(@Nonnull final byte[] ctr) {
+    public OtrOutputStream writeCtr(@Nonnull final byte[] ctr) {
         if (ctr.length < 1) {
-            return;
+            return this;
         }
         int i = 0;
         while (i < TYPE_LEN_CTR && i < ctr.length) {
             this.out.write(ctr[i]);
             i++;
         }
+        return this;
     }
 
-    public void writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) {
-        final byte[] b = asUnsignedByteArray(dhPublicKey.getY());
-        writeData(b);
+    public OtrOutputStream writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) {
+        writeData(asUnsignedByteArray(dhPublicKey.getY()));
+        return this;
     }
 
-    public void writePublicKey(@Nonnull final DSAPublicKey pubKey) {
+    public OtrOutputStream writePublicKey(@Nonnull final DSAPublicKey pubKey) {
         writeShort(PUBLIC_KEY_TYPE_DSA);
         final DSAParams dsaParams = pubKey.getParams();
         writeBigInt(dsaParams.getP());
         writeBigInt(dsaParams.getQ());
         writeBigInt(dsaParams.getG());
         writeBigInt(pubKey.getY());
+        return this;
     }
 
-    public void writeTlvData(@Nullable final byte[] b) {
+    public OtrOutputStream writeTlvData(@Nullable final byte[] b) {
         final int len = b == null ? 0 : b.length;
         writeNumber(len, TLV_LEN);
         if (len > 0) {
             this.out.write(b, 0, b.length);
         }
+        return this;
     }
 
     // TODO why pass on public key if you're not going to use it? Seems senseless. Simplify.
-    public void writeSignature(@Nonnull final byte[] signature, @Nonnull final PublicKey pubKey) {
+    public OtrOutputStream writeSignature(@Nonnull final byte[] signature, @Nonnull final PublicKey pubKey) {
         if (!pubKey.getAlgorithm().equals("DSA")) {
             throw new UnsupportedOperationException();
         }
         this.out.write(signature, 0, signature.length);
+        return this;
     }
 
     /**
@@ -153,9 +152,10 @@ public final class OtrOutputStream implements Closeable {
      * @param nonce The nonce.
      */
     // FIXME add unit tests.
-    public void writeNonce(@Nonnull final byte[] nonce) {
+    public OtrOutputStream writeNonce(@Nonnull final byte[] nonce) {
         requireLengthExactly(TYPE_LEN_NONCE, nonce);
         this.out.write(nonce, 0, nonce.length);
+        return this;
     }
 
     /**
@@ -164,9 +164,10 @@ public final class OtrOutputStream implements Closeable {
      * @param mac 64-byte MAC as used in OTRv4
      */
     // FIXME add unit tests.
-    public void writeMacOTR4(@Nonnull final byte[] mac) {
+    public OtrOutputStream writeMacOTR4(@Nonnull final byte[] mac) {
         requireLengthExactly(TYPE_LEN_MAC_OTR4, mac);
         this.out.write(mac, 0, mac.length);
+        return this;
     }
 
     /**
@@ -175,8 +176,9 @@ public final class OtrOutputStream implements Closeable {
      * @param p The Edwards point.
      */
     // FIXME add unit tests.
-    public void writePoint(@Nonnull final Point p) {
+    public OtrOutputStream writePoint(@Nonnull final Point p) {
         writeData(p.encode());
+        return this;
     }
 
     /**
@@ -185,9 +187,10 @@ public final class OtrOutputStream implements Closeable {
      * @param signature A signature consisting of exactly 114 bytes is expected.
      */
     // FIXME add unit tests.
-    public void writeEdDSASignature(@Nonnull final byte[] signature) {
+    public OtrOutputStream writeEdDSASignature(@Nonnull final byte[] signature) {
         requireLengthExactly(EDDSA_SIGNATURE_LENGTH_BYTES, signature);
         this.out.write(signature, 0, signature.length);
+        return this;
     }
 
     private void writeNumber(final int value, final int length) {

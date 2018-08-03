@@ -148,11 +148,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             // OTR: "Use s to compute an AES key c' and two MAC keys m1' and m2', as specified below."
             s = OtrCryptoEngine.generateSecret(this.keypair.getPrivate(), remoteDHPublicKey);
             // OTR: "Uses m2 to verify MACm2(AESc(XB))"
-            final byte[] expectedXEncryptedMAC;
-            try (OtrOutputStream out = new OtrOutputStream()) {
-                out.writeData(message.xEncrypted);
-                expectedXEncryptedMAC = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2());
-            }
+            final OtrOutputStream xEncryptedEncoded = new OtrOutputStream().writeData(message.xEncrypted);
+            final byte[] expectedXEncryptedMAC = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
             OtrCryptoEngine.checkEquals(message.xEncryptedMAC, expectedXEncryptedMAC, "xEncryptedMAC failed validation.");
             // OTR: "Uses c to decrypt AESc(XB) to obtain XB = pubB, keyidB, sigB(MB)"
             final byte[] remoteMysteriousXBytes = OtrCryptoEngine.aesDecrypt(s.c(), null, message.xEncrypted);
@@ -192,11 +189,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null, encode(mysteriousX));
         // OTR: "Encode this encrypted value as the DATA field."
         // OTR: "This is the SHA256-HMAC-160 (that is, the first 160 bits of the SHA256-HMAC) of the encrypted signature field (including the four-byte length), using the key m2'."
-        final byte[] xEncryptedHash;
-        try (OtrOutputStream out = new OtrOutputStream()) {
-            out.writeData(xEncrypted);
-            xEncryptedHash = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2p());
-        }
+        final OtrOutputStream xEncryptedEncoded = new OtrOutputStream().writeData(xEncrypted);
+        final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2p());
         LOGGER.finest("Creating signature message for response.");
         // OTR: "Sends Bob AESc'(XA), MACm2'(AESc'(XA))"
         return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderInstanceTag().getValue(),
