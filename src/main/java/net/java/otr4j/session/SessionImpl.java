@@ -588,6 +588,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
         final String reassembledText;
         try {
+            // FIXME consider returning null whenever ProtocolException occurs, simply discarding any fragment that is illegal
             reassembledText = assembler.accumulate(fragment);
             if (reassembledText == null) {
                 return null;
