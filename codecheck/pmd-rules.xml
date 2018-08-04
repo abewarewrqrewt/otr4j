@@ -22,6 +22,7 @@
     </rule>
     <rule ref="category/java/design.xml">
         <exclude name="LawOfDemeter"/>
+        <exclude name="ExcessiveParameterList"/>
     </rule>
     <rule ref="category/java/documentation.xml">
         <exclude name="CommentSize"/>
@@ -31,6 +32,8 @@
         <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="NullAssignment"/>
+        <!-- TODO may need to reconsider later. Currently gives too many results that are useless/false positives. -->
+        <exclude name="DataflowAnomalyAnalysis"/>
     </rule>
     <rule ref="category/java/multithreading.xml"/>
     <rule ref="category/java/performance.xml">
