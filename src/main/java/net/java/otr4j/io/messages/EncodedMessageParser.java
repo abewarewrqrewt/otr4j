@@ -47,6 +47,7 @@ public final class EncodedMessageParser {
      *                            example, a bad public key.)
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
+    // FIXME rename 'read' method to 'parse', clearer purpose.
     @Nonnull
     public static AbstractEncodedMessage read(@Nonnull final OtrInputStream input) throws OtrCryptoException,
         UnsupportedLengthException, ProtocolException {

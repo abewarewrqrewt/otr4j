@@ -22,7 +22,6 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ClientProfilePayload;
@@ -64,7 +63,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
@@ -73,8 +71,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
-import static net.java.otr4j.io.SerializationUtils.toMessage;
-import static net.java.otr4j.io.messages.EncodedMessageParser.read;
+import static net.java.otr4j.io.MessageParser.parse;
 
 /**
  * Implementation of the OTR session.
@@ -185,7 +182,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     private final InstanceTag receiverTag;
 
     /**
-     * Message assembler.
+     * OTR-encoded message-assembler.
      */
     private final OtrAssembler assembler;
 
@@ -298,7 +295,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 : Collections.<InstanceTag, SessionImpl>emptyMap();
         outgoingSession = this;
         // Initialize fragmented message support.
-        assembler = new OtrAssembler(this.senderTag);
+        assembler = new OtrAssembler();
         fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
     }
 
@@ -410,6 +407,11 @@ final class SessionImpl implements Session, Context, AuthContext {
     public String transformReceiving(@Nonnull String msgText) throws OtrException {
         logger.log(Level.FINEST, "Entering {0} session.", masterSession == this ? "master" : "slave");
 
+        // FIXME verify that it is okay to return with empty message early (should be so)
+        if (msgText.length() == 0) {
+            return msgText;
+        }
+
         // OTR: "They all assume that at least one of ALLOW_V1, ALLOW_V2 or
         // ALLOW_V3 is set; if not, then OTR is completely disabled, and no
         // special handling of messages should be done at all."
@@ -439,10 +441,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         final Message m;
         try {
-            m = toMessage(msgText);
-            if (m == null) {
-                return msgText;
-            }
+            m = parse(msgText);
         } catch (final ProtocolException e) {
             throw new OtrException("Invalid message.", e);
         }
@@ -461,19 +460,18 @@ final class SessionImpl implements Session, Context, AuthContext {
                     new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
                 return null;
             }
-            // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
-            final SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
+            SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
             if (slave == null) {
-                logger.log(Level.INFO, "Message fragment arrived for unknown instance tag. Ignoring message. (Sender-instance: {})",
-                    fragment.getSendertag());
-                return null;
+                // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
+//                logger.log(Level.INFO, "Message fragment arrived for unknown instance tag. Ignoring message. (Sender-instance: {})",
+//                    fragment.getSendertag());
+//                return null;
+                slave = new SessionImpl(this, this.sessionState.getSessionID(),
+                    this.host, this.senderTag, fragment.getSendertag(), this.secureRandom, this.authState);
+                slave.addOtrEngineListener(slaveSessionsListener);
+                this.slaveSessions.put(fragment.getSendertag(), slave);
             }
-            try {
-                return slave.handleFragment(fragment);
-            } catch (final ProtocolException e) {
-                // TODO should we handle bad messages silently or return OtrException?
-                throw new OtrException("Failed to process fragment or joined message.", e);
-            }
+            return slave.handleFragment(fragment);
         } else if (masterSession == this && m instanceof AbstractEncodedMessage
                 && (((AbstractEncodedMessage) m).protocolVersion == OTRv.THREE
                     || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
@@ -557,12 +555,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         logger.log(Level.FINE, "Received message with type {0}", m.getClass());
         if (m instanceof Fragment) {
-            try {
-                return handleFragment((Fragment) m);
-            } catch (final ProtocolException e) {
-                // TODO should we handle bad messages silently or return OtrException?
-                throw new OtrException("Failed to process fragment or joined message.", e);
-            }
+            return handleFragment((Fragment) m);
         } else if (m instanceof AbstractEncodedMessage) {
             return handleEncodedMessage((AbstractEncodedMessage) m);
         } else if (m instanceof ErrorMessage) {
@@ -589,18 +582,31 @@ final class SessionImpl implements Session, Context, AuthContext {
      * null in case fragment is not the last fragment and processing is delayed until remaining fragments are received.
      */
     @Nullable
-    private String handleFragment(@Nonnull final Fragment fragment) throws OtrException, ProtocolException {
+    private String handleFragment(@Nonnull final Fragment fragment) throws OtrException {
         assert (this.masterSession == this && fragment.getVersion() <= OTRv.TWO)
             || (this.masterSession != this && fragment.getVersion() > OTRv.TWO)
             : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
-        // FIXME implement handling of fragment content and assembling (move OutOfOrderAssembler)
-        final String assembledMessageContent = new OutOfOrderAssembler().accumulate(fragment);
-        if (assembledMessageContent == null) {
-            return null;
+        final String reassembledText;
+        try {
+            reassembledText = assembler.accumulate(fragment);
+            if (reassembledText == null) {
+                return null;
+            }
+        } catch (final ProtocolException e) {
+            throw new OtrException("Protocol violation encountered while processing fragment.", e);
         }
-        final AbstractEncodedMessage encoded = read(new OtrInputStream(assembledMessageContent.getBytes(US_ASCII)));
-        // FIXME should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
-        return handleEncodedMessage(encoded);
+        final Message encoded;
+        try {
+            encoded = parse(reassembledText);
+        } catch (final ProtocolException e) {
+            throw new OtrException("Protocol violation encountered while processing reassembled OTR-encoded message.", e);
+        }
+        // FIXME ensure that we verify the encoded message for appropriate sender and receiver tags match. (Fragment may contain different data.)
+        // TODO should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
+        if (encoded instanceof AbstractEncodedMessage) {
+            return handleEncodedMessage((AbstractEncodedMessage) encoded);
+        }
+        throw new OtrException("Only OTR-encoded message is a valid from reconstructed message fragments.");
     }
 
     /**

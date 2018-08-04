@@ -6,193 +6,174 @@
  */
 package net.java.otr4j.session;
 
-import java.math.BigInteger;
-import java.net.ProtocolException;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.io.messages.Fragment;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.net.ProtocolException;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import net.java.otr4j.api.InstanceTag;
+import static net.java.otr4j.util.Arrays.containsEmpty;
+import static net.java.otr4j.util.Strings.join;
 
 /**
  * Support for re-assembling fragmented OTR-encoded messages.
  *
  * @author Felix Eckhofer
  */
-// FIXME add support for assembling the OTRv4 fragmentation format.
 // TODO trace control flow to confirm that we can drop the sender tag from the Assember.
 final class OtrAssembler {
 
-    private static final int MAX_FRAGMENTS = 65535;
+    private final InOrderAssembler inOrder;
+    private final OutOfOrderAssembler outOfOrder;
 
-    private static final String HEAD_FRAGMENT_V2 = "?OTR,";
-    private static final String HEAD_FRAGMENT_V3 = "?OTR|";
+    OtrAssembler() {
+        this.inOrder = new InOrderAssembler();
+        this.outOfOrder = new OutOfOrderAssembler();
+    }
 
-    /**
-     * Accumulated fragment thus far.
-     */
-    private final StringBuilder fragment = new StringBuilder();
-
-    /**
-     * Number of last fragment received.
-     * This variable must be able to store an unsigned short value.
-     */
-    private int fragmentCur = 0;
-
-    /**
-     * Total number of fragments in message.
-     * This variable must be able to store an unsigned short value.
-     */
-    private int fragmentMax = 0;
-
-    /**
-     * Relevant instance tag.
-     * OTRv3 fragments with a different instance tag are discarded.
-     */
-    private final InstanceTag ownInstance;
-
-    OtrAssembler(@Nonnull final InstanceTag ownInstance) {
-        this.ownInstance = ownInstance;
+    @Nullable
+    String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
+        final int version = fragment.getVersion();
+        switch (version) {
+            case Session.OTRv.TWO:
+            case Session.OTRv.THREE:
+                return inOrder.accumulate(fragment);
+            case Session.OTRv.FOUR:
+                return outOfOrder.accumulate(fragment);
+            default:
+                throw new UnsupportedOperationException("Unsupported protocol version.");
+        }
     }
 
     /**
-     * Appends a message fragment to the internal buffer and returns
-     * the full message if msgText was no fragmented message or all
-     * the fragments have been combined. Returns null, if there are
-     * fragments pending or an invalid fragment was received.
-     * <p>
-     * A fragmented OTR message looks like this:
-     * (V2) ?OTR,k,n,piece-k,
-     *  or
-     * (V3) ?OTR|sender_instance|receiver_instance,k,n,piece-k,
-     *
-     * @param msgText Message to be processed.
-     *
-     * @return String with the accumulated message or
-     *         null if the message was incomplete or malformed
-     * @throws ProtocolException Thrown in case the message is bad in some way
-     * that breaks with the expectations of the OTR protocol.
-     * @throws UnknownInstanceException In case receiver instance tag in
-     * message is unknown.
+     * In-order assembler, following OTRv2/OTRv3 specification.
      */
-    String accumulate(@Nonnull String msgText) throws ProtocolException, UnknownInstanceException {
-        // if it's a fragment, remove everything before "k,n,piece-k"
-        if (msgText.startsWith(HEAD_FRAGMENT_V2)) {
-            msgText = msgText.substring(HEAD_FRAGMENT_V2.length());
-        } else if (msgText.startsWith(HEAD_FRAGMENT_V3)) {
-            msgText = msgText.substring(HEAD_FRAGMENT_V3.length());
+    private static final class InOrderAssembler {
 
-            // break away the v2 part
-            final String[] instancePart = msgText.split(",", 2);
-            // split the two instance ids
-            final String[] instances = instancePart[0].split("\\|", 2);
+        private final HashMap<Integer, Status> accumulations = new HashMap<>();
 
-            if (instancePart.length != 2 || instances.length != 2) {
-                discard();
-                throw new ProtocolException("Invalid instance format.");
-            }
+        private InOrderAssembler() {
+        }
 
-            // parse receiver instance tag
-            final int receiverInstance;
-            try {
-                // Verify length before parsing as BigInteger, as BigInteger
-                // will support much larger tag values even though they are not
-                // valid according to spec. With conversion to int they will be
-                // truncated without warning, so we need to discover invalid
-                // tags before parsing.
-                if (instances[1].length() > 8) {
-                    throw new ProtocolException("Invalid receiver instance id: " + instances[1] + ". Instance tag is too big.");
+        /**
+         * Appends a message fragment to the internal buffer and returns
+         * the full message if msgText was no fragmented message or all
+         * the fragments have been combined. Returns null, if there are
+         * fragments pending or an invalid fragment was received.
+         * <p>
+         * A fragmented OTR message looks like this:
+         * (V2) ?OTR,k,n,piece-k,
+         *  or
+         * (V3) ?OTR|sender_instance|receiver_instance,k,n,piece-k,
+         *
+         * @param fragment The message fragment to process.
+         *
+         * @return String with the accumulated message or
+         *         null if the message was incomplete or malformed
+         * @throws ProtocolException Thrown in case the message is bad in some way
+         * that breaks with the expectations of the OTR protocol.
+         */
+        // TODO verify if in-order assembling follows spec (copied from original otr4j implementation, then modified to restructured fragment handling)
+        @Nullable
+        private String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
+            final int id = fragment.getSendertag().getValue();
+            if (fragment.getIndex() == 1) {
+                // first fragment
+                final Status status = new Status();
+                status.current = fragment.getIndex();
+                status.total = fragment.getTotal();
+                status.content.append(fragment.getContent());
+                this.accumulations.put(id, status);
+            } else {
+                // next fragment
+                final Status status = this.accumulations.get(id);
+                if (status == null) {
+                    // FIXME consider throwing ProtocolException, received fragment for unknown sender tag.
+                    return null;
                 }
-                receiverInstance = new BigInteger(instances[1], 16).intValue();
-            } catch (NumberFormatException e) {
-                discard();
-                throw new ProtocolException("Invalid receiver instance id: " + instances[1]);
+                if (fragment.getTotal() == status.total && fragment.getIndex() == status.current + 1) {
+                    // consecutive fragment, in order
+                    status.current++;
+                    status.content.append(fragment.getContent());
+                } else {
+                    // out-of-order fragment
+                    this.accumulations.remove(id);
+                    throw new ProtocolException("Received fragment out of order.");
+                }
             }
 
-            // currently sender instance tag is not verified, as we also have no
-            // use for that instance tag. It is sufficient to know that the
-            // message fragment is intended for us, i.e. receiver instance tag.
-
-            if (receiverInstance != 0 && receiverInstance != ownInstance.getValue()) {
-                // discard message for different instance id
-                throw new UnknownInstanceException("Message for unknown instance tag " + receiverInstance
-                    + " received: " + msgText);
+            if (fragment.getIndex() == fragment.getTotal()) {
+                final Status status = this.accumulations.remove(id);
+                return status.content.toString();
             }
 
-            // continue with v2 part of fragment
-            msgText = instancePart[1];
-        } else {
-            // not a fragmented message
-            discard();
-            return msgText;
+            // Fragment did not result in completed message. Waiting for next fragment.
+            return null;
         }
 
-        final String[] params = msgText.split(",", 4);
-
-        final int k, n;
-        try {
-            k = Integer.parseInt(params[0]);
-            n = Integer.parseInt(params[1]);
-        } catch (NumberFormatException e) {
-            discard();
-            throw new ProtocolException("Bad format for parameter current/total fragment number");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            discard();
-            throw new ProtocolException("Expected 2 parameters: current and total fragment numbers");
-        }
-
-        if (k <= 0 || k > MAX_FRAGMENTS || n <= 0 || n > MAX_FRAGMENTS || k > n
-                || params.length != 4 || params[2].isEmpty()
-                || !params[3].isEmpty()) {
-            discard();
-            throw new ProtocolException("Expected exactly 4 parameters and parameters according to specification");
-        }
-
-        msgText = params[2];
-
-        if (k == 1) {
-            // first fragment
-            discard();
-            fragmentCur = k;
-            fragmentMax = n;
-            fragment.append(msgText);
-        } else if (n == fragmentMax && k == fragmentCur+1) {
-            // consecutive fragment
-            fragmentCur++;
-            fragment.append(msgText);
-        } else {
-            // out-of-order fragment
-            discard();
-            throw new ProtocolException();
-        }
-
-        if (n == k) {
-            final String result = fragment.toString();
-            discard();
-            return result;
-        } else {
-            return null; // incomplete fragment
+        /**
+         * In-progress assembly status type.
+         */
+        private static final class Status {
+            private int current;
+            private int total;
+            private final StringBuilder content = new StringBuilder();
         }
     }
 
     /**
-     * Discard current fragment buffer and reset the counters.
+     * Out-of-order assembler, following OTRv4 specification.
      */
-    private void discard() {
-        fragment.delete(0, fragment.length());
-        fragmentCur = 0;
-        fragmentMax = 0;
-    }
+    // TODO introduce some kind of clean-up such that fragments list does not grow infinitely.
+    // TODO consider doing some fuzzing for this user input, if we can find a decent fuzzing library.
+    // TODO consider if needed to keep track of recently completed fragments in case another message arrives?
+    // FIXME is it still required to check the sender tag before accepting?
+    // FIXME still needs to be integrated with SessionImpl
+    // TODO consider implementing OTRv3 fragmentation in similar fashion and throw away old assembling logic
+    private static final class OutOfOrderAssembler {
 
-    /**
-     * Unknown instance exception to indicate that we encounter an unknown
-     * instance tag.
-     */
-    final static class UnknownInstanceException extends Exception {
+        private static final Logger LOGGER = Logger.getLogger(OutOfOrderAssembler.class.getName());
 
-        private static final long serialVersionUID = -9038076875471875721L;
+        private final HashMap<Integer, String[]> fragments = new HashMap<>();
 
-        private UnknownInstanceException(final String host) {
-            super(host);
+        private OutOfOrderAssembler() {
+        }
+
+        /**
+         * Accumulate fragments.
+         *
+         * @param fragment the fragment to accumulate in the assembly
+         * @return Returns null in case of incomplete message (more fragments needed) or reassembled message text in
+         * case of complete reassembly.
+         */
+        @Nullable
+        String accumulate(@Nonnull final Fragment fragment) {
+            String[] parts = fragments.get(fragment.getIdentifier());
+            if (parts == null) {
+                parts = new String[fragment.getTotal()];
+                fragments.put(fragment.getIdentifier(), parts);
+            }
+            if (fragment.getTotal() != parts.length) {
+                LOGGER.log(Level.INFO, "OTRv4 fragmentation of other party may be broken. Initial total is different from this message. Ignoring this fragment. (Original: {0}, current fragment: {1})",
+                    new Object[]{parts.length, fragment.getTotal()});
+                return null;
+            }
+            if (parts[fragment.getIndex() - 1] != null) {
+                LOGGER.log(Level.INFO, "Fragment with index {0} was already present. Ignoring this fragment.",
+                    new Object[]{fragment.getIndex()});
+            }
+            // FIXME do we need to sanity-check the sender tag and/or receiver tag before assuming that parts belong together?
+            parts[fragment.getIndex()-1] = fragment.getContent();
+            if (containsEmpty(parts)) {
+                // Not all message parts are present. Return null and wait for next message part before continuing.
+                return null;
+            }
+            fragments.remove(fragment.getIdentifier());
+            return join(parts);
         }
     }
 }

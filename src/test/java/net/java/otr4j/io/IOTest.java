@@ -80,8 +80,7 @@ public class IOTest {
 		KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
 		DHKeyMessage source = new DHKeyMessage(OTRv.THREE, (DHPublicKey) pair.getPublic(), 0, 0);
 		String base64 = SerializationUtils.toString(source);
-		DHKeyMessage result = (DHKeyMessage) SerializationUtils
-				.toMessage(base64);
+		DHKeyMessage result = (DHKeyMessage) MessageParser.parse(base64);
         assertEquals(source, result);
 	}
 
@@ -96,8 +95,7 @@ public class IOTest {
 		RevealSignatureMessage source = new RevealSignatureMessage(
 				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, 0, 0);
 		String base64 = SerializationUtils.toString(source);
-		RevealSignatureMessage result = (RevealSignatureMessage) SerializationUtils
-				.toMessage(base64);
+		RevealSignatureMessage result = (RevealSignatureMessage) MessageParser.parse(base64);
         assertEquals(source, result);
 	}
 }

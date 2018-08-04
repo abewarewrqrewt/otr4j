@@ -17,7 +17,6 @@ import java.security.SecureRandom;
 import java.util.LinkedList;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.io.SerializationUtils.otrEncoded;
 
 /**
  * OTR fragmenter.
@@ -143,14 +142,7 @@ final class OtrFragmenter {
      */
     // TODO method signature is not ideal. This can probably be simplified, once other parts related to fragmentation are redesigned.
     @Nonnull
-    String[] fragment(@Nonnull final AbstractEncodedMessage original, @Nonnull final String message)
-        throws ProtocolException {
-        if (original.protocolVersion < Session.OTRv.TWO || !otrEncoded(message)) {
-            return new String[]{message};
-        }
-        if (original.protocolVersion > Session.OTRv.FOUR) {
-            throw new UnsupportedOperationException("Unsupported protocol version encountered: " + original.protocolVersion);
-        }
+    String[] fragment(@Nonnull final AbstractEncodedMessage original, @Nonnull final String message) throws ProtocolException {
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
         return fragment(original.protocolVersion, original.senderInstanceTag, original.receiverInstanceTag, message,
             fragmentSize);

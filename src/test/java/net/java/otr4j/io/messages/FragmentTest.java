@@ -11,6 +11,8 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.io.messages.Fragment.parse;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("ConstantConditions")
 public final class FragmentTest {
@@ -32,6 +34,24 @@ public final class FragmentTest {
     @Test(expected = ProtocolException.class)
     public void testParseArbitraryTextMessage() throws ProtocolException {
         parse("This is an arbitrary message that is definitely not a fragment.");
+    }
+
+    @Test
+    public void testCorrectParsingOf32bitsInteger() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        assertNotNull(parse(String.format("?OTR|ff123456|%08x,00001,00002,test,", tag.getValue())));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testCorrectDisallowOf33bitsInteger() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        parse(String.format("?OTR|ff123456|1%08x,00001,00002,test,", tag.getValue()));
+    }
+
+    @Test
+    public void testCorrectDisallowEmptyPayload() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        assertEquals("", parse(String.format("?OTR|ff123456|%08x,00001,00002,,", tag.getValue())).getContent());
     }
 
     @Test
@@ -134,5 +154,175 @@ public final class FragmentTest {
     @Test(expected = ProtocolException.class)
     public void testParseSingleFragmentIllegalTotalOverMaximum() throws ProtocolException {
         parse(String.format("?OTR|3c5b5f03|5a73a599|27e31597,00001,65536,%s,", helloWorldBase64));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testCorrectDisallowTrailingData() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        parse(String.format("?OTR|ff123456|%08x,00001,00002,test,invalid", tag.getValue()));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testCorrectDisallowNegativeK() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        parse(String.format("?OTR|ff123456|%08x,-0001,00002,test,", tag.getValue()));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testCorrectDisallowKLargerThanN() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        parse(String.format("?OTR|ff123456|%08x,00003,00002,test,", tag.getValue()));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testCorrectDisallowKOverUpperBound() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        parse(String.format("?OTR|ff123456|%08x,65536,65536,test,", tag.getValue()));
+    }
+
+    @Test
+    public void testCorrectMaximumNFragments() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        final Fragment fragment = parse(String.format("?OTR|ff123456|%08x,00001,65535,test,", tag.getValue()));
+        assertEquals(65535, fragment.getTotal());
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testCorrectDisallowNOverUpperBound() throws ProtocolException {
+        final InstanceTag tag = new InstanceTag(0.99999645d);
+        parse(String.format("?OTR|ff123456|%08x,00001,65536,test,", tag.getValue()));
+    }
+
+    @Test
+    public void testOTRv3FormattedFragment() throws ProtocolException {
+        final Fragment fragment = parse(String.format("?OTR|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64));
+        assertEquals(OTRv.THREE, fragment.getVersion());
+    }
+
+    @Test
+    public void testIncompleteFragmentParsing() throws ProtocolException {
+        final String source = String.format("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64);
+        for (int i = 0; i < source.length()-1; i++) {
+            try {
+                parse(source.substring(0, i));
+                fail("Did not expect incomplete fragment to be processed successfully.");
+            } catch (final ProtocolException expected) {
+                // expected failure, continue
+            }
+        }
+        assertEquals(helloWorldBase64, parse(source).getContent());
+    }
+
+    @Test
+    public void testFragmentationFormatLegalVariations() throws ProtocolException {
+        final String[] variants = new String[]{
+            "?OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|C5B5F03|5A73A599|27E31597,00001,00001,%s,",
+            "?OTR|5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|3|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|a73a599|27e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|73a599|27e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|3a599|27e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|a599|27e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|599|27e31597,00001,00001,%s,",
+//            "?OTR|3c5b5f03|99|27e31597,00001,00001,%s,", // illegal because of too small instance tag
+//            "?OTR|3c5b5f03|9|27e31597,00001,00001,%s,", // illegal because of too small instance tag
+            "?OTR|3c5b5f03|5a73a599|7e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|e31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|31597,00001,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|1597,00001,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|597,00001,00001,%s,",
+//            "?OTR|3c5b5f03|5a73a599|97,00001,00001,%s,", // illegal because of too small instance tag
+//            "?OTR|3c5b5f03|5a73a599|7,00001,00001,%s,", // illegal because of too small instance tag
+            "?OTR|3c5b5f03|5a73a599|27e31597,0001,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,001,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,01,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,1,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,0001,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,001,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,01,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,1,%s,",
+        };
+        for (final String variant : variants) {
+            assertNotNull(parse(String.format(variant, helloWorldBase64)));
+        }
+    }
+
+    @Test
+    public void testFragmentationFormatIllegalVariations() {
+        final String[] variants = new String[]{
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,,%s,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,,00001,%s,",
+            "?OTR|3c5b5f03|5a73a599|,00001,00001,%s,",
+            "?OTR|3c5b5f03||27e31597,00001,00001,%s,",
+            "?OTR||5a73a599|27e31597,00001,00001,%s,",
+            "?OT|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?O|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?TR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?R|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "TR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "R|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTRc5b5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|c5b5f035a73a599|27e31597,00001,00001,%s,",
+            "?OTR|c5b5f03|5a73a59927e31597,00001,00001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e3159700001,00001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e31597,0000100001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e31597,00001,00001%s,",
+            "?OTR|c5g5f03|5a73a599|27e31597,00001,00001,%s,",
+            "?OTR|c5b5f03|5a73g599|27e31597,00001,00001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e315g7,00001,00001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e31597,00a01,00001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e31597,00001,000b1,%s,",
+            "?OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s.",
+            "?OTR|c5b5f03|5a73a599|27e31597,00001,-0001,%s,",
+            "?OTR|c5b5f03|5a73a599|27e31597,-0001,00001,%s,",
+        };
+        for (final String variant : variants) {
+            try {
+                parse(String.format(variant, helloWorldBase64));
+                fail("Did not expect to successfully parse an illegal variant of fragment.");
+            } catch (final ProtocolException expected) {
+                // failure expected, continue
+            }
+        }
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentIndexZero() throws ProtocolException {
+        parse("?OTR|3c5b5f03|5a73a599|27e31597,00000,00001,,");
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentTotalZero() throws ProtocolException {
+        parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00000,,");
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentIndexLargerThanTotal() throws ProtocolException {
+        parse("?OTR|3c5b5f03|5a73a599|27e31597,00002,00001,,");
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentIndexMuchLargerThanTotal() throws ProtocolException {
+        parse("?OTR|3c5b5f03|5a73a599|27e31597,11111,00001,,");
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentIndexOverMaximum() throws ProtocolException {
+        parse("?OTR|3c5b5f03|5a73a599|27e31597,65536,00001,,");
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testFragmentTotalOverMaximum() throws ProtocolException {
+        parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,65536,,");
     }
 }

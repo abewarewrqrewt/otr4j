@@ -29,9 +29,9 @@ import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
+import static net.java.otr4j.io.MessageParser.encodeVersionString;
+import static net.java.otr4j.io.MessageParser.parseVersionString;
 import static net.java.otr4j.io.OtrEncodables.encode;
-import static net.java.otr4j.io.SerializationUtils.encodeVersionString;
-import static net.java.otr4j.io.SerializationUtils.parseVersionString;
 import static net.java.otr4j.util.Iterables.findByType;
 import static org.bouncycastle.util.Arrays.concatenate;
 
