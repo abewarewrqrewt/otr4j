@@ -2,6 +2,7 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.messages.EncodedMessageParser;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Fragment;
 import net.java.otr4j.io.messages.Message;
@@ -28,7 +29,6 @@ import static net.java.otr4j.io.EncodingConstants.HEAD_FRAGMENTED_V3;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_Q;
 import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_V;
 import static net.java.otr4j.io.EncodingConstants.TAIL_FRAGMENTED;
-import static net.java.otr4j.io.messages.EncodedMessageParser.read;
 import static org.bouncycastle.util.encoders.Base64.decode;
 
 /**
@@ -111,7 +111,7 @@ public final class MessageParser {
                  * So in order to decode the content string we have to get rid of the '.' first.
                  */
                 final byte[] contentBytes = decode(content.substring(0, content.length() - 1).getBytes(US_ASCII));
-                return read(new OtrInputStream(contentBytes));
+                return EncodedMessageParser.parse(new OtrInputStream(contentBytes));
             }
         }
 

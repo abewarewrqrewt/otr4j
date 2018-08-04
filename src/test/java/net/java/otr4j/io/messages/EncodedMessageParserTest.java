@@ -16,7 +16,7 @@ import java.security.KeyPair;
 import java.security.SecureRandom;
 
 import static java.util.Arrays.copyOf;
-import static net.java.otr4j.io.messages.EncodedMessageParser.read;
+import static net.java.otr4j.io.messages.EncodedMessageParser.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -28,17 +28,17 @@ public class EncodedMessageParserTest {
 
     @Test(expected = NullPointerException.class)
     public void testParsingNullInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
-        read(null);
+        parse(null);
     }
 
     @Test(expected = ProtocolException.class)
     public void testParsingEmptyInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
-        read(new OtrInputStream(new byte[0]));
+        parse(new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = ProtocolException.class)
     public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
-        read(new OtrInputStream(new byte[] { 0x00, 0x03 }));
+        parse(new OtrInputStream(new byte[] { 0x00, 0x03 }));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class EncodedMessageParserTest {
         m.writeTo(otrOutput);
         // Parse produced message bytes.
         final OtrInputStream otrInput = new OtrInputStream(output.toByteArray());
-        final AbstractEncodedMessage parsedM = read(otrInput);
+        final AbstractEncodedMessage parsedM = parse(otrInput);
         assertEquals(m, parsedM);
     }
 
@@ -65,7 +65,7 @@ public class EncodedMessageParserTest {
         m.writeTo(otrOutput);
         // Parse produced message bytes.
         final OtrInputStream otrInput = new OtrInputStream(output.toByteArray());
-        read(otrInput);
+        parse(otrInput);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class EncodedMessageParserTest {
             // try every substring in between.
             final byte[] partial = copyOf(message, i);
             try {
-                read(new OtrInputStream(partial));
+                parse(new OtrInputStream(partial));
                 fail("Expected exception due to parsing an incomplete message.");
             } catch (final ProtocolException | OtrCryptoException expected) {
                 // Expected behavior for partial messages being parsed.
