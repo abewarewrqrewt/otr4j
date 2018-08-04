@@ -43,9 +43,6 @@ public final class ErrorMessage implements Message {
             return false;
         }
         final ErrorMessage other = (ErrorMessage) obj;
-        if (!Objects.equals(this.error, other.error)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.error, other.error);
     }
 }

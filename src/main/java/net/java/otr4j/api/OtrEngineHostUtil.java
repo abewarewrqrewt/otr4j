@@ -37,6 +37,7 @@ import javax.annotation.Nonnull;
  *
  * @author Danny van Heumen
  */
+@SuppressWarnings("PMD.AvoidCatchingGenericException")
 public final class OtrEngineHostUtil {
 
     private static final Logger LOGGER = Logger.getLogger(OtrEngineHostUtil.class.getName());

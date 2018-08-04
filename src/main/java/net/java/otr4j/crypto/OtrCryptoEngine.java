@@ -104,11 +104,7 @@ public final class OtrCryptoEngine {
 
     public static final int AES_KEY_BYTE_LENGTH = 16;
     private static final int DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH = 320;
-    private static final byte[] ZERO_CTR = new byte[] {
-            0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00
-    };
+    private static final int CTR_LENGTH_BYTES = 16;
 
     private OtrCryptoEngine() {
         // this class is never instantiated, it only has static methods
@@ -268,19 +264,16 @@ public final class OtrCryptoEngine {
     }
 
     @Nonnull
-    public static byte[] aesDecrypt(@Nonnull final byte[] key, @Nullable byte[] ctr, @Nonnull final byte[] b)
+    public static byte[] aesDecrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
             throws OtrCryptoException {
 
         final AESEngine aesDec = new AESEngine();
         final SICBlockCipher sicAesDec = new SICBlockCipher(aesDec);
         final BufferedBlockCipher bufSicAesDec = new BufferedBlockCipher(sicAesDec);
 
-        // Create initial counter value 0.
-        if (ctr == null) {
-            ctr = ZERO_CTR;
-        }
-        bufSicAesDec.init(false, new ParametersWithIV(new KeyParameter(key),
-                ctr));
+        // Either use existing ctr or create initial counter value 0.
+        final byte[] iv = ctr == null ? new byte[CTR_LENGTH_BYTES] : ctr;
+        bufSicAesDec.init(false, new ParametersWithIV(new KeyParameter(key), iv));
         final byte[] aesOutLwDec = new byte[b.length];
         final int done = bufSicAesDec.processBytes(b, 0, b.length, aesOutLwDec, 0);
         try {
@@ -293,7 +286,7 @@ public final class OtrCryptoEngine {
     }
 
     @Nonnull
-    public static byte[] aesEncrypt(@Nonnull final byte[] key, @Nullable byte[] ctr, @Nonnull final byte[] b)
+    public static byte[] aesEncrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
             throws OtrCryptoException {
 
         final AESEngine aesEnc = new AESEngine();
@@ -301,11 +294,8 @@ public final class OtrCryptoEngine {
         final BufferedBlockCipher bufSicAesEnc = new BufferedBlockCipher(sicAesEnc);
 
         // Create initial counter value 0.
-        if (ctr == null) {
-            ctr = ZERO_CTR;
-        }
-        bufSicAesEnc.init(true,
-                new ParametersWithIV(new KeyParameter(key), ctr));
+        final byte[] iv = ctr == null ? new byte[CTR_LENGTH_BYTES] : ctr;
+        bufSicAesEnc.init(true, new ParametersWithIV(new KeyParameter(key), iv));
         final byte[] aesOutLwEnc = new byte[b.length];
         final int done = bufSicAesEnc.processBytes(b, 0, b.length, aesOutLwEnc, 0);
         try {

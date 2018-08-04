@@ -49,7 +49,7 @@ public final class SignatureMessage extends AbstractEncodedMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -63,10 +63,7 @@ public final class SignatureMessage extends AbstractEncodedMessage {
         if (!constantTimeEquals(xEncrypted, other.xEncrypted)) {
             return false;
         }
-        if (!constantTimeEquals(xEncryptedMAC, other.xEncryptedMAC)) {
-            return false;
-        }
-        return true;
+        return constantTimeEquals(xEncryptedMAC, other.xEncryptedMAC);
     }
 
     @Override

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO revisit ignored keys to see if pmd ruleset can be stricter. -->
 <ruleset name="Default Maven PMD Plugin Ruleset"
          xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -6,6 +7,9 @@
     <description>Rules set selection based on pmd 6.5.0</description>
     <rule ref="category/java/bestpractices.xml">
         <exclude name="AccessorClassGeneration"/>
+        <exclude name="LooseCoupling"/>
+        <!-- Even though the detection rule makes sense, currently I prefer the benefit of fine-granular access control. -->
+        <exclude name="AccessorMethodGeneration"/>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <exclude name="TooManyStaticImports"/>
@@ -19,10 +23,13 @@
         <exclude name="AvoidPrefixingMethodParameters"/>
         <exclude name="ShortClassName"/>
         <exclude name="ShortMethodName"/>
+        <exclude name="AtLeastOneConstructor"/>
     </rule>
     <rule ref="category/java/design.xml">
         <exclude name="LawOfDemeter"/>
         <exclude name="ExcessiveParameterList"/>
+        <!-- TODO definitely revisit DataClass warnings, as they are reasonable but currently simply a fact of otr4j. -->
+        <exclude name="DataClass"/>
     </rule>
     <rule ref="category/java/documentation.xml">
         <exclude name="CommentSize"/>
@@ -35,7 +42,9 @@
         <!-- TODO may need to reconsider later. Currently gives too many results that are useless/false positives. -->
         <exclude name="DataflowAnomalyAnalysis"/>
     </rule>
-    <rule ref="category/java/multithreading.xml"/>
+    <rule ref="category/java/multithreading.xml">
+        <exclude name="AvoidUsingVolatile"/>
+    </rule>
     <rule ref="category/java/performance.xml">
         <exclude name="TooFewBranchesForASwitchStatement"/>
         <exclude name="RedundantFieldInitializer"/>

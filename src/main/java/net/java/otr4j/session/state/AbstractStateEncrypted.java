@@ -17,6 +17,7 @@ abstract class AbstractStateEncrypted extends AbstractState {
 
     final SessionID sessionID;
 
+    @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
     final Logger logger;
 
     /**

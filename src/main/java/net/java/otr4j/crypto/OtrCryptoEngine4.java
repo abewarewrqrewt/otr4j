@@ -449,7 +449,7 @@ public final class OtrCryptoEngine4 {
                 final BigInteger r3 = decodeLittleEndian(in.readData());
                 return new Sigma(c1, r1, c2, r2, c3, r3);
             } catch (final UnsupportedLengthException e) {
-                throw new ProtocolException("Either a c or r value contains an exceptionally large value. This is not according to specification.");
+                throw new ProtocolException("Either a 'c' or 'r' value contains an exceptionally large value. This is not according to specification.");
             }
         }
 

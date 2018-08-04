@@ -78,6 +78,12 @@ public final class ByteArrays {
         return constantTimeAreEqual(data1, data2);
     }
 
+    /**
+     * Convert byte-array value to hexadecimal string representation.
+     *
+     * @param in value as byte-array
+     * @return Returns hexadecimal string representation.
+     */
     @Nonnull
     public static String toHexString(@Nonnull final byte in[]) {
         final StringBuilder out = new StringBuilder(in.length * 2);
@@ -88,9 +94,16 @@ public final class ByteArrays {
         return out.toString();
     }
 
+    /**
+     * Convert hexadecimal string to byte-array.
+     *
+     * @param v A hexadecimal value in string representation. (Restriction: v should contain an even number of
+     *          hexadecimal characters.)
+     * @return Returns byte-array with byte-representation for input.
+     */
     @Nonnull
-    public static byte[] fromHexString(@Nonnull String value) {
-        value = value.toUpperCase(Locale.US);
+    public static byte[] fromHexString(@Nonnull final String v) {
+        final String value = v.toUpperCase(Locale.US);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         for (int index = 0; index < value.length(); index += 2) {
             final int high = HEX_DECODER.indexOf(value.charAt(index));

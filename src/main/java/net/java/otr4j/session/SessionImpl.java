@@ -160,7 +160,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nonnull
     private final OtrEngineHost host;
 
-    @SuppressWarnings("NonConstantLogger")
+    @SuppressWarnings({"NonConstantLogger", "PMD.LoggerIsNotStaticFinal"})
     private final Logger logger;
 
     /**
@@ -244,11 +244,11 @@ final class SessionImpl implements Session, Context, AuthContext {
      *
      * @param sessionID The session ID
      * @param listener  The OTR engine host listener.
+     * @param senderInstanceTag Our own instance tag with which new OTR-encoded messages are sent.
      */
     SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener,
                 @Nonnull final InstanceTag senderInstanceTag) {
-        this(null, sessionID, listener, senderInstanceTag, InstanceTag.ZERO_TAG, new SecureRandom(),
-            StateInitial.empty());
+        this(null, sessionID, listener, senderInstanceTag, ZERO_TAG, new SecureRandom(), StateInitial.empty());
     }
 
     /**
@@ -283,7 +283,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         this.sessionState = new StatePlaintext(sessionID);
         this.authState = requireNonNull(authState);
         this.host = requireNonNull(host);
-        if (senderTag == InstanceTag.ZERO_TAG) {
+        if (senderTag == ZERO_TAG) {
             throw new IllegalArgumentException("Only actual instance tags are allowed.");
         }
         this.senderTag = requireNonNull(senderTag);
@@ -404,7 +404,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     @Nullable
     // TODO separate transformReceiving in a generic (text-based) processing and specific method for processing AbstractEncodedMessage in slave sessions.
-    public String transformReceiving(@Nonnull String msgText) throws OtrException {
+    public String transformReceiving(@Nonnull final String msgText) throws OtrException {
         logger.log(Level.FINEST, "Entering {0} session.", masterSession == this ? "master" : "slave");
 
         // FIXME verify that it is okay to return with empty message early (should be so)
@@ -643,13 +643,13 @@ final class SessionImpl implements Session, Context, AuthContext {
         final OtrPolicy policy = getSessionPolicy();
         if (queryMessage.getVersions().contains(OTRv.FOUR) && policy.getAllowV4()) {
             logger.finest("Query message with V4 support found. Sending Identity Message.");
-            injectMessage(respondAuth(OTRv.FOUR, InstanceTag.ZERO_TAG, queryMessage.getTag()));
+            injectMessage(respondAuth(OTRv.FOUR, ZERO_TAG, queryMessage.getTag()));
         } else if (queryMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG, queryMessage.getTag()));
+            injectMessage(respondAuth(OTRv.THREE, ZERO_TAG, queryMessage.getTag()));
         } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(OTRv.TWO, InstanceTag.ZERO_TAG, queryMessage.getTag()));
+            injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, queryMessage.getTag()));
         } else {
             logger.info("Query message received, but none of the versions are acceptable. They are either excluded by policy or through lack of support.");
         }
@@ -752,21 +752,21 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (plainTextMessage.getVersions().contains(OTRv.FOUR) && policy.getAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
             try {
-                injectMessage(respondAuth(OTRv.FOUR, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(OTRv.FOUR, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
         } else if (plainTextMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(OTRv.THREE, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(OTRv.THREE, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
         } else if (plainTextMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(OTRv.TWO, InstanceTag.ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }

@@ -34,9 +34,6 @@ abstract class AbstractAuthState implements AuthState {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractAuthState.class.getName());
 
-    AbstractAuthState() {
-    }
-
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,

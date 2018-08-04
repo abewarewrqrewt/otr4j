@@ -62,10 +62,7 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
             return false;
         }
         final RevealSignatureMessage other = (RevealSignatureMessage) obj;
-        if (!constantTimeEquals(revealedKey, other.revealedKey)) {
-            return false;
-        }
-        return true;
+        return constantTimeEquals(revealedKey, other.revealedKey);
     }
 
     @Override

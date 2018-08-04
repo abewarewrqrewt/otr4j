@@ -63,10 +63,7 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
         if (!constantTimeEquals(dhPublicKeyEncrypted, other.dhPublicKeyEncrypted)) {
             return false;
         }
-        if (!constantTimeEquals(dhPublicKeyHash, other.dhPublicKeyHash)) {
-            return false;
-        }
-        return true;
+        return constantTimeEquals(dhPublicKeyHash, other.dhPublicKeyHash);
     }
 
     @Override

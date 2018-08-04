@@ -27,13 +27,8 @@ import static net.java.otr4j.util.Strings.join;
 // TODO trace control flow to confirm that we can drop the sender tag from the Assember.
 final class OtrAssembler {
 
-    private final InOrderAssembler inOrder;
-    private final OutOfOrderAssembler outOfOrder;
-
-    OtrAssembler() {
-        this.inOrder = new InOrderAssembler();
-        this.outOfOrder = new OutOfOrderAssembler();
-    }
+    private final InOrderAssembler inOrder = new InOrderAssembler();
+    private final OutOfOrderAssembler outOfOrder = new OutOfOrderAssembler();
 
     @Nullable
     String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
@@ -55,9 +50,6 @@ final class OtrAssembler {
     private static final class InOrderAssembler {
 
         private final HashMap<Integer, Status> accumulations = new HashMap<>();
-
-        private InOrderAssembler() {
-        }
 
         /**
          * Appends a message fragment to the internal buffer and returns
@@ -139,9 +131,6 @@ final class OtrAssembler {
         private static final Logger LOGGER = Logger.getLogger(OutOfOrderAssembler.class.getName());
 
         private final HashMap<Integer, String[]> fragments = new HashMap<>();
-
-        private OutOfOrderAssembler() {
-        }
 
         /**
          * Accumulate fragments.

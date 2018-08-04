@@ -59,10 +59,7 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         if (this.senderInstanceTag != other.senderInstanceTag) {
             return false;
         }
-        if (this.receiverInstanceTag != other.receiverInstanceTag) {
-            return false;
-        }
-        return true;
+        return this.receiverInstanceTag == other.receiverInstanceTag;
     }
 
     @OverridingMethodsMustInvokeSuper

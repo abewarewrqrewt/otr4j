@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
  * Utility class for safely handling the processing of OtrEngineListener
  * listeners.
  */
+@SuppressWarnings("PMD.AvoidCatchingGenericException")
 public final class OtrEngineListenerUtil {
 
     private static final Logger LOGGER = Logger.getLogger(OtrEngineListenerUtil.class.getName());

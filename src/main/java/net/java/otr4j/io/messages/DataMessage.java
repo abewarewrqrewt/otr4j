@@ -115,10 +115,7 @@ public final class DataMessage extends AbstractEncodedMessage {
         if (recipientKeyID != other.recipientKeyID) {
             return false;
         }
-        if (senderKeyID != other.senderKeyID) {
-            return false;
-        }
-        return true;
+        return senderKeyID == other.senderKeyID;
     }
 
     @Override
