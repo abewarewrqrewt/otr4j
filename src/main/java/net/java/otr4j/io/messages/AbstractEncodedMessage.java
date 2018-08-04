@@ -7,7 +7,7 @@
 
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -68,13 +68,17 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         // Start writing common header of encoded messages.
         writer.writeShort(this.protocolVersion);
         writer.writeByte(getType());
-        if (this.protocolVersion == Session.OTRv.TWO) {
-            // skipping serializing instance tags ...
-        } else if (this.protocolVersion == Session.OTRv.THREE || this.protocolVersion == Session.OTRv.FOUR) {
-            writer.writeInt(this.senderInstanceTag);
-            writer.writeInt(this.receiverInstanceTag);
-        } else {
-            throw new UnsupportedOperationException("Unsupported protocol version.");
+        switch (this.protocolVersion) {
+            case OTRv.TWO:
+                // skipping serializing instance tags
+                break;
+            case OTRv.THREE:
+            case OTRv.FOUR:
+                writer.writeInt(this.senderInstanceTag);
+                writer.writeInt(this.receiverInstanceTag);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported protocol version.");
         }
     }
 

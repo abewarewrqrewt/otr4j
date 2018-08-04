@@ -641,13 +641,13 @@ final class SessionImpl implements Session, Context, AuthContext {
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
 
         final OtrPolicy policy = getSessionPolicy();
-        if (queryMessage.getVersions().contains(OTRv.FOUR) && policy.getAllowV4()) {
+        if (queryMessage.getVersions().contains(OTRv.FOUR) && policy.isAllowV4()) {
             logger.finest("Query message with V4 support found. Sending Identity Message.");
             injectMessage(respondAuth(OTRv.FOUR, ZERO_TAG, queryMessage.getTag()));
-        } else if (queryMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
+        } else if (queryMessage.getVersions().contains(OTRv.THREE) && policy.isAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(OTRv.THREE, ZERO_TAG, queryMessage.getTag()));
-        } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
+        } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.isAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, queryMessage.getTag()));
         } else {
@@ -743,27 +743,27 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     private void handleWhitespaceTag(@Nonnull final PlainTextMessage plainTextMessage) {
         final OtrPolicy policy = getSessionPolicy();
-        if (!policy.getWhitespaceStartAKE()) {
+        if (!policy.isWhitespaceStartAKE()) {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
         setState(new StateInitial(plainTextMessage.getTag()));
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
-        if (plainTextMessage.getVersions().contains(OTRv.FOUR) && policy.getAllowV4()) {
+        if (plainTextMessage.getVersions().contains(OTRv.FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
             try {
                 injectMessage(respondAuth(OTRv.FOUR, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(OTRv.THREE) && policy.getAllowV3()) {
+        } else if (plainTextMessage.getVersions().contains(OTRv.THREE) && policy.isAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
                 injectMessage(respondAuth(OTRv.THREE, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(OTRv.TWO) && policy.getAllowV2()) {
+        } else if (plainTextMessage.getVersions().contains(OTRv.TWO) && policy.isAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
                 injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, plainTextMessage.getTag()));
@@ -783,15 +783,15 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         // Verify that policy allows handling message according to protocol version.
         final OtrPolicy policy = getSessionPolicy();
-        if (m.protocolVersion == OTRv.TWO && !policy.getAllowV2()) {
+        if (m.protocolVersion == OTRv.TWO && !policy.isAllowV2()) {
             logger.finest("ALLOW_V2 is not set, ignore this message.");
             return null;
         }
-        if (m.protocolVersion == OTRv.THREE && !policy.getAllowV3()) {
+        if (m.protocolVersion == OTRv.THREE && !policy.isAllowV3()) {
             logger.finest("ALLOW_V3 is not set, ignore this message.");
             return null;
         }
-        if (m.protocolVersion == OTRv.FOUR && !policy.getAllowV4()) {
+        if (m.protocolVersion == OTRv.FOUR && !policy.isAllowV4()) {
             logger.finest("ALLOW_V4 is not set, ignore this message.");
             return null;
         }

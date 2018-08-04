@@ -118,18 +118,22 @@ public final class MessageParser {
         // Try to detect whitespace tag.
         final Matcher matcher = PATTERN_WHITESPACE.matcher(text);
 
+        final HashSet<Integer> versions = new HashSet<>();
         boolean v2 = false;
         boolean v3 = false;
         boolean v4 = false;
         while (matcher.find()) {
             // Ignore group 1 (OTRv1 tag) as V1 is not supported anymore.
             if (!v2 && matcher.start(2) > -1) {
+                versions.add(Session.OTRv.TWO);
                 v2 = true;
             }
             if (!v3 && matcher.start(3) > -1) {
+                versions.add(Session.OTRv.THREE);
                 v3 = true;
             }
             if (!v4 && matcher.start(4) > -1) {
+                versions.add(Session.OTRv.FOUR);
                 v4 = true;
             }
             if (v2 && v3 && v4) {
@@ -138,17 +142,7 @@ public final class MessageParser {
         }
 
         final String cleanText = matcher.replaceAll("");
-        final HashSet<Integer> versions = new HashSet<>();
-        // FIXME consider moving versions addition into the above matcher processing.
-        if (v2) {
-            versions.add(Session.OTRv.TWO);
-        }
-        if (v3) {
-            versions.add(Session.OTRv.THREE);
-        }
-        if (v4) {
-            versions.add(Session.OTRv.FOUR);
-        }
+        // TODO below could be a bug .. we try to extract the whitespace tag, but in the process we assume that the matcher matches the text completely, while above we 'find' occurrences.
         return new PlainTextMessage(matcher.matches() ? matcher.group() : "", versions, cleanText);
     }
 
@@ -208,6 +202,6 @@ public final class MessageParser {
     @CheckReturnValue
     private static boolean otrFragmented(@Nonnull final String content) {
         return (content.startsWith(HEAD + HEAD_FRAGMENTED_V2) || content.startsWith(HEAD + HEAD_FRAGMENTED_V3))
-            && content.endsWith("" + TAIL_FRAGMENTED);
+            && content.endsWith(String.valueOf(TAIL_FRAGMENTED));
     }
 }

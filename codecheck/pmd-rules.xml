@@ -10,6 +10,7 @@
         <exclude name="LooseCoupling"/>
         <!-- Even though the detection rule makes sense, currently I prefer the benefit of fine-granular access control. -->
         <exclude name="AccessorMethodGeneration"/>
+        <exclude name="GuardLogStatement"/>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <exclude name="TooManyStaticImports"/>
@@ -48,6 +49,7 @@
     <rule ref="category/java/performance.xml">
         <exclude name="TooFewBranchesForASwitchStatement"/>
         <exclude name="RedundantFieldInitializer"/>
+        <exclude name="AvoidInstantiatingObjectsInLoops"/>
     </rule>
     <rule ref="category/java/security.xml"/>
 </ruleset>

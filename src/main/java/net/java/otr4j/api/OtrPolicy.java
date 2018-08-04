@@ -87,7 +87,7 @@ public final class OtrPolicy {
      * @deprecated OTR V1 is not supported anymore.
      */
     @Deprecated
-    public boolean getAllowV1() {
+    public boolean isAllowV1() {
         return false;
     }
 
@@ -96,7 +96,7 @@ public final class OtrPolicy {
      *
      * @return Returns true if OTR version 2 is allowed.
      */
-    public boolean getAllowV2() {
+    public boolean isAllowV2() {
         return (policy & OtrPolicy.ALLOW_V2) != 0;
     }
 
@@ -105,7 +105,7 @@ public final class OtrPolicy {
      *
      * @return Returns true if OTR version 3 is allowed.
      */
-    public boolean getAllowV3() {
+    public boolean isAllowV3() {
         return (policy & OtrPolicy.ALLOW_V3) != 0;
     }
 
@@ -114,7 +114,7 @@ public final class OtrPolicy {
      *
      * @return Returns true if OTR version 4 is allowed.
      */
-    public boolean getAllowV4() {
+    public boolean isAllowV4() {
         return (policy & OtrPolicy.ALLOW_V4) != 0;
     }
 
@@ -128,7 +128,7 @@ public final class OtrPolicy {
      * session immediately after receiving an error message. Returns false if
      * policy is set to false, or if no OTR protocol version is allowed.
      */
-    public boolean getErrorStartAKE() {
+    public boolean isErrorStartAKE() {
         if (!viable()) {
             LOGGER.warning("Returning false to getErrorStartAKE as no OTR protocol version is allowed.");
             return false;
@@ -143,7 +143,7 @@ public final class OtrPolicy {
      * communication, or false if message are allowed to be sent unencrypted in
      * case an OTR session is not established.
      */
-    public boolean getRequireEncryption() {
+    public boolean isRequireEncryption() {
         return (policy & OtrPolicy.REQUIRE_ENCRYPTION) != 0;
     }
 
@@ -157,7 +157,7 @@ public final class OtrPolicy {
      * least one OTR protocol version is allowed. Returns false if policy is set
      * to false, or if no OTR protocol version is allowed.
      */
-    public boolean getSendWhitespaceTag() {
+    public boolean isSendWhitespaceTag() {
         if (!viable()) {
             LOGGER.warning("Returning false to getSendWhitespaceTag as no OTR protocol version is allowed.");
             return false;
@@ -176,7 +176,7 @@ public final class OtrPolicy {
      * and at least one OTR protocol version is allowed. Returns false if policy
      * is set to false, or if no OTR protocol version is allowed.
      */
-    public boolean getWhitespaceStartAKE() {
+    public boolean isWhitespaceStartAKE() {
         if (!viable()) {
             LOGGER.warning("Returning false to getWhitespaceStartAKE as no OTR protocol version is allowed.");
             return false;
@@ -295,9 +295,8 @@ public final class OtrPolicy {
      *
      * @return Returns true in case full ENABLE_ALWAYS profile is active.
      */
-    public boolean getEnableAlways() {
-        return getEnableManual() && getErrorStartAKE()
-                && getRequireEncryption() && getWhitespaceStartAKE();
+    public boolean isEnableAlways() {
+        return isEnableManual() && isErrorStartAKE() && isRequireEncryption() && isWhitespaceStartAKE();
     }
 
     /**
@@ -334,8 +333,8 @@ public final class OtrPolicy {
      *
      * @return Returns true if ENABLE_MANUAL is active, false otherwise.
      */
-    public boolean getEnableManual() {
-        return getAllowV2() && getAllowV3() && getAllowV4();
+    public boolean isEnableManual() {
+        return isAllowV2() && isAllowV3() && isAllowV4();
     }
 
     /**
@@ -371,7 +370,7 @@ public final class OtrPolicy {
      * compatible policy. Returns false if no protocol version is enabled.
      */
     public boolean viable() {
-        return getAllowV2() || getAllowV3() || getAllowV4();
+        return isAllowV2() || isAllowV3() || isAllowV4();
     }
 
     @Override
@@ -382,9 +381,7 @@ public final class OtrPolicy {
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
-
         final OtrPolicy policy = (OtrPolicy) obj;
-
         return policy.policy == this.policy;
     }
 

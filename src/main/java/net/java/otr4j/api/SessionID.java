@@ -95,13 +95,8 @@ public final class SessionID {
             return false;
         }
         if (remoteUserID == null) {
-            if (other.remoteUserID != null) {
-                return false;
-            }
-        } else if (!remoteUserID.equals(other.remoteUserID)) {
-            return false;
+            return other.remoteUserID == null;
         }
-        return true;
+        return remoteUserID.equals(other.remoteUserID);
     }
-
 }

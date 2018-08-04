@@ -129,12 +129,7 @@ public final class OtrCryptoEngine {
         final DHKeyGenerationParameters params = new DHKeyGenerationParameters(
                 secureRandom, dhParams);
         final DHKeyPairGenerator kpGen = new DHKeyPairGenerator();
-
         kpGen.init(params);
-        final AsymmetricCipherKeyPair pair = kpGen.generateKeyPair();
-        final DHPublicKeyParameters pub = convertToPublicKeyParams(pair.getPublic());
-        final DHPrivateKeyParameters priv = convertToPrivateKeyParams(pair.getPrivate());
-
         final KeyFactory keyFac;
         try {
             keyFac = KeyFactory.getInstance(KF_DH);
@@ -142,23 +137,23 @@ public final class OtrCryptoEngine {
             throw new IllegalStateException("DH key factory unavailable.", ex);
         }
 
-        final DHPublicKeySpec pubKeySpecs = new DHPublicKeySpec(pub.getY(),
-                MODULUS, GENERATOR);
+        final AsymmetricCipherKeyPair pair = kpGen.generateKeyPair();
+        final DHPublicKeyParameters pub = convertToPublicKeyParams(pair.getPublic());
+        final DHPublicKeySpec pubKeySpecs = new DHPublicKeySpec(pub.getY(), MODULUS, GENERATOR);
         final DHPublicKey pubKey;
         try {
-            pubKey = (DHPublicKey) keyFac
-                    .generatePublic(pubKeySpecs);
+            pubKey = (DHPublicKey) keyFac.generatePublic(pubKeySpecs);
         } catch (final InvalidKeySpecException ex) {
             throw new IllegalStateException("Failed to generate DH public key.", ex);
         }
 
+        final DHPrivateKeyParameters priv = convertToPrivateKeyParams(pair.getPrivate());
         final DHParameters dhParameters = priv.getParameters();
         final DHPrivateKeySpec privKeySpecs = new DHPrivateKeySpec(priv.getX(),
                 dhParameters.getP(), dhParameters.getG());
         final DHPrivateKey privKey;
         try {
-            privKey = (DHPrivateKey) keyFac
-                    .generatePrivate(privKeySpecs);
+            privKey = (DHPrivateKey) keyFac.generatePrivate(privKeySpecs);
         } catch (final InvalidKeySpecException ex) {
             throw new IllegalStateException("Failed to generate DH private key.", ex);
         }
@@ -185,7 +180,8 @@ public final class OtrCryptoEngine {
     }
 
     @Nonnull
-    public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length) throws OtrCryptoException {
+    public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
+        throws OtrCryptoException {
 
         final SecretKeySpec keyspec = new SecretKeySpec(key, HMAC_SHA256);
         final Mac mac;
@@ -546,7 +542,6 @@ public final class OtrCryptoEngine {
     public static DSAPublicKey createDSAPublicKey(@Nonnull final BigInteger y, @Nonnull final BigInteger p,
                                                @Nonnull final BigInteger q, @Nonnull final BigInteger g)
             throws OtrCryptoException {
-        final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
         final KeyFactory keyFactory;
         try {
             keyFactory = KeyFactory.getInstance("DSA");
@@ -554,6 +549,7 @@ public final class OtrCryptoEngine {
             throw new IllegalStateException("Failed to initialize DSA key factory.", e);
         }
         try {
+            final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
             return (DSAPublicKey) keyFactory.generatePublic(keySpec);
         } catch (final InvalidKeySpecException e) {
             throw new OtrCryptoException("Read invalid public key from input stream.", e);

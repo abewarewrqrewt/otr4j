@@ -106,7 +106,7 @@ public final class StatePlaintext extends AbstractState {
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
         // warn him that the message was received unencrypted.
-        if (context.getSessionPolicy().getRequireEncryption()) {
+        if (context.getSessionPolicy().isRequireEncryption()) {
             OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(),
                     this.sessionId, plainTextMessage.getCleanText());
         }
@@ -117,7 +117,7 @@ public final class StatePlaintext extends AbstractState {
     @Nullable
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
         final OtrPolicy otrPolicy = context.getSessionPolicy();
-        if (otrPolicy.getRequireEncryption()) {
+        if (otrPolicy.isRequireEncryption()) {
             // Prevent original message from being sent. Start AKE.
             if (!otrPolicy.viable()) {
                 throw new OtrException("OTR policy disallows all versions of the OTR protocol. We cannot initiate a new OTR session.");
@@ -126,7 +126,7 @@ public final class StatePlaintext extends AbstractState {
             OtrEngineHostUtil.requireEncryptedMessage(context.getHost(), sessionId, msgText);
             return null;
         }
-        if (!otrPolicy.getSendWhitespaceTag()
+        if (!otrPolicy.isSendWhitespaceTag()
                 || context.getOfferStatus() == OfferStatus.rejected) {
             // As we do not want to send a specially crafted whitespace tag
             // message, just return the original message text to be sent.

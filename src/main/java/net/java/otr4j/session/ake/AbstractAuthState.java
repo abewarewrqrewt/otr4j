@@ -24,6 +24,9 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.KeyPair;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine.random;
+
 /**
  * Abstract AuthState implementation that provides authentication initiation
  * as this is supported in any state and is always processed in the same manner.
@@ -65,17 +68,17 @@ abstract class AbstractAuthState implements AuthState {
         }
         // OTR: "Serialize gx as an MPI, gxmpi. [gxmpi will probably be 196 bytes long, starting with "\x00\x00\x00\xc0".]"
         final byte[] publicKeyBytes = new OtrOutputStream().writeBigInt(localDHPublicKey.getY()).toByteArray();
-        // OTR: "This is the SHA256 hash of gxmpi."
-        final byte[] publicKeyHash = OtrCryptoEngine.sha256Hash(publicKeyBytes);
         // OTR: "Encrypt gxmpi using AES128-CTR, with key r and initial counter value 0. The result will be the same length as gxmpi."
         final byte[] publicKeyEncrypted;
         // OTR: "Choose a random value r (128 bits)"
-        final byte[] r = OtrCryptoEngine.random(context.secureRandom(), new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
+        final byte[] r = random(context.secureRandom(), new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
         try {
-            publicKeyEncrypted = OtrCryptoEngine.aesEncrypt(r, null, publicKeyBytes);
+            publicKeyEncrypted = aesEncrypt(r, null, publicKeyBytes);
         } catch (final OtrCryptoException ex) {
             throw new IllegalStateException("Failed to encrypt public key bytes.", ex);
         }
+        // OTR: "This is the SHA256 hash of gxmpi."
+        final byte[] publicKeyHash = OtrCryptoEngine.sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
             context.getSenderInstanceTag().getValue(), receiverTag.getValue());

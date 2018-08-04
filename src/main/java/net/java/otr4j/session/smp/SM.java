@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // FIXME Add OTRv4 support: new crypto primitives, include in StateEncrypted4.
+@SuppressWarnings({"PMD.AvoidRethrowingException", "PMD.AvoidCatchingGenericException"})
 public final class SM {
 
     private static final Logger LOGGER = Logger.getLogger(SM.class.getName());
@@ -108,7 +109,7 @@ public final class SM {
                 throw new SMException("Too many ints");
             }
             final BigInteger[] ints = new BigInteger[len];
-            for (int i = 0; i < len; i++) {
+            for (int i = 0; i < ints.length; i++) {
                 ints[i] = in.readBigInt();
             }
             return ints;
@@ -167,7 +168,6 @@ public final class SM {
     public byte[] step1(@Nonnull final byte[] secret) throws SMException
     {
         LOGGER.fine("Initiating SMP exchange.");
-
         // startSMP is solely controlled by the local user. In case an exception
         // occurs here, it is related to a programming error.
         return this.state.startSMP(this, secret);
@@ -188,18 +188,14 @@ public final class SM {
         LOGGER.fine("Received SMP exchange initiation request.");
         try {
             this.state.smpMessage1a(this, input);
-        }
-        catch (final SMAbortedException e) {
+        } catch (final SMAbortedException e) {
             // Let SMAbortedException pass. This exception may at times occur
             // and is a valid interruption that is not considered cheating.
             throw e;
-        }
-        catch (final SMException e) {
+        } catch (final SMException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
-        }
-        // FIXME consider removing the RuntimeException catch-block
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
         }
@@ -228,18 +224,14 @@ public final class SM {
         LOGGER.fine("Continuing SMP exchange initiation reply after receiving data from OtrEngineHost.");
         try {
             return this.state.smpMessage1b(this, secret);
-        }
-        catch (final SMAbortedException e) {
+        } catch (final SMAbortedException e) {
             // Let SMAbortedException pass. This exception may at times occur
             // and is a valid interruption that is not considered cheating.
             throw e;
-        }
-        catch (final SMException e) {
+        } catch (final SMException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
-        }
-        // FIXME consider removing the RuntimeException catch-block
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
         }
@@ -265,18 +257,14 @@ public final class SM {
         LOGGER.fine("Received reply to SMP exchange initiation request. Sending final message in SMP exchange.");
         try {
             return this.state.smpMessage2(this, input);
-        }
-        catch (final SMAbortedException e) {
+        } catch (final SMAbortedException e) {
             // Let SMAbortedException pass. This exception may at times occur
             // and is a valid interruption that is not considered cheating.
             throw e;
-        }
-        catch (final SMException e) {
+        } catch (final SMException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
-        }
-        // FIXME consider removing the RuntimeException catch-block
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
         }
@@ -302,22 +290,17 @@ public final class SM {
         LOGGER.fine("Received final SMP response. Concluding SMP exchange and sending final response.");
         try {
             return this.state.smpMessage3(this, input);
-        }
-        catch (final SMAbortedException e) {
+        } catch (final SMAbortedException e) {
             // Let SMAbortedException pass. This exception may at times occur
             // and is a valid interruption that is not considered cheating.
             throw e;
-        }
-        catch (final SMException e) {
+        } catch (final SMException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
-        }
-        // FIXME consider removing the RuntimeException catch-block
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
-        }
-        finally {
+        } finally {
             LOGGER.log(Level.FINE, "Final SMP exchange state: {0}", this.state.status().name());
         }
     }
@@ -336,22 +319,17 @@ public final class SM {
         LOGGER.fine("Received final SMP response. Concluding SMP exchange.");
         try {
             this.state.smpMessage4(this, input);
-        }
-        catch (final SMAbortedException e) {
+        } catch (final SMAbortedException e) {
             // Let SMAbortedException pass. This exception may at times occur
             // and is a valid interruption that is not considered cheating.
             throw e;
-        }
-        catch (final SMException e) {
+        } catch (final SMException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw e;
-        }
-        // FIXME consider removing the RuntimeException catch-block
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             this.state = new StateExpect1(this.state.secureRandom(), SMPStatus.CHEATED);
             throw new SMException(e);
-        }
-        finally {
+        } finally {
             LOGGER.log(Level.FINE, "Final SMP exchange state: {0}", this.state.status().name());
         }
     }

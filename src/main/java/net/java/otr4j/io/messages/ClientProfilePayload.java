@@ -47,6 +47,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  */
 // FIXME write unit tests
 // FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
+@SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public final class ClientProfilePayload implements OtrEncodable {
 
     private final List<Field> fields;
@@ -275,7 +276,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             throw new ValidationException("Expect either no or single DSA public key field. Found more than one.");
         }
         // TODO should we fail validation or drop DSA public key in case DSA public key comes without transitional signature?
-        if (dsaPublicKeyFields.size() == 1 && transitionalSignatureFields.size() == 0) {
+        if (dsaPublicKeyFields.size() == 1 && transitionalSignatureFields.isEmpty()) {
             throw new ValidationException("DSA public key encountered without corresponding transitional signature.");
         }
         if (!now.before(new Date(expirationDateFields.get(0).timestamp * 1000))) {

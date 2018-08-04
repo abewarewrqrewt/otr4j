@@ -230,7 +230,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage) throws OtrException {
         super.handleErrorMessage(context, errorMessage);
         final OtrPolicy policy = context.getSessionPolicy();
-        if (!policy.getErrorStartAKE()) {
+        if (!policy.isErrorStartAKE()) {
             return;
         }
         // Re-negotiate if we got an error and we are in ENCRYPTED message state
@@ -245,14 +245,6 @@ final class StateEncrypted extends AbstractStateEncrypted {
     public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
-
-        // Get encryption keys.
-        final SessionKey encryptionKeys = this.sessionKeyManager.getEncryptionSessionKeys();
-        final int senderKeyID = encryptionKeys.getLocalKeyID();
-        final int recipientKeyID = encryptionKeys.getRemoteKeyID();
-
-        // Increment CTR.
-        final byte[] ctr = encryptionKeys.acquireSendingCtr();
 
         final byte[] data;
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -275,6 +267,15 @@ final class StateEncrypted extends AbstractStateEncrypted {
         } catch (final IOException e) {
             throw new IllegalStateException("Unexpected failure while closing ByteArrayOutputStream.", e);
         }
+
+        // Get encryption keys.
+        final SessionKey encryptionKeys = this.sessionKeyManager.getEncryptionSessionKeys();
+        final int senderKeyID = encryptionKeys.getLocalKeyID();
+        final int recipientKeyID = encryptionKeys.getRemoteKeyID();
+
+        // Increment CTR.
+        final byte[] ctr = encryptionKeys.acquireSendingCtr();
+
         // Encrypt message.
         logger.log(Level.FINEST, "Encrypting message with keyids (localKeyID, remoteKeyID) = ({0}, {1})",
                 new Object[]{senderKeyID, recipientKeyID});

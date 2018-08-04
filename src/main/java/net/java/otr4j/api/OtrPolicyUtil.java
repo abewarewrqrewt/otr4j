@@ -31,13 +31,13 @@ public final class OtrPolicyUtil {
     @Nonnull
     public static Set<Integer> allowedVersions(@Nonnull final OtrPolicy policy) {
         final HashSet<Integer> versions = new HashSet<>();
-        if (policy.getAllowV2()) {
+        if (policy.isAllowV2()) {
             versions.add(Session.OTRv.TWO);
         }
-        if (policy.getAllowV3()) {
+        if (policy.isAllowV3()) {
             versions.add(Session.OTRv.THREE);
         }
-        if (policy.getAllowV4()) {
+        if (policy.isAllowV4()) {
             versions.add(Session.OTRv.FOUR);
         }
         return versions;
