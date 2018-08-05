@@ -203,7 +203,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
                     this.smpTlvHandler.processTlvSMP4(tlv);
                     break;
                 case TLV.SMP_ABORT: //TLV6
-                    this.smpTlvHandler.processTlvSMP_ABORT(tlv);
+                    this.smpTlvHandler.processTlvSMPAbort();
                     break;
                 case TLV.USE_EXTRA_SYMMETRIC_KEY:
                     final byte[] key = matchingKeys.extraSymmetricKey();

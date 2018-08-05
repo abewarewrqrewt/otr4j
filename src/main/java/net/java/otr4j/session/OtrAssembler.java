@@ -28,6 +28,13 @@ final class OtrAssembler {
     private final InOrderAssembler inOrder = new InOrderAssembler();
     private final OutOfOrderAssembler outOfOrder = new OutOfOrderAssembler();
 
+    /**
+     * Accumulate fragments into a full OTR-encoded message.
+     *
+     * @param fragment a message fragment
+     * @return Returns completed OTR-encoded message, or null if more fragments are needed to complete the message.
+     * @throws ProtocolException In case the fragment is rejected.
+     */
     @Nullable
     String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
         final int version = fragment.getVersion();

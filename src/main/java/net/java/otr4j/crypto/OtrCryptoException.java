@@ -22,8 +22,4 @@ public final class OtrCryptoException extends OtrException {
     OtrCryptoException(final String message, final Throwable cause) {
         super(message, cause);
     }
-
-    OtrCryptoException(final Throwable e) {
-        super(e);
-    }
 }

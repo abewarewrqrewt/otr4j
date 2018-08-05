@@ -9,6 +9,7 @@ package net.java.otr4j.crypto;
 
 import org.junit.Test;
 
+@SuppressWarnings("ThrowableNotThrown")
 public class OtrCryptoExceptionTest {
 
     public OtrCryptoExceptionTest() {
@@ -16,12 +17,12 @@ public class OtrCryptoExceptionTest {
 
     @Test
     public void testInstantiationWithCause() {
-        new OtrCryptoException(new IllegalStateException());
+        new OtrCryptoException("Test", new IllegalStateException());
     }
 
     @Test
     public void testInstantiationWithoutCause() {
-        new OtrCryptoException((Exception) null);
+        new OtrCryptoException("Test", null);
     }
 
     @Test

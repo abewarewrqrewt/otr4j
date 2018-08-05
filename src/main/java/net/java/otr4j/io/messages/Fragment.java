@@ -89,6 +89,7 @@ public final class Fragment implements Message {
      * @throws ProtocolException In case of invalid fragment format, or in case of bad data in the fragment.
      */
     // FIXME are we required to reject fragment with empty payload?
+    @SuppressWarnings("PMD.AssignmentInOperand")
     @Nonnull
     public static Fragment parse(@Nonnull final String message) throws ProtocolException {
         final int version;

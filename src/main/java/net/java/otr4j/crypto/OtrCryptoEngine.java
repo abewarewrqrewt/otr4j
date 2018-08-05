@@ -275,7 +275,7 @@ public final class OtrCryptoEngine {
         try {
             bufSicAesDec.doFinal(aesOutLwDec, done);
         } catch (final InvalidCipherTextException ex) {
-            throw new OtrCryptoException(ex);
+            throw new OtrCryptoException("Encrypted message contents is bad.", ex);
         }
 
         return aesOutLwDec;
@@ -297,7 +297,7 @@ public final class OtrCryptoEngine {
         try {
             bufSicAesEnc.doFinal(aesOutLwEnc, done);
         } catch (final InvalidCipherTextException ex) {
-            throw new OtrCryptoException(ex);
+            throw new OtrCryptoException("Failed to encrypt content.", ex);
         }
         return aesOutLwEnc;
     }
@@ -314,7 +314,7 @@ public final class OtrCryptoEngine {
         } catch (final NoSuchAlgorithmException ex) {
             throw new IllegalStateException("DH key factory not supported.", ex);
         } catch (final InvalidKeyException ex) {
-            throw new OtrCryptoException(ex);
+            throw new OtrCryptoException("Failed to generate shared secret.", ex);
         }
     }
 

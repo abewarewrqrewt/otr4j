@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
  *
  * @author Danny van Heumen
  */
-@SuppressWarnings("PMD.AvoidCatchingGenericException")
+@SuppressWarnings({"PMD.AvoidCatchingGenericException", "PMD.AvoidDuplicateLiterals"})
 public final class SmpEngineHostUtil {
 
     private static final Logger LOGGER = Logger.getLogger(SmpEngineHostUtil.class.getName());

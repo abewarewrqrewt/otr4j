@@ -120,12 +120,12 @@ final class SessionKeyManager {
         LOGGER.finest("Rotating local keys.");
         final SessionKey sess1 = this.keys.get(Index.CURRENT).get(Index.NEXT);
         if (sess1.isUsed()) {
-            LOGGER.finest("Detected used receiving MAC key. Adding the old MAC keys to reveal it.");
+            LOGGER.finest("Detected used receiving MAC key in sessionkeys (CURRENT, NEXT) while rotating local keys. Adding the old MAC keys to reveal it.");
             this.oldMacKeys.add(sess1.receivingMAC());
         }
         final SessionKey sess2 = this.keys.get(Index.CURRENT).get(Index.CURRENT);
         if (sess2.isUsed()) {
-            LOGGER.finest("Detected used receiving MAC key. Adding the old MAC keys to reveal it.");
+            LOGGER.finest("Detected used receiving MAC key in sessionkeys (CURRENT, CURRENT) while rotation local keys. Adding the old MAC keys to reveal it.");
             this.oldMacKeys.add(sess2.receivingMAC());
         }
 
@@ -164,12 +164,12 @@ final class SessionKeyManager {
         LOGGER.finest("Rotating remote keys.");
         final SessionKey sess1 = this.keys.get(Index.NEXT).get(Index.CURRENT);
         if (sess1.isUsed()) {
-            LOGGER.finest("Detected used receiving MAC key. Adding the old MAC keys to reveal it.");
+            LOGGER.finest("Detected used receiving MAC key for sessionkeys (NEXT, CURRENT) while rotating remote keys. Adding the old MAC keys to reveal it.");
             this.oldMacKeys.add(sess1.receivingMAC());
         }
         final SessionKey sess2 = this.keys.get(Index.CURRENT).get(Index.CURRENT);
         if (sess2.isUsed()) {
-            LOGGER.finest("Detected used receiving MAC key. Adding the old MAC keys to reveal it.");
+            LOGGER.finest("Detected used receiving MAC key for sessionkeys (CURRENT, CURRENT) while rotating remote keys. Adding the old MAC keys to reveal it.");
             this.oldMacKeys.add(sess2.receivingMAC());
         }
 

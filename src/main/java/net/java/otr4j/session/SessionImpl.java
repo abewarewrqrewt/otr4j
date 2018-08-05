@@ -1168,7 +1168,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             handler = this.sessionState.getSmpTlvHandler();
         } catch (final IncorrectStateException ex) {
-            throw new OtrException(ex);
+            throw new OtrException("Initializing SMP failed because OTR is not in an encrypted messaging state.", ex);
         }
         final List<TLV> tlvs = handler.initRespondSmp(question, secret, true);
         final Message m = this.sessionState.transformSending(this, "", tlvs);
@@ -1225,7 +1225,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             tlvs = this.sessionState.getSmpTlvHandler().initRespondSmp(question, secret, false);
         } catch (final IncorrectStateException ex) {
-            throw new OtrException(ex);
+            throw new OtrException("Responding to SMP request failed because OTR is not in an encrypted messaging state.",
+                ex);
         }
         final Message m = this.sessionState.transformSending(this, "", tlvs);
         if (m != null) {
@@ -1248,7 +1249,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             tlvs = this.sessionState.getSmpTlvHandler().abortSmp();
         } catch (final IncorrectStateException ex) {
-            throw new OtrException(ex);
+            throw new OtrException("Aborting SMP is not possible, because OTR is not in an encrypted messaging state.",
+                ex);
         }
         final Message m = this.sessionState.transformSending(this, "", tlvs);
         if (m != null) {
@@ -1295,7 +1297,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             return this.sessionState.getExtraSymmetricKey();
         } catch (final IncorrectStateException ex) {
-            throw new OtrException(ex);
+            throw new OtrException("Cannot acquire Extra Symmetric Key, because OTR is not in an encrypted messaging state.",
+                ex);
         }
     }
 }

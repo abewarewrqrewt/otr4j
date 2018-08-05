@@ -101,6 +101,7 @@ public final class SharedSecret {
      *
      * @return Returns 16-byte c.
      */
+    @SuppressWarnings("PMD.MethodNamingConventions")
     @Nonnull
     public byte[] c() {
         LOGGER.finest("Requested c.");

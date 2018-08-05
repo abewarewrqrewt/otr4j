@@ -9,6 +9,7 @@ package net.java.otr4j.api;
 
 import org.junit.Test;
 
+@SuppressWarnings("ThrowableNotThrown")
 public class OtrExceptionTest {
 
     public OtrExceptionTest() {
@@ -21,16 +22,16 @@ public class OtrExceptionTest {
 
     @Test
     public void testInstantiationWithCause() {
-        new OtrException(new IllegalStateException("something bad"));
+        new OtrException("Something happened.", new IllegalStateException("something bad"));
     }
 
     @Test
     public void testAllowInstantiationWithNullCause() {
-        new OtrException((Exception) null);
+        new OtrException("Something happened.", null);
     }
 
     @Test
     public void testAllowInstantiationWithNullMessage() {
-        new OtrException((String) null);
+        new OtrException(null);
     }
 }

@@ -77,6 +77,7 @@ public final class SmpTlvHandler {
      *  @throws OtrException Failures in case an SMP step cannot be processed
      *  successfully, or in case expected data is not provided.
      */
+    // TODO consider throwing SMException directly, instead of wrapping inside OtrException in this method.
     public List<TLV> initRespondSmp(@Nullable final String question, @Nonnull final String secret,
             final boolean initiating) throws OtrException {
         if (!initiating && this.sm.status() != SMPStatus.INPROGRESS) {
@@ -119,11 +120,11 @@ public final class SmpTlvHandler {
                     smpmsg = sm.step1(combinedSecret);
                 }
                 catch (final SMException ex) {
-                    throw new OtrException(ex);
+                    throw new OtrException("Failed to process SMP step 1 with combined secret.", ex);
                 }
             }
             catch (final SMException ex) {
-                throw new OtrException(ex);
+                throw new OtrException("Failed to process SMP step 1 with combined secret.", ex);
             }
         } else {
             try {
@@ -132,10 +133,10 @@ public final class SmpTlvHandler {
             catch (final SMAbortedException ex) {
                 sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));
                 SmpEngineHostUtil.smpAborted(engineHost, session.getSessionID());
-                throw new OtrException(ex);
+                throw new OtrException("Aborted SMP due to unexpected message.", ex);
             }
             catch (final SMException ex) {
-                throw new OtrException(ex);
+                throw new OtrException("Failed to process SMP step 2b.", ex);
             }
         }
 
@@ -148,8 +149,7 @@ public final class SmpTlvHandler {
             smpmsg = qsmpmsg;
         }
 
-        final TLV sendtlv = new TLV(initiating?
-                (question != null ? TLV.SMP1Q:TLV.SMP1) : TLV.SMP2, smpmsg);
+        final TLV sendtlv = new TLV(initiating ? question == null ? TLV.SMP1 : TLV.SMP1Q : TLV.SMP2, smpmsg);
         return Collections.singletonList(sendtlv);
     }
 
@@ -211,7 +211,7 @@ public final class SmpTlvHandler {
         catch (final SMException e) {
             SmpEngineHostUtil.smpError(engineHost, session.getSessionID(),
                     tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
-            throw new OtrException(e);
+            throw new OtrException("Failed to process SMP step 2a.", e);
         }
     }
 
@@ -231,7 +231,7 @@ public final class SmpTlvHandler {
         catch (final SMException e) {
             SmpEngineHostUtil.smpError(engineHost, session.getSessionID(),
                     tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
-            throw new OtrException(e);
+            throw new OtrException("Failed to process SMP step 2a.", e);
         }
     }
 
@@ -252,7 +252,7 @@ public final class SmpTlvHandler {
         catch (final SMException e) {
             SmpEngineHostUtil.smpError(engineHost, session.getSessionID(),
                     tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
-            throw new OtrException(e);
+            throw new OtrException("Failed to process SMP step 3.", e);
         }
     }
 
@@ -278,7 +278,7 @@ public final class SmpTlvHandler {
         catch (final SMException e) {
             SmpEngineHostUtil.smpError(engineHost, session.getSessionID(),
                     tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
-            throw new OtrException(e);
+            throw new OtrException("Failed to process SMP step 4.", e);
         }
     }
 
@@ -299,11 +299,11 @@ public final class SmpTlvHandler {
         catch (final SMException e) {
             SmpEngineHostUtil.smpError(engineHost, session.getSessionID(),
                     tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
-            throw new OtrException(e);
+            throw new OtrException("Failed to process SMP step 5.", e);
         }
     }
 
-    void processTlvSMP_ABORT(@Nonnull final TLV tlv) {
+    void processTlvSMPAbort() {
         if (this.sm.abort()) {
             SmpEngineHostUtil.smpAborted(engineHost, session.getSessionID());
         }
