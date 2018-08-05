@@ -1,4 +1,3 @@
-
 package net.java.otr4j.api;
 
 import net.java.otr4j.crypto.EdDSAKeyPair;
@@ -30,6 +29,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
+import static net.java.otr4j.util.BlockingQueues.shuffle;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -38,13 +38,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-// FIXME extend with tests for one party sending many messages in a row.
-// FIXME extend with tests for alternating messaging in order to verify correct behavior of ratcheting/key rotation.
 // FIXME add test to prove that interchanged message fragments from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 can be used interchangeably.
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 message fragments can be sent interchangeably as long as different sender instances are involved.
-// FIXME restructure existing OTRv3 tests as they now cause annoying hard-to-debug problems.
-// FIXME shuffle fragments before receiving them to ensure out-of-order fragmentation works correctly.
+// TODO restructure existing OTRv3 tests as they now cause annoying hard-to-debug problems.
 // FIXME test what happens when fragments are dropped.
 public class SessionTest {
 
@@ -355,7 +352,7 @@ public class SessionTest {
 
     @Test
     public void testPlainTextMessagingNewClients() throws OtrException {
-        final Conversation c = new Conversation();
+        final Conversation c = new Conversation(1);
         c.hostBob.sendMessage("hello world");
         assertEquals("hello world", c.hostAlice.receiveMessage());
         c.hostAlice.sendMessage("hello bob");
@@ -364,7 +361,7 @@ public class SessionTest {
 
     @Test
     public void testEstablishOTR4Session() throws OtrException {
-        final Conversation c = new Conversation();
+        final Conversation c = new Conversation(1);
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -429,7 +426,7 @@ public class SessionTest {
 
     @Test
     public void testOTR4ExtensiveMessagingToVerifyRatcheting() throws OtrException {
-        final Conversation c = new Conversation();
+        final Conversation c = new Conversation(1);
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -456,6 +453,42 @@ public class SessionTest {
             c.hostAlice.sendMessage(messageAlice);
             assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
         }
+    }
+
+    @Test
+    public void testOTR4ExtensiveMessagingToVerifyRatchetingManyConsecutiveMessages() throws OtrException {
+        final Conversation c = new Conversation(25);
+        c.hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.hostAlice.sendRequest();
+        assertNull(c.hostBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.hostBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.hostAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.hostBob.receiveMessage());
+
+        final String[] messages = new String[25];
+        for (int i = 0; i < messages.length; i++) {
+            messages[i] = randomMessage(300);
+        }
+        // Bob sending many messages
+        for (int i = 0; i < 25; i++) {
+            c.hostBob.sendMessage(messages[i]);
+        }
+        for (final String message : messages) {
+            assertMessage("Message Bob: " + message, message, c.hostAlice.receiveMessage());
+        }
+        // Alice sending one message in response
+        final String messageAlice = "Man, you talk a lot!";
+        c.hostAlice.sendMessage(messageAlice);
+        assertMessage("Message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
     }
 
     @Test
@@ -491,10 +524,49 @@ public class SessionTest {
         }
     }
 
+    @Test
+    public void testOTR4ExtensiveMessagingFragmentationShuffled() throws OtrException {
+        final Conversation c = new Conversation(150, 20);
+        c.hostBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.hostAlice.sendRequest();
+        assertNull(c.hostBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        shuffle(c.channelAlice, RANDOM);
+        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
+        // Expecting AUTH_R message from Alice.
+        shuffle(c.channelBob, RANDOM);
+        assertArrayEquals(new String[0], c.hostBob.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        // Expecting AUTH_I message from Bob.
+        shuffle(c.channelAlice, RANDOM);
+        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        shuffle(c.channelBob, RANDOM);
+        assertEquals(0, c.hostBob.receiveAllMessages(true).length);
+
+        for (int i = 0; i < 25; i++) {
+            // Bob sending a message (alternating, to enable ratchet)
+            final String messageBob = randomMessage(500);
+            c.hostBob.sendMessage(messageBob);
+            shuffle(c.channelAlice, RANDOM);
+            assertMessages("Iteration: " + i + ", message Bob: " + messageBob,
+                new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
+            // Alice sending a message (alternating, to enable ratchet)
+            final String messageAlice = randomMessage(500);
+            c.hostAlice.sendMessage(messageAlice);
+            shuffle(c.channelBob, RANDOM);
+            assertMessages("Iteration: " + i + ", message Alice: " + messageAlice,
+                new String[]{messageAlice}, c.hostBob.receiveAllMessages(true));
+        }
+    }
+
     // TODO add a test similar to this but with a restricted size messaging channel, to ensure proper operation of message fragmentation and reassembly.
     @Test
     public void testOTR4SmallConversationWithHugeMessages() throws OtrException {
-        final Conversation c = new Conversation();
+        final Conversation c = new Conversation(1);
         c.hostBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.hostAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -552,11 +624,13 @@ public class SessionTest {
         private final Client hostBob;
 
         /**
-         * Constructor with defaults. Unlimited-length messages and single-message channel capacity.
+         * Constructor with defaults: Unlimited-length messages.
+         *
+         * @param channelCapacity Maximum number of messages allowed to be in transit simultaneously.
          */
-        private Conversation() {
-            channelAlice = new LinkedBlockingQueue<>(1);
-            channelBob = new LinkedBlockingQueue<>(1);
+        private Conversation(final int channelCapacity) {
+            channelAlice = new LinkedBlockingQueue<>(channelCapacity);
+            channelBob = new LinkedBlockingQueue<>(channelCapacity);
             final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",

@@ -124,8 +124,6 @@ final class OtrAssembler {
     // TODO consider doing some fuzzing for this user input, if we can find a decent fuzzing library.
     // TODO consider if needed to keep track of recently completed fragments in case another message arrives?
     // FIXME is it still required to check the sender tag before accepting?
-    // FIXME still needs to be integrated with SessionImpl
-    // TODO consider implementing OTRv3 fragmentation in similar fashion and throw away old assembling logic
     private static final class OutOfOrderAssembler {
 
         private static final Logger LOGGER = Logger.getLogger(OutOfOrderAssembler.class.getName());
