@@ -420,24 +420,6 @@ final class SessionImpl implements Session, Context, AuthContext {
             return msgText;
         }
 
-        // FIXME use appropriate exception handling to either discard bad fragment or return as (untouched) plaintext message.
-//        try {
-//            // FIXME This way of assembling a fragmented message cannot work correctly in OTRv3+. Assembling is done at the master session which receives messages for multiple instances. Assembling will throw away one instances message parts when next instance's message parts come in.
-//            msgText = assembler.accumulate(msgText);
-//            if (msgText == null) {
-//                return null; // Not a complete message (yet).
-//            }
-//        } catch (final UnknownInstanceException e) {
-//            // The fragment is not intended for us
-//            logger.finest(e.getMessage());
-//            messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
-//            return null;
-//        } catch (final ProtocolException e) {
-//            // TODO consider downgrading to INFO message, as it is not an issue in any way to our local handling. Just a bad message.
-//            logger.log(Level.WARNING, "An invalid message fragment was discarded.", e);
-//            return null;
-//        }
-
         final Message m;
         try {
             m = parse(msgText);
