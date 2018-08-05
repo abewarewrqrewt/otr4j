@@ -19,19 +19,12 @@ import static org.junit.Assert.assertTrue;
 @SuppressWarnings("ConstantConditions")
 public class SerializationUtilsTest {
 
-
     @Test
     public void testPlaintextMessageNoNullMangling() {
         final String data = "This is a test with \0 null \0 values.";
         final PlainTextMessage m = new PlainTextMessage("?OTRv23?",
                 new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE)), data);
         assertTrue(SerializationUtils.toString(m).startsWith("This is a test with \0 null \0 values."));
-    }
-
-    @Test
-    public void testBytesConversionNullMangling() {
-        assertArrayEquals("This is a test with ? null ? values.".getBytes(UTF_8),
-                SerializationUtils.convertTextToBytes("This is a test with \0 null \0 values."));
     }
 
     @Test

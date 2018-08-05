@@ -7,10 +7,10 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.TLV;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -18,6 +18,7 @@ import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
@@ -54,6 +55,51 @@ public final class OtrOutputStream {
 
     public OtrOutputStream write(@Nonnull final OtrEncodable encodable) {
         encodable.writeTo(this);
+        return this;
+    }
+
+    /**
+     * Write a plaintext message in OTR-encoded format.
+     * <p>
+     * Convert the {@code String} text to a {@code byte[]}, including sanitizing
+     * it to make sure no corrupt characters conflict with bytes that have
+     * special meaning in OTR. Mostly, this means removing NULL bytes, since
+     * {@code 0x00) is used as the separator between the message and the TLVs
+     * in an OTR Data Message.
+     *
+     * @param message the plain text message being sent
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
+    public OtrOutputStream writeMessage(@Nonnull final String message) {
+        if (message.isEmpty()) {
+            return this;
+        }
+        final byte[] messageBytes = message.replace('\0', '?').getBytes(UTF_8);
+        this.out.write(messageBytes, 0, messageBytes.length);
+        return this;
+    }
+
+    /**
+     * Write TLV in OTR-encoded format.
+     * <p>
+     * NOTE: this method does not prefix the '\0' byte between message and TLV records. This byte has to be prefixed
+     * manually.
+     *
+     * @param tlvs TLV records
+     * @return Returns OtrOutputStream instance such that method calls can be chained.
+     */
+    public OtrOutputStream writeTLV(@Nonnull final Iterable<TLV> tlvs) {
+        for (final TLV tlv : tlvs) {
+            this.writeShort(tlv.getType()).writeTlvData(tlv.getValue());
+        }
+        return this;
+    }
+
+    private OtrOutputStream writeTlvData(@Nonnull final byte[] b) {
+        writeNumber(b.length, TLV_LEN);
+        if (b.length > 0) {
+            this.out.write(b, 0, b.length);
+        }
         return this;
     }
 
@@ -125,15 +171,6 @@ public final class OtrOutputStream {
         writeBigInt(dsaParams.getQ());
         writeBigInt(dsaParams.getG());
         writeBigInt(pubKey.getY());
-        return this;
-    }
-
-    public OtrOutputStream writeTlvData(@Nullable final byte[] b) {
-        final int len = b == null ? 0 : b.length;
-        writeNumber(len, TLV_LEN);
-        if (len > 0) {
-            this.out.write(b, 0, b.length);
-        }
         return this;
     }
 

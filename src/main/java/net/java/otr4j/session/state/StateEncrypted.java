@@ -28,7 +28,6 @@ import net.java.otr4j.session.ake.SecurityParameters;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
@@ -37,7 +36,6 @@ import java.util.logging.Level;
 
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.SerializationUtils.Content;
-import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
@@ -246,27 +244,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
 
-        final byte[] data;
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            if (msgText.length() > 0) {
-                final byte[] msgBytes = convertTextToBytes(msgText);
-                out.write(msgBytes, 0, msgBytes.length);
-            }
-
-            // Append tlvs
-            if (!tlvs.isEmpty()) {
-                // TODO should we only write '\0' in case TLVs exist?
-                out.write((byte) 0x00);
-                final OtrOutputStream eoos = new OtrOutputStream(out);
-                for (final TLV tlv : tlvs) {
-                    eoos.writeShort(tlv.getType()).writeTlvData(tlv.getValue());
-                }
-            }
-
-            data = out.toByteArray();
-        } catch (final IOException e) {
-            throw new IllegalStateException("Unexpected failure while closing ByteArrayOutputStream.", e);
-        }
+        final byte[] data = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
 
         // Get encryption keys.
         final SessionKey encryptionKeys = this.sessionKeyManager.getEncryptionSessionKeys();
@@ -279,8 +257,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Encrypt message.
         logger.log(Level.FINEST, "Encrypting message with keyids (localKeyID, remoteKeyID) = ({0}, {1})",
                 new Object[]{senderKeyID, recipientKeyID});
-        final byte[] encryptedMsg = OtrCryptoEngine.aesEncrypt(encryptionKeys
-                .sendingAESKey(), ctr, data);
+        final byte[] encryptedMsg = OtrCryptoEngine.aesEncrypt(encryptionKeys.sendingAESKey(), ctr, data);
 
         // Get most recent keys to get the next D-H public key.
         final SessionKey mostRecentKeys = this.sessionKeyManager.getMostRecentSessionKeys();

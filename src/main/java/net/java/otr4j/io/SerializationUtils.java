@@ -35,6 +35,7 @@ import static org.bouncycastle.util.encoders.Base64.toBase64String;
 /**
  * @author George Politis
  */
+// FIXME SerializationUtils is now reduced to serializing OTR messages only. Make this into a dedicated class with suitable name.
 public final class SerializationUtils {
 
     private SerializationUtils() {
@@ -95,22 +96,6 @@ public final class SerializationUtils {
             throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());
         }
         return writer.toString();
-    }
-
-    /**
-     * Convert the {@code String} text to a {@code byte[]}, including sanitizing
-     * it to make sure no corrupt characters conflict with bytes that have
-     * special meaning in OTR. Mostly, this means removing NULL bytes, since
-     * {@code 0x00) is used as the separator between the message and the TLVs
-     * in an OTR Data Message.
-     *
-     * @param msg the plain text message being sent
-     * @return byte[] the incoming message converted to OTR-safe bytes
-     */
-    // TODO consider moving this method into OtrOutputStream, as this is basically requirements for correct OTR encoding plaintext message body
-    @Nonnull
-    public static byte[] convertTextToBytes(@Nonnull final String msg) {
-        return msg.replace('\0', '?').getBytes(UTF_8);
     }
 
     /**

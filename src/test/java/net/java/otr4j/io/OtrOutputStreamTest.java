@@ -1,5 +1,6 @@
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.TLV;
 import org.bouncycastle.util.BigIntegers;
 import org.junit.Test;
 
@@ -7,8 +8,12 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singleton;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -109,5 +114,55 @@ public class OtrOutputStreamTest {
             }
         }).toByteArray();
         assertArrayEquals(expected, result);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteNullMessage() {
+        new OtrOutputStream().writeMessage(null);
+    }
+
+    @Test
+    public void testWriteEmptyMessage() {
+        assertArrayEquals(new byte[0], new OtrOutputStream().writeMessage("").toByteArray());
+    }
+
+    @Test
+    public void testWriteMessage() {
+        assertArrayEquals("Hello plaintext".getBytes(UTF_8),
+            new OtrOutputStream().writeMessage("Hello plaintext").toByteArray());
+    }
+
+    @Test
+    public void testWriteMessageContainingNulls() {
+        assertArrayEquals("Hello ??? plaintext?".getBytes(UTF_8),
+            new OtrOutputStream().writeMessage("Hello \0\0\0 plaintext\0").toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteNullTLVs() {
+        new OtrOutputStream().writeTLV(null);
+    }
+
+    @Test
+    public void testWriteEmptyTLVs() {
+        assertArrayEquals(new byte[0], new OtrOutputStream().writeTLV(Collections.<TLV>emptyList()).toByteArray());
+    }
+
+    @Test
+    public void testWriteSingleTLV() {
+        final byte[] helloWorldBytes = "hello world".getBytes(UTF_8);
+        final TLV tlv = new TLV(55, helloWorldBytes);
+        assertArrayEquals(concatenate(new byte[]{0x00, 0x37, 0x00, 0x0B}, helloWorldBytes),
+            new OtrOutputStream().writeTLV(singleton(tlv)).toByteArray());
+    }
+
+    @Test
+    public void testWriteMultipleTLVs() {
+        final byte[] helloWorldBytes = "hello world".getBytes(UTF_8);
+        final byte[] expected = concatenate(new byte[]{0x00, 0x37, 0x00, 0x0B}, helloWorldBytes,
+            new byte[]{0x00, 0x0B, 0x00, 0x00}, new byte[]{0x00, 0x01, 0x00, 0x02, 'h', 'i'});
+        final List<TLV> tlvs = Arrays.asList(new TLV(55, helloWorldBytes), new TLV(11, new byte[0]),
+            new TLV(1, new byte[]{'h', 'i'}));
+        assertArrayEquals(expected, new OtrOutputStream().writeTLV(tlvs).toByteArray());
     }
 }

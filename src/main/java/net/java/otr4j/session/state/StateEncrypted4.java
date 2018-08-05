@@ -30,7 +30,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.SharedSecret4.generateK;
 import static net.java.otr4j.crypto.SharedSecret4.generateSSID;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
-import static net.java.otr4j.io.SerializationUtils.convertTextToBytes;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static org.bouncycastle.util.Arrays.clear;
 
@@ -95,7 +94,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nonnull
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-                                                   @Nonnull final List<TLV> tlvs) {
+                                         @Nonnull final List<TLV> tlvs) {
         final DoubleRatchet.Rotation rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
@@ -105,8 +104,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             rotation = null;
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
         }
-        // FIXME TLVs are not yet included in the message payload!
-        final byte[] msgBytes = convertTextToBytes(msgText);
+        final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
         final Result result;
         final int ratchetId;
         final int messageId;
