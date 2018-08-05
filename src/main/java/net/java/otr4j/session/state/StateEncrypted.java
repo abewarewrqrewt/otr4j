@@ -28,7 +28,7 @@ import net.java.otr4j.session.smp.SMException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.IOException;
+import java.net.ProtocolException;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.Set;
@@ -125,7 +125,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage data) throws OtrException, IOException {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage data) throws OtrException, ProtocolException {
         logger.finest("Message state is ENCRYPTED. Trying to decrypt message.");
         final OtrEngineHost host = context.getHost();
         // Find matching session keys.

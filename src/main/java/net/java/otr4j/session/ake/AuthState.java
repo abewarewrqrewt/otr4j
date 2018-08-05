@@ -13,7 +13,7 @@ import net.java.otr4j.io.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
+import java.net.ProtocolException;
 
 /**
  * Interface for the AKE states.
@@ -50,9 +50,8 @@ public interface AuthState {
      * @return Returns message to be injected into the transport stream to
      * continue the AKE process. In case of 'null' no message needs to be
      * injected after handling this message.
-     * @throws IOException Throws exception in case of bad message content.
-     * (Note that an AbstractEncodedMessage instance is provided, so failures
-     * should only occur based on bad message content.)
+     * @throws ProtocolException Throws exception in case of bad message content. (Note that an AbstractEncodedMessage
+     * instance is provided, so failures should only occur based on bad message content.)
      * @throws OtrException Throws OtrException in case of unexpected situations during message processing, such as
      * verification and validation exceptions.
      * @throws AuthContext.InteractionFailedException Thrown in case of failure
@@ -60,7 +59,7 @@ public interface AuthState {
      */
     @Nullable
     AbstractEncodedMessage handle(@Nonnull AuthContext context, @Nonnull AbstractEncodedMessage message)
-            throws IOException, OtrException, AuthContext.InteractionFailedException;
+            throws ProtocolException, OtrException, AuthContext.InteractionFailedException;
 
     /**
      * Get active protocol version in AKE negotiation.

@@ -24,7 +24,7 @@ import net.java.otr4j.io.messages.SignatureX;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.IOException;
+import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -76,7 +76,7 @@ final class StateAwaitingSig extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrException, AuthContext.InteractionFailedException, IOException {
+        throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
 
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
@@ -132,7 +132,7 @@ final class StateAwaitingSig extends AbstractAuthState {
 
     @Nullable
     private SignatureMessage handleSignatureMessage(@Nonnull final AuthContext context, @Nonnull final SignatureMessage message)
-        throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException {
+        throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
         // OTR: "Decrypt the encrypted signature, and verify the signature and the MACs."
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"

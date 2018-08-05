@@ -48,7 +48,6 @@ import net.java.otr4j.session.state.StatePlaintext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -652,7 +651,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
-        } catch (final IOException e) {
+        } catch (final ProtocolException e) {
             throw new OtrException("Failed to process full data message.", e);
         }
     }
@@ -666,7 +665,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
-        } catch (final IOException e) {
+        } catch (final ProtocolException e) {
             throw new OtrException("Failed to process full data message.", e);
         }
     }
@@ -791,7 +790,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         logger.log(Level.FINEST, "Handling AKE message in state {0}", this.authState.getClass().getName());
         try {
             return this.authState.handle(this, m);
-        } catch (final IOException e) {
+        } catch (final ProtocolException e) {
             logger.log(Level.FINEST, "Ignoring message. Bad message content / incomplete message received.", e);
             return null;
         } catch (final OtrCryptoException e) {

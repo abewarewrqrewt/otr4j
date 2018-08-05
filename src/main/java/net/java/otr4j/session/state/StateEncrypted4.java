@@ -19,7 +19,7 @@ import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
+import java.net.ProtocolException;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.logging.Level;
@@ -156,7 +156,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
-        throws OtrException, IOException {
+        throws OtrException, ProtocolException {
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.
         // FIXME try to decrypt using skipped message keys.

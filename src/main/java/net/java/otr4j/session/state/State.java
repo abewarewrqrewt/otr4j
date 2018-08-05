@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.state;
 
-import java.io.IOException;
+import java.net.ProtocolException;
 import java.security.PublicKey;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -102,11 +102,11 @@ public interface State {
      * @param context The session context.
      * @param message The received data message.
      * @return Returns the decrypted message text.
-     * @throws java.io.IOException In case of I/O reading fails.
-     * @throws OtrException        In case an exception occurs.
+     * @throws ProtocolException In case of I/O reading fails.
+     * @throws OtrException      In case an exception occurs.
      */
     @Nullable
-    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage message) throws IOException, OtrException;
+    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage message) throws ProtocolException, OtrException;
 
     /**
      * Handle the received data message in OTRv4 format.
@@ -114,11 +114,11 @@ public interface State {
      * @param context The session context.
      * @param message The received data message.
      * @return Returns the decrypted message text.
-     * @throws IOException  In case of I/O reading failures.
-     * @throws OtrException In case of failures regarding the OTR protocol (implementation).
+     * @throws ProtocolException In case of I/O reading failures.
+     * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
      */
     @Nullable
-    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage4 message) throws IOException, OtrException;
+    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage4 message) throws ProtocolException, OtrException;
 
     /**
      * Handle the received error message.

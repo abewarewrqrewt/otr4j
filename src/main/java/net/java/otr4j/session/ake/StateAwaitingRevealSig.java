@@ -25,8 +25,8 @@ import net.java.otr4j.io.messages.SignatureX;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
-import java.io.IOException;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
@@ -75,7 +75,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrException, AuthContext.InteractionFailedException, IOException {
+        throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
 
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
@@ -124,11 +124,11 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
      * or signature message creation.
      * @throws net.java.otr4j.session.ake.AuthContext.InteractionFailedException
      * Thrown in case of interaction failure with the provided context.
-     * @throws IOException Thrown in case of message content errors.
+     * @throws ProtocolException Thrown in case of message content errors.
      */
     @Nonnull
     private SignatureMessage handleRevealSignatureMessage(@Nonnull final AuthContext context, @Nonnull final RevealSignatureMessage message)
-        throws OtrCryptoException, AuthContext.InteractionFailedException, IOException, UnsupportedTypeException {
+        throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
         // OTR: "Use the received value of r to decrypt the value of gx received in the D-H Commit Message, and verify
         // the hash therein. Decrypt the encrypted signature, and verify the signature and the MACs."
         final DHPublicKey remoteDHPublicKey;
