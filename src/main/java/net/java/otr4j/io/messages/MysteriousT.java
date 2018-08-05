@@ -40,7 +40,9 @@ public final class MysteriousT implements OtrEncodable {
                        final byte flags, final int senderKeyID, final int recipientKeyID,
                        @Nonnull final DHPublicKey nextDH, @Nonnull final byte[] ctr,
                        @Nonnull final byte[] encryptedMessage) {
-
+        if (protocolVersion < 2 || protocolVersion > 3) {
+            throw new IllegalArgumentException("Illegal protocol version specified.");
+        }
         this.protocolVersion = protocolVersion;
         this.senderInstanceTag = senderInstanceTag;
         this.receiverInstanceTag = receiverInstanceTag;
