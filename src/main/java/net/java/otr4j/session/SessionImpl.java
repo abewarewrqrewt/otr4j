@@ -403,7 +403,6 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     @Nullable
-    // TODO separate transformReceiving in a generic (text-based) processing and specific method for processing AbstractEncodedMessage in slave sessions.
     public String transformReceiving(@Nonnull final String msgText) throws OtrException {
         logger.log(Level.FINEST, "Entering {0} session.", masterSession == this ? "master" : "slave");
 
@@ -580,8 +579,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Nullable
     private String handleFragment(@Nonnull final Fragment fragment) throws OtrException {
-        assert (this.masterSession == this && fragment.getVersion() <= OTRv.TWO)
-            || (this.masterSession != this && fragment.getVersion() > OTRv.TWO)
+        assert this.masterSession != this || fragment.getVersion() == OTRv.TWO
             : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
         final String reassembledText;
         try {
