@@ -43,6 +43,7 @@ import static org.junit.Assert.assertThat;
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 message fragments can be sent interchangeably as long as different sender instances are involved.
 // TODO restructure existing OTRv3 tests as they now cause annoying hard-to-debug problems.
 // FIXME test what happens when fragments are dropped.
+// FIXME add test where one party disconnects the OTR-encrypted session, other party should transition to "FINISHED".
 public class SessionTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();

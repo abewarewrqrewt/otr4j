@@ -11,7 +11,6 @@ import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.OtrPolicyUtil;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
@@ -24,6 +23,7 @@ import net.java.otr4j.io.messages.MysteriousT;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
+import net.java.otr4j.session.smp.SMException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
+import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
@@ -188,27 +190,46 @@ final class StateEncrypted extends AbstractStateEncrypted {
                     context.setState(new StateFinished(this.sessionID));
                     break;
                 case TLV.SMP1Q: //TLV7
-                    this.smpTlvHandler.processTlvSMP1Q(tlv);
+                    try {
+                        this.smpTlvHandler.processTlvSMP1Q(tlv);
+                    } catch (final SMException e) {
+                        throw new OtrException("Failed to process SMP1Q TLV.", e);
+                    }
                     break;
                 case TLV.SMP1: // TLV2
-                    this.smpTlvHandler.processTlvSMP1(tlv);
+                    try {
+                        this.smpTlvHandler.processTlvSMP1(tlv);
+                    } catch (final SMException e) {
+                        throw new OtrException("Failed to process SMP1 TLV.", e);
+                    }
                     break;
                 case TLV.SMP2: // TLV3
-                    this.smpTlvHandler.processTlvSMP2(tlv);
+                    try {
+                        this.smpTlvHandler.processTlvSMP2(tlv);
+                    } catch (final SMException e) {
+                        throw new OtrException("Failed to process SMP2 TLV.", e);
+                    }
                     break;
                 case TLV.SMP3: // TLV4
-                    this.smpTlvHandler.processTlvSMP3(tlv);
+                    try {
+                        this.smpTlvHandler.processTlvSMP3(tlv);
+                    } catch (final SMException e) {
+                        throw new OtrException("Failed to process SMP3 TLV.", e);
+                    }
                     break;
                 case TLV.SMP4: // TLV5
-                    this.smpTlvHandler.processTlvSMP4(tlv);
+                    try {
+                        this.smpTlvHandler.processTlvSMP4(tlv);
+                    } catch (final SMException e) {
+                        throw new OtrException("Failed to process SMP4 TLV.", e);
+                    }
                     break;
                 case TLV.SMP_ABORT: //TLV6
                     this.smpTlvHandler.processTlvSMPAbort();
                     break;
                 case TLV.USE_EXTRA_SYMMETRIC_KEY:
                     final byte[] key = matchingKeys.extraSymmetricKey();
-                    OtrEngineHostUtil.extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key,
-                        tlv.getValue());
+                    extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key, tlv.getValue());
                     break;
                 default:
                     logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
@@ -233,7 +254,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         }
         // Re-negotiate if we got an error and we are in ENCRYPTED message state
         logger.finest("Error message starts AKE.");
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> versions = allowedVersions(policy);
         logger.finest("Sending Query");
         context.injectMessage(new QueryMessage("", versions));
     }

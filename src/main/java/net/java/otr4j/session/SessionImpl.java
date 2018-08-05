@@ -40,9 +40,9 @@ import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.ake.StateInitial;
+import net.java.otr4j.session.smp.SMException;
 import net.java.otr4j.session.state.Context;
 import net.java.otr4j.session.state.IncorrectStateException;
-import net.java.otr4j.session.state.SmpTlvHandler;
 import net.java.otr4j.session.state.State;
 import net.java.otr4j.session.state.StatePlaintext;
 
@@ -315,8 +315,8 @@ final class SessionImpl implements Session, Context, AuthContext {
     public void secure(@Nonnull final SecurityParameters s) throws InteractionFailedException {
         try {
             this.sessionState.secure(this, s);
-        } catch (final OtrException ex) {
-            throw new InteractionFailedException(ex);
+        } catch (final OtrException e) {
+            throw new InteractionFailedException(e);
         }
         if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
@@ -652,8 +652,8 @@ final class SessionImpl implements Session, Context, AuthContext {
                 this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
-        } catch (final IOException ex) {
-            throw new OtrException("Failed to process full data message.", ex);
+        } catch (final IOException e) {
+            throw new OtrException("Failed to process full data message.", e);
         }
     }
 
@@ -666,8 +666,8 @@ final class SessionImpl implements Session, Context, AuthContext {
                 this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
-        } catch (final IOException ex) {
-            throw new OtrException("Failed to process full data message.", ex);
+        } catch (final IOException e) {
+            throw new OtrException("Failed to process full data message.", e);
         }
     }
 
@@ -791,17 +791,17 @@ final class SessionImpl implements Session, Context, AuthContext {
         logger.log(Level.FINEST, "Handling AKE message in state {0}", this.authState.getClass().getName());
         try {
             return this.authState.handle(this, m);
-        } catch (final IOException ex) {
-            logger.log(Level.FINEST, "Ignoring message. Bad message content / incomplete message received.", ex);
+        } catch (final IOException e) {
+            logger.log(Level.FINEST, "Ignoring message. Bad message content / incomplete message received.", e);
             return null;
-        } catch (final OtrCryptoException ex) {
-            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to cryptographic verification failure.", ex);
+        } catch (final OtrCryptoException e) {
+            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to cryptographic verification failure.", e);
             return null;
-        } catch (final InteractionFailedException ex) {
-            logger.log(Level.WARNING, "Failed to transition to ENCRYPTED message state.", ex);
+        } catch (final InteractionFailedException e) {
+            logger.log(Level.WARNING, "Failed to transition to ENCRYPTED message state.", e);
             return null;
-        } catch (final OtrException ex) {
-            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to non-cryptographic error.", ex);
+        } catch (final OtrException e) {
+            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to non-cryptographic error.", e);
             return null;
         }
     }
@@ -845,8 +845,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (m instanceof AbstractEncodedMessage) {
             try {
                 return this.fragmenter.fragment((AbstractEncodedMessage) m, serialized);
-            } catch (final ProtocolException ex) {
-                throw new OtrException("Failed to fragment message according to protocol parameters.", ex);
+            } catch (final ProtocolException e) {
+                throw new OtrException("Failed to fragment message according to protocol parameters.", e);
             }
         } else {
             return new String[]{serialized};
@@ -1146,13 +1146,14 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.initSmp(question, secret);
             return;
         }
-        final SmpTlvHandler handler;
+        final List<TLV> tlvs;
         try {
-            handler = this.sessionState.getSmpTlvHandler();
-        } catch (final IncorrectStateException ex) {
-            throw new OtrException("Initializing SMP failed because OTR is not in an encrypted messaging state.", ex);
+            tlvs = this.sessionState.getSmpTlvHandler().initRespondSmp(question, secret, true);
+        } catch (final IncorrectStateException e) {
+            throw new OtrException("Initializing SMP failed because OTR is not in an encrypted messaging state.", e);
+        } catch (final SMException e) {
+            throw new OtrException("Failed to initiate SMP negotiation.", e);
         }
-        final List<TLV> tlvs = handler.initRespondSmp(question, secret, true);
         final Message m = this.sessionState.transformSending(this, "", tlvs);
         if (m != null) {
             injectMessage(m);
@@ -1206,9 +1207,11 @@ final class SessionImpl implements Session, Context, AuthContext {
         final List<TLV> tlvs;
         try {
             tlvs = this.sessionState.getSmpTlvHandler().initRespondSmp(question, secret, false);
-        } catch (final IncorrectStateException ex) {
-            throw new OtrException("Responding to SMP request failed because OTR is not in an encrypted messaging state.",
-                ex);
+        } catch (final IncorrectStateException e) {
+            throw new OtrException("Responding to SMP request failed, because OTR is not in an encrypted messaging state.",
+                e);
+        } catch (final SMException e) {
+            throw new OtrException("Responding to SMP initiation request failed.", e);
         }
         final Message m = this.sessionState.transformSending(this, "", tlvs);
         if (m != null) {
@@ -1230,9 +1233,9 @@ final class SessionImpl implements Session, Context, AuthContext {
         final List<TLV> tlvs;
         try {
             tlvs = this.sessionState.getSmpTlvHandler().abortSmp();
-        } catch (final IncorrectStateException ex) {
+        } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because OTR is not in an encrypted messaging state.",
-                ex);
+                e);
         }
         final Message m = this.sessionState.transformSending(this, "", tlvs);
         if (m != null) {
@@ -1254,7 +1257,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         try {
             return this.sessionState.getSmpTlvHandler().isSmpInProgress();
-        } catch (final IncorrectStateException ex) {
+        } catch (final IncorrectStateException e) {
             return false;
         }
     }
@@ -1278,9 +1281,9 @@ final class SessionImpl implements Session, Context, AuthContext {
     public byte[] getExtraSymmetricKey() throws OtrException {
         try {
             return this.sessionState.getExtraSymmetricKey();
-        } catch (final IncorrectStateException ex) {
+        } catch (final IncorrectStateException e) {
             throw new OtrException("Cannot acquire Extra Symmetric Key, because OTR is not in an encrypted messaging state.",
-                ex);
+                e);
         }
     }
 }
