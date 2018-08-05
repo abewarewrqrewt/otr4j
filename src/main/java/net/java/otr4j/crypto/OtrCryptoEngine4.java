@@ -289,7 +289,6 @@ public final class OtrCryptoEngine4 {
             throw new IllegalArgumentException("Some of the points are equal. It defeats the purpose of the ring signature.");
         }
         final Point longTermPublicKey = longTermKeyPair.getPublicKey();
-        final BigInteger q = primeOrder();
         // Calculate equality to each of the provided public keys.
         final boolean eq1 = Points.equals(longTermPublicKey, A1);
         final boolean eq2 = Points.equals(longTermPublicKey, A2);
@@ -323,6 +322,7 @@ public final class OtrCryptoEngine4 {
             throw new IllegalArgumentException("Long-term key pair should match at least one of the public keys.");
         }
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
+        final BigInteger q = primeOrder();
         final BigInteger c;
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             basePoint().encodeTo(buffer);
