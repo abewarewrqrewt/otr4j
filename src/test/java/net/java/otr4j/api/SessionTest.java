@@ -549,13 +549,13 @@ public class SessionTest {
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
-            final String messageBob = randomMessage(500);
+            final String messageBob = randomMessage(1, 500);
             c.hostBob.sendMessage(messageBob);
             shuffle(c.channelAlice, RANDOM);
             assertMessages("Iteration: " + i + ", message Bob: " + messageBob,
                 new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
-            final String messageAlice = randomMessage(500);
+            final String messageAlice = randomMessage(1, 500);
             c.hostAlice.sendMessage(messageAlice);
             shuffle(c.channelBob, RANDOM);
             assertMessages("Iteration: " + i + ", message Alice: " + messageAlice,
@@ -608,7 +608,11 @@ public class SessionTest {
     }
 
     private static String randomMessage(final int maxLength) {
-        final byte[] arbitraryContent = new byte[RANDOM.nextInt(maxLength)];
+        return randomMessage(0, maxLength);
+    }
+
+    private static String randomMessage(final int minLength, final int maxLength) {
+        final byte[] arbitraryContent = new byte[minLength + RANDOM.nextInt(maxLength - minLength)];
         RANDOM.nextBytes(arbitraryContent);
         return toBase64String(arbitraryContent);
     }
