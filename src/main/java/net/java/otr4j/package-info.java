@@ -34,6 +34,10 @@
 //  * Error in: "Derive chain_key_r[i][k+1] = KDF_1(usageNextChainKey || chain_key_r[i][k], 64) and MKenc = KDF_1(usageMessageKey || chain_key_r[i][k], 32)" Should be 'i-1' instead of 'i'.
 //  * "Set their_ecdh as the 'Public ECDH key' from the message. Set their_dh as the 'Public DH Key' from the message, if it is not empty." are duplicate. Already included as part of Rotation instructions.
 //  * OTRv4 ClientProfile verification does not clearly state what to do if DSA public key *without* transitional signature is found. (Drop DSA Public Key or reject profile completely.)
+//  * Consider making an exception for the Identity message.
+//    "Discard the message and optionally pass a warning to the participant if:
+//    The recipient's own instance tag does not match the listed receiver instance tag."
+//  * "Discard the (illegal) fragment if:" is missing criteria for index and total <= 65535.
 
 /**
  * otr4j.
