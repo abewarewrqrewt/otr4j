@@ -8,6 +8,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.fromHexString;
+import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static org.junit.Assert.assertArrayEquals;
@@ -135,5 +136,38 @@ public class ByteArraysTest {
     public void testByteArrayToHexStringAndBack() {
         final byte[] line = "This is a line of text for testing out methods used for byte array to hex string conversions.".getBytes(UTF_8);
         assertArrayEquals(line, fromHexString(toHexString(line)));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRequireLengthAtLeastNull() {
+        requireLengthAtLeast(0, null);
+    }
+
+    @Test
+    public void testRequireLengthAtLeastEmpty() {
+        requireLengthAtLeast(0, new byte[0]);
+    }
+
+    @Test
+    public void testRequireLengthAtLeastNegativeMinLength() {
+        final byte[] data = new byte[0];
+        assertSame(data, requireLengthAtLeast(-1, data));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRequireLengthAtLeastPositiveReqNotMet() {
+        requireLengthAtLeast(1, new byte[0]);
+    }
+
+    @Test
+    public void testRequireLengthAtLeastExactlyMet() {
+        final byte[] data = new byte[10];
+        assertSame(data, requireLengthAtLeast(10, data));
+    }
+
+    @Test
+    public void testRequireLengthAtLeastOverMinimum() {
+        final byte[] data = new byte[15];
+        assertSame(data, requireLengthAtLeast(10, data));
     }
 }
