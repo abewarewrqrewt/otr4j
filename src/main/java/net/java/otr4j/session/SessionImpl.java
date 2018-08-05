@@ -463,11 +463,8 @@ final class SessionImpl implements Session, Context, AuthContext {
             SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
             if (slave == null) {
                 // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
-//                logger.log(Level.INFO, "Message fragment arrived for unknown instance tag. Ignoring message. (Sender-instance: {})",
-//                    fragment.getSendertag());
-//                return null;
-                slave = new SessionImpl(this, this.sessionState.getSessionID(),
-                    this.host, this.senderTag, fragment.getSendertag(), this.secureRandom, this.authState);
+                slave = new SessionImpl(this, this.sessionState.getSessionID(), this.host, this.senderTag,
+                    fragment.getSendertag(), this.secureRandom, this.authState);
                 slave.addOtrEngineListener(slaveSessionsListener);
                 this.slaveSessions.put(fragment.getSendertag(), slave);
             }
@@ -588,13 +585,15 @@ final class SessionImpl implements Session, Context, AuthContext {
             : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
         final String reassembledText;
         try {
-            // FIXME consider returning null whenever ProtocolException occurs, simply discarding any fragment that is illegal
             reassembledText = assembler.accumulate(fragment);
             if (reassembledText == null) {
+                logger.log(Level.FINEST, "Fragment received, but message is still incomplete.");
                 return null;
             }
         } catch (final ProtocolException e) {
-            throw new OtrException("Protocol violation encountered while processing fragment.", e);
+            logger.log(Level.FINE, "Rejected message fragment from sender instance "
+                + fragment.getSendertag().getValue(), e);
+            return null;
         }
         final Message encoded;
         try {

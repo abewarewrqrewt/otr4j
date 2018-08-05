@@ -21,10 +21,8 @@ import static net.java.otr4j.util.Strings.join;
 
 /**
  * Support for re-assembling fragmented OTR-encoded messages.
- *
- * @author Felix Eckhofer
  */
-// TODO trace control flow to confirm that we can drop the sender tag from the Assember.
+// TODO trace control flow to confirm that we can drop the sender tag from the Assembler logic.
 final class OtrAssembler {
 
     private final InOrderAssembler inOrder = new InOrderAssembler();
@@ -84,8 +82,7 @@ final class OtrAssembler {
                 // next fragment
                 final Status status = this.accumulations.get(id);
                 if (status == null) {
-                    // FIXME consider throwing ProtocolException, received fragment for unknown sender tag.
-                    return null;
+                    throw new ProtocolException("Rejecting fragment from unknown sender tag, for which we have not started collecting yet.");
                 }
                 if (fragment.getTotal() == status.total && fragment.getIndex() == status.current + 1) {
                     // consecutive fragment, in order
@@ -94,7 +91,7 @@ final class OtrAssembler {
                 } else {
                     // out-of-order fragment
                     this.accumulations.remove(id);
-                    throw new ProtocolException("Received fragment out of order.");
+                    throw new ProtocolException("Rejecting fragment that was received out-of-order.");
                 }
             }
 
@@ -120,10 +117,8 @@ final class OtrAssembler {
     /**
      * Out-of-order assembler, following OTRv4 specification.
      */
-    // TODO introduce some kind of clean-up such that fragments list does not grow infinitely.
+    // TODO introduce some kind of clean-up such that fragments list does not grow infinitely. (Described in spec.)
     // TODO consider doing some fuzzing for this user input, if we can find a decent fuzzing library.
-    // TODO consider if needed to keep track of recently completed fragments in case another message arrives?
-    // FIXME is it still required to check the sender tag before accepting?
     private static final class OutOfOrderAssembler {
 
         private static final Logger LOGGER = Logger.getLogger(OutOfOrderAssembler.class.getName());
@@ -138,21 +133,21 @@ final class OtrAssembler {
          * case of complete reassembly.
          */
         @Nullable
-        String accumulate(@Nonnull final Fragment fragment) {
+        String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
             String[] parts = fragments.get(fragment.getIdentifier());
             if (parts == null) {
                 parts = new String[fragment.getTotal()];
                 fragments.put(fragment.getIdentifier(), parts);
             }
             if (fragment.getTotal() != parts.length) {
-                LOGGER.log(Level.INFO, "OTRv4 fragmentation of other party may be broken. Initial total is different from this message. Ignoring this fragment. (Original: {0}, current fragment: {1})",
+                LOGGER.log(Level.FINEST, "OTRv4 fragmentation of other party may be broken. Initial total is different from this message. Ignoring this fragment. (Original: {0}, current fragment: {1})",
                     new Object[]{parts.length, fragment.getTotal()});
-                return null;
+                throw new ProtocolException("Rejecting fragment with different total value than other fragments of the same series.");
             }
             if (parts[fragment.getIndex() - 1] != null) {
-                LOGGER.log(Level.INFO, "Fragment with index {0} was already present. Ignoring this fragment.",
+                LOGGER.log(Level.FINEST, "Fragment with index {0} was already present. Ignoring this fragment.",
                     new Object[]{fragment.getIndex()});
-                return null;
+                throw new ProtocolException("Rejecting fragment with index that is already present.");
             }
             // FIXME do we need to sanity-check the sender tag and/or receiver tag before assuming that parts belong together?
             parts[fragment.getIndex()-1] = fragment.getContent();

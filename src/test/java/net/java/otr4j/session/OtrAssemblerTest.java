@@ -10,7 +10,6 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.messages.Fragment;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.ProtocolException;
@@ -21,6 +20,7 @@ import static net.java.otr4j.io.MessageParser.parse;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for OTR Assembler.
@@ -123,29 +123,33 @@ public final class OtrAssemblerTest {
         assertEquals("", assembler.accumulate(fragment));
     }
 
-    @Test
+    @Test(expected = ProtocolException.class)
     public void testAssembleTwoPartMessageDriftingTotalDown() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final Fragment part1 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00003," + helloWorldBase64.substring(0, 8) + ",");
         final Fragment part2 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00002,00002," + helloWorldBase64.substring(8) + ",");
         final OtrAssembler assembler = new OtrAssembler();
         assertNull(assembler.accumulate(part1));
-        assertNull(assembler.accumulate(part2));
+        assembler.accumulate(part2);
     }
 
-    @Test
+    @Test(expected = ProtocolException.class)
     public void testAssembleTwoPartMessageDriftingTotalUp() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final Fragment part1 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002," + helloWorldBase64.substring(0, 8) + ",");
         final Fragment part2 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00002,00003," + helloWorldBase64.substring(8) + ",");
         final OtrAssembler assembler = new OtrAssembler();
         assertNull(assembler.accumulate(part1));
-        assertNull(assembler.accumulate(part2));
+        assembler.accumulate(part2);
     }
 
-    @Test
+    @Test(expected = ProtocolException.class)
     public void testFragmentReceivedMultipleTimesIgnoring() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final Fragment fragment = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,,");
         final OtrAssembler assembler = new OtrAssembler();
-        assertNull(assembler.accumulate(fragment));
-        assertNull(assembler.accumulate(fragment));
+        try {
+            assertNull(assembler.accumulate(fragment));
+        } catch (ProtocolException e) {
+            fail("Did not expect to fail sending message the first time.");
+        }
+        assembler.accumulate(fragment);
     }
 }
