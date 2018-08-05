@@ -11,8 +11,8 @@ import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -35,8 +35,8 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
             final int senderInstance,
             final int receiverInstance) {
         super(protocolVersion, senderInstance, receiverInstance);
-        this.dhPublicKeyEncrypted = Objects.requireNonNull(dhPublicKeyEncrypted);
-        this.dhPublicKeyHash = Objects.requireNonNull(dhPublicKeyHash);
+        this.dhPublicKeyEncrypted = requireNonNull(dhPublicKeyEncrypted);
+        this.dhPublicKeyHash = requireNonNull(dhPublicKeyHash);
     }
 
     @Override
