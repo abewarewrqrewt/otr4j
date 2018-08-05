@@ -616,7 +616,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Nullable
     private String handleEncodedMessage(@Nonnull final AbstractEncodedMessage message) throws OtrException {
-        assert this.masterSession != this || message.protocolVersion == OTRv.TWO : "BUG: We should not process encoded message in master session in protocol version 3 or higher.";
+        assert this.masterSession != this || message.protocolVersion == OTRv.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         if (message instanceof DataMessage) {
             return handleDataMessage((DataMessage) message);
         }
@@ -663,6 +663,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nullable
     private String handleDataMessage(@Nonnull final DataMessage data) throws OtrException {
+        assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
             new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
@@ -676,6 +677,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nullable
     private String handleDataMessage(@Nonnull final DataMessage4 data) throws OtrException {
+        assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
             new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
