@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 
+@SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 
     // TODO consider if we want to use this or transform to an enum.
@@ -70,26 +71,32 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         return j;
     }
 
+    @Nonnull
     public Point getEcdhPublicKey() {
         return ecdhPublicKey;
     }
 
+    @Nullable
     public BigInteger getDhPublicKey() {
         return dhPublicKey;
     }
 
+    @Nonnull
     public byte[] getNonce() {
         return nonce;
     }
 
+    @Nonnull
     public byte[] getCiphertext() {
         return ciphertext;
     }
 
+    @Nonnull
     public byte[] getAuthenticator() {
         return authenticator;
     }
 
+    @Nonnull
     public byte[] getRevealedMacs() {
         return revealedMacs;
     }

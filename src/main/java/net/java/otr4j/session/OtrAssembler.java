@@ -52,6 +52,7 @@ final class OtrAssembler {
     /**
      * In-order assembler, following OTRv2/OTRv3 specification.
      */
+    @SuppressWarnings("PMD.AvoidStringBufferField")
     private static final class InOrderAssembler {
 
         private final HashMap<Integer, Status> accumulations = new HashMap<>();

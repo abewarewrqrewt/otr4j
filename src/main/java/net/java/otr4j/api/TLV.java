@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 /**
  * Class representing OTR Type-Length-Value tuples.
  */
+@SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class TLV {
 
     /**
