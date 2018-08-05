@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 /**
  * Class representing OTR Type-Length-Value tuples.
  */
-// FIXME Consider implementing OtrEncodable. Does interfere with fact that this is part of 'api' package.
 public final class TLV {
 
     /**
