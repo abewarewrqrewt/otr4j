@@ -152,6 +152,7 @@ final class OtrAssembler {
             if (parts[fragment.getIndex() - 1] != null) {
                 LOGGER.log(Level.INFO, "Fragment with index {0} was already present. Ignoring this fragment.",
                     new Object[]{fragment.getIndex()});
+                return null;
             }
             // FIXME do we need to sanity-check the sender tag and/or receiver tag before assuming that parts belong together?
             parts[fragment.getIndex()-1] = fragment.getContent();
