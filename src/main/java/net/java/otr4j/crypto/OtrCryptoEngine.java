@@ -87,7 +87,7 @@ public final class OtrCryptoEngine {
             MessageDigest.getInstance(MD_SHA256);
             MessageDigest.getInstance(MD_SHA1);
         } catch (final NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("Failed initialization test of required cryptographic types. otr4j will not function correctly.", ex);
+            throw new IllegalStateException("Failed initialization test of required cryptographic types. otr4j will not function properly.", ex);
         }
     }
 
@@ -96,6 +96,8 @@ public final class OtrCryptoEngine {
     private static final BigInteger BIGINTEGER_TWO = BigInteger.valueOf(2);
     public static final BigInteger MODULUS_MINUS_TWO = MODULUS.subtract(BIGINTEGER_TWO);
     public static final BigInteger GENERATOR = new BigInteger("2", 10);
+
+    public static final int SHA256_DIGEST_LENGTH_BYTES = 32;
 
     /**
      * Length of MAC in bytes.

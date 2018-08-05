@@ -16,9 +16,10 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("PMD.ConstantsInInterface")
 public interface Session {
 
-    // TODO consider converting this to an enum, and EnumSet for SUPPORTED, KNOWN versions.
+    // TODO consider moving out of Session interface, converting to enum
     interface OTRv {
 
         int ONE = 1;

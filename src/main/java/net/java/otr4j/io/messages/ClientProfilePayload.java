@@ -153,8 +153,8 @@ public final class ClientProfilePayload implements OtrEncodable {
                     try {
                         final Set<Integer> versions = parseVersionString(new String(in.readData(), US_ASCII));
                         fields.add(new VersionsField(versions));
-                    } catch (UnsupportedLengthException e) {
-                        throw new ProtocolException("Versions are not expected in an exceptionally large data field. This is not according to specification.");
+                    } catch (final UnsupportedLengthException e) {
+                        throw new ProtocolException("Versions are not expected to be stored in an exceptionally large data field. This is not according to specification.");
                     }
                     break;
                 case PROFILE_EXPIRATION:

@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.random;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
 
 /**
  * Abstract AuthState implementation that provides authentication initiation
@@ -78,7 +79,7 @@ abstract class AbstractAuthState implements AuthState {
             throw new IllegalStateException("Failed to encrypt public key bytes.", ex);
         }
         // OTR: "This is the SHA256 hash of gxmpi."
-        final byte[] publicKeyHash = OtrCryptoEngine.sha256Hash(publicKeyBytes);
+        final byte[] publicKeyHash = sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
             context.getSenderInstanceTag().getValue(), receiverTag.getValue());

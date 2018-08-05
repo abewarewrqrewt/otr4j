@@ -13,9 +13,6 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 
-    // TODO consider if we want to use this or transform to an enum.
-    private static final byte FLAG_IGNORE_UNREADABLE = 0x1;
-
     static final int MESSAGE_DATA = 0x03;
 
     private final byte flags;

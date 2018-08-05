@@ -55,6 +55,8 @@ final class OtrAssembler {
     @SuppressWarnings("PMD.AvoidStringBufferField")
     private static final class InOrderAssembler {
 
+        private static final int INDEX_FIRST_FRAGMENT = 1;
+
         private final HashMap<Integer, Status> accumulations = new HashMap<>();
 
         /**
@@ -79,7 +81,7 @@ final class OtrAssembler {
         @Nullable
         private String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
             final int id = fragment.getSendertag().getValue();
-            if (fragment.getIndex() == 1) {
+            if (fragment.getIndex() == INDEX_FIRST_FRAGMENT) {
                 // first fragment
                 final Status status = new Status();
                 status.current = fragment.getIndex();

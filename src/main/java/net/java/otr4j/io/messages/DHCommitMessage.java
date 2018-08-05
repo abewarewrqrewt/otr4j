@@ -29,11 +29,9 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
     public final byte[] dhPublicKeyEncrypted;
     public final byte[] dhPublicKeyHash;
 
-    public DHCommitMessage(final int protocolVersion,
-            @Nonnull final byte[] dhPublicKeyHash,
-            @Nonnull final byte[] dhPublicKeyEncrypted,
-            final int senderInstance,
-            final int receiverInstance) {
+    public DHCommitMessage(final int protocolVersion, @Nonnull final byte[] dhPublicKeyHash,
+                           @Nonnull final byte[] dhPublicKeyEncrypted, final int senderInstance,
+                           final int receiverInstance) {
         super(protocolVersion, senderInstance, receiverInstance);
         this.dhPublicKeyEncrypted = requireNonNull(dhPublicKeyEncrypted);
         this.dhPublicKeyHash = requireNonNull(dhPublicKeyHash);

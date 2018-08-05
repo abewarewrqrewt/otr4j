@@ -33,8 +33,11 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine.SHA256_DIGEST_LENGTH_BYTES;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.messages.SignatureXs.readSignatureX;
+import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 
 /**
  * AKE state Awaiting Reveal Signature message, a.k.a.
@@ -62,14 +65,9 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         }
         this.version = version;
         this.keypair = Objects.requireNonNull(keypair);
-        if (remotePublicKeyHash.length != 32) {
-            throw new IllegalArgumentException("Expected public key hash with length of 32 bytes.");
-        }
-        this.remotePublicKeyHash = remotePublicKeyHash;
-        if (remotePublicKeyEncrypted.length <= 0) {
-            throw new IllegalArgumentException("Expected public key ciphertext having actual contents.");
-        }
-        this.remotePublicKeyEncrypted = remotePublicKeyEncrypted;
+        this.remotePublicKeyHash = requireLengthExactly(SHA256_DIGEST_LENGTH_BYTES, remotePublicKeyHash);
+        // TODO can we make this argument verification more strict/accurate?
+        this.remotePublicKeyEncrypted = requireLengthAtLeast(1, remotePublicKeyEncrypted);
     }
 
     @Nullable
@@ -108,7 +106,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     private DHKeyMessage handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "Retransmit your D-H Key Message (the same one as you sent when you entered AUTHSTATE_AWAITING_REVEALSIG).
         // Forget the old D-H Commit message, and use this new one instead."
-        context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
+        context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
+            message.dhPublicKeyEncrypted));
         return new DHKeyMessage(message.protocolVersion, (DHPublicKey) this.keypair.getPublic(),
                 context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue());
     }

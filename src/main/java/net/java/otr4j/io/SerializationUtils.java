@@ -38,6 +38,11 @@ import static org.bouncycastle.util.encoders.Base64.toBase64String;
 // FIXME SerializationUtils is now reduced to serializing OTR messages only. Make this into a dedicated class with suitable name.
 public final class SerializationUtils {
 
+    /**
+     * Null-byte indicating end of normal message payload and start of (optional) TLV records.
+     */
+    private static final int TLV_DATA_START_BYTE = 0x00;
+
     private SerializationUtils() {
         // Utility class cannot be instantiated.
     }
@@ -112,7 +117,7 @@ public final class SerializationUtils {
         // find the null TLV separator in the package, or just use the end value
         int tlvIndex = messageBytes.length;
         for (int i = 0; i < messageBytes.length; i++) {
-            if (messageBytes[i] == 0x00) {
+            if (messageBytes[i] == TLV_DATA_START_BYTE) {
                 tlvIndex = i;
                 break;
             }

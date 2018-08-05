@@ -34,12 +34,28 @@ public final class ByteArrays {
      *
      * @param length Expected length.
      * @param bytes  Array to verify length of.
-     * @return Returns same byte array iff it matches length requirement.
+     * @return Returns same byte-array iff it matches length requirement.
      * @throws IllegalArgumentException Thrown in case the length requirement is not met.
      */
     @Nonnull
     public static byte[] requireLengthExactly(final int length, @Nonnull final byte[] bytes) {
         if (bytes.length != length) {
+            throw new IllegalArgumentException("Illegal array length: " + bytes.length);
+        }
+        return bytes;
+    }
+
+    /**
+     * Check to verify length is at least specified minimum length.
+     *
+     * @param minLength The minimum length (inclusive)
+     * @param bytes     The source bytes to verify.
+     * @return Returns same byte-array iff it matches length requirements.
+     */
+    // FIXME write unit tests for `requireLengthAtLeast`
+    @Nonnull
+    public static byte[] requireLengthAtLeast(final int minLength, @Nonnull final byte[] bytes) {
+        if (bytes.length < minLength) {
             throw new IllegalArgumentException("Illegal array length: " + bytes.length);
         }
         return bytes;

@@ -38,6 +38,8 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 // TODO consider adding write-method for Iterable<OtrEncodable>
 public final class OtrOutputStream {
 
+    private static final int ZERO_LENGTH = 0;
+
     private final ByteArrayOutputStream out;
 
     public OtrOutputStream() {
@@ -148,7 +150,7 @@ public final class OtrOutputStream {
     }
 
     public OtrOutputStream writeCtr(@Nonnull final byte[] ctr) {
-        if (ctr.length < 1) {
+        if (ctr.length <= ZERO_LENGTH) {
             return this;
         }
         int i = 0;
