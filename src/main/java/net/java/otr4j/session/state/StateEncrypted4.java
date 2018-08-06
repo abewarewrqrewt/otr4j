@@ -1,5 +1,6 @@
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
@@ -113,31 +114,32 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             ratchetId = keys.getRatchetId();
             messageId = keys.getMessageId();
             result = keys.encrypt(msgBytes);
-            // TODO consider moving to separate method for readability
-            final OtrOutputStream out = new OtrOutputStream()
-                .writeShort(VERSION)
-                .writeByte(DATA_MESSAGE_TYPE)
-                .writeInt(context.getSenderInstanceTag().getValue())
-                .writeInt(context.getReceiverInstanceTag().getValue())
-                .writeByte(0x00)
-                .writeInt(this.ratchet.getPn())
-                .writeInt(ratchetId)
-                .writeInt(messageId)
-                .writePoint(this.ratchet.getECDHPublicKey());
-            if (rotation == null || rotation.dhPublicKey == null) {
-                out.writeData(new byte[0]);
-            } else {
-                out.writeBigInt(rotation.dhPublicKey);
-            }
-            out.writeNonce(result.nonce)
-                .writeData(result.ciphertext);
-            final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
+            final byte[] dataMessageSectionsHash = generateMessageHash(ratchetId, messageId,
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
+            final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsHash,
+                DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             authenticator = keys.authenticate(messageMAC);
         }
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
             this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
             result.ciphertext, authenticator, rotation == null ? new byte[0] : rotation.revealedMacs);
+    }
+
+    @Nonnull
+    private byte[] generateMessageHash(final int ratchetId, final int messageId, @Nonnull final InstanceTag sender,
+                                       @Nonnull final InstanceTag receiver,
+                                       @Nullable final DoubleRatchet.Rotation rotation,
+                                       @Nonnull final Result encryptionResult) {
+        final OtrOutputStream out = new OtrOutputStream().writeShort(VERSION).writeByte(DATA_MESSAGE_TYPE)
+            .writeInt(sender.getValue()).writeInt(receiver.getValue()).writeByte(0x00).writeInt(this.ratchet.getPn())
+            .writeInt(ratchetId).writeInt(messageId).writePoint(this.ratchet.getECDHPublicKey());
+        if (rotation == null || rotation.dhPublicKey == null) {
+            out.writeData(new byte[0]);
+        } else {
+            out.writeBigInt(rotation.dhPublicKey);
+        }
+        return out.writeNonce(encryptionResult.nonce).writeData(encryptionResult.ciphertext).toByteArray();
     }
 
     @Nonnull
