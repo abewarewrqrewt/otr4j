@@ -12,6 +12,10 @@
         <exclude name="AccessorMethodGeneration"/>
         <exclude name="GuardLogStatement"/>
         <exclude name="UseVarargs"/>
+        <!-- Although excluding this check sounds bad, these should be all cases where the original exception is not of
+        critical value. In case where this is violated where you would expect to find a root cause, we can correct it.
+        In any case, a stack trace exists. Although it may not be the root cause. For now I can accept this. -->
+        <exclude name="PreserveStackTrace"/>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <exclude name="TooManyStaticImports"/>

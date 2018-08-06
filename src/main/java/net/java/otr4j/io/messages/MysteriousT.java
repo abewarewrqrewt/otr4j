@@ -37,6 +37,7 @@ public final class MysteriousT implements OtrEncodable {
     public final byte[] encryptedMessage;
 
     // Ctor.
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     public MysteriousT(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
                        final byte flags, final int senderKeyID, final int recipientKeyID,
                        @Nonnull final DHPublicKey nextDH, @Nonnull final byte[] ctr,

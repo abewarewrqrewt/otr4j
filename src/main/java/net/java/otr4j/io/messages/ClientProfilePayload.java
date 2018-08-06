@@ -62,6 +62,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @param fields    The fields that are part of the payload.
      * @param signature The signature by the long-term public key.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     private ClientProfilePayload(@Nonnull final List<Field> fields, @Nonnull final byte[] signature) {
         try {
             validate(fields, signature, new Date());

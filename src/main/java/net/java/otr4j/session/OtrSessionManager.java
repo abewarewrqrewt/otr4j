@@ -42,6 +42,11 @@ public final class OtrSessionManager {
      * As the session map is needed as soon as we get/create our first session,
      * we might as well construct it immediately.
      */
+    // For now, we suppress the UseConcurrentHashMap warning, because the ConcurrentHashMap does not allow us to
+    // synchronize on the complete map such that we can be sure that only a single entry is added for a key.
+    // ConcurrentHashMap has its own construct for putting conditionally. Currently, it is not worth the benefit as it
+    // is a relatively minor issue compared to the introduction of OTRv4 support. For now, we'll leave it as is.
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
     private final Map<SessionID, Session> sessions = Collections.synchronizedMap(new HashMap<SessionID, Session>());
 
     /**

@@ -45,6 +45,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
     private final KeyPair keypair;
     private final byte[] r;
 
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     StateAwaitingDHKey(final int version, @Nonnull final KeyPair keypair, @Nonnull final byte[] r) {
         super();
         if (version < 2 || version > 3) {
