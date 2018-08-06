@@ -135,9 +135,9 @@ public interface State {
      * @param context The session context.
      * @param params  The security parameters that are needed to set up and
      *                maintain the encrypted message state.
-     * @throws OtrException In case an exception occurs.
+     * @throws OtrCryptoException In case we fail to establish the secure state.
      */
-    void secure(@Nonnull Context context, @Nonnull SecurityParameters params) throws OtrException;
+    void secure(@Nonnull Context context, @Nonnull SecurityParameters params) throws OtrCryptoException;
 
     /**
      * Call to secure a session after a successful Authentication was performed. (OTRv4)
@@ -145,7 +145,7 @@ public interface State {
      * @param context The session context.
      * @param params  The security parameters (OTRv4) that are needed to set up and maintain the encrypted message
      *                state.
-     * @throws OtrCryptoException In case security parameters contain illegal values.
+     * @throws OtrException In case we fail to inject a HeartBeat message into the network.
      */
     void secure(@Nonnull Context context, @Nonnull SecurityParameters4 params) throws OtrException;
 

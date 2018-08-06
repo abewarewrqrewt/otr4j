@@ -15,6 +15,7 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
@@ -72,7 +73,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
      */
     private final SessionKeyManager sessionKeyManager;
 
-    StateEncrypted(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
+    StateEncrypted(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
         super(context.getSessionID(), context.getHost());
         this.protocolVersion = params.getVersion();
         this.smpTlvHandler = new SmpTlvHandler(this, context, params.getS());

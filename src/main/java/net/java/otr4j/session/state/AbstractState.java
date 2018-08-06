@@ -10,6 +10,7 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
@@ -36,7 +37,7 @@ abstract class AbstractState implements State {
     }
 
     @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrException {
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
         context.setState(new StateEncrypted(context, params));
     }
 

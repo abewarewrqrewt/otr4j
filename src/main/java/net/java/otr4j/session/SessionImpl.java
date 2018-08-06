@@ -314,7 +314,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     public void secure(@Nonnull final SecurityParameters s) throws InteractionFailedException {
         try {
             this.sessionState.secure(this, s);
-        } catch (final OtrException e) {
+        } catch (final OtrCryptoException e) {
             throw new InteractionFailedException(e);
         }
         if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
@@ -335,18 +335,16 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     @Override
-    public void secure(@Nonnull final SecurityParameters4 s) throws OtrCryptoException {
+    public void secure(@Nonnull final SecurityParameters4 s) {
         try {
             this.sessionState.secure(this, s);
-        } catch (final OtrCryptoException e) {
-            // Propagate OtrCryptoException as is, as this is a failure of securing the message state.
-            throw e;
         } catch (final OtrException e) {
             // We failed to transmit the heartbeat message. This is not critical, although it is annoying for the other
-            // party as they will have to wait for the first (user) message from us in order to complete the
-            // Double Ratchet. Without it, they do not have access to the Message Keys that they need to send encrypted
-            // messages. (For now, just log the incident and assume things will be alright.)
-            logger.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.", e);
+            // party as they will have to wait for the first (user) message from us to complete the Double Ratchet.
+            // Without it, they do not have access to the Message Keys that they need to send encrypted messages. (For
+            // now, just log the incident and assume things will be alright.)
+            logger.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.",
+                e);
         }
         if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");

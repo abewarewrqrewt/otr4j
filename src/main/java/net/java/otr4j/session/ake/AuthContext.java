@@ -9,7 +9,6 @@ package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.EdDSAKeyPair;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;
@@ -46,7 +45,7 @@ public interface AuthContext {
      *
      * @param params The security parameters as negotiated in the key exchange.
      */
-    void secure(@Nonnull SecurityParameters4 params) throws OtrCryptoException;
+    void secure(@Nonnull SecurityParameters4 params);
 
     /**
      * Access to SecureRandom instance.
