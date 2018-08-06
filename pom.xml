@@ -206,8 +206,7 @@
                     <rulesets>
                         <ruleset>codecheck/pmd-rules.xml</ruleset>
                     </rulesets>
-                    <!-- TODO Change to true once current pmd violations are resolved. -->
-                    <failOnViolation>false</failOnViolation>
+                    <failOnViolation>true</failOnViolation>
                     <printFailingErrors>true</printFailingErrors>
                 </configuration>
             </plugin>
