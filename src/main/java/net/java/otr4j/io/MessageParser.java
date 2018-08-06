@@ -48,10 +48,6 @@ public final class MessageParser {
      */
     private static final String NUMBERINDEX = "0123456789";
 
-    private MessageParser() {
-        // No need to instantiate.
-    }
-
     /**
      * PATTERN_WHITESPACE recognizes OTR v1, v2, v3 and v4 whitespace tags. We will continue to recognize OTR v1
      * whitespace tag for compatibility purposes and to avoid bad interpretation.
@@ -64,6 +60,10 @@ public final class MessageParser {
     // TODO whitespace detection is lacking, there is no guarantee that whitespace tags for OTR versions will be found in this predefined order.
     private static final Pattern PATTERN_WHITESPACE = Pattern
         .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?(  \\t\\t \\t  )?");
+
+    private MessageParser() {
+        // No need to instantiate.
+    }
 
     @Nonnull
     public static Message parse(@Nonnull final String text) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
