@@ -424,10 +424,12 @@ final class SessionImpl implements Session, Context, AuthContext {
             throw new OtrException("Invalid message.", e);
         }
 
-        if (!(m instanceof PlainTextMessage)) {
+        if (m instanceof PlainTextMessage) {
+            if (offerStatus == OfferStatus.sent) {
+                offerStatus = OfferStatus.rejected;
+            }
+        } else {
             offerStatus = OfferStatus.accepted;
-        } else if (offerStatus == OfferStatus.sent) {
-            offerStatus = OfferStatus.rejected;
         }
 
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
