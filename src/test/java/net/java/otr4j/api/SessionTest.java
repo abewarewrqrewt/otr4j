@@ -389,37 +389,12 @@ public class SessionTest {
         c.hostAlice.sendRequest();
         assertNull(c.hostBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
+        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
         // Expecting AUTH_R message from Alice.
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
-        assertNull(c.hostBob.receiveMessage());
+        assertArrayEquals(new String[0], c.hostBob.receiveAllMessages(true));
         assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
-        assertNull(c.hostAlice.receiveMessage());
+        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
         assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
         assertNull(c.hostBob.receiveMessage());
@@ -513,14 +488,14 @@ public class SessionTest {
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
-            final String messageBob = randomMessage(500);
+            final String messageBob = randomMessage(1, 500);
             c.hostBob.sendMessage(messageBob);
-            assertMessages("Iteration: " + i + ", message Bob: " + messageBob,
+            assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
                 new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
-            final String messageAlice = randomMessage(500);
+            final String messageAlice = randomMessage(1, 500);
             c.hostAlice.sendMessage(messageAlice);
-            assertMessages("Iteration: " + i + ", message Alice: " + messageAlice,
+            assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
                 new String[]{messageAlice}, c.hostBob.receiveAllMessages(true));
         }
     }
@@ -553,13 +528,13 @@ public class SessionTest {
             final String messageBob = randomMessage(1, 500);
             c.hostBob.sendMessage(messageBob);
             shuffle(c.channelAlice, RANDOM);
-            assertMessages("Iteration: " + i + ", message Bob: " + messageBob,
+            assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
                 new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1, 500);
             c.hostAlice.sendMessage(messageAlice);
             shuffle(c.channelBob, RANDOM);
-            assertMessages("Iteration: " + i + ", message Alice: " + messageAlice,
+            assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
                 new String[]{messageAlice}, c.hostBob.receiveAllMessages(true));
         }
     }
@@ -602,10 +577,6 @@ public class SessionTest {
         } else {
             assertEquals(message, expected, actual);
         }
-    }
-
-    private static void assertMessages(final String message, final String[] expected, final String[] actual) {
-        assertArrayEquals(message, expected, actual);
     }
 
     private static String randomMessage(final int maxLength) {
