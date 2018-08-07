@@ -20,6 +20,7 @@ import net.java.otr4j.session.smp.SMAbortedException;
 import net.java.otr4j.session.smp.SMException;
 import net.java.otr4j.session.smp.SMPStatus;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
@@ -69,19 +70,18 @@ public final class SmpTlvHandler {
     }
 
     /**
-     *  Respond to or initiate an SMP negotiation
+     * Respond to or initiate an SMP negotiation
      *
-     *  @param question
-     *  	The question to present to the peer, if initiating.
-     *  	May be <code>null</code> for no question.
-     *      If not initiating, then it should be received question
-     *      in order to clarify whether this is shared secret verification.
-     *  @param secret The secret.
-     *  @param initiating Whether we are initiating or responding to an initial request.
-     *
-     *  @return TLVs to send to the peer
-     *  @throws OtrException Failures in case an SMP step cannot be processed
-     *  successfully, or in case expected data is not provided.
+     * @param question   The question to present to the peer, if initiating.
+     *                   May be <code>null</code> for no question.
+     *                   If not initiating, then it should be received question
+     *                   in order to clarify whether this is shared secret verification.
+     * @param secret     The secret.
+     * @param initiating Whether we are initiating or responding to an initial request.
+     * @return TLVs to send to the peer
+     * @throws OtrException Failures in case an SMP step cannot be processed
+     *                      successfully, or in case expected data is not provided.
+     * @throws SMException  In case of failure while processing SMP TLV record.
      */
     public List<TLV> initRespondSmp(@Nullable final String question, @Nonnull final String secret,
             final boolean initiating) throws OtrException, SMException {
@@ -163,6 +163,12 @@ public final class SmpTlvHandler {
         this.sm.abort();
     }
 
+    /**
+     * Check whether SMP is in progress.
+     *
+     * @return true iff SMP is in progress, or false otherwise.
+     */
+    @CheckReturnValue
     public boolean isSmpInProgress() {
         return this.sm.status() == SMPStatus.INPROGRESS;
     }

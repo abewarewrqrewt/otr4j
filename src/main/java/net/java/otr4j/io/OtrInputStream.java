@@ -119,13 +119,13 @@ public final class OtrInputStream {
      * limited by the Java max. integer size. Data lengths that use full 32
      * bits, will be interpreted as negative values and furthermore array are
      * limited (approx.) to {@link Integer#MAX_VALUE} length. Therefore, any
-     * data of length > {@link Integer#MAX_VALUE} will be rejected and
+     * data of length &gt; {@link Integer#MAX_VALUE} will be rejected and
      * {@link UnsupportedLengthException} is thrown.
      *
      * @return Returns byte[] with data read.
      * @throws ProtocolException          Throws IOException in case of read errors.
      * @throws UnsupportedLengthException Throws UnsupportedLengthException in
-     *                                    case of data with length > {@link Integer#MAX_VALUE}, as this is
+     *                                    case of data with length &gt; {@link Integer#MAX_VALUE}, as this is
      *                                    currently unsupported by otr4j.
      */
     @Nonnull

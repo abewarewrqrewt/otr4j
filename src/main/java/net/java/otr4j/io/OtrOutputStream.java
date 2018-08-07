@@ -66,7 +66,7 @@ public final class OtrOutputStream {
      * Convert the {@code String} text to a {@code byte[]}, including sanitizing
      * it to make sure no corrupt characters conflict with bytes that have
      * special meaning in OTR. Mostly, this means removing NULL bytes, since
-     * {@code 0x00) is used as the separator between the message and the TLVs
+     * {@code 0x00} is used as the separator between the message and the TLVs
      * in an OTR Data Message.
      *
      * @param message the plain text message being sent

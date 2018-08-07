@@ -26,9 +26,24 @@ public final class SignatureMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_SIGNATURE = 0x12;
 
+    /**
+     * Encrypted X.
+     */
     public final byte[] xEncrypted;
+    /**
+     * MAC of encrypted X.
+     */
     public final byte[] xEncryptedMAC;
 
+    /**
+     * Constructor.
+     *
+     * @param protocolVersion  the protocol version
+     * @param xEncrypted       encrypted X
+     * @param xEncryptedMAC    MAC of encrypted X
+     * @param senderInstance   sender instance tag
+     * @param receiverInstance receiver instance tag
+     */
     public SignatureMessage(final int protocolVersion, @Nonnull final byte[] xEncrypted,
                             @Nonnull final byte[] xEncryptedMAC, final int senderInstance, final int receiverInstance) {
         super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);

@@ -64,7 +64,7 @@ public interface AuthState {
     /**
      * Get active protocol version in AKE negotiation.
      *
-     * Returns a version > 0 in case of an active AKE negotiation in which a
+     * Returns a version &gt; 0 in case of an active AKE negotiation in which a
      * protocol version is already negotiated. Returns 0 in case no negotiation
      * is in progress.
      *

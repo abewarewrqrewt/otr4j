@@ -15,15 +15,26 @@ import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /**
+ * Abstract class representing base for encoded messages.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */
 public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
 
+    /**
+     * Protocol version.
+     */
     public final int protocolVersion;
 
+    /**
+     * Sender instance tag.
+     */
     public final int senderInstanceTag;
 
+    /**
+     * Receiver instance tag.
+     */
     public final int receiverInstanceTag;
 
     AbstractEncodedMessage(final int protocolVersion, final int senderInstanceTag, final int recipientInstanceTag) {
@@ -82,5 +93,10 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         }
     }
 
+    /**
+     * Get encoded message type (integer value type representation).
+     *
+     * @return the integer value of the type
+     */
     public abstract int getType();
 }

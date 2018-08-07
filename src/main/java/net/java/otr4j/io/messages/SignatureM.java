@@ -16,7 +16,8 @@ import java.security.interfaces.DSAPublicKey;
 import static java.util.Objects.requireNonNull;
 
 /**
- * 
+ * The SignatureM payload.
+ *
  * @author George Politis
  */
 public final class SignatureM implements OtrEncodable {
@@ -26,8 +27,16 @@ public final class SignatureM implements OtrEncodable {
     private final DSAPublicKey localLongTermPubKey;
     private final int keyPairID;
 
+    /**
+     * Constructor.
+     *
+     * @param localPubKey            The local DH public key
+     * @param remotePublicKey        The remote DH public key
+     * @param localLongTermPublicKey The local long-term DSA public key
+     * @param keyPairID              The key pair ID
+     */
     public SignatureM(@Nonnull final DHPublicKey localPubKey, @Nonnull final DHPublicKey remotePublicKey,
-            @Nonnull final DSAPublicKey localLongTermPublicKey, final int keyPairID) {
+                      @Nonnull final DSAPublicKey localLongTermPublicKey, final int keyPairID) {
         this.localPubKey = requireNonNull(localPubKey);
         this.remotePubKey = requireNonNull(remotePublicKey);
         this.localLongTermPubKey = requireNonNull(localLongTermPublicKey);
