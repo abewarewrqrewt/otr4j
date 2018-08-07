@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -170,9 +171,11 @@ public class OtrInputStreamTest {
 
     @Test
     public void testReadTLV() throws ProtocolException {
-        final byte[] data = new byte[] { 0x0, 0x2, 0x1, 0x2 };
+        final byte[] data = new byte[]{0x0, 0x2, 0x0, 0x2, 0x1, 0x2};
         final OtrInputStream ois = new OtrInputStream(data);
-        assertArrayEquals(new byte[] { 0x1, 0x2 }, ois.readTlvData());
+        final TLV tlv = ois.readTLV();
+        assertEquals(0x02, tlv.getType());
+        assertArrayEquals(new byte[]{0x1, 0x2}, tlv.getValue());
     }
 
     @Test(expected = UnsupportedOperationException.class)

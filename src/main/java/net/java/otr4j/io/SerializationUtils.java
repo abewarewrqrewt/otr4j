@@ -134,7 +134,7 @@ public final class SerializationUtils {
             System.arraycopy(messageBytes, tlvIndex, tlvsb, 0, tlvsb.length);
             final OtrInputStream in = new OtrInputStream(tlvsb);
             while (in.available() > 0) {
-                tlvs.add(new TLV(in.readShort(), in.readTlvData()));
+                tlvs.add(in.readTLV());
             }
         }
 

@@ -8,6 +8,7 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -174,8 +175,14 @@ public final class OtrInputStream {
         return OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(gyMpi));
     }
 
+    // FIXME write unit tests for readTLV
     @Nonnull
-    public byte[] readTlvData() throws ProtocolException {
+    public TLV readTLV() throws ProtocolException {
+        return new TLV(readShort(), readTlvData());
+    }
+
+    @Nonnull
+    private byte[] readTlvData() throws ProtocolException {
         final int len = readNumber(TYPE_LEN_SHORT);
         return checkedRead(len);
     }
