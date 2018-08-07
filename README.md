@@ -10,7 +10,8 @@ Development stages:
 
 * Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
   * Missing message queueing, SMP, Non-interactive DAKE, limited out-of-order message support, ...
-* Full implementation (SMP, full out-of-order message support, ...)
+* Full implementation for Interactive use-case (SMP, full out-of-order message support, ...)
+* ...
 
 `TODO: development in progress ...`
 
@@ -18,14 +19,17 @@ Tool support:
 
 * JSR-305 annotations for static analysis
 * Introduce SpotBugs analysis at build-time.
+  * spotbugs-annotations, to improve static analysis capabilities
 * Introduce pmd analysis at build-time.
 
 `TODO: development progress ...`
 
-## Goals
+## Architectural considerations
 
+* Correctness of off-the-record protocol implementation.
+* Encapsulation of cryptographic material to prevent mistakes, excessive exposure.
 * Logical structure that prevents or makes obvious programming errors.
-* Restricted implementation, only as much abstraction as really needed.
+* Restricted implementation, only as much abstraction as needed. (Simplicity)
 
 # Synopsis
 
