@@ -9,7 +9,6 @@ package net.java.otr4j.session;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
@@ -133,19 +132,24 @@ final class OtrFragmenter {
 
     /**
      * Fragment the given message into pieces.
+     * <p>
+     * Note that the fragmenter will fragment any arbitrary piece of content into fragments. Users need to determine
+     * whether or not it is according to protocol when a message is fragmented. For example, fragments may not be
+     * fragmented again.
      *
-     * @param original the original message instance, used to discover the protocol version and instance tags
+     * @param version  protocol version
+     * @param sender   sender instance
+     * @param receiver receiver instance
      * @param message  the original message
      * @return returns an array of message fragments. The array will contain at
      * least 1 message fragment, or more if fragmentation is necessary.
      * @throws ProtocolException if the fragment size is too small or if the maximum number of fragments is exceeded.
      */
-    // TODO method signature is not ideal. This can probably be simplified, once other parts related to fragmentation are redesigned.
     @Nonnull
-    String[] fragment(@Nonnull final AbstractEncodedMessage original, @Nonnull final String message) throws ProtocolException {
+    String[] fragment(final int version, final int sender, final int receiver, @Nonnull final String message)
+        throws ProtocolException {
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
-        return fragment(original.protocolVersion, original.senderInstanceTag, original.receiverInstanceTag, message,
-            fragmentSize);
+        return fragment(version, sender, receiver, message, fragmentSize);
     }
 
     /**

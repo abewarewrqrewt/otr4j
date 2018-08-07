@@ -682,9 +682,11 @@ final class SessionImpl implements Session, Context, AuthContext {
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
             fragments = new String[]{serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
+            final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             // FIXME consider moving fragmenter inside some kind of Serializer-class such that fragmenting becomes a detail of the serialization implementation.
             try {
-                fragments = this.fragmenter.fragment((AbstractEncodedMessage) m, serialized);
+                fragments = this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag,
+                    encoded.receiverInstanceTag, serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment OTR-encoded message to specified protocol parameters.", e);
             }
@@ -842,8 +844,10 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         final String serialized = SerializationUtils.toString(m);
         if (m instanceof AbstractEncodedMessage) {
+            final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
-                return this.fragmenter.fragment((AbstractEncodedMessage) m, serialized);
+                return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag,
+                    encoded.receiverInstanceTag, serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment message according to protocol parameters.", e);
             }
