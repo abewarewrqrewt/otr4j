@@ -19,7 +19,8 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
- * 
+ * The payload representing the X value.
+ *
  * @author George Politis
  */
 public final class SignatureX implements OtrEncodable {
@@ -28,6 +29,13 @@ public final class SignatureX implements OtrEncodable {
     private final int dhKeyID;
     private final byte[] signature;
 
+    /**
+     * Constructor.
+     *
+     * @param ourLongTermPublicKey our long-term DSA public key
+     * @param ourKeyID             our key ID
+     * @param signature            the corresponding signature
+     */
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
             @Nonnull  final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
@@ -35,11 +43,21 @@ public final class SignatureX implements OtrEncodable {
         this.signature = requireNonNull(signature);
     }
 
+    /**
+     * Get the long-term DSA public key.
+     *
+     * @return the long-term DSA public key.
+     */
     @Nonnull
     public DSAPublicKey getLongTermPublicKey() {
         return longTermPublicKey;
     }
 
+    /**
+     * Get DH key id.
+     *
+     * @return Returns the DH key ID.
+     */
     public int getDhKeyID() {
         return dhKeyID;
     }

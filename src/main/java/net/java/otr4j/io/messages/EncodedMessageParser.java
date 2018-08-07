@@ -41,10 +41,12 @@ public final class EncodedMessageParser {
      *
      * @param input OTR input stream
      * @return Returns an OTR-encoded message as in-memory object.
-     * @throws ProtocolException  In case of issues during reading of the message bytes. (For example, missing bytes or
-     *                            unexpected values.)
-     * @throws OtrCryptoException In case of issues during reconstruction of cryptographic components of a message. (For
-     *                            example, a bad public key.)
+     * @throws ProtocolException          In case of issues during reading of the message bytes. (For example, missing
+     *                                    bytes or unexpected values.)
+     * @throws OtrCryptoException         In case of issues during reconstruction of cryptographic components of a
+     *                                    message. (For example, a bad public key.)
+     * @throws UnsupportedLengthException In case of exceptionally long message, which surpasses the limitation of
+     *                                    otr4j.
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
     @Nonnull

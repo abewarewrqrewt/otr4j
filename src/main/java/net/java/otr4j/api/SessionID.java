@@ -8,6 +8,9 @@
 package net.java.otr4j.api;
 
 /**
+ * Session ID. Session ID is used to identify a single session based on
+ * {@code (local account, remote account, protocol)} triple.
+ *
  * @author George Politis
  */
 public final class SessionID {
@@ -16,6 +19,9 @@ public final class SessionID {
     private final String remoteUserID;
     private final String protocolName;
 
+    /**
+     * Constant for indicating an EMPTY session ID.
+     */
     public static final SessionID EMPTY = new SessionID(null, null, null);
 
     /**
@@ -32,6 +38,7 @@ public final class SessionID {
     }
 
     /**
+     * Get local account ID.
      *
      * @return the {@code String} representing the local account
      */
@@ -40,6 +47,7 @@ public final class SessionID {
     }
 
     /**
+     * Get remote user ID.
      *
      * @return the {@code String} representing the remote user
      */
@@ -47,6 +55,11 @@ public final class SessionID {
         return remoteUserID;
     }
 
+    /**
+     * Get protocol name.
+     *
+     * @return Returns protocol name.
+     */
     public String getProtocolName() {
         return protocolName;
     }

@@ -11,6 +11,12 @@ public final class Strings {
         // No need to instantiate utility class.
     }
 
+    /**
+     * Join multiple String parts into a single concatenated String.
+     *
+     * @param parts separated string parts
+     * @return Joint string.
+     */
     // FIXME write unit tests
     public static String join(@Nonnull final String[] parts) {
         final StringBuilder builder = new StringBuilder();

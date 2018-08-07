@@ -7,10 +7,29 @@
 package net.java.otr4j.api;
 
 /**
- * 
+ * The offer status.
+ * <p>
+ * The offer status is used to indicate whether the whitespace tag was sent as an offer to initiate an encrypted
+ * session.
+ *
  * @author alexander.ivanov
- * 
  */
 public enum OfferStatus {
-    idle, sent, rejected, accepted
+    /**
+     * Idle indicates that no relevant actions was taken yet regarding an offer to establish OTR session.
+     */
+    idle,
+    /**
+     * Sent indicates the whitespace-tag offer signal was sent.
+     */
+    sent,
+    /**
+     * Rejected indicates that an offer attempt was made, but reply was a plain text reply and hence the offer is
+     * considered failed.
+     */
+    rejected,
+    /**
+     * Accepted indicates that the previously sent offer was accepted.
+     */
+    accepted
 }

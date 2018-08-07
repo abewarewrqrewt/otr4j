@@ -69,8 +69,9 @@ public final class OtrSessionManager {
      * <p>
      * Sessions created through this method will not be managed or remembered by any OtrSessionManager.
      *
-     * @param sessionID The session ID
-     * @param host      The OTR engine host
+     * @param sessionID         The session ID
+     * @param host              The OTR engine host
+     * @param senderInstanceTag The persistent sender instance tag, required for OTRv4.
      * @return Returns a newly created OTR session instance.
      */
     @Nonnull

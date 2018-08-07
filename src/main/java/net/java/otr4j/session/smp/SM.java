@@ -34,6 +34,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Socialist Millionaire protocol implementation.
+ */
 // FIXME Add OTRv4 support: new crypto primitives, include in StateEncrypted4.
 @SuppressWarnings({"PMD.AvoidRethrowingException", "PMD.AvoidCatchingGenericException"})
 public final class SM {
@@ -50,6 +53,11 @@ public final class SM {
 
     private AbstractSMPState state;
 
+    /**
+     * Constructor.
+     *
+     * @param sr secure random instance
+     */
     public SM(@Nonnull final SecureRandom sr) {
         this.state = new StateExpect1(sr);
     }

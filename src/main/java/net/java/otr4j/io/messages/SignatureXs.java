@@ -20,6 +20,7 @@ public final class SignatureXs {
     /**
      * Read Signature X signature data.
      *
+     * @param bytes The bytes representing a SignatureX, to be read.
      * @return Returns Signature X instance.
      * @throws ProtocolException        In case of failure in reading the message.
      * @throws OtrCryptoException       In case of failures while processing the message content.
