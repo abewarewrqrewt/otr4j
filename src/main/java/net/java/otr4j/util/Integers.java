@@ -28,6 +28,23 @@ public final class Integers {
     }
 
     /**
+     * Verify that value is in specified range.
+     *
+     * @param minInclusive the minimum value (inclusive)
+     * @param maxInclusive the maximum value (inclusive)
+     * @param value        the value to verify
+     * @return Returns {@code value} in case in range.
+     * @throws IllegalArgumentException In case of illegal value.
+     */
+    // FIXME write unit tests to verify requireInRange
+    public static int requireInRange(final int minInclusive, final int maxInclusive, final int value) {
+        if (value < minInclusive || value > maxInclusive) {
+            throw new IllegalArgumentException("Illegal value: " + value);
+        }
+        return value;
+    }
+
+    /**
      * Parse unsigned integer textual value-representation. All 32 bits are used, the resulting integer may have a
      * negative value.
      *

@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * OTRv2 AKE Signature message.
@@ -21,7 +22,6 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * @author George Politis
  * @author Danny van Heumen
  */
-// FIXME add exact protocol version checks for OTRv2/OTRv3 message types.
 public final class SignatureMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_SIGNATURE = 0x12;
@@ -29,12 +29,9 @@ public final class SignatureMessage extends AbstractEncodedMessage {
     public final byte[] xEncrypted;
     public final byte[] xEncryptedMAC;
 
-    public SignatureMessage(final int protocolVersion,
-            @Nonnull final byte[] xEncrypted,
-            @Nonnull final byte[] xEncryptedMAC,
-            final int senderInstance,
-            final int receiverInstance) {
-        super(protocolVersion, senderInstance, receiverInstance);
+    public SignatureMessage(final int protocolVersion, @Nonnull final byte[] xEncrypted,
+                            @Nonnull final byte[] xEncryptedMAC, final int senderInstance, final int receiverInstance) {
+        super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
         this.xEncrypted = Objects.requireNonNull(xEncrypted);
         this.xEncryptedMAC = Objects.requireNonNull(xEncryptedMAC);
     }

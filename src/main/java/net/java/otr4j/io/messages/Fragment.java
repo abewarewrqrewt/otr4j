@@ -88,7 +88,7 @@ public final class Fragment implements Message {
      * @return Returns a fragment.
      * @throws ProtocolException In case of invalid fragment format, or in case of bad data in the fragment.
      */
-    // TODO verify if suppressions are still valid
+    // TODO verify if suppressions are still valid (PMD.UselessParentheses should be fixed now ...)
     // FIXME are we required to reject fragment with empty payload?
     @SuppressWarnings({"PMD.AssignmentInOperand", "PMD.UselessParentheses"})
     @Nonnull

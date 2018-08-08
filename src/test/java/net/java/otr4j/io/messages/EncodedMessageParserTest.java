@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static java.util.Arrays.copyOf;
 import static net.java.otr4j.io.messages.EncodedMessageParser.parse;
@@ -57,14 +58,10 @@ public class EncodedMessageParserTest {
 
     @Test(expected = ProtocolException.class)
     public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException, UnsupportedLengthException {
-        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
-        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.FOUR, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
-        final ByteArrayOutputStream output = new ByteArrayOutputStream();
-        final OtrOutputStream otrOutput = new OtrOutputStream(output);
-        m.writeTo(otrOutput);
+        final byte[] input = new byte[]{0, 4, 10, 0, 0, 48, 57, 0, -106, -76, 63, 0, 0, 0, -64, -19, -99, -91, 46, -16, -7, -38, -102, -67, 120, 24, 53, 98, -43, 15, 41, 28, -61, -122, 34, 91, -70, 4, 35, -87, 99, -122, 40, 33, -78, -10, 125, 103, 87, -77, 61, -5, -123, -24, 122, -2, -16, -128, 75, 108, 80, -53, -40, -11, 71, 27, 105, 122, 77, 45, 116, 12, -107, -54, -110, -91, -105, -16, 68, -44, -24, -127, 121, 53, -108, -24, -85, -10, 31, 13, -63, -91, 17, -113, -17, -21, -72, 29, -93, -85, -98, 82, 76, -57, -36, -41, 81, 56, -76, 25, -78, -124, 4, -46, -73, 11, -71, 84, -15, -66, -26, 43, -87, 82, 54, -96, -110, 27, 29, 35, -94, 53, 107, 118, 100, 25, 122, 124, -128, 10, -1, 82, -36, 125, 32, 29, -122, 121, 112, -31, -20, 116, 111, -87, 22, -100, -125, -34, -105, -41, 14, -67, 33, 7, 53, -108, 127, -35, 84, 86, -90, -4, -22, 93, -60, 35, 38, 48, 77, 80, 51, -93, 122, -67, 20, 97, -37, 45, -8, -96, 73, 77, -122, 83, -116, 27, 2, 14, -10, -40, -54, -81, 97, 125, -101, -39, -126};
         // Parse produced message bytes.
-        final OtrInputStream otrInput = new OtrInputStream(output.toByteArray());
+        final OtrInputStream otrInput = new OtrInputStream(input);
         parse(otrInput);
     }
 

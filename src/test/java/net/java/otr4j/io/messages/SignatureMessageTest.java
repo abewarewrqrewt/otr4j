@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Random;
 
+import static net.java.otr4j.api.InstanceTag.SMALLEST_VALUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,6 +15,16 @@ import static org.junit.Assert.assertNotNull;
 public class SignatureMessageTest {
 
     private final int MAC_LENGTH_BYTES = 20;
+
+    @Test
+    public void testProtocolVerificationWorking() {
+        new SignatureMessage(OTRv.THREE, new byte[0], new byte[0], SMALLEST_VALUE, SMALLEST_VALUE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testProtocolVerificationVersionFourNotAllowed() {
+        new SignatureMessage(OTRv.FOUR, new byte[0], new byte[0], SMALLEST_VALUE, SMALLEST_VALUE);
+    }
 
     /** since this test is based on randomly generated data,
      * there is a very small chance of false positives. */

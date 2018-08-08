@@ -14,6 +14,7 @@ import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * OTRv2 AKE DH-Commit message.
@@ -21,7 +22,6 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * @author George Politis
  * @author Danny van Heumen
  */
-// FIXME add exact protocol version checks for OTRv2/OTRv3 message types.
 public final class DHCommitMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_DH_COMMIT = 0x02;
@@ -32,7 +32,7 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
     public DHCommitMessage(final int protocolVersion, @Nonnull final byte[] dhPublicKeyHash,
                            @Nonnull final byte[] dhPublicKeyEncrypted, final int senderInstance,
                            final int receiverInstance) {
-        super(protocolVersion, senderInstance, receiverInstance);
+        super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
         this.dhPublicKeyEncrypted = requireNonNull(dhPublicKeyEncrypted);
         this.dhPublicKeyHash = requireNonNull(dhPublicKeyHash);
     }

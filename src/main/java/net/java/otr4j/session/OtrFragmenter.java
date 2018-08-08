@@ -83,7 +83,7 @@ final class OtrFragmenter {
     OtrFragmenter(@Nonnull final SecureRandom random, @Nonnull final OtrEngineHost host,
                   @Nonnull final SessionID sessionID) {
         this.random = requireNonNull(random);
-        this.host = requireNonNull(host, "host cannot be null");
+        this.host = requireNonNull(host);
         this.sessionID = requireNonNull(sessionID);
     }
 
@@ -94,8 +94,8 @@ final class OtrFragmenter {
      * @param version the negotiated protocol version
      * @param message the original message
      * @return returns the number of fragments required
-     * @throws ProtocolException In case fragment size is too small to store any content or when the provided policy does not support
-     *                           fragmentation, for example if only OTRv1 is allowed.
+     * @throws ProtocolException In case fragment size is too small to store any content or when the provided policy
+     *                           does not support fragmentation, for example if only OTRv1 is allowed.
      */
     int numberOfFragments(final int version, @Nonnull final String message) throws ProtocolException {
         if (version < Session.OTRv.TWO) {

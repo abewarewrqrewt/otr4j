@@ -13,13 +13,14 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.util.Objects;
 
+import static net.java.otr4j.util.Integers.requireInRange;
+
 /**
  * OTRv2 AKE DH-Key message.
  *
  * @author George Politis
  * @author Danny van Heumen
  */
-// FIXME add exact protocol version checks for OTRv2/OTRv3 message types.
 public final class DHKeyMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_DHKEY = 0x0a;
@@ -27,7 +28,7 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
     public final DHPublicKey dhPublicKey;
 
     public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey, final int senderInstance, final int receiverInstance) {
-        super(protocolVersion, senderInstance, receiverInstance);
+        super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
         this.dhPublicKey = Objects.requireNonNull(dhPublicKey);
     }
 
