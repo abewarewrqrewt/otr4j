@@ -81,6 +81,9 @@ public final class SharedSecret4 implements AutoCloseable {
         this.theirECDHPublicKey = theirECDHPublicKey;
         this.dhKeyPair = ourDHKeyPair;
         this.theirDHPublicKey = theirDHPublicKey;
+        if (this.ecdhKeyPair != null && this.dhKeyPair != null && this.theirECDHPublicKey != null && this.theirDHPublicKey != null) {
+            regenerateK(Rotation.SENDER_KEYS, true);
+        }
     }
 
     /**
@@ -95,57 +98,33 @@ public final class SharedSecret4 implements AutoCloseable {
     }
 
     /**
-     * Generate SSID from key material provided by the security parameters.
-     * <p>
-     * NOTE: we intentionally do not clear the SharedSecret4 instance, as the same key material needs to be reused, so
-     * it cannot be cleared yet.
+     * Create shared secret based on security parameters established during the key exchange.
      *
-     * @param random Secure random instance
-     * @param params Security parameters
-     * @return Returns the SSID.
+     * @param random SecureRandom instance
+     * @param params established security parameters
+     * @return Returns SharedSecret4 instance.
      */
-    @Nonnull
-    public static byte[] generateSSID(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        final SharedSecret4 secret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
-            params.getA(), params.getX());
-        return kdf1(SSID, secret.getK(), SSID_LENGTH_BYTES);
+    public static SharedSecret4 create(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
+        return new SharedSecret4(random, requireNonNull(params.getDhKeyPair()), requireNonNull(params.getEcdhKeyPair()),
+            requireNonNull(params.getA()), requireNonNull(params.getX()));
     }
 
     /**
-     * Generate K from key material provided by the security parameters.
-     * <p>
-     * NOTE: we intentionally do not clear the SharedSecret4 instance, as the same key material needs to be reused, so
-     * it cannot be cleared yet.
+     * Prepare initial SharedSecret4 instance.
      *
-     * @param random Secure random instance
-     * @param params Security parameters
-     * @return Returns K.
-     */
-    @Nonnull
-    public static byte[] generateK(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        final SharedSecret4 secret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
-            params.getA(), params.getX());
-        return secret.getK();
-    }
-
-    /**
-     * Derive initial shared secret from security parameters as they are received from the DAKE.
-     *
-     * @param params The security parameters.
+     * @param random                  SecureRandom instance
+     * @param k                       mixed shared secret 'K'
+     * @param initializationComponent Indicator for which part of the cryptographic material should be initialized.
      * @return Returns the initialized shared secrets instance.
      */
-    // FIXME review secure deletions as described by section "Interactive DAKE Overview".
     @Nonnull
-    public static SharedSecret4 initialize(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        final SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
-            params.getA(), params.getX());
-        final byte[] k = exchangeSecrets.getK();
-        // Generate common shared secret using Bob's information stored in security parameters.
+    public static SharedSecret4 initialize(@Nonnull final SecureRandom random, @Nonnull final byte[] k,
+                                           @Nonnull final SecurityParameters4.Component initializationComponent) {
         final ECDHKeyPair initialECDHKeyPair = ECDHKeyPair.generate(kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES));
         final DHKeyPair initialDHKeyPair = DHKeyPair.generate(kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES));
-        switch (params.getInitializationComponent()) {
+        switch (initializationComponent) {
             case OURS:
-                // Bob initializes his shared secrets for the Double Ratchet, although it cannot be completed yet.
+                // Bob initializes his shared secrets for the Double Ratchet, although it is still missing Alice's keys.
                 return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, null, null);
             case THEIRS:
                 // Alice initializes her shared secrets for the Double Ratchet.
@@ -180,12 +159,28 @@ public final class SharedSecret4 implements AutoCloseable {
     }
 
     /**
+     * Generate SSID.
+     * <p>
+     * NOTE: the only relevant SSID value is the one that is generated from the initial DAKE security parameters.
+     * If you call this method at any later time, check if you are sure that you want *this* value or the initial SSID.
+     *
+     * @return Returns the SSID.
+     */
+    @Nonnull
+    public byte[] generateSSID() {
+        requireInitializationCompleted();
+        return kdf1(SSID, this.k, SSID_LENGTH_BYTES);
+    }
+
+    /**
      * Rotate our key pairs in the shared secret.
      *
      * @param regenerateDHKeyPair Indicates whether we need to regenerate the DH key pair as well.
      */
     public void rotateOurKeys(final boolean regenerateDHKeyPair) {
-        requireInitializationCompleted();
+        if (this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
+            throw new IllegalStateException("To rotate our key pairs, it is required that other party's public keys are available.");
+        }
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
         if (regenerateDHKeyPair) {
             this.dhKeyPair = DHKeyPair.generate(this.random);
@@ -202,6 +197,9 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
                          @Nullable final BigInteger theirDHPublicKey) {
+        if (this.ecdhKeyPair == null || this.dhKeyPair == null) {
+            throw new IllegalStateException("To rotate other party's public keys, it is required that our own keys are available.");
+        }
         // FIXME verify requirements of public key before accepting it.
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         if (performDHRatchet) {
@@ -236,7 +234,7 @@ public final class SharedSecret4 implements AutoCloseable {
     }
 
     private void requireInitializationCompleted() {
-        if (this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
+        if (this.ecdhKeyPair == null || this.dhKeyPair == null || this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
             throw new IllegalStateException("Shared secrets have not been fully initialized. Other party's public keys need to be rotated first.");
         }
     }

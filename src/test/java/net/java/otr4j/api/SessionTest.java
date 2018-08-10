@@ -539,7 +539,6 @@ public class SessionTest {
         }
     }
 
-    // TODO add a test similar to this but with a restricted size messaging channel, to ensure proper operation of message fragmentation and reassembly.
     @Test
     public void testOTR4SmallConversationWithHugeMessages() throws OtrException {
         final Conversation c = new Conversation(1);

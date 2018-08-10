@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.crypto.SharedSecret4.generateK;
-import static net.java.otr4j.crypto.SharedSecret4.generateSSID;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static org.bouncycastle.util.Arrays.clear;
@@ -55,10 +53,14 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         super(context.getSessionID(), context.getHost());
-        this.ssid = generateSSID(context.secureRandom(), params);
-        final byte[] exchangeK = generateK(context.secureRandom(), params);
-        final SharedSecret4 sharedSecret = initialize(context.secureRandom(), params);
-        this.ratchet = new DoubleRatchet(context.secureRandom(), sharedSecret, exchangeK);
+        final byte[] exchangeK;
+        try (SharedSecret4 exchangeSecret = SharedSecret4.create(context.secureRandom(), params)) {
+            this.ssid = exchangeSecret.generateSSID();
+            exchangeK = exchangeSecret.getK();
+        }
+        final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK,
+            params.getInitializationComponent());
+        this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
     }
 
     @Override
