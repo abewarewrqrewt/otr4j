@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import static java.util.Arrays.copyOf;
 import static net.java.otr4j.io.messages.EncodedMessageParser.parse;

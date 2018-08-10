@@ -30,6 +30,9 @@ final class OtrAssembler {
 
     /**
      * Accumulate fragments into a full OTR-encoded message.
+     * <p>
+     * Note that the implementation assumes that fragments are already verified for consistency and sender and receiver
+     * tag have been read and fragment is redirected to the appropriate slave session.
      *
      * @param fragment a message fragment
      * @return Returns completed OTR-encoded message, or null if more fragments are needed to complete the message.
@@ -67,26 +70,21 @@ final class OtrAssembler {
          * <p>
          * A fragmented OTR message looks like this:
          * (V2) ?OTR,k,n,piece-k,
-         *  or
+         * or
          * (V3) ?OTR|sender_instance|receiver_instance,k,n,piece-k,
          *
          * @param fragment The message fragment to process.
-         *
          * @return String with the accumulated message or
-         *         null if the message was incomplete or malformed
+         * null if the message was incomplete or malformed
          * @throws ProtocolException Thrown in case the message is bad in some way
-         * that breaks with the expectations of the OTR protocol.
+         *                           that breaks with the expectations of the OTR protocol.
          */
-        // TODO verify if in-order assembling follows spec (copied from original otr4j implementation, then modified to restructured fragment handling)
         @Nullable
         private String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
             final int id = fragment.getSendertag().getValue();
             if (fragment.getIndex() == INDEX_FIRST_FRAGMENT) {
                 // first fragment
-                final Status status = new Status();
-                status.current = fragment.getIndex();
-                status.total = fragment.getTotal();
-                status.content.append(fragment.getContent());
+                final Status status = new Status(fragment.getIndex(), fragment.getTotal(), fragment.getContent());
                 this.accumulations.put(id, status);
             } else {
                 // next fragment
@@ -119,8 +117,14 @@ final class OtrAssembler {
          */
         private static final class Status {
             private int current;
-            private int total;
-            private final StringBuilder content = new StringBuilder();
+            private final int total;
+            private final StringBuilder content;
+
+            public Status(final int index, final int total, final String content) {
+                this.current = index;
+                this.total = total;
+                this.content = new StringBuilder(content);
+            }
         }
     }
 
@@ -128,7 +132,6 @@ final class OtrAssembler {
      * Out-of-order assembler, following OTRv4 specification.
      */
     // TODO introduce some kind of clean-up such that fragments list does not grow infinitely. (Described in spec.)
-    // TODO consider doing some fuzzing for this user input, if we can find a decent fuzzing library.
     private static final class OutOfOrderAssembler {
 
         private static final Logger LOGGER = Logger.getLogger(OutOfOrderAssembler.class.getName());
@@ -155,11 +158,10 @@ final class OtrAssembler {
                 throw new ProtocolException("Rejecting fragment with different total value than other fragments of the same series.");
             }
             if (parts[fragment.getIndex() - 1] != null) {
-                LOGGER.log(Level.FINEST, "Fragment with index {0} was already present. Ignoring this fragment.",
+                LOGGER.log(Level.FINEST, "Fragment with index {0} is already present. Ignoring this fragment.",
                     new Object[]{fragment.getIndex()});
                 throw new ProtocolException("Rejecting fragment with index that is already present.");
             }
-            // FIXME do we need to sanity-check the sender tag and/or receiver tag before assuming that parts belong together?
             parts[fragment.getIndex()-1] = fragment.getContent();
             if (containsEmpty(parts)) {
                 // Not all message parts are present. Return null and wait for next message part before continuing.

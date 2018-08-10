@@ -183,7 +183,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     /**
      * OTR-encoded message-assembler.
      */
-    private final OtrAssembler assembler;
+    private final OtrAssembler assembler = new OtrAssembler();
 
     /**
      * Message fragmenter.
@@ -293,8 +293,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 ? Collections.synchronizedMap(new HashMap<InstanceTag, SessionImpl>(0))
                 : Collections.<InstanceTag, SessionImpl>emptyMap();
         outgoingSession = this;
-        // Initialize fragmented message support.
-        assembler = new OtrAssembler();
+        // Initialize message fragmentation support.
         fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
     }
 

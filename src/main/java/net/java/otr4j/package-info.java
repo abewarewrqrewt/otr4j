@@ -38,6 +38,7 @@
 //    "Discard the message and optionally pass a warning to the participant if:
 //    The recipient's own instance tag does not match the listed receiver instance tag."
 //  * "Discard the (illegal) fragment if:" is missing criteria for index and total <= 65535.
+//  * Nothing is said about case where sender and receiver tags are different in OTR-encoded message. (Should we consider a case where there is a difference illegal?)
 
 /**
  * otr4j.
