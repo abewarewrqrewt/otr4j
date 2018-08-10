@@ -122,6 +122,7 @@ public final class OtrCryptoEngine4 {
     // FIXME trace input to KDF1 that may not be cleared appropriately.
     public static byte[] kdf1(@Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
+        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         final byte[] result = new byte[outputSize];
         kdf1(result, 0, usageID, input, outputSize);
         return result;

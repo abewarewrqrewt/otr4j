@@ -146,7 +146,7 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = NullPointerException.class)
     public void testKdf1ReturnValueNullUsageID() {
-        kdf1(null, new byte[1], 32);
+        kdf1(null, new byte[]{1}, 32);
     }
 
     @Test(expected = NullPointerException.class)
@@ -168,7 +168,7 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = NullPointerException.class)
     public void testHashToScalarNullKDFUsage() {
-        hashToScalar(null, new byte[1]);
+        hashToScalar(null, new byte[]{1});
     }
 
     @Test(expected = NullPointerException.class)
