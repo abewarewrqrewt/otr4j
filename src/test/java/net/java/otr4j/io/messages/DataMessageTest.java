@@ -92,7 +92,7 @@ public class DataMessageTest {
         DummyClient.forceStartOtr(alice, bob);
 
         for (int i = 0; i < 1000; i++) {
-            int aliceSize = RandomUtils.nextInt(0, 100000);
+            int aliceSize = RandomUtils.nextInt(1, 100000);
             msg = RandomStringUtils.random(aliceSize);
             alice.send(bob.getAccount(), msg);
             sent = alice.getConnection().getSentMessage();
@@ -104,7 +104,7 @@ public class DataMessageTest {
                     msg.replace('\0', '?'),
                     received);
 
-            int bobSize = RandomUtils.nextInt(0, 100000);
+            int bobSize = RandomUtils.nextInt(1, 100000);
             msg = RandomStringUtils.random(bobSize);
             bob.send(alice.getAccount(), msg);
             sent = bob.getConnection().getSentMessage();
