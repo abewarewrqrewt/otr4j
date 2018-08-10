@@ -22,7 +22,6 @@ import static net.java.otr4j.util.Strings.join;
 /**
  * Support for re-assembling fragmented OTR-encoded messages.
  */
-// TODO trace control flow to confirm that we can drop the sender tag from the Assembler logic.
 final class OtrAssembler {
 
     private final InOrderAssembler inOrder = new InOrderAssembler();
