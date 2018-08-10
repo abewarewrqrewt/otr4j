@@ -148,20 +148,16 @@ public final class SharedSecret4 implements AutoCloseable {
             params.getA(), params.getX());
         final byte[] k = exchangeSecrets.getK();
         // Generate common shared secret using Bob's information stored in security parameters.
-        final ECDHKeyPair initialECDHKeyPair;
-        {
-            final byte[] r = kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES);
-            initialECDHKeyPair = ECDHKeyPair.generate(r);
-        }
-        final DHKeyPair initialDHKeyPair;
-        {
-            final byte[] r = kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES);
-            initialDHKeyPair = DHKeyPair.generate(r);
-        }
+        final ECDHKeyPair initialECDHKeyPair = ECDHKeyPair.generate(kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES));
+        final DHKeyPair initialDHKeyPair = DHKeyPair.generate(kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES));
         switch (params.getInitializationComponent()) {
             case OURS:
+                // Bob initializes his shared secrets for the Double Ratchet, although it cannot be completed yet.
                 return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair);
             case THEIRS:
+                // Alice initializes her shared secrets for the Double Ratchet.
+                initialECDHKeyPair.close();
+                initialDHKeyPair.close();
                 return new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
                     initialDHKeyPair.getPublicKey(), initialECDHKeyPair.getPublicKey());
             default:
