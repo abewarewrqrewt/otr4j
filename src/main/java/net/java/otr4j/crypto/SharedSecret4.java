@@ -23,10 +23,8 @@ import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
- * The Shared Secret mechanism used in OTRv4.
+ * The Shared Secret-mechanism used in OTRv4.
  */
-// FIXME investigate what we need to clean additionally for Point and BigInteger calculations where we use temporary instances during computation.
-// FIXME use of concatenate(...) to concat byte arrays, but intermediate result is not cleared.
 // FIXME write tests for testing key rotation.
 public final class SharedSecret4 implements AutoCloseable {
 
@@ -72,8 +70,8 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     private BigInteger theirDHPublicKey;
 
-    SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
-                  @Nonnull final ECDHKeyPair ourECDHKeyPair) {
+    private SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
+                          @Nonnull final ECDHKeyPair ourECDHKeyPair) {
         this.random = requireNonNull(random);
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
@@ -152,15 +150,12 @@ public final class SharedSecret4 implements AutoCloseable {
         // Generate common shared secret using Bob's information stored in security parameters.
         final ECDHKeyPair initialECDHKeyPair;
         {
-            final byte[] r = new byte[SECRET_KEY_LENGTH_BYTES];
-            kdf1(r, 0, ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES);
+            final byte[] r = kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES);
             initialECDHKeyPair = ECDHKeyPair.generate(r);
         }
-        // Generate common shared secret using Bob's information stored in security parameters.
         final DHKeyPair initialDHKeyPair;
         {
-            final byte[] r = new byte[DH_PRIVATE_KEY_LENGTH_BYTES];
-            kdf1(r, 0, DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES);
+            final byte[] r = kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES);
             initialDHKeyPair = DHKeyPair.generate(r);
         }
         switch (params.getInitializationComponent()) {
@@ -245,7 +240,9 @@ public final class SharedSecret4 implements AutoCloseable {
         } else {
             kdf1(this.braceKey, 0, BRACE_KEY, this.braceKey, BRACE_KEY_LENGTH_BYTES);
         }
-        kdf1(this.k, 0, SHARED_SECRET, concatenate(k_ecdh, this.braceKey), K_LENGTH_BYTES);
+        final byte[] tempKecdhBraceKey = concatenate(k_ecdh, this.braceKey);
+        kdf1(this.k, 0, SHARED_SECRET, tempKecdhBraceKey, K_LENGTH_BYTES);
+        clear(tempKecdhBraceKey);
         clear(k_ecdh);
     }
 
