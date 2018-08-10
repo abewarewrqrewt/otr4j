@@ -113,9 +113,9 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public static byte[] generateSSID(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        final SharedSecret4 exchangeSecrets = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
+        final SharedSecret4 secret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
             params.getA(), params.getX());
-        return kdf1(SSID, exchangeSecrets.getK(), SSID_LENGTH_BYTES);
+        return kdf1(SSID, secret.getK(), SSID_LENGTH_BYTES);
     }
 
     /**
@@ -130,9 +130,9 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public static byte[] generateK(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        final SharedSecret4 sharedSecret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
+        final SharedSecret4 secret = new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
             params.getA(), params.getX());
-        return sharedSecret.getK();
+        return secret.getK();
     }
 
     /**
