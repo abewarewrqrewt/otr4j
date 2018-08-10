@@ -70,24 +70,17 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     private BigInteger theirDHPublicKey;
 
-    private SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
-                          @Nonnull final ECDHKeyPair ourECDHKeyPair) {
+    SharedSecret4(@Nonnull final SecureRandom random, @Nullable final DHKeyPair ourDHKeyPair,
+                          @Nullable final ECDHKeyPair ourECDHKeyPair, @Nullable final BigInteger theirDHPublicKey,
+                          @Nullable final Point theirECDHPublicKey) {
         this.random = requireNonNull(random);
-        this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
-        this.dhKeyPair = requireNonNull(ourDHKeyPair);
-        this.theirECDHPublicKey = null;
-        this.theirDHPublicKey = null;
-    }
-
-    SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
-                          @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final BigInteger theirDHPublicKey,
-                          @Nonnull final Point theirECDHPublicKey) {
-        this.random = requireNonNull(random);
-        this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
-        this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
-        this.dhKeyPair = requireNonNull(ourDHKeyPair);
-        this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
-        regenerateK(Rotation.SENDER_KEYS, true);
+        if ((ourECDHKeyPair == null || ourDHKeyPair == null) && (theirECDHPublicKey == null || theirDHPublicKey == null)) {
+            throw new IllegalArgumentException("Expected either local key pairs or remote public keys to be provided. We cannot leave everything null at initialization time.");
+        }
+        this.ecdhKeyPair = ourECDHKeyPair;
+        this.theirECDHPublicKey = theirECDHPublicKey;
+        this.dhKeyPair = ourDHKeyPair;
+        this.theirDHPublicKey = theirDHPublicKey;
     }
 
     /**
@@ -153,13 +146,13 @@ public final class SharedSecret4 implements AutoCloseable {
         switch (params.getInitializationComponent()) {
             case OURS:
                 // Bob initializes his shared secrets for the Double Ratchet, although it cannot be completed yet.
-                return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair);
+                return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, null, null);
             case THEIRS:
                 // Alice initializes her shared secrets for the Double Ratchet.
                 initialECDHKeyPair.close();
                 initialDHKeyPair.close();
-                return new SharedSecret4(random, params.getDhKeyPair(), params.getEcdhKeyPair(),
-                    initialDHKeyPair.getPublicKey(), initialECDHKeyPair.getPublicKey());
+                return new SharedSecret4(random, null, null, initialDHKeyPair.getPublicKey(),
+                    initialECDHKeyPair.getPublicKey());
             default:
                 throw new UnsupportedOperationException("Unsupported component. Shared secret cannot be generated.");
         }

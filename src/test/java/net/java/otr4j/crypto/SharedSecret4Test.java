@@ -18,8 +18,8 @@ import static org.junit.Assert.assertNotNull;
  * The SharedSecret4 tests currently do not perform a test that binary-exactly verifies that the right values are
  * produced. For now we verify immutability of values and that values change after rotation.
  */
-@SuppressWarnings("ConstantConditions")
 // FIXME add unit tests to verify correct clearing of fields
+@SuppressWarnings("ConstantConditions")
 public class SharedSecret4Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -39,30 +39,69 @@ public class SharedSecret4Test {
         new SharedSecret4(null, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructionNullDHKeyPair() {
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, null, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructionNullECDHKeyPair() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, null, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
+    public void testConstructionNullECDHandDHKeyPair() {
+        new SharedSecret4(RANDOM, null, null, theirDHPublicKey, theirECDHPublicKey);
+    }
+
+    @Test
     public void testConstructionNullTheirDHPublicKey() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, theirECDHPublicKey);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructionNullTheirECDHPublicKey() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, null);
+    }
+
+    @Test
+    public void testConstructionNullTheirECDHandDHPublicKey() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructionNullTooManyKeys1() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        new SharedSecret4(RANDOM, ourDHKeyPair, null, null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructionNullTooManyKeys2() {
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        new SharedSecret4(RANDOM, null, ourECDHKeyPair, null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructionNullTooManyKeys3() {
+        new SharedSecret4(RANDOM, null, null, theirDHPublicKey, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructionNullTooManyKeys4() {
+        new SharedSecret4(RANDOM, null, null, null, theirECDHPublicKey);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructionNullAllKeys() {
+        new SharedSecret4(RANDOM, null, null, null, null);
     }
 
     @Test
