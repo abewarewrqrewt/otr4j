@@ -47,6 +47,12 @@ public final class SerializationUtils {
         // Utility class cannot be instantiated.
     }
 
+    /**
+     * Serialize a Message into a string-representation.
+     *
+     * @param m the message
+     * @return Returns the string-representation of the provided message.
+     */
     // Message IO.
     @Nonnull
     public static String toString(@Nonnull final Message m) {
@@ -145,7 +151,13 @@ public final class SerializationUtils {
      * Content is an inner class that is used to return both message body and accompanying TLVs.
      */
     public static final class Content {
+        /**
+         * The plaintext (user) message content.
+         */
         public final String message;
+        /**
+         * The TLVs embedded in the Data message.
+         */
         public final List<TLV> tlvs;
 
         private Content(@Nonnull final String message, @Nonnull final List<TLV> tlvs) {

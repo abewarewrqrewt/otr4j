@@ -119,6 +119,7 @@ public final class ECDHKeyPair implements AutoCloseable {
      *
      * @param otherPublicKey The other party's public key.
      * @return Returns the shared secret point.
+     * @throws OtrCryptoException In case of illegal ECDH public key.
      */
     @Nonnull
     public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws OtrCryptoException {

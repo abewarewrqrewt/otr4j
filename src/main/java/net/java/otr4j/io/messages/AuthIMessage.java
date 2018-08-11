@@ -19,8 +19,16 @@ public final class AuthIMessage extends AbstractEncodedMessage {
 
     private final OtrCryptoEngine4.Sigma sigma;
 
+    /**
+     * Constructor for Auth-I message.
+     *
+     * @param protocolVersion   the protocol version
+     * @param senderInstance    the sender instance tag
+     * @param recipientInstance the receiver instance tag
+     * @param sigma             the ring signature
+     */
     public AuthIMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
-                 @Nonnull final OtrCryptoEngine4.Sigma sigma) {
+                        @Nonnull final OtrCryptoEngine4.Sigma sigma) {
         super(requireAtLeast(Session.OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
         this.sigma = requireNonNull(sigma);
     }
@@ -30,6 +38,11 @@ public final class AuthIMessage extends AbstractEncodedMessage {
         return MESSAGE_AUTH_I;
     }
 
+    /**
+     * Get the ring signature (sigma).
+     *
+     * @return Returns sigma.
+     */
     @Nonnull
     public OtrCryptoEngine4.Sigma getSigma() {
         return sigma;

@@ -67,27 +67,93 @@ public final class OtrCryptoEngine4 {
      * KDF Usage IDs.
      */
     public enum KDFUsage {
+        /**
+         * Usage ID for Fingerprint.
+         */
         FINGERPRINT((byte) 0x00),
+        /**
+         * Usage ID for Brace Key generation on every third iteration.
+         */
         THIRD_BRACE_KEY((byte) 0x01),
+        /**
+         * Usage ID for Brace Key generation on other iterations.
+         */
         BRACE_KEY((byte) 0x02),
+        /**
+         * Usage ID for shared secret.
+         */
         SHARED_SECRET((byte) 0x03),
+        /**
+         * Usage ID for SSID.
+         */
         SSID((byte) 0x04),
+        /**
+         * Usage ID for Bob's client profile used in Auth-R message.
+         */
         AUTH_R_BOB_CLIENT_PROFILE((byte) 0x05),
+        /**
+         * Usage ID for Alice's client profile used in Auth-R message.
+         */
         AUTH_R_ALICE_CLIENT_PROFILE((byte) 0x06),
+        /**
+         * Usage ID for Phi in Auth-R message.
+         */
         AUTH_R_PHI((byte) 0x07),
+        /**
+         * Usage ID for Bob's client profile used in Auth-I message.
+         */
         AUTH_I_BOB_CLIENT_PROFILE((byte) 0x08),
+        /**
+         * Usage ID for Alice's client profile used in Auth-I message.
+         */
         AUTH_I_ALICE_CLIENT_PROFILE((byte) 0x09),
+        /**
+         * Usage ID for Phi in Auth-I message.
+         */
         AUTH_I_PHI((byte) 0x0A),
+        /**
+         * Usage ID for generating the first ephemeral ECDH key, to initialize the Double Ratchet.
+         */
         ECDH_FIRST_EPHEMERAL((byte) 0x11),
+        /**
+         * Usage ID for generating the first ephemeral DH key, to initialize the Double Ratchet.
+         */
         DH_FIRST_EPHEMERAL((byte) 0x12),
+        /**
+         * Usage ID for generating a root key.
+         */
         ROOT_KEY((byte) 0x13),
+        /**
+         * Usage ID for generating a chain key.
+         */
         CHAIN_KEY((byte) 0x14),
+        /**
+         * Usage ID for generating the next chain key.
+         */
         NEXT_CHAIN_KEY((byte) 0x15),
+        /**
+         * Usage ID for generating a message key.
+         */
         MESSAGE_KEY((byte) 0x16),
+        /**
+         * Usage ID for generating a MAC key.
+         */
         MAC_KEY((byte) 0x17),
+        /**
+         * Usage ID for generating the Extra Symmetric Key.
+         */
         EXTRA_SYMMETRIC_KEY((byte) 0x18),
+        /**
+         * Usage ID for generating the hash for the Data Message sections.
+         */
         DATA_MESSAGE_SECTIONS((byte) 0x19),
+        /**
+         * Usage ID for generating the Authenticator MAC value.
+         */
         AUTHENTICATOR((byte) 0x1A),
+        /**
+         * Usage ID for generating the authentication code for the ring signatures.
+         */
         AUTH((byte) 0x1C);
 
         private final byte value;
@@ -115,6 +181,7 @@ public final class OtrCryptoEngine4 {
     /**
      * KDF_1 key derivation function. ({@link #kdf1(byte[], int, KDFUsage, byte[], int)} for more details.)
      *
+     * @param usageID    The usage ID to be mixed in the input to KDF1.
      * @param input      Input data.
      * @param outputSize Expected output size.
      * @return Returns byte-array with KDF_1 result.
@@ -133,10 +200,11 @@ public final class OtrCryptoEngine4 {
      * <p>
      * "KDF_1(usageID || values, output_size) = SHAKE-256("OTRv4" || usageID || values, size)"
      *
-     * @param outputSize The size of the derivative output.
      * @param dst        The destination byte array, with 32 bytes available for KDF_1 result.
      * @param offset     The offset position to start writing to the destination byte array.
+     * @param usageID    The usage ID to be mixed in with the input to KDF1.
      * @param input      The input data to KDF_1.
+     * @param outputSize The size of the derivative output.
      */
     // FIXME trace input to KDF1 that may not be cleared appropriately.
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID,
@@ -168,10 +236,11 @@ public final class OtrCryptoEngine4 {
 
     /**
      * HashToScalar.
-     *
+     * <p>
      * As defined in section "HashToScalar" in OTRv4 specification.
      *
-     * @param d array of bytes
+     * @param usageID The usage ID to be mixed in with the input to KDF1.
+     * @param d       array of bytes
      * @return Returns derived scalar value.
      */
     @Nonnull
@@ -275,9 +344,11 @@ public final class OtrCryptoEngine4 {
      *
      * @param random          A secure random instance.
      * @param longTermKeyPair The long-term Ed448 key pair.
-     * @param A2              Other public key to be included in the signature.
-     * @param A3              Other public key to be included in the signature.
+     * @param A1              Public key to be included in the signature.
+     * @param A2              Public key to be included in the signature.
+     * @param A3              Public key to be included in the signature.
      * @param m               The message for which the signature should be generated.
+     * @return Returns the sigma values that represent the ring signature.
      */
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
@@ -375,6 +446,8 @@ public final class OtrCryptoEngine4 {
      * @param A3    Public key 3.
      * @param sigma The sigma containing the ring signature components.
      * @param m     The message for which the signature was generated.
+     * @throws OtrCryptoException In case verification fails on sigma, or in case A1, A2 or A3 contains an illegal
+     *                            value.
      */
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
                                   @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {

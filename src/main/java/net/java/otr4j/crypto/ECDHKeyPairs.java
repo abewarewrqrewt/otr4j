@@ -18,6 +18,7 @@ public final class ECDHKeyPairs {
      * Verify a ECDH public key.
      *
      * @param point The ECDH public key.
+     * @throws OtrCryptoException In case of illegal point value.
      */
     public static void verifyECDHPublicKey(@Nonnull final Point point) throws OtrCryptoException {
         // FIXME is there anything more to testing correct ECDH public key? (Check for identity?)

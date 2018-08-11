@@ -26,9 +26,24 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_DH_COMMIT = 0x02;
 
+    /**
+     * The encrypted DH public key.
+     */
     public final byte[] dhPublicKeyEncrypted;
+    /**
+     * The DH public key hash.
+     */
     public final byte[] dhPublicKeyHash;
 
+    /**
+     * Constructor to the DH commit message.
+     *
+     * @param protocolVersion      the protocol version
+     * @param dhPublicKeyHash      the DH public key hash
+     * @param dhPublicKeyEncrypted the encrypted DH public key
+     * @param senderInstance       the sender instance tag
+     * @param receiverInstance     the receiver instance tag
+     */
     public DHCommitMessage(final int protocolVersion, @Nonnull final byte[] dhPublicKeyHash,
                            @Nonnull final byte[] dhPublicKeyEncrypted, final int senderInstance,
                            final int receiverInstance) {

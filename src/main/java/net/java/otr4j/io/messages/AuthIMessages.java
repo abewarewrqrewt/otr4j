@@ -22,6 +22,22 @@ public final class AuthIMessages {
         // No need to instantiate utility class.
     }
 
+    /**
+     * Validate an Auth-I message.
+     *
+     * @param message           the Auth-I message to be validated
+     * @param queryTag          the query tag
+     * @param ourProfilePayload our client profile (as payload)
+     * @param profilePayloadBob other party's client profile (as payload)
+     * @param x                 ephemeral ECDH public key 'X'
+     * @param y                 ephemeral ECDH public key 'Y'
+     * @param a                 ephemeral DH public key 'A'
+     * @param b                 ephemeral DH public key 'B'
+     * @param senderAccountID   sender account ID
+     * @param receiverAccountID receiver account ID
+     * @throws OtrCryptoException  In case of failure during ring signature verification.
+     * @throws ValidationException In case validation fails.
+     */
     // TODO ensure that sender and receiver instance tags are verified prior to arriving here!
     // FIXME pass ClientProfile i.s.o. ClientProfilePayload. We only need to validate them once.
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,

@@ -137,11 +137,21 @@ public final class SharedSecret4 implements AutoCloseable {
         }
     }
 
+    /**
+     * Get ephemeral ECDH public key.
+     *
+     * @return Returns the public key.
+     */
     @Nonnull
     public Point getECDHPublicKey() {
         return this.ecdhKeyPair.getPublicKey();
     }
 
+    /**
+     * Get ephemeral DH public key.
+     *
+     * @return Returns the public key.
+     */
     @Nonnull
     public BigInteger getDHPublicKey() {
         return this.dhKeyPair.getPublicKey();

@@ -26,21 +26,69 @@ public final class DataMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_DATA = 0x03;
 
+    /**
+     * Flags.
+     */
     public final byte flags;
+    /**
+     * Sender key ID.
+     */
     public final int senderKeyID;
+    /**
+     * Receiver key ID.
+     */
     public final int recipientKeyID;
+    /**
+     * Next DH public key.
+     */
     public final DHPublicKey nextDH;
+    /**
+     * Counter value used while encrypting this Data message.
+     */
     public final byte[] ctr;
+    /**
+     * The encrypted message content.
+     */
     public final byte[] encryptedMessage;
+    /**
+     * The MAC for the message content.
+     */
     public final byte[] mac;
+    /**
+     * Old MAC keys (to be) revealed.
+     */
     public final byte[] oldMACKeys;
 
+    /**
+     * Construct Data message.
+     *
+     * @param t                   mysterious T value
+     * @param mac                 the MAC
+     * @param oldMacKeys          old MAC keys to be revealed
+     * @param senderInstanceTag   the sender instance tag
+     * @param receiverInstanceTag the receiver instance tag
+     */
     public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,
                        final int senderInstanceTag, final int receiverInstanceTag) {
         this(t.protocolVersion, t.flags, t.senderKeyID, t.recipientKeyID, t.nextDH, t.ctr, t.encryptedMessage, mac,
             oldMacKeys, senderInstanceTag, receiverInstanceTag);
     }
 
+    /**
+     * Constructor for Data message.
+     *
+     * @param protocolVersion     the protocol version
+     * @param flags               the Data message flags
+     * @param senderKeyID         the sender key ID
+     * @param recipientKeyID      the receiver key ID
+     * @param nextDH              the Next DH public key to be rotated to
+     * @param ctr                 the counter value used in this Data message
+     * @param encryptedMessage    the encrypted message content
+     * @param mac                 the MAC for the message content
+     * @param oldMacKeys          the old MAC keys to reveal
+     * @param senderInstanceTag   the sender instance tag
+     * @param receiverInstanceTag the receiver instance tag
+     */
     public DataMessage(final int protocolVersion, final byte flags, final int senderKeyID,
             final int recipientKeyID, @Nonnull final DHPublicKey nextDH,
             @Nonnull final byte[] ctr, @Nonnull final byte[] encryptedMessage,
@@ -57,6 +105,11 @@ public final class DataMessage extends AbstractEncodedMessage {
         this.oldMACKeys = Objects.requireNonNull(oldMacKeys);
     }
 
+    /**
+     * Get mysterious 'T' value.
+     *
+     * @return Returns 'T'.
+     */
     public MysteriousT getT() {
         return new MysteriousT(protocolVersion, senderInstanceTag,
                 receiverInstanceTag, flags, senderKeyID,

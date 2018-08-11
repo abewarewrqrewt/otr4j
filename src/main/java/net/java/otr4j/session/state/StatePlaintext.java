@@ -41,6 +41,11 @@ public final class StatePlaintext extends AbstractState {
 
     private final SessionID sessionId;
 
+    /**
+     * Constructor for the Plaintext message state.
+     *
+     * @param sessionId the session ID
+     */
     public StatePlaintext(final SessionID sessionId) {
         super();
         this.sessionId = Objects.requireNonNull(sessionId);

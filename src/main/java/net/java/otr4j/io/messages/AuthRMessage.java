@@ -27,6 +27,17 @@ public final class AuthRMessage extends AbstractEncodedMessage {
 
     private final OtrCryptoEngine4.Sigma sigma;
 
+    /**
+     * Auth-R Message as used in OTRv4.
+     *
+     * @param protocolVersion   the protocol version
+     * @param senderInstance    the sender instance tag
+     * @param recipientInstance the receiver instance tag
+     * @param clientProfile     the client profile (as payload)
+     * @param x                 the ECDH public key 'X'
+     * @param a                 the DH public key 'A'
+     * @param sigma             the ring signature
+     */
     public AuthRMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
                         @Nonnull final ClientProfilePayload clientProfile, @Nonnull final Point x, @Nonnull final BigInteger a,
                         @Nonnull final OtrCryptoEngine4.Sigma sigma) {
@@ -42,21 +53,41 @@ public final class AuthRMessage extends AbstractEncodedMessage {
         return MESSAGE_AUTH_R;
     }
 
+    /**
+     * Get the client profile payload.
+     *
+     * @return Returns the client profile payload.
+     */
     @Nonnull
     public ClientProfilePayload getClientProfile() {
         return clientProfile;
     }
 
+    /**
+     * Get ECDH public key 'X'.
+     *
+     * @return Returns the public key 'X'.
+     */
     @Nonnull
     public Point getX() {
         return x;
     }
 
+    /**
+     * Get DH public key 'A'.
+     *
+     * @return Returns the public key 'A'.
+     */
     @Nonnull
     public BigInteger getA() {
         return a;
     }
 
+    /**
+     * Get the ring signature.
+     *
+     * @return Returns the ring signature.
+     */
     @Nonnull
     public OtrCryptoEngine4.Sigma getSigma() {
         return sigma;

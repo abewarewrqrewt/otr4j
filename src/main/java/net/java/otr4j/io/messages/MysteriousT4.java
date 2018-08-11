@@ -22,8 +22,19 @@ public final class MysteriousT4 {
 
     private static final int PHI_DERIVATIVE_LENGTH_BYTES = 64;
 
+    /**
+     * Enum to indicate purpose of the mysterious 'T' value. KDF1 derived values are determined by which message type
+     * they are intended for.
+     */
     public enum Purpose {
-        AUTH_R, AUTH_I
+        /**
+         * Purpose is Auth-R message type.
+         */
+        AUTH_R,
+        /**
+         * Purpose is Auth-I message type.
+         */
+        AUTH_I
     }
 
     private MysteriousT4() {
@@ -32,6 +43,23 @@ public final class MysteriousT4 {
         // encoding. For now this will suffice.
     }
 
+    /**
+     * Encode provided parameters in an byte-array representation of the mysterious 'T' value.
+     *
+     * @param purpose             the purpose for the mysterious 'T' value
+     * @param profileAlice        the client profile of Alice
+     * @param profileBob          the client profile of Bob
+     * @param x                   the ECDH public key 'X'
+     * @param y                   the ECDH public key 'Y'
+     * @param a                   the DH public key 'A'
+     * @param b                   the DH public key 'B'
+     * @param senderInstanceTag   the sender instance tag
+     * @param receiverInstanceTag the receiver instance tag
+     * @param queryTag            the query tag
+     * @param senderContactID     the sender contact ID
+     * @param receiverContactID   the receiver contact ID
+     * @return Returns the byte-array representing the mysterious 'T' value based on provided arguments.
+     */
     @Nonnull
     public static byte[] encode(@Nonnull final Purpose purpose, @Nonnull final ClientProfilePayload profileAlice,
                                 @Nonnull final ClientProfilePayload profileBob, @Nonnull final Point x,

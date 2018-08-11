@@ -65,6 +65,15 @@ public final class MessageParser {
         // No need to instantiate.
     }
 
+    /**
+     * Parse provided text in order to extract the Message instance that is represented.
+     *
+     * @param text the content represented as plain text
+     * @return Returns the message instance of the message that the text represented.
+     * @throws ProtocolException                         In case of protocol violations.
+     * @throws OtrCryptoException                        In case of cryptographic violations, such as illegal values.
+     * @throws OtrInputStream.UnsupportedLengthException In case we run into the limitations of the otr4j implementation.
+     */
     @Nonnull
     public static Message parse(@Nonnull final String text) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         final int idxHead = text.indexOf(HEAD);

@@ -18,8 +18,16 @@ import javax.annotation.Nonnull;
  */
 public final class ErrorMessage implements Message {
 
+    /**
+     * The error message.
+     */
     public final String error;
 
+    /**
+     * Constructor for error message.
+     *
+     * @param error the error message itself
+     */
     public ErrorMessage(@Nonnull final String error) {
         this.error = Objects.requireNonNull(error);
     }

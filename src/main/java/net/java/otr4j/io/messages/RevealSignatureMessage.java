@@ -26,10 +26,29 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
 
     static final int MESSAGE_REVEALSIG = 0x11;
 
+    /**
+     * The revealed key.
+     */
     public final byte[] revealedKey;
+    /**
+     * Encrypted value 'x'.
+     */
     public final byte[] xEncrypted;
+    /**
+     * MAC of encrypted value 'x'.
+     */
     public final byte[] xEncryptedMAC;
 
+    /**
+     * Constructor for Reveal Signature message.
+     *
+     * @param protocolVersion  the protocol version
+     * @param xEncrypted       encrypted value 'x'
+     * @param xEncryptedMAC    MAC of encrypted value 'x'
+     * @param revealedKey      revealed key (for decrypting sent key)
+     * @param senderInstance   the sender instance tag
+     * @param receiverInstance the receiver instance tag
+     */
     public RevealSignatureMessage(final int protocolVersion, @Nonnull final byte[] xEncrypted,
                                   @Nonnull final byte[] xEncryptedMAC, @Nonnull final byte[] revealedKey,
                                   final int senderInstance, final int receiverInstance) {

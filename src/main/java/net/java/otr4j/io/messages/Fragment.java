@@ -146,32 +146,69 @@ public final class Fragment implements Message {
             index, total, content);
     }
 
+    /**
+     * Get the protocol version.
+     *
+     * @return Returns the version.
+     */
     public int getVersion() {
         return version;
     }
 
+    /**
+     * Get the fragment identifier.
+     * <p>
+     * The identifier is common amongst all fragments of the same message.
+     *
+     * @return Returns the identifier.
+     */
     public int getIdentifier() {
         return identifier;
     }
 
+    /**
+     * Get the sender instance tag.
+     *
+     * @return Returns the instance tag.
+     */
     @Nonnull
     public InstanceTag getSendertag() {
         return sendertag;
     }
 
+    /**
+     * Get the receiver instance tag.
+     *
+     * @return Returns the instance tag.
+     */
     @Nonnull
     public InstanceTag getReceivertag() {
         return receivertag;
     }
 
+    /**
+     * Get the message fragment index.
+     *
+     * @return Returns the index value.
+     */
     public int getIndex() {
         return index;
     }
 
+    /**
+     * Get the message total number of fragments.
+     *
+     * @return Returns the total.
+     */
     public int getTotal() {
         return total;
     }
 
+    /**
+     * Get the fragment content.
+     *
+     * @return Returns the content.
+     */
     @Nonnull
     public String getContent() {
         return content;

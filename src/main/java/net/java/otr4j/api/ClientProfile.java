@@ -15,6 +15,9 @@ import static net.java.otr4j.util.Collections.requireElements;
 import static net.java.otr4j.util.Collections.requireMinElements;
 import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 
+/**
+ * The validated representation of the ClientProfile.
+ */
 public final class ClientProfile {
 
     /**
@@ -42,6 +45,15 @@ public final class ClientProfile {
      */
     private final DSAPublicKey dsaPublicKey;
 
+    /**
+     * Constructor for the client profile instance.
+     *
+     * @param instanceTag        the instance tag
+     * @param longTermPublicKey  the long-term Ed448 public key
+     * @param versions           supported protocol versions
+     * @param expirationUnixTime the expiration date in unix timestamp (in seconds)
+     * @param dsaPublicKey       the DSA public key
+     */
     public ClientProfile(@Nonnull final InstanceTag instanceTag, @Nonnull final Point longTermPublicKey,
                          @Nonnull final Set<Integer> versions, final long expirationUnixTime,
                          @Nullable final DSAPublicKey dsaPublicKey) {
@@ -53,25 +65,50 @@ public final class ClientProfile {
         this.dsaPublicKey = dsaPublicKey;
     }
 
+    /**
+     * Get the instance tag.
+     *
+     * @return Returns the instance tag.
+     */
     @Nonnull
     public InstanceTag getInstanceTag() {
         return instanceTag;
     }
 
+    /**
+     * Get the long-term Ed448 public key.
+     *
+     * @return Returns the public key.
+     */
     @Nonnull
     public Point getLongTermPublicKey() {
         return longTermPublicKey;
     }
 
+    /**
+     * Get the supported OTR protocol versions.
+     *
+     * @return Returns the versions.
+     */
     @Nonnull
     public Set<Integer> getVersions() {
         return versions;
     }
 
+    /**
+     * Get the expiration date as unix timestamp (in seconds).
+     *
+     * @return Returns the unix timestamp in seconds.
+     */
     public long getExpirationUnixTime() {
         return expirationUnixTime;
     }
 
+    /**
+     * The long-term DSA public key. (Used in OTRv3.)
+     *
+     * @return Returns the public key.
+     */
     @Nullable
     public DSAPublicKey getDsaPublicKey() {
         return dsaPublicKey;

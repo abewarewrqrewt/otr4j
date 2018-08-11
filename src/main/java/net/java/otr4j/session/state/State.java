@@ -25,6 +25,9 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 
+/**
+ * Interface to the Message state.
+ */
 public interface State {
 
     /**
