@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -20,11 +21,12 @@ import static java.util.Objects.requireNonNull;
  * @param <E> The type of elements contained in the blocking queue.
  */
 // FIXME write unit tests for multi-BlockingQueue
-public final class MultiBlockingQueue<E> implements BlockingQueue<E> {
+// TODO consider making this a specialized class that simply offers only add/offer/put methods.
+public final class SubmittingMultiBlockingQueue<E> implements BlockingQueue<E> {
 
     private final ArrayList<BlockingQueue<E>> queues;
 
-    public MultiBlockingQueue(@Nonnull final Collection<BlockingQueue<E>> queues) {
+    public SubmittingMultiBlockingQueue(@Nonnull final Collection<BlockingQueue<E>> queues) {
         this.queues = new ArrayList<>(queues);
     }
 
@@ -70,11 +72,7 @@ public final class MultiBlockingQueue<E> implements BlockingQueue<E> {
 
     @Override
     public E remove() {
-        E removed = null;
-        for (final BlockingQueue<E> queue : this.queues) {
-            removed = queue.remove();
-        }
-        return removed;
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
@@ -109,11 +107,8 @@ public final class MultiBlockingQueue<E> implements BlockingQueue<E> {
     }
 
     @Override
-    public void put(@Nonnull final E e) throws InterruptedException {
-        for (final BlockingQueue<E> queue : this.queues) {
-            queue.put(e);
-        }
-        // TODO currently, we cannot trust state after an InterruptedException has occurred for 'put' call that was performed on any other than the first queue.
+    public void put(@Nonnull final E e) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
@@ -143,81 +138,112 @@ public final class MultiBlockingQueue<E> implements BlockingQueue<E> {
 
     @Override
     @Nonnull
-    public E take() throws InterruptedException {
-        if (this.queues.isEmpty()) {
-            throw new IllegalStateException("No queues are added, hence we can wait infinitely. Not gonna try to do that.");
-        }
-        E taken = null;
-        for (final BlockingQueue<E> queue : this.queues) {
-            taken = queue.take();
-        }
-        return taken;
-        // TODO currently, we cannot trust state after an InterruptedException has occurred for 'take' call that was performed on any other than the first queue.
+    public E take() {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
-    public E poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+    public E poll(final long timeout, @Nonnull final TimeUnit unit) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
     public int remainingCapacity() {
-
-        return 0;
+        if (this.queues.isEmpty()) {
+            return 0;
+        }
+        int minCapacity = Integer.MAX_VALUE;
+        for (final BlockingQueue<E> queue : this.queues) {
+            minCapacity = min(minCapacity, queue.remainingCapacity());
+        }
+        return minCapacity;
     }
 
     @Override
     public boolean remove(final Object o) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
-    public boolean containsAll(final Collection<?> c) {
+    public boolean containsAll(@Nonnull final Collection<?> c) {
+        for (final BlockingQueue<E> queue : this.queues) {
+            if (queue.containsAll(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public boolean addAll(final Collection<? extends E> c) {
+    public boolean addAll(@Nonnull final Collection<? extends E> c) {
+        for (final BlockingQueue<E> queue : this.queues) {
+            queue.addAll(c);
+        }
+        return true;
     }
 
     @Override
-    public boolean removeAll(final Collection<?> c) {
+    public boolean removeAll(@Nonnull final Collection<?> c) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
-    public boolean retainAll(final Collection<?> c) {
+    public boolean retainAll(@Nonnull final Collection<?> c) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
     public void clear() {
+        for (final BlockingQueue<E> queue : this.queues) {
+            queue.clear();
+        }
     }
 
     @Override
     public int size() {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
     public boolean isEmpty() {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
     public boolean contains(final Object o) {
+        for (final BlockingQueue<E> queue : this.queues) {
+            if (queue.contains(o)) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    @Nonnull
     @Override
     public Iterator<E> iterator() {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
+    @Nonnull
     @Override
     public Object[] toArray() {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
+    }
+
+    @Nonnull
+    @Override
+    public <T> T[] toArray(@Nonnull final T[] a) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
-    public <T> T[] toArray(final T[] a) {
+    public int drainTo(@Nonnull final Collection<? super E> c) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 
     @Override
-    public int drainTo(final Collection<? super E> c) {
-    }
-
-    @Override
-    public int drainTo(final Collection<? super E> c, final int maxElements) {
+    public int drainTo(@Nonnull final Collection<? super E> c, final int maxElements) {
+        throw new UnsupportedOperationException("Only submitting new elements is supported.");
     }
 }

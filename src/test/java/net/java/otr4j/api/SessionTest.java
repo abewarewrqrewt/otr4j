@@ -10,6 +10,7 @@ import net.java.otr4j.test.dummyclient.ProcessedTestMessage;
 import net.java.otr4j.test.dummyclient.Server;
 import net.java.otr4j.util.ConditionalBlockingQueue;
 import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
+import net.java.otr4j.util.SubmittingMultiBlockingQueue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -509,31 +510,31 @@ public class SessionTest {
         c.hostAlice.sendRequest();
         assertNull(c.hostBob.receiveMessage());
         // Expecting Identity message from Bob.
-        shuffle(c.channelAlice, RANDOM);
+        shuffle(c.hostAlice.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
         // Expecting AUTH_R message from Alice.
-        shuffle(c.channelBob, RANDOM);
+        shuffle(c.hostBob.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], c.hostBob.receiveAllMessages(true));
         assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        shuffle(c.channelAlice, RANDOM);
+        shuffle(c.hostAlice.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
         assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        shuffle(c.channelBob, RANDOM);
+        shuffle(c.hostBob.receiptChannel, RANDOM);
         assertEquals(0, c.hostBob.receiveAllMessages(true).length);
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
             final String messageBob = randomMessage(1, 500);
             c.hostBob.sendMessage(messageBob);
-            shuffle(c.channelAlice, RANDOM);
+            shuffle(c.hostAlice.receiptChannel, RANDOM);
             assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
                 new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1, 500);
             c.hostAlice.sendMessage(messageAlice);
-            shuffle(c.channelBob, RANDOM);
+            shuffle(c.hostBob.receiptChannel, RANDOM);
             assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
                 new String[]{messageAlice}, c.hostBob.receiveAllMessages(true));
         }
@@ -593,8 +594,6 @@ public class SessionTest {
      */
     private static final class Conversation {
 
-        private final BlockingQueue<String> channelAlice;
-        private final BlockingQueue<String> channelBob;
         private final Client hostAlice;
         private final Client hostBob;
 
@@ -604,16 +603,20 @@ public class SessionTest {
          * @param channelCapacity Maximum number of messages allowed to be in transit simultaneously.
          */
         private Conversation(final int channelCapacity) {
-            channelAlice = new LinkedBlockingQueue<>(channelCapacity);
-            channelBob = new LinkedBlockingQueue<>(channelCapacity);
+            final LinkedBlockingQueue<String> directChannelAlice = new LinkedBlockingQueue<>(channelCapacity);
+            final SubmittingMultiBlockingQueue<String> channelAlice = new SubmittingMultiBlockingQueue<>(
+                Collections.<BlockingQueue<String>>singleton(directChannelAlice));
+            final LinkedBlockingQueue<String> directChannelBob = new LinkedBlockingQueue<>(channelCapacity);
+            final SubmittingMultiBlockingQueue<String> channelBob = new SubmittingMultiBlockingQueue<>(
+                Collections.<BlockingQueue<String>>singleton(directChannelBob));
             final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
-                channelAlice, channelBob);
+                channelAlice, directChannelBob);
             this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
-                RANDOM, channelBob, channelAlice);
+                RANDOM, channelBob, directChannelAlice);
         }
 
         /**
@@ -625,17 +628,23 @@ public class SessionTest {
          */
         private Conversation(final int maxMessageSize, final int channelCapacity) {
             final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
-            channelAlice = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(channelCapacity), condition);
-            channelBob = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(channelCapacity), condition);
+            final ConditionalBlockingQueue<String> directChannelAlice = new ConditionalBlockingQueue<>(
+                new LinkedBlockingQueue<String>(channelCapacity), condition);
+            final SubmittingMultiBlockingQueue<String> channelAlice = new SubmittingMultiBlockingQueue<>(
+                Collections.<BlockingQueue<String>>singleton(directChannelAlice));
+            final ConditionalBlockingQueue<String> directChannelBob = new ConditionalBlockingQueue<>(
+                new LinkedBlockingQueue<String>(channelCapacity), condition);
+            final SubmittingMultiBlockingQueue<String> channelBob = new SubmittingMultiBlockingQueue<>(
+                Collections.<BlockingQueue<String>>singleton(directChannelBob));
             final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
-                channelAlice, channelBob);
+                channelAlice, directChannelBob);
             this.hostBob.setMessageSize(maxMessageSize);
             this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
-                RANDOM, channelBob, channelAlice);
+                RANDOM, channelBob, directChannelAlice);
             this.hostAlice.setMessageSize(maxMessageSize);
         }
     }
