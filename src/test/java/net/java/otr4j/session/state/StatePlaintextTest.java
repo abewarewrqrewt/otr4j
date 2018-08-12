@@ -13,6 +13,8 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.atLeastOnce;
@@ -70,16 +72,23 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithNonViablePolicy() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
+        final Logger logger = Logger.getLogger(OtrPolicy.class.getName());
+        final Level original = logger.getLevel();
+        try {
+            logger.setLevel(Level.OFF);
+            final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
-        final StatePlaintext state = new StatePlaintext(sessionId);
-        final Context context = mock(Context.class);
-        final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
-        when(context.getSessionPolicy()).thenReturn(policy);
-        when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
-        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
-        assertEquals(expected, m);
-        verify(context, never()).setOfferStatusSent();
+            final StatePlaintext state = new StatePlaintext(sessionId);
+            final Context context = mock(Context.class);
+            final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
+            when(context.getSessionPolicy()).thenReturn(policy);
+            when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
+            final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
+            assertEquals(expected, m);
+            verify(context, never()).setOfferStatusSent();
+        } finally {
+            logger.setLevel(original);
+        }
     }
 
     @Test
