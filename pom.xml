@@ -126,7 +126,23 @@
                 <version>3.7.0</version>
                 <executions>
                     <execution>
+                        <id>default-compile</id>
                         <phase>compile</phase>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xlint:all,-options,-deprecation</arg>
+                                <arg>-Xdoclint:all/protected</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xlint:all,-options,-deprecation</arg>
+                            </compilerArgs>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -134,30 +150,6 @@
                     <target>1.7</target>
                     <showWarnings>true</showWarnings>
                     <failOnWarning>true</failOnWarning>
-                    <compilerArgs>
-                        <arg>-Xlint:all,-options,-deprecation</arg>
-                        <arg>-Xdoclint:all/protected</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-            <!-- Weaken build requirements for test code. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-                <executions>
-                    <execution>
-                        <phase>test-compile</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                    <showWarnings>true</showWarnings>
-                    <failOnWarning>false</failOnWarning>
-                    <compilerArgs>
-                        <arg>-Xlint:all,-options</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
