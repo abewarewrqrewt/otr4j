@@ -196,6 +196,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                     // nothing to do here, just ignore the padding
                     break;
                 case TLV.DISCONNECTED: // TLV1
+                    // FIXME shouldn't we send remaining MACs-to-be-revealed here?
                     context.setState(new StateFinished(this.sessionID));
                     break;
                 // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
