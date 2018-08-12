@@ -7,8 +7,14 @@
 
 package net.java.otr4j.api;
 
-import java.security.SecureRandom;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -17,8 +23,23 @@ public class SmpEngineHostUtilTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    private Level previousLogLevel;
+
+    @Before
+    public void setUp() {
+        final Logger globalLogger = Logger.getLogger("");
+        this.previousLogLevel = globalLogger.getLevel();
+        globalLogger.setLevel(Level.OFF);
+    }
+
+    @After
+    public void tearDown() {
+        final Logger globalLogger = Logger.getLogger("");
+        globalLogger.setLevel(this.previousLogLevel);
+    }
+
     @Test
-    public void testSmpErrorOnGoodHost() throws OtrException {
+    public void testSmpErrorOnGoodHost() {
         final boolean cheated = true;
         final int type = 1;
         final SessionID sessionID = new SessionID(null, null, null);
@@ -28,7 +49,7 @@ public class SmpEngineHostUtilTest {
     }
 
     @Test
-    public void testSmpErrorOnFaultyHost() throws OtrException {
+    public void testSmpErrorOnFaultyHost() {
         final boolean cheated = true;
         final int type = 1;
         final SessionID sessionID = new SessionID(null, null, null);
@@ -39,7 +60,7 @@ public class SmpEngineHostUtilTest {
     }
 
     @Test
-    public void testSmpAbortedOnGoodHost() throws OtrException {
+    public void testSmpAbortedOnGoodHost() {
         final SessionID sessionID = new SessionID(null, null, null);
         final SmpEngineHost host = mock(SmpEngineHost.class);
         SmpEngineHostUtil.smpAborted(host, sessionID);
@@ -47,7 +68,7 @@ public class SmpEngineHostUtilTest {
     }
 
     @Test
-    public void testSmpAbortedOnFaultyHost() throws OtrException {
+    public void testSmpAbortedOnFaultyHost() {
         final SessionID sessionID = new SessionID(null, null, null);
         final SmpEngineHost host = mock(SmpEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).smpAborted(sessionID);
@@ -94,7 +115,7 @@ public class SmpEngineHostUtilTest {
     }
 
     @Test
-    public void testAskForSecretOnGoodHost() throws OtrException {
+    public void testAskForSecretOnGoodHost() {
         final String question = "What's my secret?";
         final InstanceTag sender = InstanceTag.random(RANDOM);
         final SessionID sessionID = new SessionID(null, null, null);
@@ -104,7 +125,7 @@ public class SmpEngineHostUtilTest {
     }
 
     @Test
-    public void testAskForSecretOnFaultyHost() throws OtrException {
+    public void testAskForSecretOnFaultyHost() {
         final String question = "What's my secret?";
         final InstanceTag sender = InstanceTag.random(RANDOM);
         final SessionID sessionID = new SessionID(null, null, null);
