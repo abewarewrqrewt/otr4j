@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrPolicy.ALLOW_V4;
+import static net.java.otr4j.api.OtrPolicy.OPPORTUNISTIC;
 import static net.java.otr4j.api.OtrPolicy.OTRL_POLICY_MANUAL;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.FINISHED;
@@ -168,68 +169,50 @@ public class SessionTest {
 
     @Test
     public void testQueryStart() throws Exception {
-        DummyClient[] convo = DummyClient.getConversation();
-        DummyClient alice = convo[0];
-        DummyClient bob = convo[1];
-
-        bob.send(alice.getAccount(), TestStrings.otrQuery);
-
-        alice.pollReceivedMessage(); // Query
-        bob.pollReceivedMessage(); // DH-Commit
-        alice.pollReceivedMessage(); // DH-Key
-        bob.pollReceivedMessage(); // Reveal signature
-        alice.pollReceivedMessage(); // Signature
-
-        assertEquals("The session is not encrypted.", ENCRYPTED,
-                bob.getSession().getSessionStatus());
-        assertEquals("The session is not encrypted.", ENCRYPTED,
-                alice.getSession().getSessionStatus());
-
-        String msg;
-
-        alice.send(
-                bob.getAccount(),
-                msg = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?");
-
-        assertThat("Message has been transferred unencrypted.", alice
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, bob.pollReceivedMessage().getContent());
-
-        bob.send(alice.getAccount(),
-                msg = "Hey Alice, it means that our communication is encrypted and authenticated.");
-        assertThat("Message has been transferred unencrypted.", bob
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, alice.pollReceivedMessage().getContent());
-
-        alice.send(bob.getAccount(), msg = "Oh, is that all?");
-        assertThat("Message has been transferred unencrypted.", alice
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, bob.pollReceivedMessage().getContent());
-
-        bob.send(
-                alice.getAccount(),
-                msg = "Actually no, our communication has the properties of perfect forward secrecy and deniable authentication.");
-        assertThat("Message has been transferred unencrypted.", bob
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, alice.pollReceivedMessage().getContent());
-
-        alice.send(bob.getAccount(), msg = "Oh really?! pouvons-nous parler en français?");
-        assertThat("Message has been transferred unencrypted.", alice
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, bob.pollReceivedMessage().getContent());
-
-        bob.exit();
-        alice.exit();
+        final Conversation c = new Conversation(1);
+        c.clientAlice.setPolicy(new OtrPolicy(OPPORTUNISTIC & ~ALLOW_V4));
+        c.clientBob.setPolicy(new OtrPolicy(OPPORTUNISTIC & ~ALLOW_V4));
+        c.clientBob.sendMessage(TestStrings.otrQuery);
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting DH-Commit message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting DH-Key message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting Signature message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting Reveal Signature message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertEquals(msg1, c.clientBob.receiveMessage());
+        final String msg2 = "Hey Alice, it means that our communication is encrypted and authenticated.";
+        c.clientBob.sendMessage(msg2);
+        assertNotEquals(msg2, c.clientAlice.receiptChannel.peek());
+        assertEquals(msg2, c.clientAlice.receiveMessage());
+        final String msg3 = "Oh, is that all?";
+        c.clientAlice.sendMessage(msg3);
+        assertNotEquals(msg3, c.clientBob.receiptChannel.peek());
+        assertEquals(msg3, c.clientBob.receiveMessage());
+        final String msg4 = "Actually no, our communication has the properties of perfect forward secrecy and deniable authentication.";
+        c.clientBob.sendMessage(msg4);
+        assertNotEquals(msg4, c.clientAlice.receiptChannel.peek());
+        assertEquals(msg4, c.clientAlice.receiveMessage());
+        final String msg5 = "Oh really?! pouvons-nous parler en français?";
+        c.clientAlice.sendMessage(msg5);
+        assertNotEquals(msg5, c.clientBob.receiptChannel.peek());
+        assertEquals(msg5, c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        c.clientBob.session.endSession();
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Bob has not yet switched session status as he has not processed the message yet.
+        assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
+        c.clientAlice.session.endSession();
+        assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
+        assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
     }
 
     @Test
