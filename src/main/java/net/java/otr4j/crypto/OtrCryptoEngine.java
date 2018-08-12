@@ -92,18 +92,31 @@ public final class OtrCryptoEngine {
     }
 
     private static final String MODULUS_TEXT = "00FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF";
+    /**
+     * Modulus for DH computations.
+     */
     public static final BigInteger MODULUS = new BigInteger(MODULUS_TEXT, 16);
     private static final BigInteger BIGINTEGER_TWO = BigInteger.valueOf(2);
+    /**
+     * Modulus - 2
+     */
     public static final BigInteger MODULUS_MINUS_TWO = MODULUS.subtract(BIGINTEGER_TWO);
+    /**
+     * The generator used in DH.
+     */
     public static final BigInteger GENERATOR = new BigInteger("2", 10);
-
+    /**
+     * The SHA-256 digest length in bytes.
+     */
     public static final int SHA256_DIGEST_LENGTH_BYTES = 32;
 
     /**
      * Length of MAC in bytes.
      */
     private static final int MAC_LENGTH_BYTES = 20;
-
+    /**
+     * The AES key length in bytes.
+     */
     public static final int AES_KEY_BYTE_LENGTH = 16;
     private static final int DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH = 320;
     private static final int CTR_LENGTH_BYTES = 16;
@@ -112,6 +125,11 @@ public final class OtrCryptoEngine {
         // this class is never instantiated, it only has static methods
     }
 
+    /**
+     * Generate a DSA key pair.
+     *
+     * @return Returns the DSA key pair.
+     */
     @Nonnull
     public static KeyPair generateDSAKeyPair() {
         try {
@@ -122,6 +140,12 @@ public final class OtrCryptoEngine {
         }
     }
 
+    /**
+     * Generate a DH key pair.
+     *
+     * @param secureRandom the SecureRandom instance
+     * @return Returns the DH key pair.
+     */
     @Nonnull
     public static KeyPair generateDHKeyPair(@Nonnull final SecureRandom secureRandom) {
 
@@ -163,6 +187,13 @@ public final class OtrCryptoEngine {
         return new KeyPair(pubKey, privKey);
     }
 
+    /**
+     * Convert DH public key from MPI (Big Integer).
+     *
+     * @param mpi the MPI value that represents the DH public key
+     * @return Returns the DH public key.
+     * @throws OtrCryptoException In case of illegal MPI value.
+     */
     @Nonnull
     public static DHPublicKey getDHPublicKey(@Nonnull final BigInteger mpi) throws OtrCryptoException {
         final DHPublicKeySpec pubKeySpecs = new DHPublicKeySpec(mpi, MODULUS, GENERATOR);
@@ -176,11 +207,28 @@ public final class OtrCryptoEngine {
         }
     }
 
+    /**
+     * SHA-256 HMAC calculation.
+     *
+     * @param b   The input bytes to calculate checksum of.
+     * @param key The salt value for the HMAC calculation.
+     * @return Returns the HMAC checksum.
+     * @throws OtrCryptoException In case of illegal key value.
+     */
     @Nonnull
     public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
         return sha256Hmac(b, key, 0);
     }
 
+    /**
+     * SHA-256 HMAC calculation.
+     *
+     * @param b      The input bytes to calculate checksum of.
+     * @param key    The salt value for the HMAC calculation.
+     * @param length The length of the resulting checksum.
+     * @return Returns the HMAC checksum.
+     * @throws OtrCryptoException In case of illegal key value.
+     */
     @Nonnull
     public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
         throws OtrCryptoException {
@@ -208,6 +256,14 @@ public final class OtrCryptoEngine {
         }
     }
 
+    /**
+     * The SHA-1 HMAC.
+     *
+     * @param b   the input bytes
+     * @param key the salt
+     * @return Returns the checksum.
+     * @throws OtrCryptoException In case of illegal key value.
+     */
     @Nonnull
     public static byte[] sha1Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
         final byte[] macBytes;
@@ -226,11 +282,26 @@ public final class OtrCryptoEngine {
         return bytes;
     }
 
+    /**
+     * SHA-256 HMAC, take first 160 bits (20 bytes).
+     *
+     * @param b   the bytes
+     * @param key the salt
+     * @return Returns the checksum result.
+     * @throws OtrCryptoException In case of illegal key value.
+     */
     @Nonnull
     public static byte[] sha256Hmac160(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
         return sha256Hmac(b, key, MAC_LENGTH_BYTES);
     }
 
+    /**
+     * SHA-256 hash function.
+     *
+     * @param first the first bytes
+     * @param next  any possible next byte-arrays of additional data
+     * @return Returns the checksum result.
+     */
     @Nonnull
     public static byte[] sha256Hash(@Nonnull final byte[] first, final byte[]... next) {
         final MessageDigest sha256;
@@ -246,6 +317,13 @@ public final class OtrCryptoEngine {
         return sha256.digest();
     }
 
+    /**
+     * SHA-1 hash function.
+     *
+     * @param first the first bytes
+     * @param next  any possible next byte-arrays of additional data
+     * @return Returns the checksum result.
+     */
     @Nonnull
     public static byte[] sha1Hash(@Nonnull final byte[] first, final byte[]... next) {
         final MessageDigest sha1;
@@ -261,6 +339,15 @@ public final class OtrCryptoEngine {
         return sha1.digest();
     }
 
+    /**
+     * Decrypt AES-encrypted payload.
+     *
+     * @param key the decryption key
+     * @param ctr the counter value used in encryption
+     * @param b   the ciphertext
+     * @return Returns the decrypted content.
+     * @throws OtrCryptoException In case of illegal ciphertext.
+     */
     @Nonnull
     public static byte[] aesDecrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
             throws OtrCryptoException {
@@ -283,6 +370,15 @@ public final class OtrCryptoEngine {
         return aesOutLwDec;
     }
 
+    /**
+     * Encrypt payload using AES.
+     *
+     * @param key the encryption key
+     * @param ctr the counter value to use
+     * @param b   the plaintext content in bytes
+     * @return Returns the encrypted content.
+     * @throws OtrCryptoException In case of failure to encrypt content.
+     */
     @Nonnull
     public static byte[] aesEncrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
             throws OtrCryptoException {
@@ -304,6 +400,14 @@ public final class OtrCryptoEngine {
         return aesOutLwEnc;
     }
 
+    /**
+     * Generate shared secret based on DH key exchange data.
+     *
+     * @param privKey the DH private key
+     * @param pubKey  the DH public key (of the other DH key pair)
+     * @return Returns the generated shared secret.
+     * @throws OtrCryptoException In case of illegal key.
+     */
     @Nonnull
     public static SharedSecret generateSecret(@Nonnull final PrivateKey privKey,
             @Nonnull final PublicKey pubKey) throws OtrCryptoException {
@@ -320,6 +424,14 @@ public final class OtrCryptoEngine {
         }
     }
 
+    /**
+     * Sign bytes with provided private key.
+     *
+     * @param b          the source content
+     * @param privatekey the DSA private key
+     * @return Returns signature in bytes.
+     */
+    // FIXME change type to DSAPrivateKey, as that is the only valid private key type.
     @Nonnull
     public static byte[] sign(@Nonnull final byte[] b, @Nonnull final PrivateKey privatekey) {
         if (!(privatekey instanceof DSAPrivateKey)) {
@@ -372,11 +484,26 @@ public final class OtrCryptoEngine {
         return new DSASignature(signature[0], signature[1]);
     }
 
+    /**
+     * A type representing the DSA signature in its two individual components.
+     */
     public static final class DSASignature {
 
+        /**
+         * The 'r' component.
+         */
         public final BigInteger r;
+        /**
+         * The 's' component.
+         */
         public final BigInteger s;
 
+        /**
+         * The DSA signature constructor.
+         *
+         * @param r the 'r' component
+         * @param s the 's' component
+         */
         public DSASignature(@Nonnull final BigInteger r, @Nonnull final BigInteger s) {
             this.r = requireNonNull(r);
             this.s = requireNonNull(s);
@@ -410,6 +537,15 @@ public final class OtrCryptoEngine {
         verify(b, pubKey, new BigInteger(1, r), new BigInteger(1, s));
     }
 
+    /**
+     * Verify a message using a signature represented as two MPI components: 'r' and 's'.
+     *
+     * @param b      the message in bytes
+     * @param pubKey the DSA public key
+     * @param r      the signature component 'r'
+     * @param s      the signature component 's'
+     * @throws OtrCryptoException In case of illegal signature.
+     */
     public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final BigInteger r,
             @Nonnull final BigInteger s) throws OtrCryptoException {
         requireNonNull(b);
@@ -432,12 +568,24 @@ public final class OtrCryptoEngine {
         }
     }
 
+    /**
+     * Get the fingerprint for provided DSA public key.
+     *
+     * @param pubKey the DSA public key
+     * @return Returns fingerprint in hexadecimal string-representation
+     */
     @Nonnull
     public static String getFingerprint(@Nonnull final DSAPublicKey pubKey) {
         final byte[] b = getFingerprintRaw(pubKey);
         return toHexString(b);
     }
 
+    /**
+     * Get the fingerprint for provided DSA public key as "raw" byte-array.
+     *
+     * @param pubKey the DSA public key
+     * @return Returns the fingerprint as byte-array.
+     */
     @Nonnull
     public static byte[] getFingerprintRaw(@Nonnull final DSAPublicKey pubKey) {
         final byte[] bRemotePubKey = new OtrOutputStream().writePublicKey(pubKey).toByteArray();
