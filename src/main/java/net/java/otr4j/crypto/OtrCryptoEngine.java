@@ -431,16 +431,10 @@ public final class OtrCryptoEngine {
      * @param privatekey the DSA private key
      * @return Returns signature in bytes.
      */
-    // FIXME change type to DSAPrivateKey, as that is the only valid private key type.
     @Nonnull
-    public static byte[] sign(@Nonnull final byte[] b, @Nonnull final PrivateKey privatekey) {
-        if (!(privatekey instanceof DSAPrivateKey)) {
-            throw new IllegalArgumentException("Private key instance must be of type DSAPrivateKey.");
-        }
-
-        final DSAPrivateKey dsaPrivateKey = (DSAPrivateKey) privatekey;
-        final BigInteger q = dsaPrivateKey.getParams().getQ();
-        final DSASignature signature = signRS(b, dsaPrivateKey);
+    public static byte[] sign(@Nonnull final byte[] b, @Nonnull final DSAPrivateKey privatekey) {
+        final BigInteger q = privatekey.getParams().getQ();
+        final DSASignature signature = signRS(b, privatekey);
 
         final int siglen = q.bitLength() / 4;
         final int rslen = siglen / 2;

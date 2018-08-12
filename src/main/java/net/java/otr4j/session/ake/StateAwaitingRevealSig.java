@@ -28,6 +28,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.KeyPair;
+import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -181,7 +182,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             (DSAPublicKey) localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
-        final byte[] signature = OtrCryptoEngine.sign(mhash, localLongTermKeyPair.getPrivate());
+        final byte[] signature = OtrCryptoEngine.sign(mhash, (DSAPrivateKey) localLongTermKeyPair.getPrivate());
         final SignatureX mysteriousX = new SignatureX((DSAPublicKey) localLongTermKeyPair.getPublic(),
                 LOCAL_DH_PRIVATE_KEY_ID, signature);
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."

@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -130,7 +131,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             (DSAPublicKey) longTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(sigM), s.m1());
         // OTR: "Let XB be the following structure: pubB (PUBKEY), keyidB (INT), sigB(MB) (SIG)"
-        final byte[] signature = OtrCryptoEngine.sign(mhash, longTermKeyPair.getPrivate());
+        final byte[] signature = OtrCryptoEngine.sign(mhash, (DSAPrivateKey) longTermKeyPair.getPrivate());
         final SignatureX mysteriousX = new SignatureX((DSAPublicKey) longTermKeyPair.getPublic(),
                 LOCAL_DH_PRIVATE_KEY_ID, signature);
         // OTR: "Encrypt XB using AES128-CTR with key c and initial counter value 0."
