@@ -355,101 +355,101 @@ public class SessionTest {
     @Test
     public void testPlainTextMessagingNewClients() throws OtrException {
         final Conversation c = new Conversation(1);
-        c.hostBob.sendMessage("hello world");
-        assertEquals("hello world", c.hostAlice.receiveMessage());
-        c.hostAlice.sendMessage("hello bob");
-        assertEquals("hello bob", c.hostBob.receiveMessage());
+        c.clientBob.sendMessage("hello world");
+        assertEquals("hello world", c.clientAlice.receiveMessage());
+        c.clientAlice.sendMessage("hello bob");
+        assertEquals("hello bob", c.clientBob.receiveMessage());
     }
 
     @Test
     public void testEstablishOTR4Session() throws OtrException {
         final Conversation c = new Conversation(1);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
         // Expecting AUTH_R message from Alice.
-        assertNull(c.hostBob.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
     }
 
     @Test
     public void testEstablishOTR4SessionFragmented() throws OtrException {
         final Conversation c = new Conversation(150, 20);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
         // Expecting AUTH_R message from Alice.
-        assertArrayEquals(new String[0], c.hostBob.receiveAllMessages(true));
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
     }
 
     @Test
     public void testOTR4ExtensiveMessagingToVerifyRatcheting() throws OtrException {
         final Conversation c = new Conversation(1);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
         // Expecting AUTH_R message from Alice.
-        assertNull(c.hostBob.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
             final String messageBob = randomMessage(300);
-            c.hostBob.sendMessage(messageBob);
-            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.hostAlice.receiveMessage());
+            c.clientBob.sendMessage(messageBob);
+            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.clientAlice.receiveMessage());
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(300);
-            c.hostAlice.sendMessage(messageAlice);
-            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
+            c.clientAlice.sendMessage(messageAlice);
+            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
         }
     }
 
     @Test
     public void testOTR4ExtensiveMessagingToVerifyRatchetingManyConsecutiveMessages() throws OtrException {
         final Conversation c = new Conversation(25);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
         // Expecting AUTH_R message from Alice.
-        assertNull(c.hostBob.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
 
         final String[] messages = new String[25];
         for (int i = 0; i < messages.length; i++) {
@@ -457,117 +457,117 @@ public class SessionTest {
         }
         // Bob sending many messages
         for (int i = 0; i < 25; i++) {
-            c.hostBob.sendMessage(messages[i]);
+            c.clientBob.sendMessage(messages[i]);
         }
         for (final String message : messages) {
-            assertMessage("Message Bob: " + message, message, c.hostAlice.receiveMessage());
+            assertMessage("Message Bob: " + message, message, c.clientAlice.receiveMessage());
         }
         // Alice sending one message in response
         final String messageAlice = "Man, you talk a lot!";
-        c.hostAlice.sendMessage(messageAlice);
-        assertMessage("Message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
+        c.clientAlice.sendMessage(messageAlice);
+        assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
     }
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentation() throws OtrException {
         final Conversation c = new Conversation(150, 20);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
         // Expecting AUTH_R message from Alice.
-        assertArrayEquals(new String[0], c.hostBob.receiveAllMessages(true));
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertEquals(0, c.hostBob.receiveAllMessages(true).length);
+        assertEquals(0, c.clientBob.receiveAllMessages(true).length);
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
             final String messageBob = randomMessage(1, 500);
-            c.hostBob.sendMessage(messageBob);
+            c.clientBob.sendMessage(messageBob);
             assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
-                new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
+                new String[]{messageBob}, c.clientAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1, 500);
-            c.hostAlice.sendMessage(messageAlice);
+            c.clientAlice.sendMessage(messageAlice);
             assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
-                new String[]{messageAlice}, c.hostBob.receiveAllMessages(true));
+                new String[]{messageAlice}, c.clientBob.receiveAllMessages(true));
         }
     }
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentationShuffled() throws OtrException {
         final Conversation c = new Conversation(150, 20);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        shuffle(c.hostAlice.receiptChannel, RANDOM);
-        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
+        shuffle(c.clientAlice.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
         // Expecting AUTH_R message from Alice.
-        shuffle(c.hostBob.receiptChannel, RANDOM);
-        assertArrayEquals(new String[0], c.hostBob.receiveAllMessages(true));
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        shuffle(c.clientBob.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        shuffle(c.hostAlice.receiptChannel, RANDOM);
-        assertArrayEquals(new String[0], c.hostAlice.receiveAllMessages(true));
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        shuffle(c.clientAlice.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        shuffle(c.hostBob.receiptChannel, RANDOM);
-        assertEquals(0, c.hostBob.receiveAllMessages(true).length);
+        shuffle(c.clientBob.receiptChannel, RANDOM);
+        assertEquals(0, c.clientBob.receiveAllMessages(true).length);
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
             final String messageBob = randomMessage(1, 500);
-            c.hostBob.sendMessage(messageBob);
-            shuffle(c.hostAlice.receiptChannel, RANDOM);
+            c.clientBob.sendMessage(messageBob);
+            shuffle(c.clientAlice.receiptChannel, RANDOM);
             assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
-                new String[]{messageBob}, c.hostAlice.receiveAllMessages(true));
+                new String[]{messageBob}, c.clientAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1, 500);
-            c.hostAlice.sendMessage(messageAlice);
-            shuffle(c.hostBob.receiptChannel, RANDOM);
+            c.clientAlice.sendMessage(messageAlice);
+            shuffle(c.clientBob.receiptChannel, RANDOM);
             assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
-                new String[]{messageAlice}, c.hostBob.receiveAllMessages(true));
+                new String[]{messageAlice}, c.clientBob.receiveAllMessages(true));
         }
     }
 
     @Test
     public void testOTR4SmallConversationWithHugeMessages() throws OtrException {
         final Conversation c = new Conversation(1);
-        c.hostBob.sendMessage("Hi Alice");
-        assertEquals("Hi Alice", c.hostAlice.receiveMessage());
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
-        c.hostAlice.sendRequest();
-        assertNull(c.hostBob.receiveMessage());
+        c.clientAlice.sendRequest();
+        assertNull(c.clientBob.receiveMessage());
         // Expecting Identity message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
         // Expecting AUTH_R message from Alice.
-        assertNull(c.hostBob.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostBob.getMessageState());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.getMessageState());
         // Expecting AUTH_I message from Bob.
-        assertNull(c.hostAlice.receiveMessage());
-        assertEquals(SessionStatus.ENCRYPTED, c.hostAlice.getMessageState());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.getMessageState());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.hostBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
 
         for (int i = 0; i < 5; i++) {
             // Bob sending a message (alternating, to enable ratchet)
             final String messageBob = randomMessage(1000000);
-            c.hostBob.sendMessage(messageBob);
-            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.hostAlice.receiveMessage());
+            c.clientBob.sendMessage(messageBob);
+            assertMessage("Iteration: " + i + ", message Bob: " + messageBob, messageBob, c.clientAlice.receiveMessage());
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1000000);
-            c.hostAlice.sendMessage(messageAlice);
-            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.hostBob.receiveMessage());
+            c.clientAlice.sendMessage(messageAlice);
+            assertMessage("Iteration: " + i + ", message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
         }
     }
 
@@ -594,8 +594,8 @@ public class SessionTest {
      */
     private static final class Conversation {
 
-        private final Client hostAlice;
-        private final Client hostBob;
+        private final Client clientAlice;
+        private final Client clientBob;
 
         /**
          * Constructor with defaults: Unlimited-length messages.
@@ -613,9 +613,9 @@ public class SessionTest {
                 "InMemoryNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
-            this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
+            this.clientBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
                 channelAlice, directChannelBob);
-            this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
+            this.clientAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
                 RANDOM, channelBob, directChannelAlice);
         }
 
@@ -640,12 +640,12 @@ public class SessionTest {
                 "InMemoryNetwork4");
             final SessionID sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
-            this.hostBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
+            this.clientBob = new Client("Bob", sessionIDBob, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL), RANDOM,
                 channelAlice, directChannelBob);
-            this.hostBob.setMessageSize(maxMessageSize);
-            this.hostAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
+            this.clientBob.setMessageSize(maxMessageSize);
+            this.clientAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OtrPolicy.OTRL_POLICY_MANUAL),
                 RANDOM, channelBob, directChannelAlice);
-            this.hostAlice.setMessageSize(maxMessageSize);
+            this.clientAlice.setMessageSize(maxMessageSize);
         }
     }
 
