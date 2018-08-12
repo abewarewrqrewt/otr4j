@@ -8,9 +8,9 @@ import net.java.otr4j.test.dummyclient.DummyClient;
 import net.java.otr4j.test.dummyclient.PriorityServer;
 import net.java.otr4j.test.dummyclient.ProcessedTestMessage;
 import net.java.otr4j.test.dummyclient.Server;
+import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;
 import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
-import net.java.otr4j.util.SubmittingMultiBlockingQueue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -604,10 +604,10 @@ public class SessionTest {
          */
         private Conversation(final int channelCapacity) {
             final LinkedBlockingQueue<String> directChannelAlice = new LinkedBlockingQueue<>(channelCapacity);
-            final SubmittingMultiBlockingQueue<String> channelAlice = new SubmittingMultiBlockingQueue<>(
+            final BlockingSubmitter<String> channelAlice = new BlockingSubmitter<>(
                 Collections.<BlockingQueue<String>>singleton(directChannelAlice));
             final LinkedBlockingQueue<String> directChannelBob = new LinkedBlockingQueue<>(channelCapacity);
-            final SubmittingMultiBlockingQueue<String> channelBob = new SubmittingMultiBlockingQueue<>(
+            final BlockingSubmitter<String> channelBob = new BlockingSubmitter<>(
                 Collections.<BlockingQueue<String>>singleton(directChannelBob));
             final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
@@ -630,11 +630,11 @@ public class SessionTest {
             final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
             final ConditionalBlockingQueue<String> directChannelAlice = new ConditionalBlockingQueue<>(
                 new LinkedBlockingQueue<String>(channelCapacity), condition);
-            final SubmittingMultiBlockingQueue<String> channelAlice = new SubmittingMultiBlockingQueue<>(
+            final BlockingSubmitter<String> channelAlice = new BlockingSubmitter<>(
                 Collections.<BlockingQueue<String>>singleton(directChannelAlice));
             final ConditionalBlockingQueue<String> directChannelBob = new ConditionalBlockingQueue<>(
                 new LinkedBlockingQueue<String>(channelCapacity), condition);
-            final SubmittingMultiBlockingQueue<String> channelBob = new SubmittingMultiBlockingQueue<>(
+            final BlockingSubmitter<String> channelBob = new BlockingSubmitter<>(
                 Collections.<BlockingQueue<String>>singleton(directChannelBob));
             final SessionID sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
@@ -677,7 +677,7 @@ public class SessionTest {
 
         private final EdDSAKeyPair ed448KeyPair;
 
-        private final BlockingQueue<String> sendChannel;
+        private final BlockingSubmitter<String> sendChannel;
 
         private final BlockingQueue<String> receiptChannel;
 
@@ -690,7 +690,7 @@ public class SessionTest {
         private int messageSize = Integer.MAX_VALUE;
 
         private Client(@Nonnull final String label, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
-                       @Nonnull final SecureRandom random, @Nonnull final BlockingQueue<String> sendChannel,
+                       @Nonnull final SecureRandom random, @Nonnull final BlockingSubmitter<String> sendChannel,
                        @Nonnull final BlockingQueue<String> receiptChannel) {
             this.logger = Logger.getLogger(Client.class.getName() + ":" + label);
             this.ed448KeyPair = EdDSAKeyPair.generate(random);
