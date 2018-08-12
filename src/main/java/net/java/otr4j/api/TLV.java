@@ -33,9 +33,21 @@ public final class TLV {
      * The message contains a step in the Socialist Millionaires' Protocol.
      */
     public static final int SMP1 = 0x0002;
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
     public static final int SMP2 = 0x0003;
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
     public static final int SMP3 = 0x0004;
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
     public static final int SMP4 = 0x0005;
+    /**
+     * The message indicates any in-progress SMP session must be aborted.
+     */
     public static final int SMP_ABORT = 0x0006;
     /**
      * Like SMP1, but there's a question for the buddy at the beginning.
@@ -60,15 +72,31 @@ public final class TLV {
     private final int type;
     private final byte[] value;
 
+    /**
+     * Constructor for the TLV.
+     *
+     * @param type  the type
+     * @param value the value body (optional)
+     */
     public TLV(final int type, @Nonnull final byte[] value) {
         this.type = type;
         this.value = Objects.requireNonNull(value);
     }
 
+    /**
+     * Get the type.
+     *
+     * @return type value
+     */
     public int getType() {
         return type;
     }
 
+    /**
+     * Get the TLV embedded value.
+     *
+     * @return Value as byte-array.
+     */
     @Nonnull
     public byte[] getValue() {
         return value;

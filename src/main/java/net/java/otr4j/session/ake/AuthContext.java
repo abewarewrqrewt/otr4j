@@ -129,6 +129,11 @@ public interface AuthContext {
 
         private static final long serialVersionUID = -8731442427746963923L;
 
+        /**
+         * Constructor for InteractionFailedException.
+         *
+         * @param cause the root cause
+         */
         public InteractionFailedException(@Nonnull final Throwable cause) {
             super(cause);
         }

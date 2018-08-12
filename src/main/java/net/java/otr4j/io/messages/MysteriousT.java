@@ -24,19 +24,60 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 // TODO Check if we can merge MysteriousT and DataMessage. MysteriousT is described in the "Exchanging Data" section as T_a. It's basically a DataMessage except without MAC as it still has to be calculated from serialized MysteriousT content.
 public final class MysteriousT implements OtrEncodable {
 
-    // Fields.
+    /**
+     * The protocol version.
+     */
     public final int protocolVersion;
+    /**
+     * The sender instance tag.
+     */
     public final int senderInstanceTag;
+    /**
+     * The receiver instance tag.
+     */
     public final int receiverInstanceTag;
+    /**
+     * The message type.
+     */
     public final int messageType;
+    /**
+     * The message flags.
+     */
     public final byte flags;
+    /**
+     * The sender key ID.
+     */
     public final int senderKeyID;
+    /**
+     * The receiver key ID.
+     */
     public final int recipientKeyID;
+    /**
+     * The next DH public key.
+     */
     public final DHPublicKey nextDH;
+    /**
+     * The counter value used in the message.
+     */
     public final byte[] ctr;
+    /**
+     * The encrypted message content.
+     */
     public final byte[] encryptedMessage;
 
-    // Ctor.
+    /**
+     * Constructor for MysteriousT.
+     *
+     * @param protocolVersion     the protocol version
+     * @param senderInstanceTag   the sender instance tag
+     * @param receiverInstanceTag the receiver instance tag
+     * @param flags               message flags
+     * @param senderKeyID         the sender key ID
+     * @param recipientKeyID      the receiver key ID
+     * @param nextDH              the next DH public key
+     * @param ctr                 the counter value used in the message
+     * @param encryptedMessage    the encrypted message content
+     */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     public MysteriousT(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
                        final byte flags, final int senderKeyID, final int recipientKeyID,

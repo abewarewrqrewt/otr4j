@@ -59,11 +59,22 @@ public final class OtrInputStream {
         this.in = new ByteArrayInputStream(in);
     }
 
+    /**
+     * Available number of bytes of content.
+     *
+     * @return Returns number of available bytes.
+     */
     // FIXME write unit tests
     public int available() {
         return this.in.available();
     }
 
+    /**
+     * Read byte.
+     *
+     * @return Returns read byte.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     public byte readByte() throws ProtocolException {
         return (byte) readNumber(TYPE_LEN_BYTE);
     }
@@ -77,20 +88,39 @@ public final class OtrInputStream {
      * interpret them correctly.
      *
      * @return Returns int value as read from input stream.
+     * @throws ProtocolException In case of unexpected content in the message stream.
      */
     public int readInt() throws ProtocolException {
         return readNumber(TYPE_LEN_INT);
     }
 
+    /**
+     * Read short.
+     *
+     * @return Returns short value.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     public int readShort() throws ProtocolException {
         return readNumber(TYPE_LEN_SHORT);
     }
 
+    /**
+     * Read counter value from message stream.
+     *
+     * @return Returns counter value.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     @Nonnull
     public byte[] readCtr() throws ProtocolException {
         return checkedRead(TYPE_LEN_CTR);
     }
 
+    /**
+     * Read OTRv3 MAC value from message stream.
+     *
+     * @return Returns MAC value.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     @Nonnull
     public byte[] readMac() throws ProtocolException {
         return checkedRead(TYPE_LEN_MAC);
@@ -175,18 +205,37 @@ public final class OtrInputStream {
         return OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(gyMpi));
     }
 
+    /**
+     * Read TLV from message stream.
+     *
+     * @return Returns TLV value.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     // FIXME write unit tests for readTLV
     @Nonnull
     public TLV readTLV() throws ProtocolException {
         return new TLV(readShort(), readTlvData());
     }
 
+    /**
+     * Read TLV length- and value-part from message stream.
+     *
+     * @return Returns TLV data, i.e. the TLV value only.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     @Nonnull
     private byte[] readTlvData() throws ProtocolException {
         final int len = readNumber(TYPE_LEN_SHORT);
         return checkedRead(len);
     }
 
+    /**
+     * Read signature from message stream.
+     *
+     * @param pubKey The public key.
+     * @return Returns the read signature.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     @Nonnull
     public byte[] readSignature(@Nonnull final PublicKey pubKey) throws ProtocolException {
         if (!pubKey.getAlgorithm().equals("DSA")) {
@@ -197,6 +246,12 @@ public final class OtrInputStream {
         return checkedRead(dsaParams.getQ().bitLength() / 4);
     }
 
+    /**
+     * Read long value from message stream.
+     *
+     * @return Returns long value.
+     * @throws ProtocolException In case of unexpected content in the message stream.
+     */
     public long readLong() throws ProtocolException {
         final byte[] b = checkedRead(TYPE_LEN_LONG);
         long value = 0;

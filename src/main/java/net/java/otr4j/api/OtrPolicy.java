@@ -30,26 +30,65 @@ public final class OtrPolicy {
      */
     @Deprecated
     public static final int ALLOW_V1 = 1;
+    /**
+     * Constant for flag indicating that OTR protocol version 2 is allowed.
+     */
     public static final int ALLOW_V2 = 1 << 1;
+    /**
+     * Constant for flag indicating that encryption is required, i.e. prevent plaintext messages from being sent.
+     */
     public static final int REQUIRE_ENCRYPTION = 1 << 2;
+    /**
+     * Constant for flag indicating that whitespace tags should be sent.
+     */
     public static final int SEND_WHITESPACE_TAG = 1 << 3;
+    /**
+     * Constant for flag indicating that AKE should be started upon receiving a whitespace tag.
+     */
     public static final int WHITESPACE_START_AKE = 1 << 4;
+    /**
+     * Constant for flag indicating that a new AKE should be started upon receiving an OTR error message.
+     */
     public static final int ERROR_START_AKE = 1 << 5;
+    /**
+     * Constant for flag indicating that OTR protocol version 3 is allowed.
+     */
     public static final int ALLOW_V3 = 1 << 6;
+    /**
+     * Constant for flag indicating that OTR protocol version 4 is allowed.
+     */
     public static final int ALLOW_V4 = 1 << 7;
 
+    /**
+     * Constant for mask containing all supported OTR protocol versions.
+     */
     public static final int VERSION_MASK = ALLOW_V2 | ALLOW_V3 | ALLOW_V4;
 
     // The four old version 1 policies correspond to the following combinations
     // of flags (adding an allowance for version 2 of the protocol):
 
+    /**
+     * Constant for completely disabling OTR by policy.
+     */
     public static final int NEVER = 0x00;
+    /**
+     * Constant to define OTR policy that opportunistically initiates OTR.
+     */
     public static final int OPPORTUNISTIC = ALLOW_V2 | ALLOW_V3 | ALLOW_V4
             | SEND_WHITESPACE_TAG | WHITESPACE_START_AKE | ERROR_START_AKE;
+    /**
+     * Constant to define OTR policy that only OTR should only be initiated upon manual request.
+     */
     public static final int OTRL_POLICY_MANUAL = ALLOW_V2 | ALLOW_V3 | ALLOW_V4;
+    /**
+     * Constant to define policy that OTR should be used at all times. Therefore plaintext activity is not allowed.
+     */
     public static final int OTRL_POLICY_ALWAYS = ALLOW_V2 | ALLOW_V3 | ALLOW_V4
             | REQUIRE_ENCRYPTION | WHITESPACE_START_AKE | ERROR_START_AKE;
 
+    /**
+     * Constant defining default OTR policy for otr4j.
+     */
     public static final int OTRL_POLICY_DEFAULT = OPPORTUNISTIC;
 
     private int policy;
@@ -185,8 +224,7 @@ public final class OtrPolicy {
     }
 
     /**
-     * OTR V1 is not supported anymore. Calling this method will not change the
-     * policy.
+     * OTR V1 is not supported anymore. Calling this method will not change the policy.
      *
      * @param value value is ignored
      * @deprecated Support for OTR V1 is dropped.
@@ -197,8 +235,7 @@ public final class OtrPolicy {
     }
 
     /**
-     * Set/unset ALLOW_V2 policy flag, indicating that OTR version 2 is
-     * allowed.
+     * Set/unset ALLOW_V2 policy flag, indicating that OTR version 2 is allowed.
      *
      * @param value True to set, false to unset.
      */
@@ -211,8 +248,7 @@ public final class OtrPolicy {
     }
 
     /**
-     * Set/unset ALLOW_V3 policy flag, indicating that OTR version 3 is
-     * allowed.
+     * Set/unset ALLOW_V3 policy flag, indicating that OTR version 3 is allowed.
      *
      * @param value True to set, false to unset.
      */
@@ -224,6 +260,11 @@ public final class OtrPolicy {
         }
     }
 
+    /**
+     * Set/unset ALLOW_V4 policy flag, indicating that OTR version 4 is allowed.
+     *
+     * @param value True to set, false to unset.
+     */
     public void setAllowv4(final boolean value) {
         if (value) {
             policy |= ALLOW_V4;

@@ -10,10 +10,13 @@ import java.math.BigInteger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 
+/**
+ * The OTRv4 data message.
+ */
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 
-    static final int MESSAGE_DATA = 0x03;
+    private static final int MESSAGE_DATA = 0x03;
 
     private final byte flags;
     private final int pn;
@@ -26,6 +29,23 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     private final byte[] authenticator;
     private final byte[] revealedMacs;
 
+    /**
+     * Constructor for the data message.
+     *
+     * @param protocolVersion     the protocol version
+     * @param senderInstanceTag   the sender instance tag
+     * @param receiverInstanceTag the receiver instance tag
+     * @param flags               the message flags
+     * @param pn                  the number of messages in previous ratchet
+     * @param i                   the ratchet ID
+     * @param j                   the message ID
+     * @param ecdhPublicKey       the ECDH public key
+     * @param dhPublicKey         the DH public key (is only present every third ratchet)
+     * @param nonce               the nonce
+     * @param ciphertext          the ciphertext
+     * @param authenticator       the authenticator code
+     * @param revealedMacs        the revealed MAC keys
+     */
     // FIXME consider converting DataMessage4 to using InstanceTag instead of int types.
     public DataMessage4(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
                         final byte flags, final int pn, final int i, final int j, @Nonnull final Point ecdhPublicKey,
@@ -52,47 +72,97 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         return MESSAGE_DATA;
     }
 
+    /**
+     * Get message flags.
+     *
+     * @return Returns flags value.
+     */
     public byte getFlags() {
         return flags;
     }
 
+    /**
+     * Get number of messages in previous ratchet.
+     *
+     * @return Returns the number.
+     */
     public int getPn() {
         return pn;
     }
 
+    /**
+     * Get ratchet ID.
+     *
+     * @return Returns the ID.
+     */
     public int getI() {
         return i;
     }
 
+    /**
+     * Get the message ID.
+     *
+     * @return Returns the ID.
+     */
     public int getJ() {
         return j;
     }
 
+    /**
+     * Get the ECDH public key.
+     *
+     * @return Returns the public key.
+     */
     @Nonnull
     public Point getEcdhPublicKey() {
         return ecdhPublicKey;
     }
 
+    /**
+     * Get the DH public key.
+     *
+     * @return Returns the public key.
+     */
     @Nullable
     public BigInteger getDhPublicKey() {
         return dhPublicKey;
     }
 
+    /**
+     * Get the nonce used in the data message.
+     *
+     * @return Returns the nonce.
+     */
     @Nonnull
     public byte[] getNonce() {
         return nonce;
     }
 
+    /**
+     * Get the ciphertext contained in the data message.
+     *
+     * @return Returns the ciphertext.
+     */
     @Nonnull
     public byte[] getCiphertext() {
         return ciphertext;
     }
 
+    /**
+     * Get the authenticator.
+     *
+     * @return Returns the authenticator.
+     */
     @Nonnull
     public byte[] getAuthenticator() {
         return authenticator;
     }
 
+    /**
+     * Get the revealed MAC codes as a byte-array.
+     *
+     * @return Returns the MAC codes.
+     */
     @Nonnull
     public byte[] getRevealedMacs() {
         return revealedMacs;
@@ -105,6 +175,11 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         writer.writeData(this.revealedMacs);
     }
 
+    /**
+     * Write the first part of the Data message.
+     *
+     * @param writer the output stream to write to.
+     */
     public void writeAuthenticatedMessageDigest(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
         writer.writeByte(this.flags);

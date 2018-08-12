@@ -25,6 +25,11 @@ public class QueryMessage implements Message {
     private final Set<Integer> versions;
     private final String tag;
 
+    /**
+     * Constructor for query message.
+     *
+     * @param versions the set of versions
+     */
     public QueryMessage(@Nonnull final Set<Integer> versions) {
         this.versions = requireNonNull(versions);
         // FIXME !!! bad workaround because we generate the actually sent Query-string in SerializationUtils.toString(m)!
@@ -47,11 +52,21 @@ public class QueryMessage implements Message {
         this.versions = requireNonNull(versions);
     }
 
+    /**
+     * Get the set of versions.
+     *
+     * @return Returns versions.
+     */
     @Nonnull
     public Set<Integer> getVersions() {
         return versions;
     }
 
+    /**
+     * Get the query tag.
+     *
+     * @return Returns the query tag.
+     */
     @Nonnull
     public String getTag() {
         return tag;

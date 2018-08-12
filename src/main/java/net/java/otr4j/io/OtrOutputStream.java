@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
@@ -35,6 +34,9 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
+/**
+ * Output stream for OTR encoding.
+ */
 // TODO consider adding write-method for Iterable<OtrEncodable>
 public final class OtrOutputStream {
 
@@ -42,19 +44,38 @@ public final class OtrOutputStream {
 
     private final ByteArrayOutputStream out;
 
+    /**
+     * Constructor for OTR-encoded output stream.
+     */
     public OtrOutputStream() {
         this.out = new ByteArrayOutputStream();
     }
 
+    /**
+     * Constructor for OTR-encoded output stream based on injected ByteArrayOutputStream.
+     *
+     * @param out the byte-array output stream
+     */
     public OtrOutputStream(@Nonnull final ByteArrayOutputStream out) {
         this.out = requireNonNull(out);
     }
 
+    /**
+     * Produce byte-array resulting from output stream use.
+     *
+     * @return Returns the byte-array.
+     */
     @Nonnull
     public byte[] toByteArray() {
         return this.out.toByteArray();
     }
 
+    /**
+     * Write the OTR-encodable to the output stream.
+     *
+     * @param encodable the encodable entity
+     * @return Returns the output stream such that chaining method calls is possible.
+     */
     public OtrOutputStream write(@Nonnull final OtrEncodable encodable) {
         encodable.writeTo(this);
         return this;
@@ -105,16 +126,34 @@ public final class OtrOutputStream {
         return this;
     }
 
+    /**
+     * Write Big Integer (MPI) value to output stream.
+     *
+     * @param bi big integer value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeBigInt(@Nonnull final BigInteger bi) {
         writeData(asUnsignedByteArray(bi));
         return this;
     }
 
+    /**
+     * Write a byte to the output stream.
+     *
+     * @param b the byte b
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeByte(final int b) {
         writeNumber(b, TYPE_LEN_BYTE);
         return this;
     }
 
+    /**
+     * Write byte-array in variable-length data representation to the output stream.
+     *
+     * @param b the byte-array b
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeData(@Nonnull final byte[] b) {
         writeNumber(b.length, DATA_LEN);
         if (b.length > 0) {
@@ -123,16 +162,34 @@ public final class OtrOutputStream {
         return this;
     }
 
+    /**
+     * Write an integer (4-byte) value to the output stream.
+     *
+     * @param i the integer value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeInt(final int i) {
         writeNumber(i, TYPE_LEN_INT);
         return this;
     }
 
+    /**
+     * Write a short (2-byte) value to the output stream.
+     *
+     * @param s the short value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeShort(final int s) {
         writeNumber(s, TYPE_LEN_SHORT);
         return this;
     }
 
+    /**
+     * Write a long (8-byte) value to the output stream.
+     *
+     * @param value the long value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeLong(final long value) {
         final byte[] b = new byte[TYPE_LEN_LONG];
         for (int i = 0; i < TYPE_LEN_LONG; i++) {
@@ -143,12 +200,24 @@ public final class OtrOutputStream {
         return this;
     }
 
+    /**
+     * Write OTRv3 MAC value to the output stream.
+     *
+     * @param mac the MAC
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeMac(@Nonnull final byte[] mac) {
         requireLengthExactly(TYPE_LEN_MAC, mac);
         this.out.write(mac, 0, mac.length);
         return this;
     }
 
+    /**
+     * Write OTRv3 counter value to the output stream.
+     *
+     * @param ctr the counter value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeCtr(@Nonnull final byte[] ctr) {
         if (ctr.length <= ZERO_LENGTH) {
             return this;
@@ -161,11 +230,23 @@ public final class OtrOutputStream {
         return this;
     }
 
+    /**
+     * Write DH public key value to output stream.
+     *
+     * @param dhPublicKey the DH public key
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) {
         writeData(asUnsignedByteArray(dhPublicKey.getY()));
         return this;
     }
 
+    /**
+     * Write the OTRv3 DSA public key to the output stream.
+     *
+     * @param pubKey the DSA public key
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     public OtrOutputStream writePublicKey(@Nonnull final DSAPublicKey pubKey) {
         writeShort(PUBLIC_KEY_TYPE_DSA);
         final DSAParams dsaParams = pubKey.getParams();
@@ -176,8 +257,15 @@ public final class OtrOutputStream {
         return this;
     }
 
+    /**
+     * Write the OTRv3 signature value to the output stream.
+     *
+     * @param signature the signature
+     * @param pubKey    the DSA public key
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
     // TODO why pass on public key if you're not going to use it? Seems senseless. Simplify.
-    public OtrOutputStream writeSignature(@Nonnull final byte[] signature, @Nonnull final PublicKey pubKey) {
+    public OtrOutputStream writeSignature(@Nonnull final byte[] signature, @Nonnull final DSAPublicKey pubKey) {
         if (!pubKey.getAlgorithm().equals("DSA")) {
             throw new UnsupportedOperationException();
         }
@@ -189,6 +277,7 @@ public final class OtrOutputStream {
      * Write an XSalsa20 nonce.
      *
      * @param nonce The nonce.
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
     // FIXME add unit tests.
     public OtrOutputStream writeNonce(@Nonnull final byte[] nonce) {
@@ -201,6 +290,7 @@ public final class OtrOutputStream {
      * Write an OTRv4 MAC.
      *
      * @param mac 64-byte MAC as used in OTRv4
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
     // FIXME add unit tests.
     public OtrOutputStream writeMacOTR4(@Nonnull final byte[] mac) {
@@ -213,6 +303,7 @@ public final class OtrOutputStream {
      * Write an Edwards point encoded according to RFC8032.
      *
      * @param p The Edwards point.
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
     // FIXME add unit tests.
     public OtrOutputStream writePoint(@Nonnull final Point p) {
@@ -224,6 +315,7 @@ public final class OtrOutputStream {
      * Write an EdDSA signature.
      *
      * @param signature A signature consisting of exactly 114 bytes is expected.
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
     // FIXME add unit tests.
     public OtrOutputStream writeEdDSASignature(@Nonnull final byte[] signature) {

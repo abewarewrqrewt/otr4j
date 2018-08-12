@@ -13,7 +13,8 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 /**
- * 
+ * The plain text message.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */
@@ -21,12 +22,24 @@ public final class PlainTextMessage extends QueryMessage {
 
     private final String cleanText;
 
+    /**
+     * Constructor for plaintext message.
+     *
+     * @param tag       the whitespace tag
+     * @param versions  the protocol versions
+     * @param cleanText the plain text message content
+     */
     public PlainTextMessage(@Nonnull final String tag, @Nonnull final Set<Integer> versions,
             @Nonnull final String cleanText) {
         super(tag, versions);
         this.cleanText = requireNonNull(cleanText);
     }
 
+    /**
+     * The clean text, i.e. the plain text without possible embedded whitespace tag.
+     *
+     * @return Returns text.
+     */
     @Nonnull
     public String getCleanText() {
         return cleanText;

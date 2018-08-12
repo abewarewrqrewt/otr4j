@@ -11,6 +11,9 @@ import java.security.SecureRandom;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
+/**
+ * Instance tag used in message fragments.
+ */
 // FIXME ensure that instance tags are persistent. Nowhere can we arbitrarily generate instance tags as they require matching up with the instance tag value in the Client Profile.
 public final class InstanceTag {
 
@@ -56,6 +59,12 @@ public final class InstanceTag {
      */
     private final int value;
 
+    /**
+     * Test for validity of instance tag value.
+     *
+     * @param tagValue the tag value
+     * @return Returns true iff instance tag is valid.
+     */
     @CheckReturnValue
     public static boolean isValidInstanceTag(final int tagValue) {
         // Note that the decimal representation of Java's int is always
@@ -126,6 +135,11 @@ public final class InstanceTag {
         this.value = value;
     }
 
+    /**
+     * Get tag value.
+     *
+     * @return Returns the tag value.
+     */
     public int getValue() {
         return value;
     }
