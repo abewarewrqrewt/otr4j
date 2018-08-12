@@ -23,19 +23,18 @@ public class SmpEngineHostUtilTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private Level previousLogLevel;
+    private Level originalLoggingLevel;
 
     @Before
     public void setUp() {
-        final Logger globalLogger = Logger.getLogger("");
-        this.previousLogLevel = globalLogger.getLevel();
+        final Logger globalLogger = Logger.getLogger(SmpEngineHostUtil.class.getName());
+        this.originalLoggingLevel = globalLogger.getLevel();
         globalLogger.setLevel(Level.OFF);
     }
 
     @After
     public void tearDown() {
-        final Logger globalLogger = Logger.getLogger("");
-        globalLogger.setLevel(this.previousLogLevel);
+        Logger.getLogger(SmpEngineHostUtil.class.getName()).setLevel(this.originalLoggingLevel);
     }
 
     @Test

@@ -1,9 +1,29 @@
 package net.java.otr4j.api;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static org.junit.Assert.*;
 
 public class OtrPolicyTest {
+
+    private Level originalLoggingLevel;
+
+    @Before
+    public void setUp() {
+        final Logger logger = Logger.getLogger(OtrPolicy.class.getName());
+        originalLoggingLevel = logger.getLevel();
+        logger.setLevel(Level.OFF);
+    }
+
+    @After
+    public void tearDown() {
+        Logger.getLogger(OtrPolicy.class.getName()).setLevel(originalLoggingLevel);
+    }
 
     @Test
     public void testViablePolicyOTRv2Andv3() {

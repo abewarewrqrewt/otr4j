@@ -24,14 +24,14 @@ public class OtrEngineListenerUtilTest {
 
     @Before
     public void setUp() {
-        final Logger logger = Logger.getLogger("net.java.otr4j");
+        final Logger logger = Logger.getLogger(OtrEngineListenerUtil.class.getName());
         originalLoggingLevel = logger.getLevel();
-        logger.setLevel(Level.SEVERE);
+        logger.setLevel(Level.OFF);
     }
 
     @After
     public void tearDown() {
-        Logger.getLogger("net.java.otr4j").setLevel(originalLoggingLevel);
+        Logger.getLogger(OtrEngineListenerUtil.class.getName()).setLevel(originalLoggingLevel);
     }
 
     @Test
