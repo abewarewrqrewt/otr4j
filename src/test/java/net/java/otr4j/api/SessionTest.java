@@ -378,6 +378,8 @@ public class SessionTest {
         assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
         assertNull(c.clientBob.receiveMessage());
+        c.clientBob.sendMessage("Hello Alice!");
+        assertEquals("Hello Alice!", c.clientAlice.receiveMessage());
         c.clientAlice.session.endSession();
         assertEquals(SessionStatus.PLAINTEXT, c.clientAlice.session.getSessionStatus());
         assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
