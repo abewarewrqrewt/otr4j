@@ -18,8 +18,7 @@ public final class ConditionalBlockingQueue<E> implements BlockingQueue<E> {
     private final BlockingQueue<E> queue;
     private final Predicate<E> condition;
 
-    public ConditionalBlockingQueue(@Nonnull final BlockingQueue<E> queue,
-                                    @Nonnull final Predicate<E> condition) {
+    public ConditionalBlockingQueue(@Nonnull final Predicate<E> condition, @Nonnull final BlockingQueue<E> queue) {
         this.queue = requireNonNull(queue);
         this.condition = requireNonNull(condition);
     }

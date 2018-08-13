@@ -13,46 +13,46 @@ public class ConditionalBlockingQueueTest {
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullQueue() {
-        new ConditionalBlockingQueue<>(null, new AlwaysFalse<String>());
+        new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullCondition() {
-        new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), null);
+        new ConditionalBlockingQueue<>(null, new LinkedBlockingQueue<String>());
     }
 
     @Test
     public void testConstruction() {
-        new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), new AlwaysFalse<String>());
+        new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), new LinkedBlockingQueue<String>());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAdd() {
-        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), new AlwaysFalse<String>());
+        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), new LinkedBlockingQueue<String>());
         queue.add("test");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddAll() {
-        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), new AlwaysFalse<String>());
+        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), new LinkedBlockingQueue<String>());
         queue.addAll(singletonList("test"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testOffer() {
-        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), new AlwaysFalse<String>());
+        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), new LinkedBlockingQueue<String>());
         queue.offer("test");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testOffer2() throws InterruptedException {
-        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), new AlwaysFalse<String>());
+        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), new LinkedBlockingQueue<String>());
         queue.offer("test", 100, TimeUnit.SECONDS);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testPut() throws InterruptedException {
-        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new LinkedBlockingQueue<String>(), new AlwaysFalse<String>());
+        final ConditionalBlockingQueue<String> queue = new ConditionalBlockingQueue<>(new AlwaysFalse<String>(), new LinkedBlockingQueue<String>());
         queue.put("test");
     }
 

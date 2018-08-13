@@ -4,13 +4,11 @@ import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 import net.java.otr4j.test.TestStrings;
-import net.java.otr4j.test.dummyclient.DummyClient;
-import net.java.otr4j.test.dummyclient.PriorityServer;
-import net.java.otr4j.test.dummyclient.Server;
 import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;
 import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -37,18 +35,14 @@ import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static net.java.otr4j.util.BlockingQueues.shuffle;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 // FIXME add test to prove that interchanged message fragments from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 can be used interchangeably.
 // FIXME add test to prove that OTRv2, OTRv3 and OTRv4 message fragments can be sent interchangeably as long as different sender instances are involved.
-// TODO restructure existing OTRv3 tests as they now cause annoying hard-to-debug problems.
 // FIXME test what happens when fragments are dropped.
 public class SessionTest {
 
@@ -58,117 +52,108 @@ public class SessionTest {
     public void setUp() {
         Logger.getLogger("").setLevel(Level.INFO);
     }
-    
+
+    @Ignore("This test originally is a bit of a dubious use case. The test currently expects to test multiple sessions, but then also expects that unaddressed messages only arrive at a single session.")
     @Test
-    public void testMultipleSessions() throws Exception {
-        DummyClient bob1 = new DummyClient("Bob@Wonderland");
-        bob1.setPolicy(new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3
-                | OtrPolicy.ERROR_START_AKE));
+    public void testMultipleSessions() throws OtrException {
+        final Conversation c = new Conversation(1);
+        // Prepare conversation with multiple clients.
+        final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3 | OtrPolicy.ERROR_START_AKE & ~ALLOW_V4);
+        c.clientAlice.setPolicy(policy);
+        c.clientBob.setPolicy(policy);
+        final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(1);
+        final Client bob2 = new Client("Bob 2", c.sessionIDBob, policy, RANDOM, c.submitterAlice, bob2Channel);
+        c.submitterBob.addQueue(bob2Channel);
+        final LinkedBlockingQueue<String> bob3Channel = new LinkedBlockingQueue<>(1);
+        final Client bob3 = new Client("Bob 3", c.sessionIDBob, policy, RANDOM, c.submitterAlice, bob3Channel);
+        c.submitterBob.addQueue(bob3Channel);
 
-        DummyClient bob2 = new DummyClient("Bob@Wonderland");
-        bob2.setPolicy(new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3
-                | OtrPolicy.ERROR_START_AKE));
+        // Start setting up an encrypted session.
+        c.clientBob.sendMessage(TestStrings.otrQuery);
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting DH-Commit message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting DH-Key message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting Signature message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting Reveal Signature message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        final String msg11 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg11);
+        assertNotEquals(msg11, c.clientBob.receiptChannel.peek());
+        assertEquals(msg11, c.clientBob.receiveMessage());
 
-        DummyClient bob3 = new DummyClient("Bob@Wonderland");
-        bob3.setPolicy(new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3
-                | OtrPolicy.ERROR_START_AKE));
+        // Start setting up a second encrypted session, this one for Bob 2.
+        bob2.sendMessage(TestStrings.anotherOtrQuery);
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting DH-Commit message from Alice.
+        assertNull(bob2.receiveMessage());
+        // Expecting DH-Key message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting Signature message from Alice.
+        assertNull(bob2.receiveMessage());
+        assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
+        // Expecting Reveal Signature message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        assertEquals(2, c.clientAlice.session.getInstances().size());
+        final String msg21 = "This should be encrypted !";
+        bob2.sendMessage(msg21);
+        assertNotEquals(msg21, c.clientAlice.receiptChannel.peek());
+        assertEquals(msg21, c.clientAlice.receiveMessage());
 
-        DummyClient alice = new DummyClient("Alice@Wonderland");
-        alice.setPolicy(new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3
-                | OtrPolicy.ERROR_START_AKE));
+        // Start setting up a third encrypted session, this one for Bob 3.
+        bob3.sendMessage(TestStrings.yetAnotherOtrQuery);
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting DH-Commit message from Alice.
+        assertNull(bob3.receiveMessage());
+        // Expecting DH-Key message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting Signature message from Alice.
+        assertNull(bob3.receiveMessage());
+        assertEquals(ENCRYPTED, bob3.session.getSessionStatus());
+        // Expecting Reveal Signature message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        assertEquals(3, c.clientAlice.session.getInstances().size());
+        final String msg31 = "This should be encrypted !";
+        bob3.sendMessage(msg31);
+        assertNotEquals(msg31, c.clientAlice.receiptChannel.peek());
+        assertEquals(msg31, c.clientAlice.receiveMessage());
 
-        Server server = new PriorityServer();
-        alice.connect(server);
-        bob1.connect(server);
-        bob2.connect(server);
-        bob3.connect(server);
-
-        bob1.send(alice.getAccount(), TestStrings.otrQuery);
-
-        alice.pollReceivedMessage(); // Query
-        bob1.pollReceivedMessage(); // DH-Commit
-        alice.pollReceivedMessage(); // DH-Key
-        bob1.pollReceivedMessage(); // Reveal signature
-        alice.pollReceivedMessage(); // Signature
-
-        String msg;
-
-        alice.send(
-                bob1.getAccount(),
-                msg = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?");
-
-        assertThat("Message has been transferred unencrypted.", alice
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, bob1.pollReceivedMessage().getContent());
-
-        bob2.send(alice.getAccount(), msg = TestStrings.anotherOtrQuery);
-
-        alice.pollReceivedMessage();
-        bob2.pollReceivedMessage();
-        alice.pollReceivedMessage();
-        bob2.pollReceivedMessage();
-        alice.pollReceivedMessage();
-
-        bob2.send(alice.getAccount(), msg = "This should be encrypted !");
-        assertThat("Message has been transferred unencrypted.", bob2
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, alice.pollReceivedMessage().getContent());
-
-        bob3.send(alice.getAccount(), msg = TestStrings.yetAnotherOtrQuery);
-        alice.pollReceivedMessage();
-        bob3.pollReceivedMessage();
-        alice.pollReceivedMessage();
-        bob3.pollReceivedMessage();
-        alice.pollReceivedMessage();
-
-        bob3.send(alice.getAccount(), msg = "This should be encrypted !");
-        assertThat("Message has been transferred unencrypted.", bob3
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, alice.pollReceivedMessage().getContent());
-
-        bob1.send(alice.getAccount(),
-                msg = "Hey Alice, it means that our communication is encrypted and authenticated.");
-        assertThat("Message has been transferred unencrypted.", bob1
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, alice.pollReceivedMessage().getContent());
-
-        alice.send(bob1.getAccount(), msg = "Oh, is that all?");
-        assertThat("Message has been transferred unencrypted.", alice
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, bob1.pollReceivedMessage().getContent());
-
-        bob1.send(
-                alice.getAccount(),
-                msg = "Actually no, our communication has the properties of perfect forward secrecy and deniable authentication.");
-        assertThat("Message has been transferred unencrypted.", bob1
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, alice.pollReceivedMessage().getContent());
-
-        alice.send(bob1.getAccount(), msg = "Oh really?! pouvons-nous parler en français?");
-        assertThat("Message has been transferred unencrypted.", alice
-                .getConnection().getSentMessage(), not(equalTo(msg)));
-
-        assertEquals("Received message is different from the sent message.",
-                msg, bob1.pollReceivedMessage().getContent());
-
-        bob1.exit();
-        alice.exit();
+        // Continue conversation with first of Bob's clients.
+        final String msg2 = "Hey Alice, it means that our communication is encrypted and authenticated.";
+        c.clientBob.sendMessage(msg2);
+        assertNotEquals(msg2, c.clientAlice.receiptChannel.peek());
+        assertEquals(msg2, c.clientAlice.receiveMessage());
+        final String msg3 = "Oh, is that all?";
+        c.clientAlice.sendMessage(msg3);
+        assertNotEquals(msg3, c.clientBob.receiptChannel.peek());
+        assertEquals(msg3, c.clientBob.receiveMessage());
+        final String msg4 = "Actually no, our communication has the properties of perfect forward secrecy and deniable authentication.";
+        c.clientBob.sendMessage(msg4);
+        assertNotEquals(msg4, c.clientAlice.receiptChannel.peek());
+        assertEquals(msg4, c.clientAlice.receiveMessage());
+        final String msg5 = "Oh really?! pouvons-nous parler en français?";
+        c.clientAlice.sendMessage(msg5);
+        assertNotEquals(msg5, c.clientBob.receiptChannel.peek());
+        assertEquals(msg5, c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        c.clientBob.session.endSession();
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Bob has not yet switched session status as he has not processed the message yet.
+        assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
+        c.clientAlice.session.endSession();
+        assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
+        assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
     }
 
     @Test
-    public void testQueryStart() throws Exception {
+    public void testQueryStart() throws OtrException {
         final Conversation c = new Conversation(1);
         c.clientAlice.setPolicy(new OtrPolicy(OPPORTUNISTIC & ~ALLOW_V4));
         c.clientBob.setPolicy(new OtrPolicy(OPPORTUNISTIC & ~ALLOW_V4));
@@ -216,7 +201,7 @@ public class SessionTest {
     }
 
     @Test
-    public void testForcedStart() throws Exception {
+    public void testForcedStart() throws OtrException {
         final Conversation c = new Conversation(1);
         c.clientAlice.setPolicy(new OtrPolicy(OTRL_POLICY_MANUAL & ~ALLOW_V4));
         c.clientBob.setPolicy(new OtrPolicy(OTRL_POLICY_MANUAL & ~ALLOW_V4));
@@ -267,7 +252,7 @@ public class SessionTest {
     }
 
     @Test
-    public void testPlaintext() throws Exception {
+    public void testPlaintext() throws OtrException {
         final Conversation c = new Conversation(1);
         final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
         c.clientAlice.sendMessage(msg1);
@@ -555,26 +540,27 @@ public class SessionTest {
         private final Client clientAlice;
         private final Client clientBob;
 
+        private final BlockingSubmitter<String> submitterBob;
+        private final BlockingSubmitter<String> submitterAlice;
+
         /**
          * Constructor with defaults: Unlimited-length messages.
-         *
-         * @param channelCapacity Maximum number of messages allowed to be in transit simultaneously.
          */
         private Conversation(final int channelCapacity) {
             final LinkedBlockingQueue<String> directChannelAlice = new LinkedBlockingQueue<>(channelCapacity);
-            final BlockingSubmitter<String> channelAlice = new BlockingSubmitter<>(
-                Collections.<BlockingQueue<String>>singleton(directChannelAlice));
+            submitterAlice = new BlockingSubmitter<>();
+            submitterAlice.addQueue(directChannelAlice);
             final LinkedBlockingQueue<String> directChannelBob = new LinkedBlockingQueue<>(channelCapacity);
-            final BlockingSubmitter<String> channelBob = new BlockingSubmitter<>(
-                Collections.<BlockingQueue<String>>singleton(directChannelBob));
+            submitterBob = new BlockingSubmitter<>();
+            submitterBob.addQueue(directChannelBob);
             this.sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.clientBob = new Client("Bob", sessionIDBob, new OtrPolicy(OTRL_POLICY_MANUAL), RANDOM,
-                channelAlice, directChannelBob);
+                submitterAlice, directChannelBob);
             this.clientAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OTRL_POLICY_MANUAL),
-                RANDOM, channelBob, directChannelAlice);
+                RANDOM, submitterBob, directChannelAlice);
         }
 
         /**
@@ -586,23 +572,23 @@ public class SessionTest {
          */
         private Conversation(final int maxMessageSize, final int channelCapacity) {
             final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
-            final ConditionalBlockingQueue<String> directChannelAlice = new ConditionalBlockingQueue<>(
-                new LinkedBlockingQueue<String>(channelCapacity), condition);
-            final BlockingSubmitter<String> channelAlice = new BlockingSubmitter<>(
-                Collections.<BlockingQueue<String>>singleton(directChannelAlice));
-            final ConditionalBlockingQueue<String> directChannelBob = new ConditionalBlockingQueue<>(
-                new LinkedBlockingQueue<String>(channelCapacity), condition);
-            final BlockingSubmitter<String> channelBob = new BlockingSubmitter<>(
-                Collections.<BlockingQueue<String>>singleton(directChannelBob));
+            final ConditionalBlockingQueue<String> directChannelAlice = new ConditionalBlockingQueue<>(condition,
+                new LinkedBlockingQueue<String>(channelCapacity));
+            submitterAlice = new BlockingSubmitter<>();
+            submitterAlice.addQueue(directChannelAlice);
+            final ConditionalBlockingQueue<String> directChannelBob = new ConditionalBlockingQueue<>(condition,
+                new LinkedBlockingQueue<String>(channelCapacity));
+            submitterBob = new BlockingSubmitter<>();
+            submitterBob.addQueue(directChannelBob);
             this.sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
                 "InMemoryNetwork4");
             this.clientBob = new Client("Bob", sessionIDBob, new OtrPolicy(OTRL_POLICY_MANUAL), RANDOM,
-                channelAlice, directChannelBob);
+                submitterAlice, directChannelBob);
             this.clientBob.setMessageSize(maxMessageSize);
             this.clientAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OTRL_POLICY_MANUAL),
-                RANDOM, channelBob, directChannelAlice);
+                RANDOM, submitterBob, directChannelAlice);
             this.clientAlice.setMessageSize(maxMessageSize);
         }
     }
@@ -647,10 +633,10 @@ public class SessionTest {
 
         private int messageSize = Integer.MAX_VALUE;
 
-        private Client(@Nonnull final String label, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
+        private Client(@Nonnull final String id, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
                        @Nonnull final SecureRandom random, @Nonnull final BlockingSubmitter<String> sendChannel,
                        @Nonnull final BlockingQueue<String> receiptChannel) {
-            this.logger = Logger.getLogger(Client.class.getName() + ":" + label);
+            this.logger = Logger.getLogger(Client.class.getName() + ":" + id);
             this.ed448KeyPair = EdDSAKeyPair.generate(random);
             this.dsaKeyPair = OtrCryptoEngine.generateDSAKeyPair();
             this.receiptChannel = requireNonNull(receiptChannel);

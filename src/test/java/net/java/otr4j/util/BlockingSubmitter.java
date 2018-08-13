@@ -22,8 +22,8 @@ public final class BlockingSubmitter<E> {
 
     private final ArrayList<BlockingQueue<E>> queues;
 
-    public BlockingSubmitter(@Nonnull final Collection<BlockingQueue<E>> queues) {
-        this.queues = new ArrayList<>(queues);
+    public BlockingSubmitter() {
+        this.queues = new ArrayList<>();
     }
 
     public boolean addQueue(@Nonnull final BlockingQueue<E> queue) {
@@ -37,6 +37,13 @@ public final class BlockingSubmitter<E> {
     public boolean add(@Nonnull final E e) {
         for (final BlockingQueue<E> queue : this.queues) {
             queue.add(e);
+        }
+        return true;
+    }
+
+    public boolean addAll(@Nonnull final Collection<? extends E> c) {
+        for (final BlockingQueue<E> queue : this.queues) {
+            queue.addAll(c);
         }
         return true;
     }
@@ -64,12 +71,6 @@ public final class BlockingSubmitter<E> {
         return false;
     }
 
-    public void put(@Nonnull final E e) throws InterruptedException {
-        for (final BlockingQueue<E> queue : this.queues) {
-            queue.put(e);
-        }
-    }
-
     public boolean offer(final E e, final long timeout, @Nonnull final TimeUnit unit) throws InterruptedException {
         // TODO currently not applying timeout to over-all offer method execution time
         BlockingQueue<E> failedQueue = null;
@@ -94,10 +95,9 @@ public final class BlockingSubmitter<E> {
         return false;
     }
 
-    public boolean addAll(@Nonnull final Collection<? extends E> c) {
+    public void put(@Nonnull final E e) throws InterruptedException {
         for (final BlockingQueue<E> queue : this.queues) {
-            queue.addAll(c);
+            queue.put(e);
         }
-        return true;
     }
 }
