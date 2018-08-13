@@ -140,7 +140,7 @@ public class SessionTest {
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
         assertEquals(OTRv.THREE, c.clientBob.session.getOutgoingSession().getProtocolVersion());
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
-        // FIXME there is an issue with the OTR protocol such that acting on a received DH-Commit message skips the check of whether higher versions of the OTR protocol are available. (Consider not responding unless a query tag was previously sent.)
+        // TODO there is an issue with the OTR protocol such that acting on a received DH-Commit message skips the check of whether higher versions of the OTR protocol are available. (Consider not responding unless a query tag was previously sent.)
         assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
         // Expecting Reveal Signature message from Bob.
         assertNull(c.clientAlice.receiveMessage());
@@ -429,7 +429,7 @@ public class SessionTest {
 
     @Test
     public void testEstablishOTR4SessionFragmented() throws OtrException {
-        final Conversation c = new Conversation(150, 20);
+        final Conversation c = new Conversation(20, 150);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -516,7 +516,7 @@ public class SessionTest {
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentation() throws OtrException {
-        final Conversation c = new Conversation(150, 20);
+        final Conversation c = new Conversation(20, 150);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -549,7 +549,7 @@ public class SessionTest {
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentationShuffled() throws OtrException {
-        final Conversation c = new Conversation(150, 20);
+        final Conversation c = new Conversation(20, 150);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -676,7 +676,7 @@ public class SessionTest {
          * @param maxMessageSize  Maximum size of message allowed.
          * @param channelCapacity Maximum number of messages allowed to be in transit simultaneously.
          */
-        private Conversation(final int maxMessageSize, final int channelCapacity) {
+        private Conversation(final int channelCapacity, final int maxMessageSize) {
             final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
             final ConditionalBlockingQueue<String> directChannelAlice = new ConditionalBlockingQueue<>(condition,
                 new LinkedBlockingQueue<String>(channelCapacity));
