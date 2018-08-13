@@ -243,7 +243,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
-        throw new UnsupportedOperationException("OTRv2 and OTRv3 do not support the OTRv4 DataMessage format.");
+        throw new IllegalStateException("OTRv2/OTRv3 encrypted message state does not handle OTRv4 data messages.");
     }
 
     @Override

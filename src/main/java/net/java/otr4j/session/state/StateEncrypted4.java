@@ -154,7 +154,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
-        throw new UnsupportedOperationException("The OTRv2/OTRv3 Data Message format is not accepted by OTRv4.");
+        throw new IllegalStateException("OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
     @Nullable

@@ -39,6 +39,8 @@
 //    The recipient's own instance tag does not match the listed receiver instance tag."
 //  * "Discard the (illegal) fragment if:" is missing criteria for index and total <= 65535.
 //  * Nothing is said about case where sender and receiver tags are different in OTR-encoded message. (Should we consider a case where there is a difference illegal?)
+//  * What to do if DH-Commit message is received as response to other client instance's query tag? (no receiver instance tag specified yet)
+//  * Allow accepting fragments that have 0 receiver tag? (For benefit of DH-Commit and Identity messages.)
 
 /**
  * otr4j.

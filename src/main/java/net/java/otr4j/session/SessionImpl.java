@@ -439,9 +439,18 @@ final class SessionImpl implements Session, Context, AuthContext {
                     new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
                 return null;
             }
+
+            // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
+            if (fragment.getReceivertag().getValue() != 0
+                && fragment.getReceivertag().getValue() != this.senderTag.getValue()) {
+                // The message is not intended for us. Discarding...
+                logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
+                messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
+                return null;
+            }
+
             SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
             if (slave == null) {
-                // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
                 slave = new SessionImpl(this, this.sessionState.getSessionID(), this.host, this.senderTag,
                     fragment.getSendertag(), this.secureRandom, this.authState);
                 slave.addOtrEngineListener(slaveSessionsListener);

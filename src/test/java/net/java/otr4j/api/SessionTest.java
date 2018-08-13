@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
@@ -25,6 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.lang.Integer.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrPolicy.ALLOW_V2;
 import static net.java.otr4j.api.OtrPolicy.ALLOW_V3;
@@ -36,6 +38,7 @@ import static net.java.otr4j.api.SessionStatus.FINISHED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static net.java.otr4j.util.BlockingQueues.shuffle;
+import static net.java.otr4j.util.BlockingQueuesTestUtils.rearrangeFragments;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -43,8 +46,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
 // FIXME add test to prove that interchanged message fragments from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
-// FIXME add test to prove that OTRv2, OTRv3 and OTRv4 can be used interchangeably.
-// FIXME add test to prove that OTRv2, OTRv3 and OTRv4 message fragments can be sent interchangeably as long as different sender instances are involved.
 // FIXME test what happens when fragments are dropped.
 public class SessionTest {
 
@@ -113,14 +114,78 @@ public class SessionTest {
     }
 
     @Test
+    public void testEstablishedMixedVersionSessionsAliceClientInitiatedFragmented() throws OtrException, ProtocolException {
+        final Conversation c = new Conversation(MAX_VALUE, 150);
+
+        // Prepare conversation with multiple clients.
+        c.clientAlice.setPolicy(new OtrPolicy(ALLOW_V2 | ALLOW_V3 | ALLOW_V4));
+        c.clientBob.setPolicy(new OtrPolicy(ALLOW_V3 | ALLOW_V4));
+        final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(MAX_VALUE);
+        final Client bob2 = new Client("Bob 2", c.sessionIDBob, new OtrPolicy(ALLOW_V2 | ALLOW_V3), RANDOM, c.submitterAlice, bob2Channel);
+        bob2.setMessageSize(150);
+        c.submitterBob.addQueue(bob2Channel);
+
+        // Start setting up an encrypted session.
+        c.clientAlice.session.startSession();
+        // Expecting Query message from Alice.
+        rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        rearrangeFragments(bob2.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
+        // Expecting Identity message from Bob, DH-Commit message from Bob 2.
+        rearrangeFragments(c.clientAlice.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        // Expecting Auth-R message, DH-Key message from Alice.
+        rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertEquals(OTRv.FOUR, c.clientBob.session.getOutgoingSession().getProtocolVersion());
+        rearrangeFragments(bob2.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
+        // Expecting Auth-I message from Bob, Signature message from Bob 2.
+        rearrangeFragments(c.clientAlice.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(c.clientBob.session.getSenderInstanceTag()));
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob2.session.getSenderInstanceTag()));
+        // Expecting DAKE data message, Reveal Signature message from Alice.
+        rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        rearrangeFragments(bob2.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
+        assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
+        assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
+
+        final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg1, bob2.receiptChannel.peek());
+        rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
+        assertArrayEquals(new String[]{msg1}, c.clientBob.receiveAllMessages(true));
+        rearrangeFragments(bob2.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
+        c.clientAlice.session.setOutgoingSession(bob2.session.getSenderInstanceTag());
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg1, bob2.receiptChannel.peek());
+        rearrangeFragments(bob2.receiptChannel, RANDOM);
+        assertArrayEquals(new String[]{msg1}, bob2.receiveAllMessages(true));
+        rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+
+        assertEquals(0, c.clientAlice.receiptChannel.size());
+        assertEquals(0, c.clientBob.receiptChannel.size());
+        assertEquals(0, bob2.receiptChannel.size());
+    }
+
+    @Test
     public void testEstablishedMixedVersionSessionsBobsClientInitiates() throws OtrException {
         final Conversation c = new Conversation(2);
 
         // Prepare conversation with multiple clients.
         c.clientAlice.setPolicy(new OtrPolicy(ALLOW_V2 | ALLOW_V3 | ALLOW_V4));
-        c.clientBob.setPolicy(new OtrPolicy(ALLOW_V3 | ALLOW_V4));
+        c.clientBob.setPolicy(new OtrPolicy(ALLOW_V2 | ALLOW_V3));
         final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(2);
-        final Client bob2 = new Client("Bob 2", c.sessionIDBob, new OtrPolicy(ALLOW_V2 | ALLOW_V3), RANDOM, c.submitterAlice, bob2Channel);
+        final Client bob2 = new Client("Bob 2", c.sessionIDBob, new OtrPolicy(ALLOW_V3 | ALLOW_V4), RANDOM, c.submitterAlice, bob2Channel);
         c.submitterBob.addQueue(bob2Channel);
 
         // Start setting up an encrypted session.
@@ -252,6 +317,7 @@ public class SessionTest {
         assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
         assertEquals(ENCRYPTED, bob3.session.getSessionStatus());
+
         assertEquals(0, c.clientAlice.receiptChannel.size());
         assertEquals(0, c.clientBob.receiptChannel.size());
         assertEquals(0, bob2.receiptChannel.size());
@@ -737,7 +803,7 @@ public class SessionTest {
 
         private OtrPolicy policy;
 
-        private int messageSize = Integer.MAX_VALUE;
+        private int messageSize = MAX_VALUE;
 
         private Client(@Nonnull final String id, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
                        @Nonnull final SecureRandom random, @Nonnull final BlockingSubmitter<String> sendChannel,
