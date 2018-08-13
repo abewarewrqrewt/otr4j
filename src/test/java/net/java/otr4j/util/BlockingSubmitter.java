@@ -34,18 +34,16 @@ public final class BlockingSubmitter<E> {
         return this.queues.remove(requireNonNull(queue));
     }
 
-    public boolean add(@Nonnull final E e) {
+    public void add(@Nonnull final E e) {
         for (final BlockingQueue<E> queue : this.queues) {
             queue.add(e);
         }
-        return true;
     }
 
-    public boolean addAll(@Nonnull final Collection<? extends E> c) {
+    public void addAll(@Nonnull final Collection<? extends E> c) {
         for (final BlockingQueue<E> queue : this.queues) {
             queue.addAll(c);
         }
-        return true;
     }
 
     public boolean offer(@Nonnull final E e) {
