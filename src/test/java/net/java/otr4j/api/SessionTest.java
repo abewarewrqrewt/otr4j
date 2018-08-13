@@ -45,7 +45,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-// FIXME add test to prove that interchanged message fragments from multiple sender instances can be successfully reassembled. (This is a probably bug in previous OtrAssembler implementation/use.)
 // FIXME test what happens when fragments are dropped.
 public class SessionTest {
 
