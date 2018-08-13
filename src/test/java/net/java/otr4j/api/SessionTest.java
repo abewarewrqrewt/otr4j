@@ -8,7 +8,6 @@ import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;
 import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -53,18 +52,19 @@ public class SessionTest {
         Logger.getLogger("").setLevel(Level.INFO);
     }
 
-    @Ignore("This test originally is a bit of a dubious use case. The test currently expects to test multiple sessions, but then also expects that unaddressed messages only arrive at a single session.")
+    // FIXME extend test with checking all receipt channels for not-equals-to-original-message.
     @Test
     public void testMultipleSessions() throws OtrException {
-        final Conversation c = new Conversation(1);
-        // Prepare conversation with multiple clients.
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3 | OtrPolicy.ERROR_START_AKE & ~ALLOW_V4);
+        final Conversation c = new Conversation(3);
+
+        // Prepare conversation with multiple clients.
         c.clientAlice.setPolicy(policy);
         c.clientBob.setPolicy(policy);
-        final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(1);
+        final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(3);
         final Client bob2 = new Client("Bob 2", c.sessionIDBob, policy, RANDOM, c.submitterAlice, bob2Channel);
         c.submitterBob.addQueue(bob2Channel);
-        final LinkedBlockingQueue<String> bob3Channel = new LinkedBlockingQueue<>(1);
+        final LinkedBlockingQueue<String> bob3Channel = new LinkedBlockingQueue<>(3);
         final Client bob3 = new Client("Bob 3", c.sessionIDBob, policy, RANDOM, c.submitterAlice, bob3Channel);
         c.submitterBob.addQueue(bob3Channel);
 
@@ -73,83 +73,86 @@ public class SessionTest {
         assertNull(c.clientAlice.receiveMessage());
         // Expecting DH-Commit message from Alice.
         assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob3.receiveMessage());
         // Expecting DH-Key message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
         assertNull(c.clientAlice.receiveMessage());
         // Expecting Signature message from Alice.
         assertNull(c.clientBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob3.receiveMessage());
+        assertNull(bob3.receiveMessage());
+        assertNull(bob3.receiveMessage());
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
-        // Expecting Reveal Signature message from Bob.
-        assertNull(c.clientAlice.receiveMessage());
-        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        final String msg11 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
-        c.clientAlice.sendMessage(msg11);
-        assertNotEquals(msg11, c.clientBob.receiptChannel.peek());
-        assertEquals(msg11, c.clientBob.receiveMessage());
-
-        // Start setting up a second encrypted session, this one for Bob 2.
-        bob2.sendMessage(TestStrings.anotherOtrQuery);
-        assertNull(c.clientAlice.receiveMessage());
-        // Expecting DH-Commit message from Alice.
-        assertNull(bob2.receiveMessage());
-        // Expecting DH-Key message from Bob.
-        assertNull(c.clientAlice.receiveMessage());
-        // Expecting Signature message from Alice.
-        assertNull(bob2.receiveMessage());
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
-        // Expecting Reveal Signature message from Bob.
-        assertNull(c.clientAlice.receiveMessage());
-        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        assertEquals(2, c.clientAlice.session.getInstances().size());
-        final String msg21 = "This should be encrypted !";
-        bob2.sendMessage(msg21);
-        assertNotEquals(msg21, c.clientAlice.receiptChannel.peek());
-        assertEquals(msg21, c.clientAlice.receiveMessage());
-
-        // Start setting up a third encrypted session, this one for Bob 3.
-        bob3.sendMessage(TestStrings.yetAnotherOtrQuery);
-        assertNull(c.clientAlice.receiveMessage());
-        // Expecting DH-Commit message from Alice.
-        assertNull(bob3.receiveMessage());
-        // Expecting DH-Key message from Bob.
-        assertNull(c.clientAlice.receiveMessage());
-        // Expecting Signature message from Alice.
-        assertNull(bob3.receiveMessage());
         assertEquals(ENCRYPTED, bob3.session.getSessionStatus());
         // Expecting Reveal Signature message from Bob.
         assertNull(c.clientAlice.receiveMessage());
-        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        assertEquals(3, c.clientAlice.session.getInstances().size());
-        final String msg31 = "This should be encrypted !";
-        bob3.sendMessage(msg31);
-        assertNotEquals(msg31, c.clientAlice.receiptChannel.peek());
-        assertEquals(msg31, c.clientAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(c.clientBob.session.getSenderInstanceTag()));
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob2.session.getSenderInstanceTag()));
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob3.session.getSenderInstanceTag()));
+
+        final String msg11 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg11);
+        assertNotEquals(msg11, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg11, bob2.receiptChannel.peek());
+        assertNotEquals(msg11, bob3.receiptChannel.peek());
+        assertEquals(msg11, c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob3.receiveMessage());
 
         // Continue conversation with first of Bob's clients.
         final String msg2 = "Hey Alice, it means that our communication is encrypted and authenticated.";
         c.clientBob.sendMessage(msg2);
         assertNotEquals(msg2, c.clientAlice.receiptChannel.peek());
         assertEquals(msg2, c.clientAlice.receiveMessage());
+
         final String msg3 = "Oh, is that all?";
         c.clientAlice.sendMessage(msg3);
         assertNotEquals(msg3, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg3, bob2.receiptChannel.peek());
+        assertNotEquals(msg3, bob3.receiptChannel.peek());
         assertEquals(msg3, c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob3.receiveMessage());
+
         final String msg4 = "Actually no, our communication has the properties of perfect forward secrecy and deniable authentication.";
         c.clientBob.sendMessage(msg4);
         assertNotEquals(msg4, c.clientAlice.receiptChannel.peek());
         assertEquals(msg4, c.clientAlice.receiveMessage());
+
         final String msg5 = "Oh really?! pouvons-nous parler en français?";
         c.clientAlice.sendMessage(msg5);
         assertNotEquals(msg5, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg5, bob2.receiptChannel.peek());
+        assertNotEquals(msg5, bob3.receiptChannel.peek());
         assertEquals(msg5, c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob3.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
         c.clientBob.session.endSession();
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Bob has not yet switched session status as he has not processed the message yet.
         assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(FINISHED, c.clientAlice.session.getSessionStatus());
         c.clientAlice.session.endSession();
         assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
         assertEquals(PLAINTEXT, c.clientBob.session.getSessionStatus());
+        assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
+        assertEquals(ENCRYPTED, bob3.session.getSessionStatus());
+        assertEquals(0, c.clientAlice.receiptChannel.size());
+        assertEquals(0, c.clientBob.receiptChannel.size());
+        assertEquals(0, bob2.receiptChannel.size());
+        assertEquals(0, bob3.receiptChannel.size());
     }
 
     @Test
