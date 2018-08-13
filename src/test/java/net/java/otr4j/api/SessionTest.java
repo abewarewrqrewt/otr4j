@@ -1,5 +1,6 @@
 package net.java.otr4j.api;
 
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.messages.ClientProfilePayload;
@@ -25,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.api.OtrPolicy.ALLOW_V2;
+import static net.java.otr4j.api.OtrPolicy.ALLOW_V3;
 import static net.java.otr4j.api.OtrPolicy.ALLOW_V4;
 import static net.java.otr4j.api.OtrPolicy.OPPORTUNISTIC;
 import static net.java.otr4j.api.OtrPolicy.OTRL_POLICY_MANUAL;
@@ -52,10 +55,110 @@ public class SessionTest {
         Logger.getLogger("").setLevel(Level.INFO);
     }
 
-    // FIXME extend test with checking all receipt channels for not-equals-to-original-message.
+    @Test
+    public void testEstablishedMixedVersionSessionsAliceClientInitiated() throws OtrException {
+        final Conversation c = new Conversation(2);
+
+        // Prepare conversation with multiple clients.
+        c.clientAlice.setPolicy(new OtrPolicy(ALLOW_V2 | ALLOW_V3 | ALLOW_V4));
+        c.clientBob.setPolicy(new OtrPolicy(ALLOW_V3 | ALLOW_V4));
+        final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(2);
+        final Client bob2 = new Client("Bob 2", c.sessionIDBob, new OtrPolicy(ALLOW_V2 | ALLOW_V3), RANDOM, c.submitterAlice, bob2Channel);
+        c.submitterBob.addQueue(bob2Channel);
+
+        // Start setting up an encrypted session.
+        c.clientAlice.session.startSession();
+        // Expecting Query message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        // Expecting Identity message from Bob, DH-Commit message from Bob 2.
+        assertNull(c.clientAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting Auth-R message, DH-Key message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertEquals(OTRv.FOUR, c.clientBob.session.getOutgoingSession().getProtocolVersion());
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        // Expecting Auth-I message from Bob, Signature message from Bob 2.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(c.clientBob.session.getSenderInstanceTag()));
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob2.session.getSenderInstanceTag()));
+        // Expecting DAKE data message, Reveal Signature message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
+        assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
+
+        final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg1, bob2.receiptChannel.peek());
+        assertEquals(msg1, c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        c.clientAlice.session.setOutgoingSession(bob2.session.getSenderInstanceTag());
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg1, bob2.receiptChannel.peek());
+        assertEquals(msg1, bob2.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
+
+        assertEquals(0, c.clientAlice.receiptChannel.size());
+        assertEquals(0, c.clientBob.receiptChannel.size());
+        assertEquals(0, bob2.receiptChannel.size());
+    }
+
+    @Test
+    public void testEstablishedMixedVersionSessionsBobsClientInitiates() throws OtrException {
+        final Conversation c = new Conversation(2);
+
+        // Prepare conversation with multiple clients.
+        c.clientAlice.setPolicy(new OtrPolicy(ALLOW_V2 | ALLOW_V3 | ALLOW_V4));
+        c.clientBob.setPolicy(new OtrPolicy(ALLOW_V3 | ALLOW_V4));
+        final LinkedBlockingQueue<String> bob2Channel = new LinkedBlockingQueue<>(2);
+        final Client bob2 = new Client("Bob 2", c.sessionIDBob, new OtrPolicy(ALLOW_V2 | ALLOW_V3), RANDOM, c.submitterAlice, bob2Channel);
+        c.submitterBob.addQueue(bob2Channel);
+
+        // Start setting up an encrypted session.
+        c.clientBob.sendMessage(TestStrings.otrQuery);
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting DH-Commit message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        // Expecting DH-Key message from both of Bob's clients.
+        assertNull(c.clientAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting Signature message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertNull(bob2.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertEquals(OTRv.THREE, c.clientBob.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
+        // FIXME there is an issue with the OTR protocol such that acting on a received DH-Commit message skips the check of whether higher versions of the OTR protocol are available. (Consider not responding unless a query tag was previously sent.)
+        assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
+        // Expecting Reveal Signature message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(c.clientBob.session.getSenderInstanceTag()));
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob2.session.getSenderInstanceTag()));
+
+        final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg1, bob2.receiptChannel.peek());
+        assertEquals(msg1, c.clientBob.receiveMessage());
+        assertNull(bob2.receiveMessage());
+    }
+
     @Test
     public void testMultipleSessions() throws OtrException {
-        final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3 | OtrPolicy.ERROR_START_AKE & ~ALLOW_V4);
+        final OtrPolicy policy = new OtrPolicy(ALLOW_V2 | ALLOW_V3 | OtrPolicy.ERROR_START_AKE & ~ALLOW_V4);
         final Conversation c = new Conversation(3);
 
         // Prepare conversation with multiple clients.
@@ -100,12 +203,12 @@ public class SessionTest {
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob2.session.getSenderInstanceTag()));
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob3.session.getSenderInstanceTag()));
 
-        final String msg11 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
-        c.clientAlice.sendMessage(msg11);
-        assertNotEquals(msg11, c.clientBob.receiptChannel.peek());
-        assertNotEquals(msg11, bob2.receiptChannel.peek());
-        assertNotEquals(msg11, bob3.receiptChannel.peek());
-        assertEquals(msg11, c.clientBob.receiveMessage());
+        final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
+        c.clientAlice.sendMessage(msg1);
+        assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
+        assertNotEquals(msg1, bob2.receiptChannel.peek());
+        assertNotEquals(msg1, bob3.receiptChannel.peek());
+        assertEquals(msg1, c.clientBob.receiveMessage());
         assertNull(bob2.receiveMessage());
         assertNull(bob3.receiveMessage());
 
@@ -649,7 +752,7 @@ public class SessionTest {
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
             final InstanceTag senderInstanceTag = InstanceTag.random(random);
             final ClientProfile profile = new ClientProfile(senderInstanceTag, this.ed448KeyPair.getPublicKey(),
-                Collections.singleton(Session.OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000, null);
+                Collections.singleton(OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000, null);
             this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
             this.session = createSession(sessionID, this, senderInstanceTag);
         }

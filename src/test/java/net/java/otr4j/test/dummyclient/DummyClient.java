@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 /**
  * Created by gp on 2/5/14.
  */
+// FIXME Further eradicate use of DummyClient then remove completely in favor of new dummy client implementation in SessionTest.
 public class DummyClient {
 
     private static final SecureRandom RANDOM = new SecureRandom();
