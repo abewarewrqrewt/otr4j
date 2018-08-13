@@ -155,6 +155,10 @@ public class SessionTest {
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
         assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
 
+        // Due to 2 sessions being set up at the same time, either one can be established first. The first session is
+        // automatically chosen to be the default session, so we need to manually set our chosen session as default
+        // outgoing session.
+        c.clientAlice.session.setOutgoingSession(c.clientBob.session.getSenderInstanceTag());
         final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
         c.clientAlice.sendMessage(msg1);
         assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
