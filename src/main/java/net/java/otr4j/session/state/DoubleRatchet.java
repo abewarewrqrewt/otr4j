@@ -168,10 +168,12 @@ final class DoubleRatchet implements AutoCloseable {
         final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateOurKeys(performDHRatchet);
         final byte[] newK = this.sharedSecret.getK();
-        kdf1(this.rootKey, 0, ROOT_KEY, concatenate(previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
-        kdf1(this.sendingChainKey, 0, CHAIN_KEY, concatenate(previousRootKey, newK), CHAIN_KEY_LENGTH_BYTES);
+        final byte[] concatPreviousRootKeyNewK = concatenate(previousRootKey, newK);
+        kdf1(this.rootKey, 0, ROOT_KEY, concatPreviousRootKeyNewK, ROOT_KEY_LENGTH_BYTES);
+        kdf1(this.sendingChainKey, 0, CHAIN_KEY, concatPreviousRootKeyNewK, CHAIN_KEY_LENGTH_BYTES);
         clear(newK);
         clear(previousRootKey);
+        clear(concatPreviousRootKeyNewK);
         this.i += 1;
         this.needSenderKeyRotation = false;
         // Extract MACs to reveal.
@@ -220,10 +222,12 @@ final class DoubleRatchet implements AutoCloseable {
         final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
         final byte[] newK = this.sharedSecret.getK();
-        kdf1(this.rootKey, 0, ROOT_KEY, concatenate(previousRootKey, newK), ROOT_KEY_LENGTH_BYTES);
-        kdf1(this.receivingChainKey, 0, CHAIN_KEY, concatenate(previousRootKey, newK), CHAIN_KEY_LENGTH_BYTES);
+        final byte[] concatPreviousRootKeyNewK = concatenate(previousRootKey, newK);
+        kdf1(this.rootKey, 0, ROOT_KEY, concatPreviousRootKeyNewK, ROOT_KEY_LENGTH_BYTES);
+        kdf1(this.receivingChainKey, 0, CHAIN_KEY, concatPreviousRootKeyNewK, CHAIN_KEY_LENGTH_BYTES);
         clear(newK);
         clear(previousRootKey);
+        clear(concatPreviousRootKeyNewK);
         this.pn = this.j;
         this.j = 0;
         this.k = 0;
@@ -404,9 +408,11 @@ final class DoubleRatchet implements AutoCloseable {
         byte[] authenticate(@Nonnull final byte[] dataMessageSectionsHash) {
             requireNotClosed();
             final byte[] mac = generateMAC();
+            final byte[] concatMacDataMessageSectionsHash = concatenate(mac, dataMessageSectionsHash);
             try {
-                return kdf1(AUTHENTICATOR, concatenate(mac, dataMessageSectionsHash), AUTHENTICATOR_LENGTH_BYTES);
+                return kdf1(AUTHENTICATOR, concatMacDataMessageSectionsHash, AUTHENTICATOR_LENGTH_BYTES);
             } finally {
+                clear(concatMacDataMessageSectionsHash);
                 clear(mac);
             }
         }

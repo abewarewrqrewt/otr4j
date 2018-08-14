@@ -165,9 +165,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.
         // FIXME try to decrypt using skipped message keys.
-        // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
-        // receiving ratchet are stored. A new DH ratchet is performed.
         if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
+            // FIXME condition above should include check on "... and the 'Public DH Key' is different from their_dh -if present-"
+            // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
+            // receiving ratchet are stored. A new DH ratchet is performed.
+            // FIXME generate and store skipped message for previous chain key.
             // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
             if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
