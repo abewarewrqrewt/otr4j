@@ -52,7 +52,6 @@ public final class ByteArrays {
      * @param bytes     The source bytes to verify.
      * @return Returns same byte-array iff it matches length requirements.
      */
-    // FIXME write unit tests for `requireLengthAtLeast`
     @Nonnull
     public static byte[] requireLengthAtLeast(final int minLength, @Nonnull final byte[] bytes) {
         if (bytes.length < minLength) {

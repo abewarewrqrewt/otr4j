@@ -15,13 +15,26 @@ import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.util.BlockingQueues.shuffle;
 
 public final class BlockingQueuesTestUtils {
 
     public static void rearrangeFragments(@Nonnull final BlockingQueue<String> queue, @Nonnull final SecureRandom random) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         shuffle(queue, random);
         reorderOTRv3Fragments(queue);
+    }
+
+    /**
+     * Shuffle the contents of the provided blocking queue.
+     *
+     * @param queue  the blocking queue
+     * @param random the SecureRandom instance
+     * @param <T>    the type of the content in the blocking queue
+     */
+    public static <T> void shuffle(@Nonnull final BlockingQueue<T> queue, @Nonnull final SecureRandom random) {
+        final ArrayList<T> list = new ArrayList<>();
+        queue.drainTo(list);
+        java.util.Collections.shuffle(list, random);
+        queue.addAll(list);
     }
 
     public static void reorderOTRv3Fragments(@Nonnull final BlockingQueue<String> queue) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
