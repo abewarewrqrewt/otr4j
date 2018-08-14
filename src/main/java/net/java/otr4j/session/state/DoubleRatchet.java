@@ -106,6 +106,10 @@ final class DoubleRatchet implements AutoCloseable {
         this.k = 0;
         this.pn = 0;
         this.sharedSecret.close();
+        if (this.macsToReveal.size() > 0) {
+            throw new IllegalStateException("BUG: Remaining MACs have not been revealed. Failure to accomplish full deniability.");
+        }
+        this.macsToReveal.reset();
     }
 
     @CheckReturnValue
@@ -224,6 +228,21 @@ final class DoubleRatchet implements AutoCloseable {
         this.j = 0;
         this.k = 0;
         this.i += 1;
+    }
+
+    /**
+     * Get the remaining MAC codes to be revealed. (And remove them from the internal list to be revealed.)
+     * <p>
+     * NOTE: this method should only used to acquire the last remaining MAC codes prior to a session end. The general
+     * revelation case is facilitated through key rotation, i.e. {@link #rotateSenderKeys()}.
+     *
+     * @return Returns the remaining MAC codes to reveal.
+     */
+    byte[] collectRemainingMACsToReveal() {
+        requireNotClosed();
+        final byte[] revealed = this.macsToReveal.toByteArray();
+        this.macsToReveal.reset();
+        return revealed;
     }
 
     private void requireNotClosed() {

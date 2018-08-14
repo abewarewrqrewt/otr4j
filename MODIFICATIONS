@@ -72,3 +72,6 @@ Modifications in improvements branch:
 * Removed OtrKeyManager* and related code. These are not used in the main otr4j implementation. Its function is already provided by OtrEngineHost.
 * More use of logging and no more e.printStackTrace() calls that print to stderr.
 * Extra argument checking for allowing listeners to be added to collection for later use.
+* Fixed bugs in fragment reassembly code. (Previously, could not handle fragments from multiple instances simultaneously.)
+* Fixed bug in fragmentation code. (Code relied on policy instead of current negotiated session protocol.)
+* Fixed bug where remaining MAC codes were not revealed when ending session, i.e. when DISCONNECT TLV is sent.

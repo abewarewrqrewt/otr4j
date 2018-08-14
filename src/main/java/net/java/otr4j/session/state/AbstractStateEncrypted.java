@@ -7,7 +7,6 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -41,19 +40,4 @@ abstract class AbstractStateEncrypted extends AbstractState {
     @Nonnull
     @Override
     public abstract AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs) throws OtrException;
-
-    @Override
-    public void end(@Nonnull final Context context) throws OtrException {
-        // FIXME current implementation does not send remaining revealed MAC codes.
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
-        final AbstractEncodedMessage m = transformSending(context, "", Collections.singletonList(disconnectTlv));
-        try {
-            context.injectMessage(m);
-        } finally {
-            // Transitioning to PLAINTEXT state should not depend on host. Ensure
-            // we transition to PLAINTEXT even if we have problems injecting the
-            // message into the transport.
-            context.setState(new StatePlaintext(this.sessionID));
-        }
-    }
 }

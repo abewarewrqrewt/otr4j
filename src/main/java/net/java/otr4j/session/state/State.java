@@ -154,6 +154,9 @@ public interface State {
 
     /**
      * Call to end encrypted session, if any.
+     * <p>
+     * In case an encrypted session is established, this is the moment where the final MAC codes are revealed as part of
+     * the TLV DISCONNECT message.
      *
      * @param context The session context.
      * @throws OtrException In case an exception occurs.

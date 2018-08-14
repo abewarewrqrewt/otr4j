@@ -15,6 +15,7 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
 import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.showError;
@@ -303,5 +305,19 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();
         return new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue());
+    }
+
+    // FIXME Verify in test that indeed MAC codes are included in TLV 1 record that is sent.
+    @Override
+    public void end(@Nonnull final Context context) throws OtrException {
+        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, this.sessionKeyManager.collectOldMacKeys());
+        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
+        try {
+            context.injectMessage(m);
+        } finally {
+            // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
+            // have problems injecting the message into the transport.
+            context.setState(new StatePlaintext(this.sessionID));
+        }
     }
 }

@@ -8,6 +8,7 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.SerializationUtils.Content;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.PlainTextMessage;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Collections.singletonList;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
@@ -196,7 +198,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                     // nothing to do here, just ignore the padding
                     break;
                 case TLV.DISCONNECTED: // TLV1
-                    // FIXME shouldn't we send remaining MACs-to-be-revealed here?
+                    // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
                     context.setState(new StateFinished(this.sessionID));
                     break;
                 // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
@@ -219,5 +221,19 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
         // TODO verify if this is correct according to OTRv4 spec once released.
         throw new IllegalStateException("Transitioning to lower protocol version ENCRYPTED message state is forbidden.");
+    }
+
+    // FIXME Verify in test that indeed MACs are correctly revealed.
+    @Override
+    public void end(@Nonnull final Context context) throws OtrException {
+        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, this.ratchet.collectRemainingMACsToReveal());
+        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
+        try {
+            context.injectMessage(m);
+        } finally {
+            // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
+            // have problems injecting the message into the transport.
+            context.setState(new StatePlaintext(this.sessionID));
+        }
     }
 }
