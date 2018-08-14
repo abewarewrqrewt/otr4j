@@ -57,7 +57,6 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
-// TODO check with released spec whether or not we want to transition from one encrypted session to another. (Or always go through AKE states in single state machine.)
 final class StateEncrypted extends AbstractStateEncrypted {
 
     /**
@@ -307,7 +306,6 @@ final class StateEncrypted extends AbstractStateEncrypted {
             context.getReceiverInstanceTag().getValue());
     }
 
-    // FIXME Verify in test that indeed MAC codes are included in TLV 1 record that is sent.
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
         // TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of sending the data message,
