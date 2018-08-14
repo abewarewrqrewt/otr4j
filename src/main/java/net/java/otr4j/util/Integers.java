@@ -36,7 +36,6 @@ public final class Integers {
      * @return Returns {@code value} in case in range.
      * @throws IllegalArgumentException In case of illegal value.
      */
-    // FIXME write unit tests to verify requireInRange
     public static int requireInRange(final int minInclusive, final int maxInclusive, final int value) {
         if (value < minInclusive || value > maxInclusive) {
             throw new IllegalArgumentException("Illegal value: " + value);
