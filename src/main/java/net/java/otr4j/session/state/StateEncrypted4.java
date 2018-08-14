@@ -230,7 +230,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
         // Determine whether or not we need to add MACs to be revealed. If we are intending to rotate, there is no need
-        // to add the MAC codes here.
+        // to add the MAC keys here.
         final byte[] revealedMACs = this.ratchet.isNeedSenderKeyRotation() ? TLV.EMPTY_BODY
             : this.ratchet.collectRemainingMACsToReveal();
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, revealedMACs);

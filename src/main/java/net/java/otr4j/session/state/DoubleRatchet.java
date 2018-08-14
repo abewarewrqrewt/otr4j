@@ -231,12 +231,12 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     /**
-     * Get the remaining MAC codes to be revealed. (And remove them from the internal list to be revealed.)
+     * Get the remaining MAC keys to be revealed. (And remove them from the internal list to be revealed.)
      * <p>
-     * NOTE: this method should only used to acquire the last remaining MAC codes prior to a session end. The general
+     * NOTE: this method should only used to acquire the last remaining MAC keys prior to a session end. The general
      * revelation case is facilitated through key rotation, i.e. {@link #rotateSenderKeys()}.
      *
-     * @return Returns the remaining MAC codes to reveal.
+     * @return Returns the remaining MAC keys to reveal.
      */
     byte[] collectRemainingMACsToReveal() {
         requireNotClosed();

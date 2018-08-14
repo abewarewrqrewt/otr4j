@@ -310,8 +310,9 @@ final class StateEncrypted extends AbstractStateEncrypted {
     // FIXME Verify in test that indeed MAC codes are included in TLV 1 record that is sent.
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
-        // TODO currently we collect old MAC codes in TLV 1, instead of in Data Message. Investigate whether we can simply send an empty body and rely on the general sending mechanism to reveal MAC codes.
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, this.sessionKeyManager.collectOldMacKeys());
+        // TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of sending the data message,
+        // we already include remaining MAC keys in the Data message itself.
+        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
         try {
             context.injectMessage(m);

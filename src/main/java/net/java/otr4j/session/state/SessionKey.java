@@ -236,10 +236,8 @@ final class SessionKey {
         }
         for (int i = 0; i < this.receivingCtr.length; i++) {
             if (receivingCtr[i] > this.receivingCtr[i]) {
-                // Receiving ctr value is indeed larger.
-                // Persist new ctr value for next validation.
-                System.arraycopy(receivingCtr, 0, this.receivingCtr, 0,
-                        this.receivingCtr.length);
+                // Receiving ctr value is indeed larger. Persist new ctr value for next validation.
+                System.arraycopy(receivingCtr, 0, this.receivingCtr, 0, this.receivingCtr.length);
                 // Lengthen ctr value for further use.
                 return ByteBuffer.allocate(16).put(this.receivingCtr).array();
             }

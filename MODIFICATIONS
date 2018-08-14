@@ -74,4 +74,3 @@ Modifications in improvements branch:
 * Extra argument checking for allowing listeners to be added to collection for later use.
 * Fixed bugs in fragment reassembly code. (Previously, could not handle fragments from multiple instances simultaneously.)
 * Fixed bug in fragmentation code. (Code relied on policy instead of current negotiated session protocol.)
-* Fixed bug where remaining MAC codes were not revealed when ending session, i.e. when DISCONNECT TLV is sent.
