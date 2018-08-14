@@ -17,7 +17,6 @@ public final class Strings {
      * @param parts separated string parts
      * @return Joint string.
      */
-    // FIXME write unit tests
     public static String join(@Nonnull final String[] parts) {
         final StringBuilder builder = new StringBuilder();
         for (final String part : parts) {
