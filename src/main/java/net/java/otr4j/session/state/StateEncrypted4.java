@@ -169,8 +169,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
         // receiving ratchet are stored. A new DH ratchet is performed.
         if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
-            // FIXME can we set a rule of when MACs should be revealed? Is there something we can check to ensure that our deniability is secured?
-//            assert message.getRevealedMacs().length > 0 : "CHECK? Shouldn't there always be at least one MAC code to reveal?";
+            // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
+            if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
+                assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
+                logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
+            }
             // TODO verify that we indeed do not care about equality of DH public keys
             this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
             // FIXME execute receiver key rotation - To be continued ...
@@ -199,6 +202,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                     break;
                 case TLV.DISCONNECTED: // TLV1
                     // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
+                    // FIXME consider checking if final MAC codes are revealed. (May not be so easy.)
                     context.setState(new StateFinished(this.sessionID));
                     break;
                 // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
