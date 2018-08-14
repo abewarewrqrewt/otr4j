@@ -9,9 +9,12 @@
 Development stages:
 
 * Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
-  * Missing message queueing, SMP, Non-interactive DAKE, limited out-of-order message support, ...
-* Full implementation for Interactive use-case (SMP, full out-of-order message support, ...)
-* ...
+  * Assumes in-order messages, assumes no messages get lost, no non-interactive behavior, i.e. none of the fancy stuff.
+* Socialist Millionaire's Protocol for OTRv4.
+* Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
+* Support for skipped messages, keeping track of skipped message keys.
+* Full implementation for Interactive use-case
+* ... (non-interactive use case, ...)
 
 `TODO: development in progress ...`
 

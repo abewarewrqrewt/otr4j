@@ -164,12 +164,12 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         throws OtrException, ProtocolException {
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.
-        // FIXME try to decrypt using skipped message keys.
+        // TODO try to decrypt using skipped message keys.
         if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
             // FIXME condition above should include check on "... and the 'Public DH Key' is different from their_dh -if present-"
             // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
             // receiving ratchet are stored. A new DH ratchet is performed.
-            // FIXME generate and store skipped message for previous chain key.
+            // TODO generate and store skipped message for previous chain key.
             // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
             if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
@@ -177,13 +177,14 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             }
             // TODO verify that we indeed do not care about equality of DH public keys
             this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
-            // FIXME execute receiver key rotation - To be continued ...
         }
         // If a new message from the current receiving ratchet is received, any message keys corresponding to skipped
         // messages from the same ratchet are stored, and a symmetric-key ratchet is performed to derive the current
         // message key and the next receiving chain key. The message is then verified and decrypted.
+        // TODO generate and store skipped messages in current chain key.
         final byte[] dmc;
         try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
+            // FIXME issue: 'k' value is incremented definitely before verification has succeeded. We lose the ability to reproduce.
             final OtrOutputStream out = new OtrOutputStream();
             message.writeDataMessageSections(out);
             final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);

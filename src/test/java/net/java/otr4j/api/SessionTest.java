@@ -45,6 +45,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
+// TODO handle case where we skip one message and have to successfully handle the next: we need to be able to skip chain keys into the right combination for that message.
+// TODO handle case where we store skipped message keys such that we can decrypt message that is received out-of-order, i.e. later than it was supposed to arrive.
 // FIXME test what happens when fragments are dropped.
 public class SessionTest {
 

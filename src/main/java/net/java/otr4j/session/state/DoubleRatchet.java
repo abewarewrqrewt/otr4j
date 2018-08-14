@@ -189,6 +189,8 @@ final class DoubleRatchet implements AutoCloseable {
      * @param messageId The message ID as indicated in the Data message.
      * @return Returns corresponding MessageKeys instance.
      */
+    // TODO preserve message keys before rotating past ratchetId, messageId combination.
+    // TODO support rotating multiple times to catch up with message that has arrived, consisting of multiple increments.
     MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) {
         requireNotClosed();
         if (this.i - 1 != ratchetId || this.k != messageId) {
@@ -211,7 +213,7 @@ final class DoubleRatchet implements AutoCloseable {
      * @param nextECDH The other party's ECDH public key.
      * @param nextDH   The other party's DH public key.
      */
-    // FIXME preserve message keys in previous ratchet before rotating away.
+    // TODO preserve message keys in previous ratchet before rotating away.
     void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) {
         requireNotClosed();
         LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
