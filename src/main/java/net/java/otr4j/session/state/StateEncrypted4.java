@@ -181,7 +181,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final byte[] dmc;
         try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
             final OtrOutputStream out = new OtrOutputStream();
-            message.writeAuthenticatedMessageDigest(out);
+            message.writeDataMessageSections(out);
             final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             keys.verify(digest, message.getAuthenticator());
             dmc = keys.decrypt(message.getCiphertext(), message.getNonce());

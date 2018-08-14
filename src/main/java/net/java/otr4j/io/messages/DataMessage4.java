@@ -170,7 +170,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
 
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
-        writeAuthenticatedMessageDigest(writer);
+        writeDataMessageSections(writer);
         writer.writeMacOTR4(this.authenticator);
         writer.writeData(this.revealedMacs);
     }
@@ -180,7 +180,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      *
      * @param writer the output stream to write to.
      */
-    public void writeAuthenticatedMessageDigest(@Nonnull final OtrOutputStream writer) {
+    public void writeDataMessageSections(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
         writer.writeByte(this.flags);
         writer.writeInt(this.pn);
