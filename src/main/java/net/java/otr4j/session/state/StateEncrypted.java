@@ -8,13 +8,11 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrEngineHost;
-import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.messages.DataMessage;
@@ -36,7 +34,14 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
+import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
+import static net.java.otr4j.api.OtrEngineHostUtil.showError;
+import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
+import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
+import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hmac;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
@@ -108,7 +113,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
     @Override
     @Nonnull
     public byte[] getExtraSymmetricKey() {
-        if (this.protocolVersion == Session.OTRv.TWO) {
+        if (this.protocolVersion == OTRv.TWO) {
             throw new IllegalStateException("An OTR version 2 session was negotiated. The Extra Symmetric Key is not available in this version of the protocol.");
         }
         return this.sessionKeyManager.extraSymmetricKey();
@@ -120,7 +125,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Display the message to the user, but warn him that the message was
         // received unencrypted.
         final String cleanText = plainTextMessage.getCleanText();
-        OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(), this.sessionID, cleanText);
+        unencryptedMessageReceived(context.getHost(), this.sessionID, cleanText);
         return cleanText;
     }
     
@@ -136,8 +141,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
                     data.senderKeyID);
         } catch(final SessionKeyManager.SessionKeyUnavailableException ex) {
             logger.finest("No matching keys found.");
-            OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
-            final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+            unreadableMessageReceived(host, this.sessionID);
+            final String replymsg = getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
             context.injectMessage(new ErrorMessage(replymsg));
             return null;
         }
@@ -145,11 +150,11 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Verify received MAC with a locally calculated MAC.
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
 
-        final byte[] computedMAC = OtrCryptoEngine.sha1Hmac(encode(data.getT()), matchingKeys.receivingMAC());
+        final byte[] computedMAC = sha1Hmac(encode(data.getT()), matchingKeys.receivingMAC());
         if (!constantTimeEquals(computedMAC, data.mac)) {
             logger.finest("MAC verification failed, ignoring message");
-            OtrEngineHostUtil.unreadableMessageReceived(host, this.sessionID);
-            final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+            unreadableMessageReceived(host, this.sessionID);
+            final String replymsg = getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
             context.injectMessage(new ErrorMessage(replymsg));
             return null;
         }
@@ -161,11 +166,10 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] dmc;
         try {
             final byte[] lengthenedReceivingCtr = matchingKeys.verifyReceivingCtr(data.ctr);
-            dmc = OtrCryptoEngine.aesDecrypt(matchingKeys.receivingAESKey(),
-                    lengthenedReceivingCtr, data.encryptedMessage);
+            dmc = aesDecrypt(matchingKeys.receivingAESKey(), lengthenedReceivingCtr, data.encryptedMessage);
         } catch (final SessionKey.ReceivingCounterValidationFailed ex) {
             logger.log(Level.WARNING, "Receiving ctr value failed validation, ignoring message: {0}", ex.getMessage());
-            OtrEngineHostUtil.showError(host, this.sessionID, "Counter value of received message failed validation.");
+            showError(host, this.sessionID, "Counter value of received message failed validation.");
             context.injectMessage(new ErrorMessage("Message's counter value failed validation."));
             return null;
         }
@@ -279,7 +283,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         // Encrypt message.
         logger.log(Level.FINEST, "Encrypting message with keyids (localKeyID, remoteKeyID) = ({0}, {1})",
                 new Object[]{senderKeyID, recipientKeyID});
-        final byte[] encryptedMsg = OtrCryptoEngine.aesEncrypt(encryptionKeys.sendingAESKey(), ctr, data);
+        final byte[] encryptedMsg = aesEncrypt(encryptionKeys.sendingAESKey(), ctr, data);
 
         // Get most recent keys to get the next D-H public key.
         final SessionKey mostRecentKeys = this.sessionKeyManager.getMostRecentSessionKeys();
@@ -293,7 +297,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
 
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
-        final byte[] mac = OtrCryptoEngine.sha1Hmac(encode(t), sendingMACKey);
+        final byte[] mac = sha1Hmac(encode(t), sendingMACKey);
 
         // Get old MAC keys to be revealed.
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();

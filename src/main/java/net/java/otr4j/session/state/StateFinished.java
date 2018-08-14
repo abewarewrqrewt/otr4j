@@ -8,7 +8,6 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrEngineHost;
-import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
@@ -23,7 +22,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.PublicKey;
 import java.util.List;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.api.OtrEngineHostUtil.finishedSessionMessage;
+import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
+import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
+import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
 
 /**
  * Message state FINISHED. This message state is initiated through events
@@ -38,7 +42,7 @@ final class StateFinished extends AbstractState {
 
     StateFinished(final SessionID sessionId) {
         super();
-        this.sessionId = Objects.requireNonNull(sessionId);
+        this.sessionId = requireNonNull(sessionId);
     }
 
     @Override
@@ -80,7 +84,7 @@ final class StateFinished extends AbstractState {
     @Nonnull
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was received unencrypted.
-        OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(), sessionId, plainTextMessage.getCleanText());
+        unencryptedMessageReceived(context.getHost(), sessionId, plainTextMessage.getCleanText());
         return plainTextMessage.getCleanText();
     }
 
@@ -88,8 +92,8 @@ final class StateFinished extends AbstractState {
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         final OtrEngineHost host = context.getHost();
-        OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
-        final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+        unreadableMessageReceived(host, sessionId);
+        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
         context.injectMessage(new ErrorMessage(replymsg));
         return null;
     }
@@ -98,8 +102,8 @@ final class StateFinished extends AbstractState {
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
         final OtrEngineHost host = context.getHost();
-        OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
-        final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+        unreadableMessageReceived(host, sessionId);
+        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
         context.injectMessage(new ErrorMessage(replymsg));
         return null;
     }
@@ -107,7 +111,7 @@ final class StateFinished extends AbstractState {
     @Override
     @Nullable
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) {
-        OtrEngineHostUtil.finishedSessionMessage(context.getHost(), sessionId, msgText);
+        finishedSessionMessage(context.getHost(), sessionId, msgText);
         return null;
     }
 

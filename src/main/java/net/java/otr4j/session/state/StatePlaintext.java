@@ -9,7 +9,6 @@ package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
-import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.OtrPolicyUtil;
@@ -29,6 +28,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
+import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
+import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
+import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
 
 /**
  * Message state PLAINTEXT. This is the only message state that is publicly
@@ -90,8 +94,8 @@ public final class StatePlaintext extends AbstractState {
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         final OtrEngineHost host = context.getHost();
-        OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
-        final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+        unreadableMessageReceived(host, sessionId);
+        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
         context.injectMessage(new ErrorMessage(replymsg));
         return null;
     }
@@ -100,8 +104,8 @@ public final class StatePlaintext extends AbstractState {
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
         final OtrEngineHost host = context.getHost();
-        OtrEngineHostUtil.unreadableMessageReceived(host, sessionId);
-        final String replymsg = OtrEngineHostUtil.getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
+        unreadableMessageReceived(host, sessionId);
+        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
         context.injectMessage(new ErrorMessage(replymsg));
         return null;
     }
@@ -112,8 +116,7 @@ public final class StatePlaintext extends AbstractState {
         // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
         // warn him that the message was received unencrypted.
         if (context.getSessionPolicy().isRequireEncryption()) {
-            OtrEngineHostUtil.unencryptedMessageReceived(context.getHost(),
-                    this.sessionId, plainTextMessage.getCleanText());
+            unencryptedMessageReceived(context.getHost(), this.sessionId, plainTextMessage.getCleanText());
         }
         return plainTextMessage.getCleanText();
     }
@@ -128,7 +131,7 @@ public final class StatePlaintext extends AbstractState {
                 throw new OtrException("OTR policy disallows all versions of the OTR protocol. We cannot initiate a new OTR session.");
             }
             context.startSession();
-            OtrEngineHostUtil.requireEncryptedMessage(context.getHost(), sessionId, msgText);
+            requireEncryptedMessage(context.getHost(), sessionId, msgText);
             return null;
         }
         if (!otrPolicy.isSendWhitespaceTag()

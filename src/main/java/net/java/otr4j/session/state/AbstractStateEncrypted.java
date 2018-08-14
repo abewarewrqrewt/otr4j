@@ -44,6 +44,7 @@ abstract class AbstractStateEncrypted extends AbstractState {
 
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
+        // FIXME current implementation does not send remaining revealed MAC codes.
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
         final AbstractEncodedMessage m = transformSending(context, "", Collections.singletonList(disconnectTlv));
         try {
