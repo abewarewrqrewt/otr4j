@@ -38,7 +38,6 @@ import static org.bouncycastle.util.Arrays.clear;
  * The OTRv4 ENCRYPTED message state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
-// TODO Verify that old MACs are received ... as a way to verify your own deniability property.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
@@ -230,7 +229,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     // FIXME Verify in test that indeed MACs are correctly revealed.
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, this.ratchet.collectRemainingMACsToReveal());
+        // Determine whether or not we need to add MACs to be revealed. If we are intending to rotate, there is no need
+        // to add the MAC codes here.
+        final byte[] revealedMACs = this.ratchet.isNeedSenderKeyRotation() ? TLV.EMPTY_BODY
+            : this.ratchet.collectRemainingMACsToReveal();
+        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, revealedMACs);
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
         try {
             context.injectMessage(m);
