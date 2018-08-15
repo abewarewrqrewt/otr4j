@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 
+import static java.util.Arrays.sort;
 import static java.util.Objects.requireNonNull;
 
 public final class BlockingQueuesTestUtils {
@@ -21,6 +22,16 @@ public final class BlockingQueuesTestUtils {
     public static void rearrangeFragments(@Nonnull final BlockingQueue<String> queue, @Nonnull final SecureRandom random) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
         shuffle(queue, random);
         reorderOTRv3Fragments(queue);
+    }
+
+    public static <T> void drop(@Nonnull final int[] drops, @Nonnull final BlockingQueue<T> queue) {
+        sort(drops);
+        final ArrayList<T> list = new ArrayList<>();
+        queue.drainTo(list);
+        for (int i = 0; i < drops.length; i++) {
+            list.remove(drops[i] - i);
+        }
+        queue.addAll(list);
     }
 
     /**

@@ -18,7 +18,6 @@ import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
@@ -27,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.Integer.MAX_VALUE;
+import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrPolicy.ALLOW_V2;
 import static net.java.otr4j.api.OtrPolicy.ALLOW_V3;
@@ -37,6 +37,7 @@ import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.FINISHED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
+import static net.java.otr4j.util.BlockingQueuesTestUtils.drop;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.rearrangeFragments;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.shuffle;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
@@ -586,6 +587,46 @@ public class SessionTest {
     }
 
     @Test
+    public void testOTR4ExtensiveMessagingManyConsecutiveMessagesIncidentallyDropped() throws OtrException {
+        final Conversation c = new Conversation(25);
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.clientBob.receiveMessage());
+
+        final String[] messages = new String[25];
+        for (int i = 0; i < messages.length; i++) {
+            messages[i] = randomMessage(300);
+        }
+        // Bob sending many messages
+        for (int i = 0; i < 25; i++) {
+            c.clientBob.sendMessage(messages[i]);
+        }
+        final int drop1 = RANDOM.nextInt(25);
+        final int drop2 = RANDOM.nextInt(25);
+        final int drop3 = RANDOM.nextInt(25);
+        drop(new int[]{drop1, drop2, drop3}, c.clientAlice.receiptChannel);
+        for (final String message : messages) {
+            assertMessage("Message Bob: " + message, message, c.clientAlice.receiveMessage());
+        }
+        // Alice sending one message in response
+        final String messageAlice = "Man, you talk a lot!";
+        c.clientAlice.sendMessage(messageAlice);
+        assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
+    }
+
+    @Test
     public void testOTR4ExtensiveMessagingFragmentation() throws OtrException {
         final Conversation c = new Conversation(20, 150);
         c.clientBob.sendMessage("Hi Alice");
@@ -852,7 +893,7 @@ public class SessionTest {
         }
 
         void sendMessage(@Nonnull final String msg) throws OtrException {
-            this.sendChannel.addAll(Arrays.asList(this.session.transformSending(msg)));
+            this.sendChannel.addAll(asList(this.session.transformSending(msg)));
         }
 
         void setPolicy(final OtrPolicy policy) {
