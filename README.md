@@ -43,7 +43,7 @@ Development stages:
     * ☑ Ephemeral DH with 3072-bit parameters
     * ☑ Ephemeral ECDH based on Ed448-Goldilocks
     * ☑ Key rotation
-  * ☑ Calculate _encryption_, _MAC_ and _Extra Symmetric Key_ keys
+  * ☑ Calculate _Encryption_, _MAC_ and _Extra Symmetric Key_ keys
   * ☑ Revealing used MAC keys
   * ☐ Periodic clean-up of "old" skipped message keys
   * ☐ Session expiration
@@ -70,7 +70,10 @@ Development stages:
 * Constant-time implementations:
   * ☑ MAC key comparison
   * ☐ Ring signatures implemented fully constant-time.
-* ☐ Clean up remaining message keys instances when transitioning away from encrypted message states.
+* Cleaning up data:
+  * ☑ Clearing byte-arrays containing sensitive material after use.
+  * ☐ Clean up remaining message keys instances when transitioning away from encrypted message states.
+  * ☐ Investigate effectiveness of clearing byte-arrays right before potential GC. (Maybe they are optimized away by JVM?)
 * Verify OTR-protocol obligations of other party:
   * ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
 * ...
@@ -79,9 +82,10 @@ Development stages:
 
 * ☑ Encapsulate cryptographic material such that design facilitates appropriate use and maintenance.
 * ☑ States, such as Message states, isolated as to prevent mistakes in mixing up variables and state management for different states.
+* ☐ Strategically placed assertions to discover mistakes such as uninitialized/cleared byte-arrays.
 * Tool support:
   * ☑ JSR-305 annotations for static analysis
-  * ☑ Introduce compiler warnings failure at build time
+  * ☑ Introduce compiler warnings failure at build-time
   * ☑ Introduce pmd analysis at build-time.
   * ☐ Introduce SpotBugs analysis at build-time
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
@@ -89,9 +93,9 @@ Development stages:
 
 ## Architectural considerations
 
-* Correctness of off-the-record protocol implementation.
-* Encapsulation of cryptographic material to prevent mistakes, excessive exposure.
-* Logical structure that prevents or makes obvious programming errors.
+* Correctness of protocol implementation. (Obviously)
+* Encapsulation of cryptographic material to prevent mistakes, misuse, excessive exposure.
+* Design/structure that prevents or makes obvious programming errors.
 * Restricted implementation, only as much abstraction as needed. (Simplicity)
 
 # Synopsis
@@ -118,7 +122,7 @@ messages will be rejected while the connection is being established. Once the se
 
 # Contributing / Help needed
 
-* Peer-reviewing (for security, and for improvements in general)
+* Peer-reviewing (for correctness, security and improvements in general)
 * Integration into chat clients
 
   [OTR]: https://otr.cypherpunks.ca/
