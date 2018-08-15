@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static org.bouncycastle.util.Arrays.clear;
@@ -56,7 +57,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         super(context.getSessionID(), context.getHost());
         final byte[] exchangeK;
-        try (SharedSecret4 exchangeSecret = SharedSecret4.create(context.secureRandom(), params)) {
+        try (SharedSecret4 exchangeSecret = createSharedSecret(context.secureRandom(), params)) {
             this.ssid = exchangeSecret.generateSSID();
             exchangeK = exchangeSecret.getK();
         }
@@ -160,6 +161,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         throw new IllegalStateException("OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
+    // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...)
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)

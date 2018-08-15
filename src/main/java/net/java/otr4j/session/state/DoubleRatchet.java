@@ -65,11 +65,31 @@ final class DoubleRatchet implements AutoCloseable {
 
     private final byte[] rootKey;
 
+    /**
+     * The sending chain key.
+     * <p>
+     * The key relies on a first key rotation to become initialized.
+     */
     private final byte[] sendingChainKey = new byte[CHAIN_KEY_LENGTH_BYTES];
 
+    /**
+     * The receiving chain key.
+     * <p>
+     * The key relies on a first key rotation to become initialized.
+     */
     private final byte[] receivingChainKey = new byte[CHAIN_KEY_LENGTH_BYTES];
 
+    /**
+     * The boolean indicates that we need sender key rotation before we have sensible data to work with. (Initially, the
+     * sending chain key is all-zero.)
+     */
     private boolean needSenderKeyRotation = true;
+
+    /**
+     * The boolean indicates that we need receiver key rotation before we have sensible data to work with. (Initially,
+     * the receiver chain key is all-zero.)
+     */
+    private boolean needReceiverKeyRotation = true;
 
     /**
      * The ratchet ID.
@@ -163,6 +183,9 @@ final class DoubleRatchet implements AutoCloseable {
         if (!this.needSenderKeyRotation) {
             throw new IllegalStateException("Rotation is only allowed after new public key material was received from the other party.");
         }
+        if (this.sharedSecret.getTheirECDHPublicKey() == null || this.sharedSecret.getTheirDHPublicKey() == null) {
+            throw new IllegalStateException("Cannot perform sender key rotation until other party's public keys have been received.");
+        }
         // Perform sender key rotation.
         LOGGER.log(Level.FINEST, "Rotating root key and sending chain key for ratchet " + this.i);
         this.j = 0;
@@ -197,6 +220,7 @@ final class DoubleRatchet implements AutoCloseable {
     // TODO preserve message keys before rotating past ratchetId, messageId combination.
     MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws KeyRotationLimitation {
         requireNotClosed();
+        requireReceiverKeyRotation();
         if (this.i - 1 > ratchetId || this.k > messageId) {
             throw new UnsupportedOperationException("Retrieval of previous Message Keys has not been implemented yet. Only current Message Keys can be generated.");
         } else if (this.i - 1 < ratchetId) {
@@ -223,6 +247,7 @@ final class DoubleRatchet implements AutoCloseable {
      */
     void rotateReceivingChainKey() {
         requireNotClosed();
+        requireReceiverKeyRotation();
         this.k += 1;
         kdf1(this.receivingChainKey, 0, NEXT_CHAIN_KEY, this.receivingChainKey, CHAIN_KEY_LENGTH_BYTES);
     }
@@ -241,6 +266,7 @@ final class DoubleRatchet implements AutoCloseable {
         requireNotClosed();
         LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
             new Object[]{this.i, nextDH != null});
+        this.needReceiverKeyRotation = false;
         this.needSenderKeyRotation = true;
         this.k = 0;
         final byte[] previousRootKey = this.rootKey.clone();
@@ -274,16 +300,22 @@ final class DoubleRatchet implements AutoCloseable {
         return revealed;
     }
 
+    private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
+        final byte[] encrypt = kdf1(MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
+        final byte[] extraSymmetricKey = kdf1(EXTRA_SYMMETRIC_KEY, chainkey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
+        return new MessageKeys(this.i-1, this.j, encrypt, extraSymmetricKey);
+    }
+
     private void requireNotClosed() {
         if (this.i < 0) {
             throw new IllegalStateException("Instance was previously closed and cannot be used anymore.");
         }
     }
 
-    private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
-        final byte[] encrypt = kdf1(MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
-        final byte[] extraSymmetricKey = kdf1(EXTRA_SYMMETRIC_KEY, chainkey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
-        return new MessageKeys(this.i-1, this.j, encrypt, extraSymmetricKey);
+    private void requireReceiverKeyRotation() {
+        if (this.needReceiverKeyRotation) {
+            throw new IllegalStateException("Receiver key rotation needs to be performed.");
+        }
     }
 
     /**

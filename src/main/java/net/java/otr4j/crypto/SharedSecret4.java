@@ -104,7 +104,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param params established security parameters
      * @return Returns SharedSecret4 instance.
      */
-    public static SharedSecret4 create(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
+    public static SharedSecret4 createSharedSecret(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
         return new SharedSecret4(random, requireNonNull(params.getDhKeyPair()), requireNonNull(params.getEcdhKeyPair()),
             requireNonNull(params.getA()), requireNonNull(params.getX()));
     }
@@ -155,6 +155,26 @@ public final class SharedSecret4 implements AutoCloseable {
     @Nonnull
     public BigInteger getDHPublicKey() {
         return this.dhKeyPair.getPublicKey();
+    }
+
+    /**
+     * Get "their" (remote) ECDH public key.
+     *
+     * @return Returns the public key.
+     */
+    @Nullable
+    public Point getTheirECDHPublicKey() {
+        return theirECDHPublicKey;
+    }
+
+    /**
+     * Get "their" (remote) DH public key.
+     *
+     * @return Returns the public key.
+     */
+    @Nullable
+    public BigInteger getTheirDHPublicKey() {
+        return theirDHPublicKey;
     }
 
     /**

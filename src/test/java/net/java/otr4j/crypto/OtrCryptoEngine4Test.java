@@ -90,7 +90,7 @@ public class OtrCryptoEngine4Test {
     @Test(expected = NullPointerException.class)
     public void testKdf1NullKDFUsage() {
         final byte[] dst = new byte[100];
-        kdf1(dst, 0, null, new byte[1], 32);
+        kdf1(dst, 0, null, new byte[] {(byte) 0xff}, 32);
     }
 
     @Test(expected = NullPointerException.class)
