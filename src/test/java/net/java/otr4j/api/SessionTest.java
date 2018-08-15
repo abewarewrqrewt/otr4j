@@ -9,6 +9,7 @@ import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;
 import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -20,6 +21,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -37,6 +39,7 @@ import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.FINISHED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
+import static net.java.otr4j.util.Arrays.contains;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.drop;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.rearrangeFragments;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.shuffle;
@@ -45,6 +48,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 // TODO handle case where we skip one message and have to successfully handle the next: we need to be able to skip chain keys into the right combination for that message.
 // TODO handle case where we store skipped message keys such that we can decrypt message that is received out-of-order, i.e. later than it was supposed to arrive.
@@ -574,8 +578,8 @@ public class SessionTest {
             messages[i] = randomMessage(300);
         }
         // Bob sending many messages
-        for (int i = 0; i < 25; i++) {
-            c.clientBob.sendMessage(messages[i]);
+        for (final String message : messages) {
+            c.clientBob.sendMessage(message);
         }
         for (final String message : messages) {
             assertMessage("Message Bob: " + message, message, c.clientAlice.receiveMessage());
@@ -586,6 +590,7 @@ public class SessionTest {
         assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
     }
 
+    @Ignore("In-progress issue with support for performing multiple increments in order to get to the right set of message keys.")
     @Test
     public void testOTR4ExtensiveMessagingManyConsecutiveMessagesIncidentallyDropped() throws OtrException {
         final Conversation c = new Conversation(25);
@@ -610,8 +615,8 @@ public class SessionTest {
             messages[i] = randomMessage(300);
         }
         // Bob sending many messages
-        for (int i = 0; i < 25; i++) {
-            c.clientBob.sendMessage(messages[i]);
+        for (final String message : messages) {
+            c.clientBob.sendMessage(message);
         }
         final int drop1 = RANDOM.nextInt(25);
         final int drop2 = RANDOM.nextInt(25);
@@ -624,6 +629,52 @@ public class SessionTest {
         final String messageAlice = "Man, you talk a lot!";
         c.clientAlice.sendMessage(messageAlice);
         assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
+    }
+
+    @Ignore("Test demonstrates support for out-of-order messages and specifically messages that arrive later than expected. This is not yet supported in the library.")
+    @Test
+    public void testOTR4ExtensiveMessagingManyConsecutiveMessagesShuffled() throws OtrException {
+        final Conversation c = new Conversation(25);
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.clientBob.receiveMessage());
+
+        final String[] messages = new String[25];
+        for (int i = 0; i < messages.length; i++) {
+            messages[i] = randomMessage(300);
+        }
+        // Bob sending many messages
+        for (final String message : messages) {
+            c.clientBob.sendMessage(message);
+        }
+        shuffle(c.clientAlice.receiptChannel, RANDOM);
+        final HashSet<String> receivedMessages = new HashSet<>();
+        for (int i = 0; i < messages.length; i++) {
+            final String received = c.clientAlice.receiveMessage();
+            if (!contains(received, messages)) {
+                fail("Expected message to be present in the list of sent messages: " + received);
+            }
+            receivedMessages.add(received);
+        }
+        assertEquals(messages.length, receivedMessages.size());
+        // Alice sending one message in response
+        final String messageAlice = "Man, you talk a lot!";
+        c.clientAlice.sendMessage(messageAlice);
+        assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
+        c.clientAlice.session.endSession();
+        c.clientBob.session.endSession();
     }
 
     @Test
