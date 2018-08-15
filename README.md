@@ -4,28 +4,88 @@
 
 ## Progress
 
-**Status**: *In active development. Current work should be considered at most prototype-quality and guaranteed insecure.
+__Status__: _In active development. Current work should be considered __at most__ _prototype-quality and guaranteed insecure._
 
 Development stages:
 
 * Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
-  * Assumes in-order messages, assumes no messages get lost, no non-interactive behavior, i.e. none of the fancy stuff.
 * Socialist Millionaire's Protocol for OTRv4.
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
 * Full implementation for Interactive use-case
 * ... (non-interactive use case, ...)
 
-`TODO: development in progress ...`
+## Functionality
 
-Tool support:
+* General Off-the-record operation:
+  * ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
+  * ☐ Persistent instance tags
+  * ☐ OTRv4 extension to OTR Error messages
+  * ☐ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
+* Cryptographic primitives:
+  * Edd448-Goldilocks elliptic curve (temporary solution)
+    * ☑ Temporary working solution
+    * ☐ Migrate to BouncyCastle 1.60.
+  * 3072-bit Diffie-Hellman parameters
+    * ☑ Temporary working solution
+    * ☐ Verify if current solution is acceptable, otherwise migrate to JCA/BC
+  * ☑ XSalsa20 symmetric cipher
+  * ☑ SHAKE-256
+* Key Exchange:
+  * ☑ Interactive DAKE
+  * ☐ Non-interactive DAKE
+* Key Management:
+  * Double Ratchet:
+    * ☑ Generate next message keys (in-order messages)
+    * ☑ Generate future message keys (skip over missing messages)
+    * ☐ Store for skipped message keys (out-of-order messages)
+  * Shared secrets management:
+    * ☑ Ephemeral DH with 3072-bit parameters
+    * ☑ Ephemeral ECDH based on Ed448-Goldilocks
+    * ☑ Key rotation
+  * ☑ Calculate _encryption_, _MAC_ and _Extra Symmetric Key_ keys
+  * ☑ Revealing used MAC keys
+  * ☐ Periodic clean-up of "old" skipped message keys
+  * ☐ Session expiration
+* Message encryption/decryption:
+  * ☑ In-order messages
+  * ☑ In-order messages with some messages missing
+  * ☐ Out-of-order messages
+* Fragmentation and re-assembly:
+  * ☑ Fragmentation
+  * ☑ Re-assembling fragmented messages
+* Socialist Millionaire's Protocol:
+  * ☑ OTRv2/OTRv3
+  * ☐ OTRv4
+* Client and PreKey Profiles:
+  * ☑ Client Profile support
+  * ☐ PreKey profile support
+* Extra Symmetric Key support:
+  * ☑ OTRv3
+  * ☐ OTRv4 (including prescribed key derivation)
+* ...
 
-* JSR-305 annotations for static analysis
-* Introduce SpotBugs analysis at build-time.
-  * spotbugs-annotations, to improve static analysis capabilities
-* Introduce pmd analysis at build-time.
+## Operational
 
-`TODO: development progress ...`
+* Constant-time implementations:
+  * ☑ MAC key comparison
+  * ☐ Ring signatures implemented fully constant-time.
+* ☐ Clean up remaining message keys instances when transitioning away from encrypted message states.
+* Verify OTR-protocol obligations of other party:
+  * ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
+* ...
+
+## Developmental
+
+* ☑ Encapsulate cryptographic material such that design facilitates appropriate use and maintenance.
+* ☑ States, such as Message states, isolated as to prevent mistakes in mixing up variables and state management for different states.
+* Tool support:
+  * ☑ JSR-305 annotations for static analysis
+  * ☑ Introduce compiler warnings failure at build time
+  * ☑ Introduce pmd analysis at build-time.
+  * ☐ Introduce SpotBugs analysis at build-time
+  * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
+* ...
 
 ## Architectural considerations
 
@@ -49,16 +109,6 @@ A short attempt was made to establish a independent, community-supported (friend
 For a quick introduction on how to use the library have a look at the
 [DummyClient](src/test/java/net/java/otr4j/test/dummyclient/DummyClient.java).
 
-
-# Features
-. OTRv4 (draft) support
-* OTRv2 and OTRv3 (OTRv1 support dropped per recommendation)
-* Outbound fragmentation
-* Extra symmetric key support
-* 
-
-`TODO: describe possibility to request new features regarding the completeness of implementation, compatibility with various platforms.`
-
 # Limitations
 
 * *otr4j supports message lengths up to 2^31.*  
@@ -66,17 +116,10 @@ Message sizes in OTR are defined as 4-byte *unsigned*. Due to Java's signed inte
 * *Message are not queued up.*
 messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
-# TODO list
-
-`TODO: ...`
-
 # Contributing / Help needed
 
 * Peer-reviewing (for security, and for improvements in general)
 * Integration into chat clients
-* 
-
-`TODO ...`
 
   [OTR]: https://otr.cypherpunks.ca/
   [jitsi]: https://jitsi.org/

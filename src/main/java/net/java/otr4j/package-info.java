@@ -7,6 +7,7 @@
 // TODO verify that logging with parameters ('{}') works correctly.
 // FIXME add exclusions for any violated rules and enable fail-on-build for pmd, SpotBugs.
 // FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305.
+// FIXME use @CleanupObligation to verify correct clean-up of cryptographically sensitive material.
 // TODO Verify rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
 // TODO Use maven-site-plugin (or similar) to generate a full report on the status of otr4j project.
 // TODO Investigate use of SpotBugs and its annotation to manage "resources" and correct closing.

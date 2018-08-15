@@ -41,6 +41,8 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * pair.</li>
  * <li>Other two ratchets: rotate key material based on symmetric key (brace key) only.</li>
  * </ol>
+ * <p>
+ * DoubleRatchet is NOT thread-safe.
  */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
 // TODO consider adding a counter/semaphore in order to verify that "at most one" (depending on circumstances) set of message keys is active at a time. Ensures that message keys are appropriately cleaned after use.
