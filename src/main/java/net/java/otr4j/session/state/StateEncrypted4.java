@@ -183,22 +183,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // If a new message from the current receiving ratchet is received, any message keys corresponding to skipped
         // messages from the same ratchet are stored, and a symmetric-key ratchet is performed to derive the current
         // message key and the next receiving chain key. The message is then verified and decrypted.
-        // TODO generate and store skipped messages in current chain key.
-        final byte[] dmc;
-        try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
-            // FIXME issue: 'k' value is incremented definitely before verification has succeeded. We lose the ability to reproduce.
-            final OtrOutputStream out = new OtrOutputStream();
-            message.writeDataMessageSections(out);
-            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
-            keys.verify(digest, message.getAuthenticator());
-            dmc = keys.decrypt(message.getCiphertext(), message.getNonce());
-        } catch (final KeyRotationLimitation e) {
-            // TODO check with spec if there is a way to resolve this limitation.
-            throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
-        } catch (final VerificationException e) {
-            // FIXME reject message (do we need to return some error code or just ignore?)
-            throw new OtrException("Failed to verify message: invalid authenticator.", e);
-        }
+        final byte[] dmc = this.decryptMessage(message);
+        this.ratchet.rotateReceivingChainKey();
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
@@ -219,6 +205,30 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             }
         }
         return content.message.length() > 0 ? content.message : null;
+    }
+
+    /**
+     * Authenticate and decrypt the provided message content.
+     *
+     * @param message the message to decrypt.
+     * @return Returns the decrypted message content.
+     * @throws OtrException In case of failure to rotate receiving chain key for matching set of message keys. (This is
+     *                      a limitation of the Double Ratchet-protocol.) Or because the message failed verification.
+     */
+    private byte[] decryptMessage(final @Nonnull DataMessage4 message) throws OtrException {
+        try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
+            final OtrOutputStream out = new OtrOutputStream();
+            message.writeDataMessageSections(out);
+            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
+            keys.verify(digest, message.getAuthenticator());
+            return keys.decrypt(message.getCiphertext(), message.getNonce());
+        } catch (final KeyRotationLimitation e) {
+            // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
+            throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
+        } catch (final VerificationException e) {
+            // FIXME reject message (do we need to return some error code or just ignore?)
+            throw new OtrException("Failed to verify message: invalid authenticator.", e);
+        }
     }
 
     @Nonnull

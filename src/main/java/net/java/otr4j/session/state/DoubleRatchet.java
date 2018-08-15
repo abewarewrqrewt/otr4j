@@ -211,13 +211,16 @@ final class DoubleRatchet implements AutoCloseable {
         }
         LOGGER.log(Level.FINEST, "Generating receiving message keys for ratchet {0}, message {1}.",
             new Object[]{ratchetId, messageId});
-        final MessageKeys keys = generateMessageKeys(this.receivingChainKey);
-        // FIXME need to move rotation out, in case message keys end up failing to decrypt message. In that case rotation cannot happen yet.
-        rotateReceivingChainKey();
-        return keys;
+        return generateMessageKeys(this.receivingChainKey);
     }
 
-    private void rotateReceivingChainKey() {
+    /**
+     * Rotate the receiving chain key.
+     * <p>
+     * Generate a new chain key based on the old chain key and increment the receiver counter 'k'.
+     */
+    void rotateReceivingChainKey() {
+        requireNotClosed();
         this.k += 1;
         kdf1(this.receivingChainKey, 0, NEXT_CHAIN_KEY, this.receivingChainKey, CHAIN_KEY_LENGTH_BYTES);
     }

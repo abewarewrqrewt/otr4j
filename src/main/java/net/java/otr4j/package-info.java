@@ -41,15 +41,10 @@
 //  * Nothing is said about case where sender and receiver tags are different in OTR-encoded message. (Should we consider a case where there is a difference illegal?)
 //  * What to do if DH-Commit message is received as response to other client instance's query tag? (no receiver instance tag specified yet)
 //  * Allow accepting fragments that have 0 receiver tag? (For benefit of DH-Commit and Identity messages.)
-//  * Is the "temporary" chain key derivation a logical error? (we lose previous chain key before finding that message is bad) (https://github.com/otrv4/otrv4/issues/171)
-//      "Derive the next receiving chain key: chain_key_r[i-1][k+1] = KDF_1(0x17 || chain_key_r[i-1][k], 64).
-//       Securely delete chain_key_r[i-1][k]. Use the MKmac to verify the MAC of the message. If the verification fails:
-//           Reject the message.
-//       Otherwise:
-//           Increment the next receiving message id k = k + 1.
-//           Set nonce as the "nonce" from the received data message.
-//           ..."
-//    That is, unless we keep a record of the current message keys. (Like we do with skipped.)
+//  * Spec does not go into case "What to do if message from next/other ratchet arrives, but with index other than 0." (i.e. cannot decrypt, must reject.)
+//    This is part of section "When you receive a Data Message:".
+//  * Spec does not go into case "What to do if message arrives with ratchetId < i and messageId == 0.". You can't blindly start processing this message as your would screw up your rotation.
+//    This is part of section "When you receive a Data Message:".
 /**
  * otr4j.
  */
