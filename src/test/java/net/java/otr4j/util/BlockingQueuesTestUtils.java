@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 
-import static java.util.Arrays.sort;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.Arrays.contains;
 
 public final class BlockingQueuesTestUtils {
 
@@ -25,13 +25,15 @@ public final class BlockingQueuesTestUtils {
     }
 
     public static <T> void drop(@Nonnull final int[] drops, @Nonnull final BlockingQueue<T> queue) {
-        sort(drops);
+        java.util.Arrays.sort(drops);
         final ArrayList<T> list = new ArrayList<>();
         queue.drainTo(list);
-        for (int i = 0; i < drops.length; i++) {
-            list.remove(drops[i] - i);
+        for (int i = 0; i < list.size(); i++) {
+            if (contains(i, drops)) {
+                continue;
+            }
+            queue.add(list.get(i));
         }
-        queue.addAll(list);
     }
 
     /**

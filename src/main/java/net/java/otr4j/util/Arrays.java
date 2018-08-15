@@ -52,4 +52,23 @@ public final class Arrays {
         }
         return false;
     }
+
+    /**
+     * Contains search for an int in an int-array. This is a naive search and is meant to be used only for small arrays
+     * where this cannot become a performance issue. The function is there for convenience over the typical approach of
+     * sorting-then-binary-searching.
+     *
+     * @param e    The int value to search for.
+     * @param data The data array to look in.
+     * @return Returns true iff e is found, or false otherwise.
+     */
+    @CheckReturnValue
+    public static boolean contains(final int e, @Nonnull final int[] data) {
+        for (final int v : data) {
+            if (e == v) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
