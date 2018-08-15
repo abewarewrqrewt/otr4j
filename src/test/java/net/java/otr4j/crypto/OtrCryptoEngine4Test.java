@@ -25,6 +25,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
+import static nl.dannyvanheumen.joldilocks.Points.createPoint;
 import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -37,6 +38,8 @@ import static org.junit.Assert.assertTrue;
 public class OtrCryptoEngine4Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    private static final BigInteger MINUSONE = BigInteger.valueOf(-1L);
 
     private final EdDSAKeyPair longTermKeyPairA = EdDSAKeyPair.generate(RANDOM);
     private final EdDSAKeyPair longTermKeyPairB = EdDSAKeyPair.generate(RANDOM);
@@ -338,6 +341,27 @@ public class OtrCryptoEngine4Test {
     public void testRingSignNullA3() {
         final byte[] message = "hello world".getBytes(UTF_8);
         ringSign(RANDOM, longTermKeyPairA, longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), null, message);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRingSignIllegalA1() {
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point illegal = createPoint(MINUSONE, MINUSONE);
+        ringSign(RANDOM, longTermKeyPairB, illegal, longTermKeyPairB.getPublicKey(), ephemeralKeyPair.getPublicKey(), message);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRingSignIllegalA2() {
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point illegal = createPoint(MINUSONE, MINUSONE);
+        ringSign(RANDOM, longTermKeyPairA, longTermKeyPairA.getPublicKey(), illegal, ephemeralKeyPair.getPublicKey(), message);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRingSignIllegalA3() {
+        final byte[] message = "hello world".getBytes(UTF_8);
+        final Point illegal = createPoint(MINUSONE, MINUSONE);
+        ringSign(RANDOM, longTermKeyPairA, longTermKeyPairA.getPublicKey(), longTermKeyPairB.getPublicKey(), illegal, message);
     }
 
     @Test(expected = NullPointerException.class)

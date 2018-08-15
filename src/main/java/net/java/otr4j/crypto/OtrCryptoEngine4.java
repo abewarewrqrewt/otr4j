@@ -354,8 +354,8 @@ public final class OtrCryptoEngine4 {
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
                                  @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
                                  @Nonnull final byte[] m) {
-        if (!Ed448.contains(longTermKeyPair.getPublicKey()) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
-            throw new IllegalArgumentException("Illegal point provided. Valid points need to be on the curve.");
+        if (!Ed448.contains(longTermKeyPair.getPublicKey()) || !Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
+            throw new IllegalArgumentException("Illegal point provided. Points need to be on curve Ed448.");
         }
         if (Points.equals(A1, A2) || Points.equals(A2, A3) || Points.equals(A1, A3)) {
             throw new IllegalArgumentException("Some of the points are equal. It defeats the purpose of the ring signature.");
