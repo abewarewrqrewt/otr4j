@@ -281,10 +281,8 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
-        final byte[] encrypt = new byte[MessageKeys.MK_ENC_LENGTH_BYTES];
-        kdf1(encrypt, 0, MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
-        final byte[] extraSymmetricKey = new byte[MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES];
-        kdf1(extraSymmetricKey, 0, EXTRA_SYMMETRIC_KEY, chainkey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
+        final byte[] encrypt = kdf1(MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
+        final byte[] extraSymmetricKey = kdf1(EXTRA_SYMMETRIC_KEY, chainkey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
         return new MessageKeys(this.i-1, this.j, encrypt, extraSymmetricKey);
     }
 

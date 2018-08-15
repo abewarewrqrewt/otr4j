@@ -123,6 +123,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsHash,
                 DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             authenticator = keys.authenticate(messageMAC);
+            clear(messageMAC);
         }
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
@@ -221,6 +222,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             message.writeDataMessageSections(out);
             final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             keys.verify(digest, message.getAuthenticator());
+            clear(digest);
             return keys.decrypt(message.getCiphertext(), message.getNonce());
         } catch (final KeyRotationLimitation e) {
             // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)

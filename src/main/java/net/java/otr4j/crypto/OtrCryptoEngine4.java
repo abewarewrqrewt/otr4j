@@ -32,6 +32,7 @@ import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndian;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
+import static org.bouncycastle.util.Arrays.clear;
 
 /**
  * Crypto engine for OTRv4.
@@ -186,10 +187,8 @@ public final class OtrCryptoEngine4 {
      * @param outputSize Expected output size.
      * @return Returns byte-array with KDF_1 result.
      */
-    // FIXME trace input to KDF1 that may not be cleared appropriately.
     public static byte[] kdf1(@Nonnull final KDFUsage usageID, @Nonnull final byte[] input, final int outputSize) {
         requireAtLeast(0, outputSize);
-        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         final byte[] result = new byte[outputSize];
         kdf1(result, 0, usageID, input, outputSize);
         return result;
@@ -206,11 +205,11 @@ public final class OtrCryptoEngine4 {
      * @param input      The input data to KDF_1.
      * @param outputSize The size of the derivative output.
      */
-    // FIXME trace input to KDF1 that may not be cleared appropriately.
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID,
                             @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);
         requireAtLeast(0, outputSize);
+        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(OTR4_PREFIX, 0, OTR4_PREFIX.length);
         digest.update(usageID.value);
@@ -248,6 +247,7 @@ public final class OtrCryptoEngine4 {
         // "Compute h = KDF_1(d, 64) as an unsigned value, little-endian."
         final byte[] hashedD = kdf1(usageID, d, HASH_TO_SCALAR_LENGTH_BYTES);
         final BigInteger h = decodeLittleEndian(hashedD);
+        clear(hashedD);
         // "Return h (mod q)"
         return h.mod(primeOrder());
     }
