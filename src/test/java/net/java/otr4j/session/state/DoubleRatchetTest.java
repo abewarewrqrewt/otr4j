@@ -83,7 +83,7 @@ public class DoubleRatchetTest {
     }
 
     @Test
-    public void testGenerateReceivingMessageKeys() {
+    public void testGenerateReceivingMessageKeys() throws DoubleRatchet.KeyRotationLimitation {
         final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.rotateSenderKeys();
         final MessageKeys keys = ratchet.generateReceivingKeys(ratchet.getI()-1, ratchet.getK());
@@ -92,7 +92,7 @@ public class DoubleRatchetTest {
     }
 
     @Test
-    public void testRotateSenderKeysDoesNotProduceNullReceiverKeys() {
+    public void testRotateSenderKeysDoesNotProduceNullReceiverKeys() throws DoubleRatchet.KeyRotationLimitation {
         final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, SHARED_SECRET, INITIAL_K);
         ratchet.rotateSenderKeys();
         final MessageKeys keys = ratchet.generateReceivingKeys(ratchet.getI()-1, ratchet.getK());

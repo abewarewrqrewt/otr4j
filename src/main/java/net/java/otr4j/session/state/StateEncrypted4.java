@@ -14,6 +14,7 @@ import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
+import net.java.otr4j.session.state.DoubleRatchet.KeyRotationLimitation;
 import net.java.otr4j.session.state.DoubleRatchet.MessageKeys;
 import net.java.otr4j.session.state.DoubleRatchet.Result;
 import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
@@ -167,6 +168,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // TODO try to decrypt using skipped message keys.
         if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
             // FIXME condition above should include check on "... and the 'Public DH Key' is different from their_dh -if present-"
+            // FIXME what to do if ratchetId < 'i' and messageId == 0? We shouldn't blindly start processing, but this case does not seem to be caught earlier in either implementation or spec.
             // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
             // receiving ratchet are stored. A new DH ratchet is performed.
             // TODO generate and store skipped message for previous chain key.
@@ -190,6 +192,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             keys.verify(digest, message.getAuthenticator());
             dmc = keys.decrypt(message.getCiphertext(), message.getNonce());
+        } catch (final KeyRotationLimitation e) {
+            // TODO check with spec if there is a way to resolve this limitation.
+            throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
         } catch (final VerificationException e) {
             // FIXME reject message (do we need to return some error code or just ignore?)
             throw new OtrException("Failed to verify message: invalid authenticator.", e);

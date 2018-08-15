@@ -50,7 +50,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-// TODO handle case where we skip one message and have to successfully handle the next: we need to be able to skip chain keys into the right combination for that message.
 // TODO handle case where we store skipped message keys such that we can decrypt message that is received out-of-order, i.e. later than it was supposed to arrive.
 // FIXME test what happens when fragments are dropped.
 public class SessionTest {
@@ -590,7 +589,6 @@ public class SessionTest {
         assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
     }
 
-    @Ignore("In-progress issue with support for performing multiple increments in order to get to the right set of message keys.")
     @Test
     public void testOTR4ExtensiveMessagingManyConsecutiveMessagesIncidentallyDropped() throws OtrException {
         final Conversation c = new Conversation(25);
@@ -618,12 +616,17 @@ public class SessionTest {
         for (final String message : messages) {
             c.clientBob.sendMessage(message);
         }
-        final int drop1 = RANDOM.nextInt(25);
-        final int drop2 = RANDOM.nextInt(25);
-        final int drop3 = RANDOM.nextInt(25);
+        // Determine three messages to drop. Avoid dropping first message as this is a known limitation that cannot be
+        // mitigated.
+        final int drop1 = RANDOM.nextInt(messages.length-1) + 1;
+        final int drop2 = RANDOM.nextInt(messages.length-1) + 1;
+        final int drop3 = RANDOM.nextInt(messages.length-1) + 1;
         drop(new int[]{drop1, drop2, drop3}, c.clientAlice.receiptChannel);
-        for (final String message : messages) {
-            assertMessage("Message Bob: " + message, message, c.clientAlice.receiveMessage());
+        for (int i = 0; i < messages.length; i++) {
+            if (i == drop1 || i == drop2 || i == drop3) {
+                continue;
+            }
+            assertMessage("Message Bob: " + messages[i], messages[i], c.clientAlice.receiveMessage());
         }
         // Alice sending one message in response
         final String messageAlice = "Man, you talk a lot!";

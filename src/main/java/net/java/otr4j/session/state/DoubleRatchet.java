@@ -188,20 +188,38 @@ final class DoubleRatchet implements AutoCloseable {
      * @param ratchetId The ratchet ID as indicated in the Data message.
      * @param messageId The message ID as indicated in the Data message.
      * @return Returns corresponding MessageKeys instance.
+     * @throws KeyRotationLimitation Indicates that we cross a ratchet boundary and therefore we cannot fast-forward
+     *                               rotations to a point where the right message keys can be generated. This is a
+     *                               limitation of the Double Ratchet. Matching message keys cannot be generated.
      */
     // TODO preserve message keys before rotating past ratchetId, messageId combination.
-    // TODO support rotating multiple times to catch up with message that has arrived, consisting of multiple increments.
-    MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) {
+    MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws KeyRotationLimitation {
         requireNotClosed();
-        if (this.i - 1 != ratchetId || this.k != messageId) {
+        if (this.i - 1 > ratchetId || this.k > messageId) {
             throw new UnsupportedOperationException("Retrieval of previous Message Keys has not been implemented yet. Only current Message Keys can be generated.");
+        } else if (this.i - 1 < ratchetId) {
+            // The first message in the new ratchet provides us with the information we need to generate missing message
+            // keys in previous ratchet, as well as necessary key material to decrypt and authenticate the message.
+            // There is no way to process this message given that this information is missing.
+            throw new KeyRotationLimitation("Cannot fast-forward-rotate receiving keys over first message in new ratchet. We have not encountered the first message in the new ratchet.");
+        }
+        // TODO verify that number of messages needing to fast-forward is acceptable. (max_skip in OTRv4 spec)
+        while (this.k < messageId) {
+            LOGGER.log(Level.FINEST, "Fast-forward rotating receiving chain key to catch up with message ID: " + messageId);
+            rotateReceivingChainKey();
+            // TODO store intermediate message keys for previous messages as the message may arrive out-of-order
         }
         LOGGER.log(Level.FINEST, "Generating receiving message keys for ratchet {0}, message {1}.",
             new Object[]{ratchetId, messageId});
         final MessageKeys keys = generateMessageKeys(this.receivingChainKey);
+        // FIXME need to move rotation out, in case message keys end up failing to decrypt message. In that case rotation cannot happen yet.
+        rotateReceivingChainKey();
+        return keys;
+    }
+
+    private void rotateReceivingChainKey() {
         this.k += 1;
         kdf1(this.receivingChainKey, 0, NEXT_CHAIN_KEY, this.receivingChainKey, CHAIN_KEY_LENGTH_BYTES);
-        return keys;
     }
 
     /**
@@ -474,6 +492,15 @@ final class DoubleRatchet implements AutoCloseable {
         private Result(@Nonnull final byte[] nonce, @Nonnull final byte[] ciphertext) {
             this.nonce = requireNonNull(nonce);
             this.ciphertext = requireNonNull(ciphertext);
+        }
+    }
+
+    static final class KeyRotationLimitation extends Exception {
+
+        private static final long serialVersionUID = -2200918867384812098L;
+
+        private KeyRotationLimitation(@Nonnull final String message) {
+            super(message);
         }
     }
 
