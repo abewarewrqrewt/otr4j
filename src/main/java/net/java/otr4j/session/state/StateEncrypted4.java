@@ -15,9 +15,7 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.state.DoubleRatchet.KeyRotationLimitation;
-import net.java.otr4j.session.state.DoubleRatchet.MessageKeys;
 import net.java.otr4j.session.state.DoubleRatchet.Result;
-import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
 import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
@@ -29,8 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
@@ -43,8 +39,6 @@ import static org.bouncycastle.util.Arrays.clear;
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
-
-    private static final int DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES = 64;
 
     private static final byte DATA_MESSAGE_TYPE = 0x03;
 
@@ -111,21 +105,13 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
-        final Result result;
-        final int ratchetId;
-        final int messageId;
-        final byte[] authenticator;
-        try (MessageKeys keys = this.ratchet.generateSendingKeys()) {
-            ratchetId = keys.getRatchetId();
-            messageId = keys.getMessageId();
-            result = keys.encrypt(msgBytes);
-            final byte[] dataMessageSectionsHash = generateMessageHash(ratchetId, messageId,
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
-            final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsHash,
-                DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
-            authenticator = keys.authenticate(messageMAC);
-            clear(messageMAC);
-        }
+        final Result result = this.ratchet.encrypt(msgBytes);
+        final int ratchetId = this.ratchet.getI();
+        final int messageId = this.ratchet.getJ();
+        final byte[] dataMessageSectionsHash = generateDataMessageContent(ratchetId, messageId,
+            context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
+        final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsHash);
+        this.ratchet.rotateSenderChainKey();
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
             this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
@@ -133,7 +119,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     }
 
     @Nonnull
-    private byte[] generateMessageHash(final int ratchetId, final int messageId, @Nonnull final InstanceTag sender,
+    private byte[] generateDataMessageContent(final int ratchetId, final int messageId, @Nonnull final InstanceTag sender,
                                        @Nonnull final InstanceTag receiver,
                                        @Nullable final DoubleRatchet.Rotation rotation,
                                        @Nonnull final Result encryptionResult) {
@@ -186,8 +172,20 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // If a new message from the current receiving ratchet is received, any message keys corresponding to skipped
         // messages from the same ratchet are stored, and a symmetric-key ratchet is performed to derive the current
         // message key and the next receiving chain key. The message is then verified and decrypted.
-        final byte[] dmc = this.decryptMessage(message);
-        this.ratchet.rotateReceivingChainKey();
+        final byte[] dmc;
+        try {
+            final OtrOutputStream out = new OtrOutputStream();
+            message.writeDataMessageSections(out);
+            this.ratchet.verify(message.getI(), message.getJ(), out.toByteArray(), message.getAuthenticator());
+            dmc = this.ratchet.decrypt(message.getI(), message.getJ(), message.getCiphertext(), message.getNonce());
+        } catch (final KeyRotationLimitation e) {
+            // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
+            throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
+        } catch (final DoubleRatchet.VerificationException e) {
+            // FIXME check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
+            throw new OtrException("Message has failed verification.", e);
+        }
+        this.ratchet.rotateReceiverChainKey();
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
@@ -210,30 +208,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         return content.message.length() > 0 ? content.message : null;
     }
 
-    /**
-     * Authenticate and decrypt the provided message content.
-     *
-     * @param message the message to decrypt.
-     * @return Returns the decrypted message content.
-     * @throws OtrException In case of failure to rotate receiving chain key for matching set of message keys. (This is
-     *                      a limitation of the Double Ratchet-protocol.) Or because the message failed verification.
-     */
-    private byte[] decryptMessage(final @Nonnull DataMessage4 message) throws OtrException {
-        try (MessageKeys keys = this.ratchet.generateReceivingKeys(message.getI(), message.getJ())) {
-            final OtrOutputStream out = new OtrOutputStream();
-            message.writeDataMessageSections(out);
-            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, out.toByteArray(), DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
-            keys.verify(digest, message.getAuthenticator());
-            clear(digest);
-            return keys.decrypt(message.getCiphertext(), message.getNonce());
-        } catch (final KeyRotationLimitation e) {
-            // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
-            throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
-        } catch (final VerificationException e) {
-            // FIXME reject message (do we need to return some error code or just ignore?)
-            throw new OtrException("Failed to verify message: invalid authenticator.", e);
-        }
-    }
 
     @Nonnull
     @Override
