@@ -90,6 +90,8 @@ public final class ByteArrays {
         if (requireNonNull(data1) == requireNonNull(data2)) {
             throw new IllegalArgumentException("BUG: Same instance is compared.");
         }
+        assert !allZeroBytes(data1) : "Expected non-zero bytes for data1. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(data2) : "Expected non-zero bytes for data1. This may indicate that a critical bug is present, or it may be a false warning.";
         return constantTimeAreEqual(data1, data2);
     }
 

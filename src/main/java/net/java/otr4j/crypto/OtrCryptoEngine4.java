@@ -228,6 +228,7 @@ public final class OtrCryptoEngine4 {
     static void shake256(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);
         requireAtLeast(0, outputSize);
+        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(input, 0, input.length);
         digest.doFinal(dst, offset, outputSize);
@@ -244,6 +245,7 @@ public final class OtrCryptoEngine4 {
      */
     @Nonnull
     public static BigInteger hashToScalar(@Nonnull final KDFUsage usageID, @Nonnull final byte[] d) {
+        assert !allZeroBytes(d) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         // "Compute h = KDF_1(d, 64) as an unsigned value, little-endian."
         final byte[] hashedD = kdf1(usageID, d, HASH_TO_SCALAR_LENGTH_BYTES);
         final BigInteger h = decodeLittleEndian(hashedD);

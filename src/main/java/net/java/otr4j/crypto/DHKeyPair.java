@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 
 /**
@@ -56,6 +57,7 @@ public final class DHKeyPair implements AutoCloseable {
      * @param r secret data to be used as secret key.
      */
     private DHKeyPair(@Nonnull final byte[] r) {
+        assert !allZeroBytes(r) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         // FIXME should we verify the resulting secret key using the same verification conditions as the public key?
         this.secretKey = new BigInteger(1, requireLengthExactly(DH_PRIVATE_KEY_LENGTH_BYTES, r));
         this.publicKey = G3.modPow(this.secretKey, MODULUS);

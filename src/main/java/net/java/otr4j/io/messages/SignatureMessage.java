@@ -11,8 +11,8 @@ import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.Integers.requireInRange;
 
@@ -47,8 +47,8 @@ public final class SignatureMessage extends AbstractEncodedMessage {
     public SignatureMessage(final int protocolVersion, @Nonnull final byte[] xEncrypted,
                             @Nonnull final byte[] xEncryptedMAC, final int senderInstance, final int receiverInstance) {
         super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
-        this.xEncrypted = Objects.requireNonNull(xEncrypted);
-        this.xEncryptedMAC = Objects.requireNonNull(xEncryptedMAC);
+        this.xEncrypted = requireNonNull(xEncrypted);
+        this.xEncryptedMAC = requireNonNull(xEncryptedMAC);
     }
 
     @Override

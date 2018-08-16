@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -185,7 +186,7 @@ public final class SharedSecret {
      */
     @Nonnull
     private byte[] h2(final byte b) {
-        return OtrCryptoEngine.sha256Hash(new byte[]{b}, this.secbytes);
+        return sha256Hash(new byte[]{b}, this.secbytes);
     }
 
     /**

@@ -34,6 +34,7 @@ import static org.junit.Assert.assertSame;
  *
  * @author Danny van Heumen
  */
+@SuppressWarnings("ConstantConditions")
 public class SMTest {
     
     private final SecureRandom sr = new SecureRandom();
@@ -86,7 +87,7 @@ public class SMTest {
 
     @Test
     public void testCheckGroupElemJustValidLowerBound() throws SMException {
-        AbstractSMPState.checkGroupElem(BigInteger.valueOf(2l));
+        AbstractSMPState.checkGroupElem(BigInteger.valueOf(2L));
     }
 
     @Test(expected = SMException.class)

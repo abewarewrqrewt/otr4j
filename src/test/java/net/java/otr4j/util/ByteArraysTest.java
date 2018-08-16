@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.java.otr4j.crypto.OtrCryptoEngine.random;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.fromHexString;
@@ -95,8 +96,8 @@ public class ByteArraysTest {
 
     @Test
     public void testCompareUnequalSizeBytes() {
-        final byte[] data1 = new byte[200];
-        final byte[] data2 = new byte[201];
+        final byte[] data1 = random(RANDOM, new byte[200]);
+        final byte[] data2 = random(RANDOM, new byte[201]);
         assertFalse(constantTimeEquals(data1, data2));
     }
 

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests for OtrCryptoEngine.
@@ -120,7 +121,7 @@ public class OtrCryptoEngineTest {
 
     @Test(expected = NullPointerException.class)
     public void testSignRSNullPrivateKey() {
-        signRS(new byte[0], null);
+        signRS(new byte[]{'m'}, null);
     }
 
     @Test
@@ -132,6 +133,8 @@ public class OtrCryptoEngineTest {
 
     @Test
     public void testSignRSEmptyMessage() throws OtrCryptoException {
+        assumeTrue("This test can only be successful without assertions, due to safety checks.",
+            !OtrCryptoEngine.class.desiredAssertionStatus());
         final byte[] m = new byte[0];
         final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
         verify(m, (DSAPublicKey) DSA_KEYPAIR.getPublic(), sig.r, sig.s);

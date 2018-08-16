@@ -16,6 +16,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -37,9 +38,10 @@ public final class SignatureX implements OtrEncodable {
      * @param signature            the corresponding signature
      */
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
-            @Nonnull  final byte[] signature) {
+                      @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.dhKeyID = ourKeyID;
+        assert !allZeroBytes(signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
         this.signature = requireNonNull(signature);
     }
 
@@ -75,6 +77,7 @@ public final class SignatureX implements OtrEncodable {
         return result;
     }
 
+    // TODO consider if we really need 'equals', if so consider removing instance comparison
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {

@@ -53,6 +53,7 @@ import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.ByteArrays.toHexString;
@@ -232,7 +233,8 @@ public final class OtrCryptoEngine {
     @Nonnull
     public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
         throws OtrCryptoException {
-
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
         final SecretKeySpec keyspec = new SecretKeySpec(key, HMAC_SHA256);
         final Mac mac;
         try {
@@ -266,6 +268,8 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static byte[] sha1Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
         final byte[] macBytes;
         try {
             final Mac mac = Mac.getInstance(HMAC_SHA1);
@@ -304,6 +308,7 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static byte[] sha256Hash(@Nonnull final byte[] first, final byte[]... next) {
+        // FIXME consider adding assertions to sha256Hash?
         final MessageDigest sha256;
         try {
             sha256 = MessageDigest.getInstance(MD_SHA256);
@@ -326,6 +331,7 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static byte[] sha1Hash(@Nonnull final byte[] first, final byte[]... next) {
+        // FIXME consider adding assertions to sha1Hash?
         final MessageDigest sha1;
         try {
             sha1 = MessageDigest.getInstance(MD_SHA1);
@@ -351,7 +357,8 @@ public final class OtrCryptoEngine {
     @Nonnull
     public static byte[] aesDecrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
             throws OtrCryptoException {
-
+        assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         final AESEngine aesDec = new AESEngine();
         final SICBlockCipher sicAesDec = new SICBlockCipher(aesDec);
         final BufferedBlockCipher bufSicAesDec = new BufferedBlockCipher(sicAesDec);
@@ -382,7 +389,8 @@ public final class OtrCryptoEngine {
     @Nonnull
     public static byte[] aesEncrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
             throws OtrCryptoException {
-
+        assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         final AESEngine aesEnc = new AESEngine();
         final SICBlockCipher sicAesEnc = new SICBlockCipher(aesEnc);
         final BufferedBlockCipher bufSicAesEnc = new BufferedBlockCipher(sicAesEnc);
@@ -457,6 +465,7 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static DSASignature signRS(@Nonnull final byte[] b, @Nonnull final DSAPrivateKey privateKey) {
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         final DSAParams dsaParams = privateKey.getParams();
         final DSAParameters bcDSAParameters = new DSAParameters(dsaParams.getP(), dsaParams.getQ(), dsaParams.getG());
         final DSAPrivateKeyParameters bcDSAPrivateKeyParms = new DSAPrivateKeyParameters(privateKey.getX(),
@@ -528,6 +537,8 @@ public final class OtrCryptoEngine {
 
     private static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] r,
                                @Nonnull final byte[] s) throws OtrCryptoException {
+        assert !allZeroBytes(r) : "Expected non-zero bytes for r. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(s) : "Expected non-zero bytes for s. This may indicate that a critical bug is present, or it may be a false warning.";
         verify(b, pubKey, new BigInteger(1, r), new BigInteger(1, s));
     }
 
@@ -543,6 +554,7 @@ public final class OtrCryptoEngine {
     public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final BigInteger r,
             @Nonnull final BigInteger s) throws OtrCryptoException {
         requireNonNull(b);
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         final DSAParams dsaParams = pubKey.getParams();
         final BigInteger q = dsaParams.getQ();
         final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q, dsaParams.getG());
@@ -614,6 +626,7 @@ public final class OtrCryptoEngine {
      * data.
      * @return Returns 'dest' filled with random data.
      */
+    // FIXME move out to 'util' as SecureRandom utils
     @Nonnull
     public static byte[] random(@Nonnull final SecureRandom random, @Nonnull final byte[] dest) {
         random.nextBytes(dest);
@@ -653,6 +666,8 @@ public final class OtrCryptoEngine {
      */
     public static void checkEquals(@Nonnull final byte[] a, @Nonnull final byte[] b, @Nonnull final String message)
         throws OtrCryptoException {
+        assert !allZeroBytes(a) : "Expected non-zero bytes for a. This may indicate that a critical bug is present, or it may be a false warning.";
+        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         if (!constantTimeEquals(a, b)) {
             throw new OtrCryptoException(message);
         }

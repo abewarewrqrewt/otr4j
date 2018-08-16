@@ -2,17 +2,21 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.util.ByteArrays;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Random;
+import java.security.SecureRandom;
 
+import static java.util.Arrays.fill;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_VALUE;
+import static net.java.otr4j.crypto.OtrCryptoEngine.random;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class SignatureMessageTest {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final int MAC_LENGTH_BYTES = 20;
 
@@ -30,25 +34,24 @@ public class SignatureMessageTest {
      * there is a very small chance of false positives. */
     @Test
     public void testHashCode() {
-        Random r = new Random();
         byte[] fakeEncryptedMAC = new byte[MAC_LENGTH_BYTES];
         SignatureMessage current;
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
-            byte[] fakeEncrypted = new byte[i];
-            r.nextBytes(fakeEncrypted);
-            r.nextBytes(fakeEncryptedMAC);
+            byte[] fakeEncrypted = random(RANDOM, new byte[i]);
+            RANDOM.nextBytes(fakeEncryptedMAC);
             current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
             assertNotEquals(current, previous);
-            if (previous != null)
+            if (previous != null) {
                 assertNotEquals(current.hashCode(), previous.hashCode());
+            }
             previous = current;
         }
         for (int i = -128; i < 128; i++) {
             byte[] fakeEncrypted = new byte[100];
-            Arrays.fill(fakeEncrypted, (byte) i);
-            Arrays.fill(fakeEncryptedMAC, (byte) i);
+            fill(fakeEncrypted, (byte) i);
+            fill(fakeEncryptedMAC, (byte) i);
             current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
             assertNotEquals(current.hashCode(), previous.hashCode());
@@ -60,18 +63,16 @@ public class SignatureMessageTest {
      * there is a very small chance of false positives. */
     @Test
     public void testEqualsObject() {
-        Random r = new Random();
         final byte[] fakeEncryptedMAC = new byte[MAC_LENGTH_BYTES];
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
-            final byte[] fakeEncrypted = new byte[i];
-            r.nextBytes(fakeEncrypted);
-            r.nextBytes(fakeEncryptedMAC);
+            final byte[] fakeEncrypted = random(RANDOM, new byte[i]);
+            RANDOM.nextBytes(fakeEncryptedMAC);
             SignatureMessage sm = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(sm);
             final byte[] fakeEncrypted2 = new byte[i];
             System.arraycopy(fakeEncrypted, 0, fakeEncrypted2, 0, fakeEncrypted.length);
-            final byte[] fakeEncryptedMAC2 = new byte[MAC_LENGTH_BYTES];
+            final byte[] fakeEncryptedMAC2 = random(RANDOM, new byte[MAC_LENGTH_BYTES]);
             System.arraycopy(fakeEncryptedMAC, 0, fakeEncryptedMAC2, 0, fakeEncryptedMAC.length);
             SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted2, fakeEncryptedMAC2, 0, 0);
             assertNotNull(sm2);
@@ -80,9 +81,13 @@ public class SignatureMessageTest {
             previous = sm;
         }
         for (int i = -128; i < 128; i++) {
+            if (i == 0 && ByteArrays.class.desiredAssertionStatus()) {
+                // Skip byte 0 as it will trigger the assertion.
+                continue;
+            }
             byte[] fakeEncrypted = new byte[1000];
-            Arrays.fill(fakeEncrypted, (byte) i);
-            Arrays.fill(fakeEncryptedMAC, (byte) i);
+            fill(fakeEncrypted, (byte) i);
+            fill(fakeEncryptedMAC, (byte) i);
             SignatureMessage current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, 0, 0);
             assertNotNull(current);
             assertNotEquals(current, previous);
