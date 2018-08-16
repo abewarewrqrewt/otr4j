@@ -203,7 +203,7 @@ final class DoubleRatchet implements AutoCloseable {
      */
     @Nonnull
     byte[] decrypt(final int ratchetId, final int messageId, @Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce)
-        throws KeyRotationLimitation {
+        throws KeyRotationLimitationException {
         LOGGER.log(Level.FINEST, "Generating message keys for decryption of ratchet {0}, message {1}.",
             new Object[]{this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
@@ -218,11 +218,11 @@ final class DoubleRatchet implements AutoCloseable {
      * @param messageId                  the message ID
      * @param dataMessageSectionsContent the hash of the data message sections
      * @param authenticator              the authenticator
-     * @throws KeyRotationLimitation Failure to perform key rotation towards the necessary message keys.
+     * @throws KeyRotationLimitationException Failure to perform key rotation towards the necessary message keys.
      * @throws VerificationException Thrown in case verification has failed.
      */
     void verify(final int ratchetId, final int messageId, @Nonnull final byte[] dataMessageSectionsContent,
-                @Nonnull final byte[] authenticator) throws KeyRotationLimitation, VerificationException {
+                @Nonnull final byte[] authenticator) throws KeyRotationLimitationException, VerificationException {
         LOGGER.log(Level.FINEST, "Generating message keys for verification of ratchet {0}, message {1}.",
             new Object[]{this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
@@ -240,12 +240,12 @@ final class DoubleRatchet implements AutoCloseable {
      * @param ratchetId The ratchet ID as indicated in the Data message.
      * @param messageId The message ID as indicated in the Data message.
      * @return Returns corresponding MessageKeys instance.
-     * @throws KeyRotationLimitation Indicates that we cross a ratchet boundary and therefore we cannot fast-forward
+     * @throws KeyRotationLimitationException Indicates that we cross a ratchet boundary and therefore we cannot fast-forward
      *                               rotations to a point where the right message keys can be generated. This is a
      *                               limitation of the Double Ratchet. Matching message keys cannot be generated.
      */
     // TODO preserve message keys before rotating past ratchetId, messageId combination.
-    private MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws KeyRotationLimitation {
+    private MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws KeyRotationLimitationException {
         requireNotClosed();
         requireReceiverKeyRotation();
         if (this.i - 1 > ratchetId || this.receiverRatchet.messageID > messageId) {
@@ -254,7 +254,7 @@ final class DoubleRatchet implements AutoCloseable {
             // The first message in the new ratchet provides us with the information we need to generate missing message
             // keys in previous ratchet, as well as necessary key material to decrypt and authenticate the message.
             // There is no way to process this message given that this information is missing.
-            throw new KeyRotationLimitation("Cannot fast-forward-rotate receiving keys over first message in new ratchet. We have not encountered the first message in the new ratchet.");
+            throw new KeyRotationLimitationException("Cannot fast-forward-rotate receiving keys over first message in new ratchet. We have not encountered the first message in the new ratchet.");
         }
         // TODO verify that number of messages needing to fast-forward is acceptable. (max_skip in OTRv4 spec)
         while (this.receiverRatchet.messageID < messageId) {
@@ -618,6 +618,7 @@ final class DoubleRatchet implements AutoCloseable {
      * The instance contains the ciphertext as well as the nonce used during encryption.
      */
     static final class Result {
+
         final byte[] nonce;
         final byte[] ciphertext;
 
@@ -630,12 +631,11 @@ final class DoubleRatchet implements AutoCloseable {
     /**
      * The KeyRotationLimitationException indicates that a limitation is reached which the DoubleRatchet cannot handle.
      */
-    // FIXME rename to KeyRotationLimitationException
-    static final class KeyRotationLimitation extends Exception {
+    static final class KeyRotationLimitationException extends Exception {
 
         private static final long serialVersionUID = -2200918867384812098L;
 
-        private KeyRotationLimitation(@Nonnull final String message) {
+        private KeyRotationLimitationException(@Nonnull final String message) {
             super(message);
         }
     }

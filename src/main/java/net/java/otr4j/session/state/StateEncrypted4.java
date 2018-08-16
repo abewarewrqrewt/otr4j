@@ -14,7 +14,7 @@ import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
-import net.java.otr4j.session.state.DoubleRatchet.KeyRotationLimitation;
+import net.java.otr4j.session.state.DoubleRatchet.KeyRotationLimitationException;
 import net.java.otr4j.session.state.DoubleRatchet.Result;
 import nl.dannyvanheumen.joldilocks.Points;
 
@@ -178,7 +178,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             message.writeDataMessageSections(out);
             this.ratchet.verify(message.getI(), message.getJ(), out.toByteArray(), message.getAuthenticator());
             dmc = this.ratchet.decrypt(message.getI(), message.getJ(), message.getCiphertext(), message.getNonce());
-        } catch (final KeyRotationLimitation e) {
+        } catch (final KeyRotationLimitationException e) {
             // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
             throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
         } catch (final DoubleRatchet.VerificationException e) {

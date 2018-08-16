@@ -70,7 +70,7 @@ public class DoubleRatchetTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testMessageKeysClosedFailsVerify() throws DoubleRatchet.KeyRotationLimitation {
+    public void testMessageKeysClosedFailsVerify() throws DoubleRatchet.KeyRotationLimitationException {
         final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
         final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
         ratchet.rotateSenderKeys();
