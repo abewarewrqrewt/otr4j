@@ -2,6 +2,8 @@ package net.java.otr4j.crypto;
 
 import java.security.SecureRandom;
 
+import static net.java.otr4j.util.SecureRandoms.random;
+
 public class SharedSecretTestUtil {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -11,6 +13,6 @@ public class SharedSecretTestUtil {
     }
 
     public static SharedSecret createTestSecret() {
-        return new SharedSecret(OtrCryptoEngine.random(RANDOM, new byte[24]));
+        return new SharedSecret(random(RANDOM, new byte[24]));
     }
 }

@@ -9,7 +9,7 @@ import java.security.SecureRandom;
 
 import static java.util.Arrays.fill;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_VALUE;
-import static net.java.otr4j.crypto.OtrCryptoEngine.random;
+import static net.java.otr4j.util.SecureRandoms.random;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;

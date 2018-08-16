@@ -25,8 +25,8 @@ import java.security.KeyPair;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
-import static net.java.otr4j.crypto.OtrCryptoEngine.random;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
+import static net.java.otr4j.util.SecureRandoms.random;
 
 /**
  * Abstract AuthState implementation that provides authentication initiation

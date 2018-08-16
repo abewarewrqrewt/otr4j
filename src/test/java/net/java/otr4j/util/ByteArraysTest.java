@@ -5,13 +5,13 @@ import org.junit.Test;
 import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.java.otr4j.crypto.OtrCryptoEngine.random;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.fromHexString;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.ByteArrays.toHexString;
+import static net.java.otr4j.util.SecureRandoms.random;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

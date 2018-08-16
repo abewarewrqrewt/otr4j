@@ -50,20 +50,6 @@ public class OtrCryptoEngineTest {
     }
 
     @Test
-    public void testRandomBehavesExpectedly() {
-        final byte[] rand1 = OtrCryptoEngine.random(RAND, new byte[24]);
-        final byte[] rand2 = OtrCryptoEngine.random(RAND, new byte[24]);
-        final byte[] rand3 = OtrCryptoEngine.random(RAND, new byte[24]);
-        final byte[] rand4 = OtrCryptoEngine.random(RAND, new byte[24]);
-        assertFalse(Arrays.equals(rand1, rand2));
-        assertFalse(Arrays.equals(rand1, rand3));
-        assertFalse(Arrays.equals(rand1, rand4));
-        assertFalse(Arrays.equals(rand2, rand3));
-        assertFalse(Arrays.equals(rand2, rand4));
-        assertFalse(Arrays.equals(rand3, rand4));
-    }
-
-    @Test
     public void testCheckEqualsEqualArrays() throws OtrCryptoException {
         final byte[] a = new byte[]{'a','b','c','d','e'};
         final byte[] b = new byte[]{'a','b','c','d','e'};

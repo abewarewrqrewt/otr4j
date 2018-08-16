@@ -7,7 +7,7 @@ import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
-import static net.java.otr4j.crypto.OtrCryptoEngine.random;
+import static net.java.otr4j.util.SecureRandoms.random;
 
 @SuppressWarnings("ConstantConditions")
 public final class SignatureXTest {
