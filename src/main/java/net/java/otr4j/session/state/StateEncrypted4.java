@@ -191,18 +191,18 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             switch (tlv.getType()) {
-                case TLV.PADDING: // TLV0
-                    // nothing to do here, just ignore the padding
-                    break;
-                case TLV.DISCONNECTED: // TLV1
-                    // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
-                    // FIXME consider checking if final MAC codes are revealed. (May not be so easy.)
-                    context.setState(new StateFinished(this.sessionID));
-                    break;
-                // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
-                default:
-                    logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
-                    break;
+            case TLV.PADDING: // TLV0
+                // nothing to do here, just ignore the padding
+                break;
+            case TLV.DISCONNECTED: // TLV1
+                // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
+                // FIXME consider checking if final MAC codes are revealed. (May not be so easy.)
+                context.setState(new StateFinished(this.sessionID));
+                break;
+            // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
+            default:
+                logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
+                break;
             }
         }
         return content.message.length() > 0 ? content.message : null;

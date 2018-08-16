@@ -189,57 +189,57 @@ final class StateEncrypted extends AbstractStateEncrypted {
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             switch (tlv.getType()) {
-                case TLV.PADDING: // TLV0
-                    // nothing to do here, just ignore the padding
-                    break;
-                case TLV.DISCONNECTED: // TLV1
-                    context.setState(new StateFinished(this.sessionID));
-                    break;
-                case TLV.SMP1Q: //TLV7
-                    try {
-                        this.smpTlvHandler.processTlvSMP1Q(tlv);
-                    } catch (final SMException e) {
-                        throw new OtrException("Failed to process SMP1Q TLV.", e);
-                    }
-                    break;
-                case TLV.SMP1: // TLV2
-                    try {
-                        this.smpTlvHandler.processTlvSMP1(tlv);
-                    } catch (final SMException e) {
-                        throw new OtrException("Failed to process SMP1 TLV.", e);
-                    }
-                    break;
-                case TLV.SMP2: // TLV3
-                    try {
-                        this.smpTlvHandler.processTlvSMP2(tlv);
-                    } catch (final SMException e) {
-                        throw new OtrException("Failed to process SMP2 TLV.", e);
-                    }
-                    break;
-                case TLV.SMP3: // TLV4
-                    try {
-                        this.smpTlvHandler.processTlvSMP3(tlv);
-                    } catch (final SMException e) {
-                        throw new OtrException("Failed to process SMP3 TLV.", e);
-                    }
-                    break;
-                case TLV.SMP4: // TLV5
-                    try {
-                        this.smpTlvHandler.processTlvSMP4(tlv);
-                    } catch (final SMException e) {
-                        throw new OtrException("Failed to process SMP4 TLV.", e);
-                    }
-                    break;
-                case TLV.SMP_ABORT: //TLV6
-                    this.smpTlvHandler.processTlvSMPAbort();
-                    break;
-                case TLV.USE_EXTRA_SYMMETRIC_KEY:
-                    final byte[] key = matchingKeys.extraSymmetricKey();
-                    extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key, tlv.getValue());
-                    break;
-                default:
-                    logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
-                    break;
+            case TLV.PADDING: // TLV0
+                // nothing to do here, just ignore the padding
+                break;
+            case TLV.DISCONNECTED: // TLV1
+                context.setState(new StateFinished(this.sessionID));
+                break;
+            case TLV.SMP1Q: //TLV7
+                try {
+                    this.smpTlvHandler.processTlvSMP1Q(tlv);
+                } catch (final SMException e) {
+                    throw new OtrException("Failed to process SMP1Q TLV.", e);
+                }
+                break;
+            case TLV.SMP1: // TLV2
+                try {
+                    this.smpTlvHandler.processTlvSMP1(tlv);
+                } catch (final SMException e) {
+                    throw new OtrException("Failed to process SMP1 TLV.", e);
+                }
+                break;
+            case TLV.SMP2: // TLV3
+                try {
+                    this.smpTlvHandler.processTlvSMP2(tlv);
+                } catch (final SMException e) {
+                    throw new OtrException("Failed to process SMP2 TLV.", e);
+                }
+                break;
+            case TLV.SMP3: // TLV4
+                try {
+                    this.smpTlvHandler.processTlvSMP3(tlv);
+                } catch (final SMException e) {
+                    throw new OtrException("Failed to process SMP3 TLV.", e);
+                }
+                break;
+            case TLV.SMP4: // TLV5
+                try {
+                    this.smpTlvHandler.processTlvSMP4(tlv);
+                } catch (final SMException e) {
+                    throw new OtrException("Failed to process SMP4 TLV.", e);
+                }
+                break;
+            case TLV.SMP_ABORT: //TLV6
+                this.smpTlvHandler.processTlvSMPAbort();
+                break;
+            case TLV.USE_EXTRA_SYMMETRIC_KEY:
+                final byte[] key = matchingKeys.extraSymmetricKey();
+                extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key, tlv.getValue());
+                break;
+            default:
+                logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
+                break;
             }
         }
         return content.message.length() > 0 ? content.message : null;

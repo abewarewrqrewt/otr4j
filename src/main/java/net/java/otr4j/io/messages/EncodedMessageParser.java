@@ -67,98 +67,98 @@ public final class EncodedMessageParser {
             recipientInstanceTag = 0;
         }
         switch (messageType) {
-            case MESSAGE_DATA: {
-                switch (protocolVersion) {
-                    case 0:
-                        throw new IllegalStateException("BUG: Unexpected protocol version found. Zero is not valid as a protocol version.");
-                    case OTRv.ONE:
-                        throw new UnsupportedOperationException("Illegal protocol version: version 1 is no longer supported.");
-                    case OTRv.TWO:
-                    case OTRv.THREE: {
-                        final byte flags = input.readByte();
-                        final int senderKeyID = input.readInt();
-                        final int recipientKeyID = input.readInt();
-                        final DHPublicKey nextDH = input.readDHPublicKey();
-                        final byte[] ctr = input.readCtr();
-                        final byte[] encryptedMessage = input.readData();
-                        final byte[] mac = input.readMac();
-                        final byte[] oldMacKeys = input.readData();
-                        // The data message can only be validated where the current session keys are accessible. MAC validation
-                        // therefore happens in a later stage. For now we return an unvalidated data message instance.
-                        return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
-                            encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
-                    }
-                    case OTRv.FOUR: {
-                        final byte flags = input.readByte();
-                        final int pn = input.readInt();
-                        final int i = input.readInt();
-                        final int j = input.readInt();
-                        final Point ecdhPublicKey = input.readPoint();
-                        final BigInteger dhPublicKey = input.readBigInt();
-                        final byte[] nonce = input.readNonce();
-                        final byte[] ciphertext = input.readData();
-                        final byte[] authenticator = input.readMacOTR4();
-                        final byte[] revealedMacs = input.readData();
-                        // We only verify the format of the data message, but do not perform the validation actions yet.
-                        // Validation is delayed until a later point as we are missing context information for full
-                        // validation.
-                        return new DataMessage4(protocolVersion, senderInstanceTag, recipientInstanceTag, flags, pn, i,
-                            j, ecdhPublicKey, ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext,
-                            authenticator, revealedMacs);
-                    }
-                    default:
-                        throw new IllegalStateException("BUG: Future protocol versions are not supported. We should not have reached this state.");
-                }
+        case MESSAGE_DATA: {
+            switch (protocolVersion) {
+            case 0:
+                throw new IllegalStateException("BUG: Unexpected protocol version found. Zero is not valid as a protocol version.");
+            case OTRv.ONE:
+                throw new UnsupportedOperationException("Illegal protocol version: version 1 is no longer supported.");
+            case OTRv.TWO:
+            case OTRv.THREE: {
+                final byte flags = input.readByte();
+                final int senderKeyID = input.readInt();
+                final int recipientKeyID = input.readInt();
+                final DHPublicKey nextDH = input.readDHPublicKey();
+                final byte[] ctr = input.readCtr();
+                final byte[] encryptedMessage = input.readData();
+                final byte[] mac = input.readMac();
+                final byte[] oldMacKeys = input.readData();
+                // The data message can only be validated where the current session keys are accessible. MAC validation
+                // therefore happens in a later stage. For now we return an unvalidated data message instance.
+                return new DataMessage(protocolVersion, flags, senderKeyID, recipientKeyID, nextDH, ctr,
+                    encryptedMessage, mac, oldMacKeys, senderInstanceTag, recipientInstanceTag);
             }
-            case MESSAGE_DH_COMMIT: {
-                requireOTR23(protocolVersion);
-                final byte[] dhPublicKeyEncrypted = input.readData();
-                final byte[] dhPublicKeyHash = input.readData();
-                return new DHCommitMessage(protocolVersion, dhPublicKeyHash, dhPublicKeyEncrypted, senderInstanceTag,
-                    recipientInstanceTag);
-            }
-            case MESSAGE_DHKEY: {
-                requireOTR23(protocolVersion);
-                final DHPublicKey dhPublicKey = input.readDHPublicKey();
-                return new DHKeyMessage(protocolVersion, dhPublicKey, senderInstanceTag, recipientInstanceTag);
-            }
-            case MESSAGE_REVEALSIG: {
-                requireOTR23(protocolVersion);
-                final byte[] revealedKey = input.readData();
-                final byte[] xEncrypted = input.readData();
-                final byte[] xEncryptedMac = input.readMac();
-                return new RevealSignatureMessage(protocolVersion, xEncrypted, xEncryptedMac, revealedKey,
-                    senderInstanceTag, recipientInstanceTag);
-            }
-            case MESSAGE_SIGNATURE: {
-                requireOTR23(protocolVersion);
-                final byte[] xEncryted = input.readData();
-                final byte[] xEncryptedMac = input.readMac();
-                return new SignatureMessage(protocolVersion, xEncryted, xEncryptedMac, senderInstanceTag,
-                    recipientInstanceTag);
-            }
-            case MESSAGE_IDENTITY: {
-                requireOTR4(protocolVersion);
-                final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
-                final Point y = input.readPoint();
-                final BigInteger b = input.readBigInt();
-                return new IdentityMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, y, b);
-            }
-            case MESSAGE_AUTH_R: {
-                requireOTR4(protocolVersion);
-                final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
-                final Point x = input.readPoint();
-                final BigInteger a = input.readBigInt();
-                final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
-                return new AuthRMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, x, a, sigma);
-            }
-            case MESSAGE_AUTH_I: {
-                requireOTR4(protocolVersion);
-                final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
-                return new AuthIMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, sigma);
+            case OTRv.FOUR: {
+                final byte flags = input.readByte();
+                final int pn = input.readInt();
+                final int i = input.readInt();
+                final int j = input.readInt();
+                final Point ecdhPublicKey = input.readPoint();
+                final BigInteger dhPublicKey = input.readBigInt();
+                final byte[] nonce = input.readNonce();
+                final byte[] ciphertext = input.readData();
+                final byte[] authenticator = input.readMacOTR4();
+                final byte[] revealedMacs = input.readData();
+                // We only verify the format of the data message, but do not perform the validation actions yet.
+                // Validation is delayed until a later point as we are missing context information for full
+                // validation.
+                return new DataMessage4(protocolVersion, senderInstanceTag, recipientInstanceTag, flags, pn, i,
+                    j, ecdhPublicKey, ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext,
+                    authenticator, revealedMacs);
             }
             default:
-                throw new ProtocolException("Illegal message type: " + messageType);
+                throw new IllegalStateException("BUG: Future protocol versions are not supported. We should not have reached this state.");
+            }
+        }
+        case MESSAGE_DH_COMMIT: {
+            requireOTR23(protocolVersion);
+            final byte[] dhPublicKeyEncrypted = input.readData();
+            final byte[] dhPublicKeyHash = input.readData();
+            return new DHCommitMessage(protocolVersion, dhPublicKeyHash, dhPublicKeyEncrypted, senderInstanceTag,
+                recipientInstanceTag);
+        }
+        case MESSAGE_DHKEY: {
+            requireOTR23(protocolVersion);
+            final DHPublicKey dhPublicKey = input.readDHPublicKey();
+            return new DHKeyMessage(protocolVersion, dhPublicKey, senderInstanceTag, recipientInstanceTag);
+        }
+        case MESSAGE_REVEALSIG: {
+            requireOTR23(protocolVersion);
+            final byte[] revealedKey = input.readData();
+            final byte[] xEncrypted = input.readData();
+            final byte[] xEncryptedMac = input.readMac();
+            return new RevealSignatureMessage(protocolVersion, xEncrypted, xEncryptedMac, revealedKey,
+                senderInstanceTag, recipientInstanceTag);
+        }
+        case MESSAGE_SIGNATURE: {
+            requireOTR23(protocolVersion);
+            final byte[] xEncryted = input.readData();
+            final byte[] xEncryptedMac = input.readMac();
+            return new SignatureMessage(protocolVersion, xEncryted, xEncryptedMac, senderInstanceTag,
+                recipientInstanceTag);
+        }
+        case MESSAGE_IDENTITY: {
+            requireOTR4(protocolVersion);
+            final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
+            final Point y = input.readPoint();
+            final BigInteger b = input.readBigInt();
+            return new IdentityMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, y, b);
+        }
+        case MESSAGE_AUTH_R: {
+            requireOTR4(protocolVersion);
+            final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
+            final Point x = input.readPoint();
+            final BigInteger a = input.readBigInt();
+            final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
+            return new AuthRMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, x, a, sigma);
+        }
+        case MESSAGE_AUTH_I: {
+            requireOTR4(protocolVersion);
+            final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
+            return new AuthIMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, sigma);
+        }
+        default:
+            throw new ProtocolException("Illegal message type: " + messageType);
         }
     }
 

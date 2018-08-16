@@ -173,8 +173,7 @@ public final class SM {
      * exchange.
      */
     @Nonnull
-    public byte[] step1(@Nonnull final byte[] secret) throws SMException
-    {
+    public byte[] step1(@Nonnull final byte[] secret) throws SMException {
         LOGGER.fine("Initiating SMP exchange.");
         // startSMP is solely controlled by the local user. In case an exception
         // occurs here, it is related to a programming error.
@@ -191,8 +190,7 @@ public final class SM {
      * @throws SMException Thrown in case of abort or failure to process SMP
      * message.
      */
-    public void step2a(@Nonnull final byte[] input) throws SMException
-    {
+    public void step2a(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received SMP exchange initiation request.");
         try {
             this.state.smpMessage1a(this, input);
@@ -227,8 +225,7 @@ public final class SM {
      * on abort.
      */
     @Nonnull
-    public byte[] step2b(@Nonnull final byte[] secret) throws SMException
-    {
+    public byte[] step2b(@Nonnull final byte[] secret) throws SMException {
         LOGGER.fine("Continuing SMP exchange initiation reply after receiving data from OtrEngineHost.");
         try {
             return this.state.smpMessage1b(this, secret);
@@ -260,8 +257,7 @@ public final class SM {
      * in case of abort.
      */
     @Nonnull
-    public byte[] step3(@Nonnull final byte[] input) throws SMException
-    {
+    public byte[] step3(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received reply to SMP exchange initiation request. Sending final message in SMP exchange.");
         try {
             return this.state.smpMessage2(this, input);
@@ -293,8 +289,7 @@ public final class SM {
      * in case of abort.
      */
     @Nonnull
-    public byte[] step4(@Nonnull final byte[] input) throws SMException
-    {
+    public byte[] step4(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received final SMP response. Concluding SMP exchange and sending final response.");
         try {
             return this.state.smpMessage3(this, input);
@@ -322,8 +317,7 @@ public final class SM {
      * @throws SMException Thrown in case of failure to process SMP message or
      * in case of abort.
      */
-    public void step5(@Nonnull final byte[] input) throws SMException
-    {
+    public void step5(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received final SMP response. Concluding SMP exchange.");
         try {
             this.state.smpMessage4(this, input);

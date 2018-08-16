@@ -218,8 +218,7 @@ abstract class AbstractSMPState {
      * @throws SMException when proof check fails
      */
     final void checkKnowLog(@Nonnull final BigInteger c, @Nonnull final BigInteger d,
-                            @Nonnull final BigInteger x, final int version) throws SMException
-    {
+                            @Nonnull final BigInteger x, final int version) throws SMException {
         final BigInteger gd = G1.modPow(d, OtrCryptoEngine.MODULUS);
         final BigInteger xc = x.modPow(c, OtrCryptoEngine.MODULUS);
         final BigInteger gdxc = gd.multiply(xc).mod(OtrCryptoEngine.MODULUS);
@@ -263,8 +262,7 @@ abstract class AbstractSMPState {
     final void checkEqualCoords(@Nonnull final BigInteger c, @Nonnull final BigInteger d1,
                                 @Nonnull final BigInteger d2, @Nonnull final BigInteger p,
                                 @Nonnull final BigInteger q, @Nonnull final BigInteger g2,
-                                @Nonnull final BigInteger g3, final int version) throws SMException
-    {
+                                @Nonnull final BigInteger g3, final int version) throws SMException {
         /* To verify, we test that hash(g3^d1 * p^c, g1^d1 * g2^d2 * q^c) = c
          * If indeed c = hash(g3^r1, g1^r1 g2^r2), d1 = r1 - r*c,
          * d2 = r2 - secret*c.  And if indeed p = g3^r, q = g1^r * g2^secret
@@ -317,8 +315,7 @@ abstract class AbstractSMPState {
      */
     final void checkEqualLogs(@Nonnull final BigInteger c, @Nonnull final BigInteger d,
                               @Nonnull final BigInteger r, @Nonnull final BigInteger g3o,
-                              @Nonnull final BigInteger qab, final int version) throws SMException
-    {
+                              @Nonnull final BigInteger qab, final int version) throws SMException {
         /* Here, we recall the exponents used to create g3.
          * If we have previously seen g3o = g1^x where x is unknown
          * during the DH exchange to produce g3, then we may proceed with:
@@ -355,8 +352,7 @@ abstract class AbstractSMPState {
      * @param g the BigInteger to check.
      * @throws SMException Throws SMException if check fails.
      */
-    static void checkGroupElem(@Nonnull final BigInteger g) throws SMException
-    {
+    static void checkGroupElem(@Nonnull final BigInteger g) throws SMException {
         if(g.compareTo(BigInteger.valueOf(2)) < 0 ||
                 g.compareTo(OtrCryptoEngine.MODULUS_MINUS_TWO) > 0) {
             throw new SMException("Invalid parameter");
@@ -370,8 +366,7 @@ abstract class AbstractSMPState {
      * @param x The BigInteger to check.
      * @throws SMException Throws SMException if check fails.
      */
-    static void checkExpon(@Nonnull final BigInteger x) throws SMException
-    {
+    static void checkExpon(@Nonnull final BigInteger x) throws SMException {
         if (x.compareTo(BigInteger.ONE) < 0 || x.compareTo(ORDER_S) >= 0) {
             throw new SMException("Invalid parameter");
         }

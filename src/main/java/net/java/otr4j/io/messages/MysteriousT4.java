@@ -71,18 +71,18 @@ public final class MysteriousT4 {
         final KDFUsage alicesProfileUsage;
         final KDFUsage phiUsage;
         switch (purpose) {
-            case AUTH_R:
-                bobsProfileUsage = KDFUsage.AUTH_R_BOB_CLIENT_PROFILE;
-                alicesProfileUsage = KDFUsage.AUTH_R_ALICE_CLIENT_PROFILE;
-                phiUsage = KDFUsage.AUTH_R_PHI;
-                break;
-            case AUTH_I:
-                bobsProfileUsage = KDFUsage.AUTH_I_BOB_CLIENT_PROFILE;
-                alicesProfileUsage = KDFUsage.AUTH_I_ALICE_CLIENT_PROFILE;
-                phiUsage = KDFUsage.AUTH_I_PHI;
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported purpose.");
+        case AUTH_R:
+            bobsProfileUsage = KDFUsage.AUTH_R_BOB_CLIENT_PROFILE;
+            alicesProfileUsage = KDFUsage.AUTH_R_ALICE_CLIENT_PROFILE;
+            phiUsage = KDFUsage.AUTH_R_PHI;
+            break;
+        case AUTH_I:
+            bobsProfileUsage = KDFUsage.AUTH_I_BOB_CLIENT_PROFILE;
+            alicesProfileUsage = KDFUsage.AUTH_I_ALICE_CLIENT_PROFILE;
+            phiUsage = KDFUsage.AUTH_I_PHI;
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported purpose.");
         }
         final byte[] bobsProfileEncoded = kdf1(bobsProfileUsage, OtrEncodables.encode(profileBob),
             USER_PROFILE_DERIVATIVE_LENGTH_BYTES);

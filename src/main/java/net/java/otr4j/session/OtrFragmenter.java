@@ -209,14 +209,14 @@ final class OtrFragmenter {
     private String createMessageFragment(final int version, final int id, final int sendertag, final int receivertag,
                                          final int count, final int total, @Nonnull final String partialContent) {
         switch (version) {
-            case Session.OTRv.TWO:
-                return createV2MessageFragment(count, total, partialContent);
-            case Session.OTRv.THREE:
-                return createV3MessageFragment(sendertag, receivertag, count, total, partialContent);
-            case Session.OTRv.FOUR:
-                return createV4MessageFragment(id, sendertag, receivertag, count, total, partialContent);
-            default:
-                throw new IllegalArgumentException("Unsupported protocol version: " + version);
+        case Session.OTRv.TWO:
+            return createV2MessageFragment(count, total, partialContent);
+        case Session.OTRv.THREE:
+            return createV3MessageFragment(sendertag, receivertag, count, total, partialContent);
+        case Session.OTRv.FOUR:
+            return createV4MessageFragment(id, sendertag, receivertag, count, total, partialContent);
+        default:
+            throw new IllegalArgumentException("Unsupported protocol version: " + version);
         }
     }
 
@@ -270,14 +270,14 @@ final class OtrFragmenter {
      */
     private int computeHeaderSize(final int version) {
         switch (version) {
-            case Session.OTRv.TWO:
-                return OTRV2_HEADER_SIZE;
-            case Session.OTRv.THREE:
-                return OTRV3_HEADER_SIZE;
-            case Session.OTRv.FOUR:
-                return OTRV4_HEADER_SIZE;
-            default:
-                throw new UnsupportedOperationException("Unsupported protocol version: " + version);
+        case Session.OTRv.TWO:
+            return OTRV2_HEADER_SIZE;
+        case Session.OTRv.THREE:
+            return OTRV3_HEADER_SIZE;
+        case Session.OTRv.FOUR:
+            return OTRV4_HEADER_SIZE;
+        default:
+            throw new UnsupportedOperationException("Unsupported protocol version: " + version);
         }
     }
 }

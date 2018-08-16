@@ -136,38 +136,38 @@ public final class ClientProfilePayload implements OtrEncodable {
                 throw new ProtocolException("Unknown field type encountered.");
             }
             switch (type) {
-                case INSTANCE_TAG:
-                    fields.add(new InstanceTagField(in.readInt()));
-                    break;
-                case LONG_TERM_EdDSA_PUBLIC_KEY:
-                    final int publicKeyType = in.readShort();
-                    switch (publicKeyType) {
-                        case ED448PublicKeyField.ED448_PUBLIC_KEY_TYPE:
-                            final Point publicKey = in.readPoint();
-                            fields.add(new ED448PublicKeyField(publicKey));
-                            break;
-                        default:
-                            throw new ProtocolException("Unsupported Ed448 public key type: " + publicKeyType);
-                    }
-                    break;
-                case VERSIONS:
-                    try {
-                        final Set<Integer> versions = parseVersionString(new String(in.readData(), US_ASCII));
-                        fields.add(new VersionsField(versions));
-                    } catch (final UnsupportedLengthException e) {
-                        throw new ProtocolException("Versions are not expected to be stored in an exceptionally large data field. This is not according to specification.");
-                    }
-                    break;
-                case PROFILE_EXPIRATION:
-                    fields.add(new ExpirationDateField(in.readLong()));
-                    break;
-                case TRANSITIONAL_SIGNATURE:
-                    final BigInteger r = in.readBigInt();
-                    final BigInteger s = in.readBigInt();
-                    fields.add(new TransitionalSignatureField(new DSASignature(r, s)));
+            case INSTANCE_TAG:
+                fields.add(new InstanceTagField(in.readInt()));
+                break;
+            case LONG_TERM_EdDSA_PUBLIC_KEY:
+                final int publicKeyType = in.readShort();
+                switch (publicKeyType) {
+                case ED448PublicKeyField.ED448_PUBLIC_KEY_TYPE:
+                    final Point publicKey = in.readPoint();
+                    fields.add(new ED448PublicKeyField(publicKey));
                     break;
                 default:
-                    throw new ProtocolException("Unknown field type encountered: " + type);
+                    throw new ProtocolException("Unsupported Ed448 public key type: " + publicKeyType);
+                }
+                break;
+            case VERSIONS:
+                try {
+                    final Set<Integer> versions = parseVersionString(new String(in.readData(), US_ASCII));
+                    fields.add(new VersionsField(versions));
+                } catch (final UnsupportedLengthException e) {
+                    throw new ProtocolException("Versions are not expected to be stored in an exceptionally large data field. This is not according to specification.");
+                }
+                break;
+            case PROFILE_EXPIRATION:
+                fields.add(new ExpirationDateField(in.readLong()));
+                break;
+            case TRANSITIONAL_SIGNATURE:
+                final BigInteger r = in.readBigInt();
+                final BigInteger s = in.readBigInt();
+                fields.add(new TransitionalSignatureField(new DSASignature(r, s)));
+                break;
+            default:
+                throw new ProtocolException("Unknown field type encountered: " + type);
             }
         }
         final byte[] signature = in.readEdDSASignature();

@@ -123,17 +123,17 @@ public final class SharedSecret4 implements AutoCloseable {
         final ECDHKeyPair initialECDHKeyPair = ECDHKeyPair.generate(kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES));
         final DHKeyPair initialDHKeyPair = DHKeyPair.generate(kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES));
         switch (initializationComponent) {
-            case OURS:
-                // Bob initializes his shared secrets for the Double Ratchet, although it is still missing Alice's keys.
-                return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, null, null);
-            case THEIRS:
-                // Alice initializes her shared secrets for the Double Ratchet.
-                initialECDHKeyPair.close();
-                initialDHKeyPair.close();
-                return new SharedSecret4(random, null, null, initialDHKeyPair.getPublicKey(),
-                    initialECDHKeyPair.getPublicKey());
-            default:
-                throw new UnsupportedOperationException("Unsupported component. Shared secret cannot be generated.");
+        case OURS:
+            // Bob initializes his shared secrets for the Double Ratchet, although it is still missing Alice's keys.
+            return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, null, null);
+        case THEIRS:
+            // Alice initializes her shared secrets for the Double Ratchet.
+            initialECDHKeyPair.close();
+            initialDHKeyPair.close();
+            return new SharedSecret4(random, null, null, initialDHKeyPair.getPublicKey(),
+                initialECDHKeyPair.getPublicKey());
+        default:
+            throw new UnsupportedOperationException("Unsupported component. Shared secret cannot be generated.");
         }
     }
 

@@ -80,16 +80,16 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         writer.writeShort(this.protocolVersion);
         writer.writeByte(getType());
         switch (this.protocolVersion) {
-            case OTRv.TWO:
-                // skipping serializing instance tags
-                break;
-            case OTRv.THREE:
-            case OTRv.FOUR:
-                writer.writeInt(this.senderInstanceTag);
-                writer.writeInt(this.receiverInstanceTag);
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported protocol version.");
+        case OTRv.TWO:
+            // skipping serializing instance tags
+            break;
+        case OTRv.THREE:
+        case OTRv.FOUR:
+            writer.writeInt(this.senderInstanceTag);
+            writer.writeInt(this.receiverInstanceTag);
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported protocol version.");
         }
     }
 

@@ -176,14 +176,14 @@ public final class OtrInputStream {
     public DSAPublicKey readPublicKey() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         final int type = readShort();
         switch (type) {
-            case PUBLIC_KEY_TYPE_DSA:
-                final BigInteger p = readBigInt();
-                final BigInteger q = readBigInt();
-                final BigInteger g = readBigInt();
-                final BigInteger y = readBigInt();
-                return OtrCryptoEngine.createDSAPublicKey(y, p, q, g);
-            default:
-                throw new UnsupportedTypeException("Unsupported type for public key: " + type);
+        case PUBLIC_KEY_TYPE_DSA:
+            final BigInteger p = readBigInt();
+            final BigInteger q = readBigInt();
+            final BigInteger g = readBigInt();
+            final BigInteger y = readBigInt();
+            return OtrCryptoEngine.createDSAPublicKey(y, p, q, g);
+        default:
+            throw new UnsupportedTypeException("Unsupported type for public key: " + type);
         }
     }
 
