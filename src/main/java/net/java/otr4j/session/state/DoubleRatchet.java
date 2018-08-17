@@ -320,7 +320,7 @@ final class DoubleRatchet implements AutoCloseable {
         requireNotClosed();
         LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});
-        this.pn = this.receiverRatchet.messageID;
+        this.pn = this.senderRatchet.messageID;
         final boolean performDHRatchet = this.i % 3 == 0;
         final byte[] previousRootKey = this.rootKey.clone();
         this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
