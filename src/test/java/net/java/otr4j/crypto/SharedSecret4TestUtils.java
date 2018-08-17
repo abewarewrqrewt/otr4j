@@ -7,7 +7,7 @@ import java.security.SecureRandom;
 
 public final class SharedSecret4TestUtils {
 
-    public static SharedSecret4 create(final SecureRandom random, final DHKeyPair ourDHKeyPair,
+    public static SharedSecret4 createSharedSecret4(final SecureRandom random, final DHKeyPair ourDHKeyPair,
                                        final ECDHKeyPair ourECDHKeyPair, final BigInteger theirDHPublicKey,
                                        final Point theirECDHPublicKey) {
         return new SharedSecret4(random, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);

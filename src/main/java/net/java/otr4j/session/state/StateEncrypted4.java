@@ -109,10 +109,10 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final EncryptionResult result = this.ratchet.encrypt(msgBytes);
         final int ratchetId = this.ratchet.getI();
         final int messageId = this.ratchet.getJ();
-        final byte[] dataMessageSectionsHash = generateDataMessageContent(ratchetId, messageId,
+        final byte[] dataMessageSectionsContent = generateDataMessageContent(ratchetId, messageId,
             context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
-        final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsHash);
-        this.ratchet.rotateSenderChainKey();
+        final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsContent);
+        this.ratchet.rotateSendingChainKey();
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
             context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
             this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
@@ -185,7 +185,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             // FIXME check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
             throw new OtrException("Message has failed verification.", e);
         }
-        this.ratchet.rotateReceiverChainKey();
+        this.ratchet.rotateReceivingChainKey();
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {

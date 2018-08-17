@@ -121,18 +121,38 @@ final class DoubleRatchet implements AutoCloseable {
         return senderRatchet.needsRotation;
     }
 
+    /**
+     * The ratchet ID ('i')
+     *
+     * @return Returns current ratchet ID.
+     */
     int getI() {
         return this.i - 1;
     }
 
+    /**
+     * The sender message ID ('j')
+     *
+     * @return Returns message ID.
+     */
     int getJ() {
         return this.senderRatchet.messageID;
     }
 
+    /**
+     * The receiver message ID ('k')
+     *
+     * @return Returns message ID.
+     */
     int getK() {
         return this.receiverRatchet.messageID;
     }
 
+    /**
+     * Number of (sender) messages in previous ratchet.
+     *
+     * @return Returns number of messages.
+     */
     int getPn() {
         return pn;
     }
@@ -183,14 +203,14 @@ final class DoubleRatchet implements AutoCloseable {
     /**
      * Generate an authenticator value for later content verification.
      *
-     * @param dataMessageSectionsHash the hash of the data message sections
+     * @param dataMessageSectionsContent the hash of the data message sections
      * @return Returns authenticator value.
      */
     @Nonnull
-    byte[] authenticate(@Nonnull final byte[] dataMessageSectionsHash) {
+    byte[] authenticate(@Nonnull final byte[] dataMessageSectionsContent) {
         LOGGER.log(Level.FINEST, "Generating message keys for authentication of ratchet {0}, message {1}.",
                 new Object[]{this.i - 1, this.senderRatchet.messageID});
-        final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsHash,
+        final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsContent,
             DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
         try (MessageKeys keys = this.generateSendingKeys()) {
             return keys.authenticate(messageMAC);
@@ -278,11 +298,11 @@ final class DoubleRatchet implements AutoCloseable {
         return keys;
     }
 
-    void rotateSenderChainKey() {
+    void rotateSendingChainKey() {
         this.senderRatchet.rotateChainKey();
     }
 
-    void rotateReceiverChainKey() {
+    void rotateReceivingChainKey() {
         this.receiverRatchet.rotateChainKey();
     }
 
