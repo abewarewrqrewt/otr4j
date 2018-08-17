@@ -64,7 +64,6 @@ public final class OtrInputStream {
      *
      * @return Returns number of available bytes.
      */
-    // FIXME write unit tests
     public int available() {
         return this.in.available();
     }
@@ -211,7 +210,6 @@ public final class OtrInputStream {
      * @return Returns TLV value.
      * @throws ProtocolException In case of unexpected content in the message stream.
      */
-    // FIXME write unit tests for readTLV
     @Nonnull
     public TLV readTLV() throws ProtocolException {
         return new TLV(readShort(), readTlvData());

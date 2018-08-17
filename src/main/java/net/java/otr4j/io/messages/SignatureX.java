@@ -117,6 +117,6 @@ public final class SignatureX implements OtrEncodable {
     public void writeTo(@Nonnull final OtrOutputStream out) {
         out.writePublicKey(this.longTermPublicKey);
         out.writeInt(this.dhKeyID);
-        out.writeSignature(this.signature, this.longTermPublicKey);
+        out.writeDSASignature(this.signature);
     }
 }

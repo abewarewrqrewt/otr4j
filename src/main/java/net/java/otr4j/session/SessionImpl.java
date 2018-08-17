@@ -686,13 +686,12 @@ final class SessionImpl implements Session, Context, AuthContext {
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
             setState(new StateInitial(((QueryMessage) m).getTag()));
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
-            fragments = new String[]{serialized + getFallbackMessage(sessionId)};
+            fragments = new String[] {serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
-            // FIXME consider moving fragmenter inside some kind of Serializer-class such that fragmenting becomes a detail of the serialization implementation.
             try {
                 fragments = this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag,
-                    encoded.receiverInstanceTag, serialized);
+                        encoded.receiverInstanceTag, serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment OTR-encoded message to specified protocol parameters.", e);
             }

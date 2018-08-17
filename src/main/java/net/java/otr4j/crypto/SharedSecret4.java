@@ -127,7 +127,7 @@ public final class SharedSecret4 implements AutoCloseable {
             // Bob initializes his shared secrets for the Double Ratchet, although it is still missing Alice's keys.
             return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, null, null);
         case THEIRS:
-            // Alice initializes her shared secrets for the Double Ratchet.
+            // Alice initializes her shared secrets for the Double Ratchet with Bob's deterministic ECDH and DH key pairs.
             initialECDHKeyPair.close();
             initialDHKeyPair.close();
             return new SharedSecret4(random, null, null, initialDHKeyPair.getPublicKey(),

@@ -5,13 +5,11 @@
  * See terms of license at gnu.org.
  */
 // TODO verify that logging with parameters ('{}') works correctly.
-// FIXME add exclusions for any violated rules and enable fail-on-build for pmd, SpotBugs.
 // FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305.
 // FIXME use @CleanupObligation to verify correct clean-up of cryptographically sensitive material.
 // TODO Verify rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
 // TODO Use maven-site-plugin (or similar) to generate a full report on the status of otr4j project.
 // TODO Investigate use of SpotBugs and its annotation to manage "resources" and correct closing.
-// FIXME consider planning with custom Ed448 implementation during development and switch to OpenJDK implementation afterwards.
 // TODO Upgrade to use of JUnit5 for unit tests. (May not be possible due to language level restrictions, Java 8+?)
 // TODO consistent naming of constants used in OTRv4 parts of implementation. (Sometimes LENGTH is at the start of the constant, sometimes at the end.)
 // TODO Verify that mitigation for OTRv2 MAC revalation bug is in place. (Refer to documentation about revealing MAC keys.)
@@ -46,6 +44,8 @@
 //    This is part of section "When you receive a Data Message:".
 //  * Spec does not go into case "What to do if message arrives with ratchetId < i and messageId == 0.". You can't blindly start processing this message as your would screw up your rotation.
 //    This is part of section "When you receive a Data Message:".
+//  * Are or aren't active attacks part of the scope of OTRv4?
+//    Section "Deletion of Stored Message Keys" describes measures against active malicious participants.
 /**
  * otr4j.
  */
