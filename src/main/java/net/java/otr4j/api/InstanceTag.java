@@ -113,14 +113,14 @@ public final class InstanceTag {
         if (ratio < 0 || ratio >= 1) {
             throw new IllegalArgumentException("ratio should be a value between 0 and 1");
         }
-        final long val = (long)(ratio*RANGE) + SMALLEST_VALUE;
+        final long val = (long) (ratio * RANGE) + SMALLEST_VALUE;
         // Because 0xffffffff is the maximum value for both the tag and
         // the 32 bit integer range, we are able to cast to int without
         // loss. The (decimal) interpretation changes, though, because
         // Java's int interprets the last bit as the sign bit. This does
         // not matter, however, since we do not need to do value
         // comparisons / ordering. We only care about equal/not equal.
-        this.value = (int)val;
+        this.value = (int) val;
     }
 
     /**

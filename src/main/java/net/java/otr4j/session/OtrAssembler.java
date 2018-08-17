@@ -161,7 +161,7 @@ final class OtrAssembler {
                         new Object[]{fragment.getIndex()});
                 throw new ProtocolException("Rejecting fragment with index that is already present.");
             }
-            parts[fragment.getIndex()-1] = fragment.getContent();
+            parts[fragment.getIndex() - 1] = fragment.getContent();
             if (containsEmpty(parts)) {
                 // Not all message parts are present. Return null and wait for next message part before continuing.
                 return null;

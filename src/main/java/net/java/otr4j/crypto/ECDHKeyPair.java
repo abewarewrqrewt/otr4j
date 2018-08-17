@@ -78,8 +78,8 @@ public final class ECDHKeyPair implements AutoCloseable {
         //    to last byte is set.
         assert !allZeroBytes(h) : "Expected random data, instead of all-zero byte-array.";
         h[0] &= 0b11111100;
-        h[SECRET_KEY_LENGTH_BYTES-1] = 0;
-        h[SECRET_KEY_LENGTH_BYTES-2] |= 0b10000000;
+        h[SECRET_KEY_LENGTH_BYTES - 1] = 0;
+        h[SECRET_KEY_LENGTH_BYTES - 2] |= 0b10000000;
         //  - Interpret the buffer as the little-endian integer, forming the secret scalar
         //    's'.
         final BigInteger s = decodeLittleEndian(h);

@@ -140,7 +140,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
         try {
             matchingKeys = sessionKeyManager.get(data.recipientKeyID,
                     data.senderKeyID);
-        } catch(final SessionKeyManager.SessionKeyUnavailableException ex) {
+        } catch (final SessionKeyManager.SessionKeyUnavailableException ex) {
             logger.finest("No matching keys found.");
             unreadableMessageReceived(host, this.sessionID);
             final String replymsg = getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);

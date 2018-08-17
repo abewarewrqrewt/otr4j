@@ -131,7 +131,7 @@ public final class SmpTlvHandler {
         }
 
         // If we've got a question, attach it to the smpmsg
-        if (question != null && initiating){
+        if (question != null && initiating) {
             final byte[] questionBytes = question.getBytes(UTF_8);
             final byte[] qsmpmsg = new byte[questionBytes.length + 1 + smpmsg.length];
             System.arraycopy(questionBytes, 0, qsmpmsg, 0, questionBytes.length);

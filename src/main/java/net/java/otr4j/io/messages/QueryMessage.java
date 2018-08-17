@@ -34,7 +34,7 @@ public class QueryMessage implements Message {
         this.versions = requireNonNull(versions);
         // FIXME !!! bad workaround because we generate the actually sent Query-string in SerializationUtils.toString(m)!
         final StringBuilder tag = new StringBuilder("?OTRv");
-        for(final int version : versions) {
+        for (final int version : versions) {
             tag.append(version);
         }
         tag.append('?');

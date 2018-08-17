@@ -342,8 +342,7 @@ abstract class AbstractSMPState {
      * @throws SMException Throws SMException if check fails.
      */
     static void checkGroupElem(@Nonnull final BigInteger g) throws SMException {
-        if(g.compareTo(BigInteger.valueOf(2)) < 0 ||
-                g.compareTo(OtrCryptoEngine.MODULUS_MINUS_TWO) > 0) {
+        if (g.compareTo(BigInteger.valueOf(2)) < 0 || g.compareTo(OtrCryptoEngine.MODULUS_MINUS_TWO) > 0) {
             throw new SMException("Invalid parameter");
         }
     }
