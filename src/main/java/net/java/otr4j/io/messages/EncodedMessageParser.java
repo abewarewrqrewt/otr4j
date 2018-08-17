@@ -49,6 +49,7 @@ public final class EncodedMessageParser {
      *                                    otr4j.
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
+    // TODO consider making a hard split between OTRv2, OTRv3 and OTRv4 parsing based on protocol version to prevent unsupported message types from being parsed.
     @Nonnull
     public static AbstractEncodedMessage parse(@Nonnull final OtrInputStream input) throws OtrCryptoException,
             UnsupportedLengthException, ProtocolException {
