@@ -34,6 +34,7 @@
     <rule ref="category/java/design.xml">
         <exclude name="LawOfDemeter"/>
         <exclude name="ExcessiveParameterList"/>
+        <exclude name="LoosePackageCoupling"/>
         <!-- TODO definitely revisit DataClass warnings, as they are reasonable but currently simply a fact of otr4j. -->
         <exclude name="DataClass"/>
         <exclude name="CyclomaticComplexity"/>
