@@ -144,7 +144,7 @@ final class DoubleRatchet implements AutoCloseable {
 
     // FIXME test rotateSenderKeys and verify interaction with rotate.
     @Nonnull
-    Rotation rotateSenderKeys() {
+    RotationResult rotateSenderKeys() {
         requireNotClosed();
         if (!this.senderRatchet.needsRotation) {
             throw new IllegalStateException("Rotation is only allowed after new public key material was received from the other party.");
@@ -168,11 +168,11 @@ final class DoubleRatchet implements AutoCloseable {
         // Extract MACs to reveal.
         final byte[] revealedMacs = this.macsToReveal.toByteArray();
         this.macsToReveal.reset();
-        return new Rotation(performDHRatchet ? this.sharedSecret.getDHPublicKey() : null, revealedMacs);
+        return new RotationResult(performDHRatchet ? this.sharedSecret.getDHPublicKey() : null, revealedMacs);
     }
 
     @Nonnull
-    Result encrypt(@Nonnull final byte[] data) {
+    EncryptionResult encrypt(@Nonnull final byte[] data) {
         LOGGER.log(Level.FINEST, "Generating message keys for encryption of ratchet {0}, message {1}.",
                 new Object[]{this.i - 1, this.senderRatchet.messageID});
         try (MessageKeys keys = this.generateSendingKeys()) {
@@ -349,11 +349,12 @@ final class DoubleRatchet implements AutoCloseable {
      * Field `dhPublicKey` contains the public key of the generated DH key pair.
      * Field `revealedMacs` contains all the MACs that were gathered to be revealed up to now.
      */
-    static final class Rotation {
+    static final class RotationResult {
+
         final BigInteger dhPublicKey;
         final byte[] revealedMacs;
 
-        private Rotation(@Nullable final BigInteger dhPublicKey, @Nonnull final byte[] revealedMacs) {
+        private RotationResult(@Nullable final BigInteger dhPublicKey, @Nonnull final byte[] revealedMacs) {
             this.dhPublicKey = dhPublicKey;
             this.revealedMacs = requireNonNull(revealedMacs);
         }
@@ -499,11 +500,11 @@ final class DoubleRatchet implements AutoCloseable {
          * @return Returns a result containing the ciphertext and nonce used.
          */
         @Nonnull
-        Result encrypt(@Nonnull final byte[] message) {
+        EncryptionResult encrypt(@Nonnull final byte[] message) {
             requireNotClosed();
             final byte[] nonce = generateNonce(random);
             final byte[] ciphertext = OtrCryptoEngine4.encrypt(this.encrypt, nonce, message);
-            return new Result(nonce, ciphertext);
+            return new EncryptionResult(nonce, ciphertext);
         }
 
         /**
@@ -590,12 +591,12 @@ final class DoubleRatchet implements AutoCloseable {
      * <p>
      * The instance contains the ciphertext as well as the nonce used during encryption.
      */
-    static final class Result {
+    static final class EncryptionResult {
 
         final byte[] nonce;
         final byte[] ciphertext;
 
-        private Result(@Nonnull final byte[] nonce, @Nonnull final byte[] ciphertext) {
+        private EncryptionResult(@Nonnull final byte[] nonce, @Nonnull final byte[] ciphertext) {
             this.nonce = requireNonNull(nonce);
             this.ciphertext = requireNonNull(ciphertext);
         }

@@ -15,7 +15,8 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.state.DoubleRatchet.KeyRotationLimitationException;
-import net.java.otr4j.session.state.DoubleRatchet.Result;
+import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
+import net.java.otr4j.session.state.DoubleRatchet.RotationResult;
 import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
@@ -95,7 +96,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs) {
-        final DoubleRatchet.Rotation rotation;
+        final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
             LOGGER.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
@@ -105,7 +106,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
-        final Result result = this.ratchet.encrypt(msgBytes);
+        final EncryptionResult result = this.ratchet.encrypt(msgBytes);
         final int ratchetId = this.ratchet.getI();
         final int messageId = this.ratchet.getJ();
         final byte[] dataMessageSectionsHash = generateDataMessageContent(ratchetId, messageId,
@@ -121,7 +122,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nonnull
     private byte[] generateDataMessageContent(final int ratchetId, final int messageId,
             @Nonnull final InstanceTag sender, @Nonnull final InstanceTag receiver,
-            @Nullable final DoubleRatchet.Rotation rotation, @Nonnull final Result encryptionResult) {
+            @Nullable final RotationResult rotation, @Nonnull final EncryptionResult encryptionResult) {
         final OtrOutputStream out = new OtrOutputStream().writeShort(VERSION).writeByte(DATA_MESSAGE_TYPE)
                 .writeInt(sender.getValue()).writeInt(receiver.getValue()).writeByte(0x00).writeInt(this.ratchet.getPn())
                 .writeInt(ratchetId).writeInt(messageId).writePoint(this.ratchet.getECDHPublicKey());
