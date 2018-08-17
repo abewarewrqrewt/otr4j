@@ -15,13 +15,6 @@
     <!-- </module> -->
 
     <module name="TreeWalker">
-        <!-- Checks for Javadoc comments.                     -->
-        <!-- See http://checkstyle.sf.net/config_javadoc.html -->
-        <!--<module name="JavadocMethod"/>-->
-        <!--<module name="JavadocType"/>-->
-        <!--<module name="JavadocVariable"/>-->
-        <!--<module name="JavadocStyle"/>-->
-
         <!-- Checks for imports -->
         <module name="AvoidStarImport"/>
         <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
@@ -40,6 +33,7 @@
         <module name="EmptyForIteratorPad"/>
         <module name="GenericWhitespace"/>
         <module name="MethodParamPad"/>
+        <module name="NoLineWrap"/>
         <module name="NoWhitespaceAfter"/>
         <module name="NoWhitespaceBefore"/>
         <module name="OperatorWrap"/>
@@ -48,7 +42,7 @@
         <module name="WhitespaceAfter"/>
         <module name="WhitespaceAround"/>
 
-        <!-- Checks for blocks. You know, those {}'s -->
+        <!-- Checks for blocks -->
         <module name="EmptyBlock"/>
         <module name="LeftCurly"/>
         <module name="NeedBraces"/>
