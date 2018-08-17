@@ -164,6 +164,30 @@ public class DoubleRatchetTest {
         ratchet.rotateSenderKeys();
     }
 
+    @Test
+    public void testDoubleRatchetWorksSymmetrically() throws VerificationException, RotationLimitationException {
+        Logger.getLogger(DoubleRatchet.class.getName()).setLevel(Level.FINEST);
+        final byte[] message = "Hello Alice!".getBytes(UTF_8);
+        // Prepare ratchets for Alice and Bob
+        final byte[] initialRootKey = random(RANDOM, new byte[64]);
+        final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
+        final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
+                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+        final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
+                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                initialRootKey.clone());
+
+        // Start encrypting and authenticating using Bob's double ratchet.
+        final RotationResult rotation = aliceRatchet.rotateSenderKeys();
+        final EncryptionResult encrypted = aliceRatchet.encrypt(message);
+        final byte[] authenticator = aliceRatchet.authenticate(message);
+        // Start decrypting and verifying using Alice's double ratchet.
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation.dhPublicKey);
+        bobRatchet.verify(0, 0, message, authenticator);
+        assertArrayEquals(message, bobRatchet.decrypt(0, 0, encrypted.ciphertext, encrypted.nonce));
+    }
+
     private SharedSecret4 generateSharedSecret() {
         final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
