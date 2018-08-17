@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-// FIXME add unit tests to verify correct clearing of fields
+// TODO add unit tests to verify correct clearing of fields
 @SuppressWarnings("ConstantConditions")
 public class DoubleRatchetTest {
 

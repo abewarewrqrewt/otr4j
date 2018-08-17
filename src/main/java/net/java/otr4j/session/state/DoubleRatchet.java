@@ -115,6 +115,12 @@ final class DoubleRatchet implements AutoCloseable {
         this.receiverRatchet.close();
     }
 
+    /**
+     * Indicates whether or not Sender key rotation is required before encrypting/authenticating the next message to be
+     * sent.
+     *
+     * @return Returns true iff sender key rotation is required.
+     */
     @CheckReturnValue
     boolean isNeedSenderKeyRotation() {
         return senderRatchet.needsRotation;
@@ -161,7 +167,6 @@ final class DoubleRatchet implements AutoCloseable {
         return this.sharedSecret.getECDHPublicKey();
     }
 
-    // FIXME test rotateSenderKeys and verify interaction with rotate.
     @Nonnull
     RotationResult rotateSenderKeys() {
         requireNotClosed();
@@ -190,6 +195,13 @@ final class DoubleRatchet implements AutoCloseable {
         return new RotationResult(performDHRatchet ? this.sharedSecret.getDHPublicKey() : null, revealedMacs);
     }
 
+    /**
+     * Encrypt provided data with the current sending message keys. In the process, generate a nonce required for
+     * encryption.
+     *
+     * @param data the data
+     * @return Returns a composite result consisting of the generated nonce and the ciphertext.
+     */
     @Nonnull
     EncryptionResult encrypt(@Nonnull final byte[] data) {
         LOGGER.log(Level.FINEST, "Generating message keys for encryption of ratchet {0}, message {1}.",
@@ -229,13 +241,17 @@ final class DoubleRatchet implements AutoCloseable {
     /**
      * Decrypt message contents.
      *
+     * @param ratchetId  the ratchet ID of the current message
+     * @param messageId  the message ID of the current message
+     * @param ciphertext the (encrypted) ciphertext
+     * @param nonce      the nonce that was used during the encryption process
      * @return Returns decrypted message contents.
      */
     @Nonnull
     byte[] decrypt(final int ratchetId, final int messageId, @Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce)
             throws RotationLimitationException {
         LOGGER.log(Level.FINEST, "Generating message keys for decryption of ratchet {0}, message {1}.",
-                new Object[]{this.i - 1, this.receiverRatchet.messageID});
+                new Object[] {this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
             return keys.decrypt(ciphertext, nonce);
         }
@@ -297,10 +313,16 @@ final class DoubleRatchet implements AutoCloseable {
         return keys;
     }
 
+    /**
+     * Rotate the sending chain key.
+     */
     void rotateSendingChainKey() {
         this.senderRatchet.rotateChainKey();
     }
 
+    /**
+     * Rotate the receiving chain key.
+     */
     void rotateReceivingChainKey() {
         this.receiverRatchet.rotateChainKey();
     }
@@ -380,7 +402,7 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     /**
-     * Ratchet.
+     * Ratchet, the individual ratchet used for either sending or receiving.
      */
     private final static class Ratchet implements AutoCloseable {
 
