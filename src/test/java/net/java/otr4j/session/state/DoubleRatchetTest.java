@@ -180,12 +180,71 @@ public class DoubleRatchetTest {
 
         // Start encrypting and authenticating using Bob's double ratchet.
         final RotationResult rotation = aliceRatchet.rotateSenderKeys();
+        assertNotNull(rotation.dhPublicKey);
         final EncryptionResult encrypted = aliceRatchet.encrypt(message);
         final byte[] authenticator = aliceRatchet.authenticate(message);
         // Start decrypting and verifying using Alice's double ratchet.
         bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation.dhPublicKey);
         bobRatchet.verify(0, 0, message, authenticator);
         assertArrayEquals(message, bobRatchet.decrypt(0, 0, encrypted.ciphertext, encrypted.nonce));
+    }
+
+    @Test
+    public void testDoubleRatchetWorksSymmetricallyWithRotations() throws VerificationException, RotationLimitationException {
+        Logger.getLogger(DoubleRatchet.class.getName()).setLevel(Level.FINEST);
+        final byte[] message = "Hello Alice!".getBytes(UTF_8);
+        // Prepare ratchets for Alice and Bob
+        final byte[] initialRootKey = random(RANDOM, new byte[64]);
+        final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
+        final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
+                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+        final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
+                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                initialRootKey.clone());
+
+        // Start encrypting and authenticating using Bob's double ratchet.
+        final RotationResult rotation = aliceRatchet.rotateSenderKeys();
+        assertNotNull(rotation.dhPublicKey);
+        final EncryptionResult encrypted = aliceRatchet.encrypt(message);
+        final byte[] authenticator = aliceRatchet.authenticate(message);
+        aliceRatchet.rotateSendingChainKey();
+        final EncryptionResult encrypted2 = aliceRatchet.encrypt(message);
+        final byte[] authenticator2 = aliceRatchet.authenticate(message);
+        aliceRatchet.rotateSendingChainKey();
+        final EncryptionResult encrypted3 = aliceRatchet.encrypt(message);
+        final byte[] authenticator3 = aliceRatchet.authenticate(message);
+        // Start decrypting and verifying using Alice's double ratchet.
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation.dhPublicKey);
+        bobRatchet.verify(0, 0, message, authenticator);
+        assertArrayEquals(message, bobRatchet.decrypt(0, 0, encrypted.ciphertext, encrypted.nonce));
+        bobRatchet.rotateReceivingChainKey();
+        bobRatchet.verify(0, 1, message, authenticator2);
+        assertArrayEquals(message, bobRatchet.decrypt(0, 1, encrypted2.ciphertext, encrypted2.nonce));
+        bobRatchet.rotateReceivingChainKey();
+        bobRatchet.verify(0, 2, message, authenticator3);
+        assertArrayEquals(message, bobRatchet.decrypt(0, 2, encrypted3.ciphertext, encrypted3.nonce));
+        // Bob starts sending response messages.
+        final RotationResult rotation2 = bobRatchet.rotateSenderKeys();
+        assertNull(rotation2.dhPublicKey);
+        final EncryptionResult encrypted4 = bobRatchet.encrypt(message);
+        final byte[] authenticator4 = bobRatchet.authenticate(message);
+        bobRatchet.rotateSendingChainKey();
+        final EncryptionResult encrypted5 = bobRatchet.encrypt(message);
+        final byte[] authenticator5 = bobRatchet.authenticate(message);
+        bobRatchet.rotateSendingChainKey();
+        final EncryptionResult encrypted6 = bobRatchet.encrypt(message);
+        final byte[] authenticator6 = bobRatchet.authenticate(message);
+        // Alice starts decrypting and verifying the responses.
+        aliceRatchet.rotateReceiverKeys(bobRatchet.getECDHPublicKey(), rotation2.dhPublicKey);
+        aliceRatchet.verify(1, 0, message, authenticator4);
+        assertArrayEquals(message, aliceRatchet.decrypt(1, 0, encrypted4.ciphertext, encrypted4.nonce));
+        aliceRatchet.rotateReceivingChainKey();
+        aliceRatchet.verify(1, 1, message, authenticator5);
+        assertArrayEquals(message, aliceRatchet.decrypt(1, 1, encrypted5.ciphertext, encrypted5.nonce));
+        aliceRatchet.rotateReceivingChainKey();
+        aliceRatchet.verify(1, 2, message, authenticator6);
+        assertArrayEquals(message, aliceRatchet.decrypt(1, 2, encrypted6.ciphertext, encrypted6.nonce));
     }
 
     private SharedSecret4 generateSharedSecret() {
