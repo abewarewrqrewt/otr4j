@@ -193,6 +193,23 @@ public class DoubleRatchetTest {
         assertArrayEquals(message, bobRatchet.decrypt(0, 0, encrypted.ciphertext, encrypted.nonce));
     }
 
+    @Test(expected = VerificationException.class)
+    public void testDoubleRatchetWorksBadAuthenticator() throws VerificationException, RotationLimitationException {
+        final byte[] message = "Hello Alice!".getBytes(UTF_8);
+        // Prepare ratchets for Alice and Bob
+        final byte[] initialRootKey = random(RANDOM, new byte[64]);
+        final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
+        final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
+                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+        final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
+                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                initialRootKey.clone());
+        final RotationResult rotation = aliceRatchet.rotateSenderKeys();
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation.dhPublicKey);
+        bobRatchet.verify(0, 0, message, random(RANDOM, new byte[64]));
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testDoubleRatchetCannotRotateSenderKeysWithoutPublicKeys() {
         // Prepare ratchets for Alice and Bob
