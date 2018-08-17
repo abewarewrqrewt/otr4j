@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
+import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
@@ -136,9 +137,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Nonnull
     @Override
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
-        // FIXME to be implemented.
-        throw new UnsupportedOperationException("To be implemented.");
+    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage message) {
+        // Display the message to the user, but warn him that the message was received unencrypted.
+        final String cleanText = message.getCleanText();
+        unencryptedMessageReceived(context.getHost(), this.sessionID, cleanText);
+        return cleanText;
     }
 
     @Nullable
@@ -196,7 +199,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 break;
             case TLV.DISCONNECTED: // TLV1
                 // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
-                // FIXME consider checking if final MAC codes are revealed. (May not be so easy.)
                 context.setState(new StateFinished(this.sessionID));
                 break;
             // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
