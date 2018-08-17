@@ -62,7 +62,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
-                       @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
+            @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
         super();
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
@@ -73,7 +73,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ValidationException {
+            throws OtrCryptoException, ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -83,14 +83,13 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         }
         // OTR: "Ignore the message."
         LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
-            message.getType());
+                message.getType());
         return null;
     }
 
     @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
-                                                         @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ValidationException {
+            @Nonnull final IdentityMessage message) throws OtrCryptoException, ValidationException {
         IdentityMessages.validate(message);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
@@ -103,12 +102,11 @@ final class StateAwaitingAuthR extends AbstractAuthState {
 
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
-        throws OtrCryptoException, ValidationException {
-
+            throws OtrCryptoException, ValidationException {
         final ClientProfilePayload ourClientProfile = context.getClientProfile();
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         validate(message, ourClientProfile, context.getRemoteAccountID(), context.getLocalAccountID(),
-            this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
+                this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         try {
             context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
@@ -122,7 +120,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
-            ourLongTermKeyPair.getPublicKey(), theirClientProfile.getLongTermPublicKey(), message.getX(), t);
+                ourLongTermKeyPair.getPublicKey(), theirClientProfile.getLongTermPublicKey(), message.getX(), t);
         return new AuthIMessage(Session.OTRv.FOUR, senderTag.getValue(), receiverTag.getValue(), sigma);
     }
 

@@ -36,10 +36,9 @@ final class StateExpect1 extends AbstractSMPState {
         this(sr, status, null, null, null, null, null);
     }
 
-    private StateExpect1(@Nonnull final SecureRandom sr,
-                         @Nonnull final SMPStatus status, @Nullable final BigInteger x2,
-                         @Nullable final BigInteger x3, @Nullable final BigInteger g2,
-                         @Nullable final BigInteger g3, @Nullable final BigInteger g3o) {
+    private StateExpect1(@Nonnull final SecureRandom sr, @Nonnull final SMPStatus status, @Nullable final BigInteger x2,
+            @Nullable final BigInteger x3, @Nullable final BigInteger g2, @Nullable final BigInteger g3,
+            @Nullable final BigInteger g3o) {
         super(sr);
         this.status = status;
         this.x2 = x2;

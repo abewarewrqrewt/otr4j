@@ -80,9 +80,8 @@ public final class MysteriousT implements OtrEncodable {
      */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     public MysteriousT(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
-                       final byte flags, final int senderKeyID, final int recipientKeyID,
-                       @Nonnull final DHPublicKey nextDH, @Nonnull final byte[] ctr,
-                       @Nonnull final byte[] encryptedMessage) {
+            final byte flags, final int senderKeyID, final int recipientKeyID, @Nonnull final DHPublicKey nextDH,
+            @Nonnull final byte[] ctr, @Nonnull final byte[] encryptedMessage) {
         if (protocolVersion < OTRv.TWO || protocolVersion > OTRv.THREE) {
             throw new IllegalArgumentException("Illegal protocol version specified.");
         }

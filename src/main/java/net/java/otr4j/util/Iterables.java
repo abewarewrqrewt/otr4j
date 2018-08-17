@@ -47,7 +47,7 @@ public final class Iterables {
      */
     @Nullable
     public static <T, S extends T> S findByType(@Nonnull final Iterable<T> iterable, @Nonnull final Class<S> fieldType,
-                                                @Nullable final S defaultValue) {
+            @Nullable final S defaultValue) {
         for (final T field : iterable) {
             if (fieldType.isInstance(field)) {
                 return fieldType.cast(field);

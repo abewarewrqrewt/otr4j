@@ -246,7 +246,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @param senderInstanceTag Our own instance tag with which new OTR-encoded messages are sent.
      */
     SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener,
-                @Nonnull final InstanceTag senderInstanceTag) {
+            @Nonnull final InstanceTag senderInstanceTag) {
         this(null, sessionID, listener, senderInstanceTag, ZERO_TAG, new SecureRandom(), StateInitial.empty());
     }
 
@@ -343,7 +343,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             // Without it, they do not have access to the Message Keys that they need to send encrypted messages. (For
             // now, just log the incident and assume things will be alright.)
             logger.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.",
-                e);
+                    e);
         }
         if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
@@ -436,13 +436,13 @@ final class SessionImpl implements Session, Context, AuthContext {
             final Fragment fragment = (Fragment) m;
             if (ZERO_TAG.equals(fragment.getSendertag())) {
                 logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
-                    new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
+                        new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
                 return null;
             }
 
             // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
             if (fragment.getReceivertag().getValue() != 0
-                && fragment.getReceivertag().getValue() != this.senderTag.getValue()) {
+                    && fragment.getReceivertag().getValue() != this.senderTag.getValue()) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
                 messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
@@ -459,7 +459,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return slave.handleFragment(fragment);
         } else if (masterSession == this && m instanceof AbstractEncodedMessage
                 && (((AbstractEncodedMessage) m).protocolVersion == OTRv.THREE
-                    || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
+                || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
             // In case of OTRv3 delegate message processing to dedicated slave
             // session.
             final AbstractEncodedMessage encodedM = (AbstractEncodedMessage) m;
@@ -579,7 +579,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             }
         } catch (final ProtocolException e) {
             logger.log(Level.FINE, "Rejected message fragment from sender instance "
-                + fragment.getSendertag().getValue(), e);
+                    + fragment.getSendertag().getValue(), e);
             return null;
         }
         final Message encoded;
@@ -655,8 +655,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
-            new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
-                this.sessionState.getClass().getName()});
+                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final ProtocolException e) {
@@ -669,8 +668,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
-            new Object[]{sessionId.getAccountID(), sessionId.getUserID(),
-                this.sessionState.getClass().getName()});
+                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final ProtocolException e) {
@@ -1130,7 +1128,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Nonnull
     private AbstractEncodedMessage respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
-                                               @Nonnull final String queryTag) throws OtrException {
+            @Nonnull final String queryTag) throws OtrException {
         if (!OTRv.SUPPORTED.contains(version)) {
             throw new OtrException("Unsupported OTR version encountered.");
         }
@@ -1198,7 +1196,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Override
     public void respondSmp(@Nonnull final InstanceTag receiverTag, @Nullable final String question,
-                           @Nonnull final String secret) throws OtrException {
+            @Nonnull final String secret) throws OtrException {
         final SessionImpl session = receiverTag.equals(this.receiverTag) ? this : slaveSessions.get(receiverTag);
         if (session == null) {
             throw new IllegalArgumentException("Unknown receiver instance tag: " + receiverTag.getValue());

@@ -232,7 +232,7 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
-        throws OtrCryptoException {
+            throws OtrCryptoException {
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
         final SecretKeySpec keyspec = new SecretKeySpec(key, HMAC_SHA256);
@@ -469,7 +469,7 @@ public final class OtrCryptoEngine {
         final DSAParams dsaParams = privateKey.getParams();
         final DSAParameters bcDSAParameters = new DSAParameters(dsaParams.getP(), dsaParams.getQ(), dsaParams.getG());
         final DSAPrivateKeyParameters bcDSAPrivateKeyParms = new DSAPrivateKeyParameters(privateKey.getX(),
-            bcDSAParameters);
+                bcDSAParameters);
 
         final DSASigner dsaSigner = new DSASigner();
         dsaSigner.init(true, bcDSAPrivateKeyParms);
@@ -536,7 +536,7 @@ public final class OtrCryptoEngine {
     }
 
     private static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] r,
-                               @Nonnull final byte[] s) throws OtrCryptoException {
+            @Nonnull final byte[] s) throws OtrCryptoException {
         assert !allZeroBytes(r) : "Expected non-zero bytes for r. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(s) : "Expected non-zero bytes for s. This may indicate that a critical bug is present, or it may be a false warning.";
         verify(b, pubKey, new BigInteger(1, r), new BigInteger(1, s));
@@ -648,7 +648,7 @@ public final class OtrCryptoEngine {
      * @throws OtrCryptoException Throws exception in case of inequality.
      */
     public static void checkEquals(@Nonnull final byte[] a, @Nonnull final byte[] b, @Nonnull final String message)
-        throws OtrCryptoException {
+            throws OtrCryptoException {
         assert !allZeroBytes(a) : "Expected non-zero bytes for a. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         if (!constantTimeEquals(a, b)) {
@@ -682,7 +682,7 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static DSAPublicKey createDSAPublicKey(@Nonnull final BigInteger y, @Nonnull final BigInteger p,
-                                               @Nonnull final BigInteger q, @Nonnull final BigInteger g)
+            @Nonnull final BigInteger q, @Nonnull final BigInteger g)
             throws OtrCryptoException {
         final KeyFactory keyFactory;
         try {

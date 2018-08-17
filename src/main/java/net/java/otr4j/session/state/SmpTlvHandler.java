@@ -227,7 +227,7 @@ public final class SmpTlvHandler {
             // Send msg with next smp msg content.
             final TLV sendtlv = new TLV(TLV.SMP3, nextmsg);
             final DataMessage m = session.transformSending(this.sessionContext,
-                "", Collections.singletonList(sendtlv));
+                    "", Collections.singletonList(sendtlv));
             this.sessionContext.injectMessage(m);
         } catch (final SMAbortedException e) {
             sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));

@@ -95,7 +95,7 @@ final class DoubleRatchet implements AutoCloseable {
     private int pn = 0;
 
     DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret,
-                  @Nonnull final byte[] initialRootKey) {
+            @Nonnull final byte[] initialRootKey) {
         this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
         this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);
@@ -175,7 +175,7 @@ final class DoubleRatchet implements AutoCloseable {
     @Nonnull
     Result encrypt(@Nonnull final byte[] data) {
         LOGGER.log(Level.FINEST, "Generating message keys for encryption of ratchet {0}, message {1}.",
-            new Object[]{this.i - 1, this.senderRatchet.messageID});
+                new Object[]{this.i - 1, this.senderRatchet.messageID});
         try (MessageKeys keys = this.generateSendingKeys()) {
             return keys.encrypt(data);
         }
@@ -190,7 +190,7 @@ final class DoubleRatchet implements AutoCloseable {
     @Nonnull
     byte[] authenticate(@Nonnull final byte[] dataMessageSectionsHash) {
         LOGGER.log(Level.FINEST, "Generating message keys for authentication of ratchet {0}, message {1}.",
-            new Object[]{this.i - 1, this.senderRatchet.messageID});
+                new Object[]{this.i - 1, this.senderRatchet.messageID});
         final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsHash,
             DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
         try (MessageKeys keys = this.generateSendingKeys()) {
@@ -215,9 +215,9 @@ final class DoubleRatchet implements AutoCloseable {
      */
     @Nonnull
     byte[] decrypt(final int ratchetId, final int messageId, @Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce)
-        throws KeyRotationLimitationException {
+            throws KeyRotationLimitationException {
         LOGGER.log(Level.FINEST, "Generating message keys for decryption of ratchet {0}, message {1}.",
-            new Object[]{this.i - 1, this.receiverRatchet.messageID});
+                new Object[]{this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
             return keys.decrypt(ciphertext, nonce);
         }
@@ -234,9 +234,9 @@ final class DoubleRatchet implements AutoCloseable {
      * @throws VerificationException Thrown in case verification has failed.
      */
     void verify(final int ratchetId, final int messageId, @Nonnull final byte[] dataMessageSectionsContent,
-                @Nonnull final byte[] authenticator) throws KeyRotationLimitationException, VerificationException {
+            @Nonnull final byte[] authenticator) throws KeyRotationLimitationException, VerificationException {
         LOGGER.log(Level.FINEST, "Generating message keys for verification of ratchet {0}, message {1}.",
-            new Object[]{this.i - 1, this.receiverRatchet.messageID});
+                new Object[]{this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
             final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsContent,
                 DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
@@ -300,7 +300,7 @@ final class DoubleRatchet implements AutoCloseable {
     void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) {
         requireNotClosed();
         LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
-            new Object[]{this.i, nextDH != null});
+                new Object[]{this.i, nextDH != null});
         this.pn = this.receiverRatchet.messageID;
         final boolean performDHRatchet = this.i % 3 == 0;
         final byte[] previousRootKey = this.rootKey.clone();
@@ -477,7 +477,7 @@ final class DoubleRatchet implements AutoCloseable {
          * @param extraSymmetricKey extra symmetric key
          */
         private MessageKeys(@Nonnull final SecureRandom random, @Nonnull final byte[] encrypt,
-                            @Nonnull final byte[] extraSymmetricKey) {
+                @Nonnull final byte[] extraSymmetricKey) {
             this.random = requireNonNull(random);
             this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
             this.extraSymmetricKey = requireLengthExactly(EXTRA_SYMMETRIC_KEY_LENGTH_BYTES, extraSymmetricKey);
@@ -550,7 +550,7 @@ final class DoubleRatchet implements AutoCloseable {
          * @param authenticator          The authenticator value.
          */
         void verify(@Nonnull final byte[] dataMessageSectionHash, @Nonnull final byte[] authenticator)
-            throws VerificationException {
+                throws VerificationException {
             requireNotClosed();
             final byte[] expectedAuthenticator = authenticate(dataMessageSectionHash);
             try {

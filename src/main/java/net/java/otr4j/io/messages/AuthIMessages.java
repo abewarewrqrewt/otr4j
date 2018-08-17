@@ -41,11 +41,11 @@ public final class AuthIMessages {
     // TODO ensure that sender and receiver instance tags are verified prior to arriving here!
     // FIXME pass ClientProfile i.s.o. ClientProfilePayload. We only need to validate them once.
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
-                                @Nonnull final ClientProfilePayload ourProfilePayload,
-                                @Nonnull final ClientProfilePayload profilePayloadBob, @Nonnull final Point x,
-                                @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
-                                @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID)
-        throws OtrCryptoException, ValidationException {
+            @Nonnull final ClientProfilePayload ourProfilePayload,
+            @Nonnull final ClientProfilePayload profilePayloadBob, @Nonnull final Point x, @Nonnull final Point y,
+            @Nonnull final BigInteger a, @Nonnull final BigInteger b, @Nonnull final String senderAccountID,
+            @Nonnull final String receiverAccountID)
+            throws OtrCryptoException, ValidationException {
 
         if (message.getType() != AuthIMessage.MESSAGE_AUTH_I) {
             throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");

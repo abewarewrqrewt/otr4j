@@ -81,13 +81,13 @@ public final class StateInitial extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ValidationException {
+            throws OtrCryptoException, ValidationException {
 
         if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
         }
         if ((message.protocolVersion == Session.OTRv.TWO || message.protocolVersion == Session.OTRv.THREE)
-            && message instanceof DHCommitMessage) {
+                && message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
         }
         if (message.protocolVersion == Session.OTRv.FOUR && message instanceof IdentityMessage) {
@@ -95,7 +95,7 @@ public final class StateInitial extends AbstractAuthState {
         }
         // OTR: "Ignore the message."
         LOGGER.log(Level.INFO, "We only expect to receive a DH Commit message or an Identity message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
-            message.getType());
+                message.getType());
         return null;
     }
 
@@ -110,8 +110,8 @@ public final class StateInitial extends AbstractAuthState {
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
-        context.setState(new StateAwaitingRevealSig(message.protocolVersion,
-                keypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
+        context.setState(new StateAwaitingRevealSig(message.protocolVersion, keypair, message.dhPublicKeyHash,
+                message.dhPublicKeyEncrypted));
         LOGGER.finest("Sending D-H key message.");
         // OTR: "Sends Bob gy"
         return new DHKeyMessage(message.protocolVersion, (DHPublicKey) keypair.getPublic(),
@@ -121,7 +121,7 @@ public final class StateInitial extends AbstractAuthState {
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ValidationException {
+            throws OtrCryptoException, ValidationException {
 
         validate(message);
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
@@ -137,13 +137,13 @@ public final class StateInitial extends AbstractAuthState {
             context.getReceiverInstanceTag().getValue(), this.queryTag, context.getLocalAccountID(),
             context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
-            theirClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+                theirClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(),
-            sigma);
+                context.getReceiverInstanceTag().getValue(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(),
+                sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
-            message.getClientProfile()));
+                message.getClientProfile()));
         return authRMessage;
     }
 }

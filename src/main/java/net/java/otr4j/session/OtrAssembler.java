@@ -153,12 +153,12 @@ final class OtrAssembler {
             }
             if (fragment.getTotal() != parts.length) {
                 LOGGER.log(Level.FINEST, "OTRv4 fragmentation of other party may be broken. Initial total is different from this message. Ignoring this fragment. (Original: {0}, current fragment: {1})",
-                    new Object[]{parts.length, fragment.getTotal()});
+                        new Object[]{parts.length, fragment.getTotal()});
                 throw new ProtocolException("Rejecting fragment with different total value than other fragments of the same series.");
             }
             if (parts[fragment.getIndex() - 1] != null) {
                 LOGGER.log(Level.FINEST, "Fragment with index {0} is already present. Ignoring this fragment.",
-                    new Object[]{fragment.getIndex()});
+                        new Object[]{fragment.getIndex()});
                 throw new ProtocolException("Rejecting fragment with index that is already present.");
             }
             parts[fragment.getIndex()-1] = fragment.getContent();

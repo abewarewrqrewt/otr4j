@@ -58,8 +58,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     private final byte[] remotePublicKeyEncrypted;
 
     StateAwaitingRevealSig(final int version, @Nonnull final KeyPair keypair,
-            @Nonnull final byte[] remotePublicKeyHash,
-            @Nonnull final byte[] remotePublicKeyEncrypted) {
+            @Nonnull final byte[] remotePublicKeyHash, @Nonnull final byte[] remotePublicKeyEncrypted) {
         super();
         if (version < 2 || version > 3) {
             throw new IllegalArgumentException("unsupported version specified");
@@ -74,7 +73,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
+            throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
 
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
@@ -108,7 +107,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // OTR: "Retransmit your D-H Key Message (the same one as you sent when you entered AUTHSTATE_AWAITING_REVEALSIG).
         // Forget the old D-H Commit message, and use this new one instead."
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
-            message.dhPublicKeyEncrypted));
+                message.dhPublicKeyEncrypted));
         return new DHKeyMessage(message.protocolVersion, (DHPublicKey) this.keypair.getPublic(),
                 context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue());
     }
@@ -128,7 +127,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
      */
     @Nonnull
     private SignatureMessage handleRevealSignatureMessage(@Nonnull final AuthContext context, @Nonnull final RevealSignatureMessage message)
-        throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
+            throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
         // OTR: "Use the received value of r to decrypt the value of gx received in the D-H Commit Message, and verify
         // the hash therein. Decrypt the encrypted signature, and verify the signature and the MACs."
         final DHPublicKey remoteDHPublicKey;
@@ -170,7 +169,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
         // Transition to ENCRYPTED message state.
         final SecurityParameters params = new SecurityParameters(this.version, this.keypair,
-            remoteMysteriousX.getLongTermPublicKey(), remoteDHPublicKey, s);
+                remoteMysteriousX.getLongTermPublicKey(), remoteDHPublicKey, s);
         context.secure(params);
         // OTR: "Reply with a Signature Message."
         // Start construction of Signature message.
@@ -179,7 +178,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // OTR: "Compute the 32-byte value MA to be the SHA256-HMAC of the following data, using the key m1':
         // gy (MPI), gx (MPI), pubA (PUBKEY), keyidA (INT)"
         final SignatureM signatureM = new SignatureM((DHPublicKey) this.keypair.getPublic(), remoteDHPublicKey,
-            (DSAPublicKey) localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
+                (DSAPublicKey) localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
         final byte[] signature = OtrCryptoEngine.sign(mhash, (DSAPrivateKey) localLongTermKeyPair.getPrivate());

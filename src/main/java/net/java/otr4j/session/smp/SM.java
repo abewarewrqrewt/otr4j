@@ -86,7 +86,7 @@ public final class SM {
     @Nonnull
     static byte[] serialize(@Nonnull final BigInteger[] ints) {
         final OtrOutputStream serialization = new OtrOutputStream()
-            .writeInt(ints.length);
+                .writeInt(ints.length);
         for (final BigInteger i : ints) {
             serialization.writeBigInt(i);
         }

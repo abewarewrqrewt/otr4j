@@ -134,8 +134,7 @@ public final class StatePlaintext extends AbstractState {
             requireEncryptedMessage(context.getHost(), sessionId, msgText);
             return null;
         }
-        if (!otrPolicy.isSendWhitespaceTag()
-                || context.getOfferStatus() == OfferStatus.rejected) {
+        if (!otrPolicy.isSendWhitespaceTag() || context.getOfferStatus() == OfferStatus.rejected) {
             // As we do not want to send a specially crafted whitespace tag
             // message, just return the original message text to be sent.
             return new PlainTextMessage("", Collections.<Integer>emptySet(), msgText);

@@ -59,8 +59,8 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     private final ClientProfilePayload profileBob;
 
     StateAwaitingAuthI(@Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-                       @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
-                       @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
+            @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
+            @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
         super();
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
@@ -74,7 +74,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrCryptoException, ValidationException {
+            throws OtrCryptoException, ValidationException {
         // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
@@ -86,12 +86,12 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         }
         // OTR: "Ignore the message."
         LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
-            message.getType());
+                message.getType());
         return null;
     }
 
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
-        throws OtrCryptoException, ValidationException {
+            throws OtrCryptoException, ValidationException {
         IdentityMessages.validate(message);
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
         final ClientProfilePayload profilePayload = context.getClientProfile();
@@ -103,23 +103,24 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             context.getReceiverInstanceTag().getValue(), this.queryTag, context.getRemoteAccountID(),
             context.getLocalAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
-            theirNewClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+                theirNewClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
-            this.ourDHKeyPair.getPublicKey(), sigma);
+                context.getReceiverInstanceTag().getValue(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
+                this.ourDHKeyPair.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
-            message.getB(), ourProfile, message.getClientProfile()));
+                message.getB(), ourProfile, message.getClientProfile()));
         return authRMessage;
     }
 
     private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message)
-        throws OtrCryptoException, ValidationException {
+            throws OtrCryptoException, ValidationException {
         try {
             validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
-                this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(), context.getLocalAccountID());
+                    this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(),
+                    context.getLocalAccountID());
             final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
-                this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
+                    this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
             context.secure(params);
         } finally {
             context.setState(StateInitial.empty());

@@ -76,7 +76,7 @@ public final class OtrSessionManager {
      */
     @Nonnull
     public static Session createSession(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host,
-                                        @Nonnull final InstanceTag senderInstanceTag) {
+            @Nonnull final InstanceTag senderInstanceTag) {
         return new SessionImpl(sessionID, host, senderInstanceTag);
     }
 

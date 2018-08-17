@@ -62,11 +62,10 @@ public final class MysteriousT4 {
      */
     @Nonnull
     public static byte[] encode(@Nonnull final Purpose purpose, @Nonnull final ClientProfilePayload profileAlice,
-                                @Nonnull final ClientProfilePayload profileBob, @Nonnull final Point x,
-                                @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
-                                final int senderInstanceTag, final int receiverInstanceTag,
-                                @Nonnull final String queryTag, @Nonnull final String senderContactID,
-                                @Nonnull final String receiverContactID) {
+            @Nonnull final ClientProfilePayload profileBob, @Nonnull final Point x, @Nonnull final Point y,
+            @Nonnull final BigInteger a, @Nonnull final BigInteger b, final int senderInstanceTag,
+            final int receiverInstanceTag, @Nonnull final String queryTag, @Nonnull final String senderContactID,
+            @Nonnull final String receiverContactID) {
         final KDFUsage bobsProfileUsage;
         final KDFUsage alicesProfileUsage;
         final KDFUsage phiUsage;
@@ -113,11 +112,11 @@ public final class MysteriousT4 {
     // TODO generatePhi is package-private only for purpose of testing. Consider if we want to make this private and test only through MysteriousT4-encoding.
     @Nonnull
     static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag, @Nonnull final String queryTag,
-                              @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
+            @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
         final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
         return new OtrOutputStream().writeInt(senderInstanceTag).writeInt(receiverInstanceTag).writeData(queryTagBytes)
-            .writeData(senderIDBytes).writeData(receiverIDBytes).toByteArray();
+                .writeData(senderIDBytes).writeData(receiverIDBytes).toByteArray();
     }
 }

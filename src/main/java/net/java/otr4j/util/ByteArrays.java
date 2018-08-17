@@ -17,7 +17,7 @@ public final class ByteArrays {
     /**
      * Index for hexadecimal symbols.
      */
-    private static final char HEX_ENCODER[] = {'0', '1', '2', '3', '4', '5',
+    private static final char[] HEX_ENCODER = {'0', '1', '2', '3', '4', '5',
         '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     /**
@@ -102,7 +102,7 @@ public final class ByteArrays {
      * @return Returns hexadecimal string representation.
      */
     @Nonnull
-    public static String toHexString(@Nonnull final byte in[]) {
+    public static String toHexString(@Nonnull final byte[] in) {
         final StringBuilder out = new StringBuilder(in.length * 2);
         for (final byte b : in) {
             out.append(HEX_ENCODER[(b >>> 4) & 0x0F]);

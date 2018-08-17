@@ -28,7 +28,7 @@ public final class AuthIMessage extends AbstractEncodedMessage {
      * @param sigma             the ring signature
      */
     public AuthIMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
-                        @Nonnull final OtrCryptoEngine4.Sigma sigma) {
+            @Nonnull final OtrCryptoEngine4.Sigma sigma) {
         super(requireAtLeast(Session.OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
         this.sigma = requireNonNull(sigma);
     }

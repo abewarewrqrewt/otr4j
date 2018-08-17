@@ -35,7 +35,7 @@ public final class SecurityParameters4 {
      */
     // TODO consider renaming x and a to something less wrong. x and a are specific for alice, however SecurityParameters4 is used for both parties.
     SecurityParameters4(@Nonnull final Component initializationComponent, @Nonnull final ECDHKeyPair ecdhKeyPair,
-                        @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a) {
+            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a) {
         this.initializationComponent = requireNonNull(initializationComponent);
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);

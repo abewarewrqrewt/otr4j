@@ -38,7 +38,7 @@ public final class SignatureX implements OtrEncodable {
      * @param signature            the corresponding signature
      */
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
-                      @Nonnull final byte[] signature) {
+            @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.dhKeyID = ourKeyID;
         assert !allZeroBytes(signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";

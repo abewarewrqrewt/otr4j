@@ -83,8 +83,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     @Nonnull
     public static ClientProfilePayload sign(@Nonnull final ClientProfile profile,
-                                            @Nullable final DSAPrivateKey dsaPrivateKey,
-                                            @Nonnull final EdDSAKeyPair eddsaKeyPair) {
+            @Nullable final DSAPrivateKey dsaPrivateKey,
+            @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
@@ -284,10 +284,10 @@ public final class ClientProfilePayload implements OtrEncodable {
             throw new ValidationException("Client Profile has expired.");
         }
         final OtrOutputStream out = new OtrOutputStream()
-            .write(instanceTagFields.get(0))
-            .write(publicKeyFields.get(0))
-            .write(versionsFields.get(0))
-            .write(expirationDateFields.get(0));
+                .write(instanceTagFields.get(0))
+                .write(publicKeyFields.get(0))
+                .write(versionsFields.get(0))
+                .write(expirationDateFields.get(0));
         if (dsaPublicKeyFields.size() == 1) {
             out.write(dsaPublicKeyFields.get(0));
         }

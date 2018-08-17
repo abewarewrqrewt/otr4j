@@ -51,7 +51,7 @@ public final class EncodedMessageParser {
     // FIXME unit test deserialization of OTRv4 (data) messages.
     @Nonnull
     public static AbstractEncodedMessage parse(@Nonnull final OtrInputStream input) throws OtrCryptoException,
-        UnsupportedLengthException, ProtocolException {
+            UnsupportedLengthException, ProtocolException {
         final int protocolVersion = input.readShort();
         if (!SUPPORTED.contains(protocolVersion)) {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);

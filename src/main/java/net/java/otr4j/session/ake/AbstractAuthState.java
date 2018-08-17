@@ -41,7 +41,7 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
-                                           @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
+            @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
         if (!Session.OTRv.SUPPORTED.contains(version)) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
         }
@@ -82,7 +82,7 @@ abstract class AbstractAuthState implements AuthState {
         final byte[] publicKeyHash = sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
-            context.getSenderInstanceTag().getValue(), receiverTag.getValue());
+                context.getSenderInstanceTag().getValue(), receiverTag.getValue());
         LOGGER.finest("Sending DH commit message.");
         context.setState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
@@ -90,7 +90,7 @@ abstract class AbstractAuthState implements AuthState {
 
     @Nonnull
     private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag,
-                                             @Nonnull final String queryTag) {
+            @Nonnull final String queryTag) {
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
@@ -98,7 +98,7 @@ abstract class AbstractAuthState implements AuthState {
         final int receiverTagValue = receiverTag.getValue();
         final ClientProfilePayload profilePayload = context.getClientProfile();
         final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue,
-            profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
+                profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
         context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, message));
         return message;
     }

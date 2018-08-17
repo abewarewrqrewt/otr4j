@@ -71,8 +71,8 @@ public final class SharedSecret4 implements AutoCloseable {
     private BigInteger theirDHPublicKey;
 
     SharedSecret4(@Nonnull final SecureRandom random, @Nullable final DHKeyPair ourDHKeyPair,
-                          @Nullable final ECDHKeyPair ourECDHKeyPair, @Nullable final BigInteger theirDHPublicKey,
-                          @Nullable final Point theirECDHPublicKey) {
+            @Nullable final ECDHKeyPair ourECDHKeyPair, @Nullable final BigInteger theirDHPublicKey,
+            @Nullable final Point theirECDHPublicKey) {
         this.random = requireNonNull(random);
         if ((ourECDHKeyPair == null || ourDHKeyPair == null) && (theirECDHPublicKey == null || theirDHPublicKey == null)) {
             throw new IllegalArgumentException("Expected either local key pairs or remote public keys to be provided. We cannot leave everything null at initialization time.");
@@ -119,7 +119,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public static SharedSecret4 initialize(@Nonnull final SecureRandom random, @Nonnull final byte[] k,
-                                           @Nonnull final SecurityParameters4.Component initializationComponent) {
+            @Nonnull final SecurityParameters4.Component initializationComponent) {
         final ECDHKeyPair initialECDHKeyPair = ECDHKeyPair.generate(kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES));
         final DHKeyPair initialDHKeyPair = DHKeyPair.generate(kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES));
         switch (initializationComponent) {
@@ -226,7 +226,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param theirDHPublicKey   Their DH public key. (Optional)
      */
     public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
-                         @Nullable final BigInteger theirDHPublicKey) {
+            @Nullable final BigInteger theirDHPublicKey) {
         if (this.ecdhKeyPair == null || this.dhKeyPair == null) {
             throw new IllegalStateException("To rotate other party's public keys, it is required that our own keys are available.");
         }

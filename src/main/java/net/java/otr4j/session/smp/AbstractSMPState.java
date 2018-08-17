@@ -18,15 +18,8 @@ abstract class AbstractSMPState {
 
     static final BigInteger G1 = OtrCryptoEngine.GENERATOR;
 
-    static final BigInteger ORDER_S = new BigInteger(
-            "7FFFFFFFFFFFFFFFE487ED5110B4611A62633145C06E0E68" +
-                    "948127044533E63A0105DF531D89CD9128A5043CC71A026E" +
-                    "F7CA8CD9E69D218D98158536F92F8A1BA7F09AB6B6A8E122" +
-                    "F242DABB312F3F637A262174D31BF6B585FFAE5B7A035BF6" +
-                    "F71C35FDAD44CFD2D74F9208BE258FF324943328F6722D9E" +
-                    "E1003E5C50B1DF82CC6D241B0E2AE9CD348B1FD47E9267AF" +
-                    "C1B2AE91EE51D6CB0E3179AB1042A95DCF6A9483B84B4B36" +
-                    "B3861AA7255E4C0278BA36046511B993FFFFFFFFFFFFFFFF", 16);
+    static final BigInteger ORDER_S = new BigInteger("7FFFFFFFFFFFFFFFE487ED5110B4611A62633145C06E0E68948127044533E63A0105DF531D89CD9128A5043CC71A026EF7CA8CD9E69D218D98158536F92F8A1BA7F09AB6B6A8E122F242DABB312F3F637A262174D31BF6B585FFAE5B7A035BF6F71C35FDAD44CFD2D74F9208BE258FF324943328F6722D9EE1003E5C50B1DF82CC6D241B0E2AE9CD348B1FD47E9267AFC1B2AE91EE51D6CB0E3179AB1042A95DCF6A9483B84B4B36B3861AA7255E4C0278BA36046511B993FFFFFFFFFFFFFFFF",
+            16);
 
     private static final int MOD_LEN_BYTES = 192;
 
@@ -217,8 +210,8 @@ abstract class AbstractSMPState {
      * @param version the prefix to use
      * @throws SMException when proof check fails
      */
-    final void checkKnowLog(@Nonnull final BigInteger c, @Nonnull final BigInteger d,
-                            @Nonnull final BigInteger x, final int version) throws SMException {
+    final void checkKnowLog(@Nonnull final BigInteger c, @Nonnull final BigInteger d, @Nonnull final BigInteger x,
+            final int version) throws SMException {
         final BigInteger gd = G1.modPow(d, OtrCryptoEngine.MODULUS);
         final BigInteger xc = x.modPow(c, OtrCryptoEngine.MODULUS);
         final BigInteger gdxc = gd.multiply(xc).mod(OtrCryptoEngine.MODULUS);
@@ -233,9 +226,8 @@ abstract class AbstractSMPState {
      * Proof of knowledge of coordinates with first components being equal
      */
     @Nonnull
-    final BigInteger[] proofEqualCoords(@Nonnull final BigInteger g2,
-                                        @Nonnull final BigInteger g3, @Nonnull final BigInteger secret_mpi,
-                                        @Nonnull final BigInteger r, final int version) {
+    final BigInteger[] proofEqualCoords(@Nonnull final BigInteger g2, @Nonnull final BigInteger g3,
+            @Nonnull final BigInteger secret_mpi, @Nonnull final BigInteger r, final int version) {
         final BigInteger r1 = randomExponent();
         final BigInteger r2 = randomExponent();
 
@@ -259,10 +251,9 @@ abstract class AbstractSMPState {
     /**
      * Verify a proof of knowledge of coordinates with first components being equal
      */
-    final void checkEqualCoords(@Nonnull final BigInteger c, @Nonnull final BigInteger d1,
-                                @Nonnull final BigInteger d2, @Nonnull final BigInteger p,
-                                @Nonnull final BigInteger q, @Nonnull final BigInteger g2,
-                                @Nonnull final BigInteger g3, final int version) throws SMException {
+    final void checkEqualCoords(@Nonnull final BigInteger c, @Nonnull final BigInteger d1, @Nonnull final BigInteger d2,
+            @Nonnull final BigInteger p, @Nonnull final BigInteger q, @Nonnull final BigInteger g2,
+            @Nonnull final BigInteger g3, final int version) throws SMException {
         /* To verify, we test that hash(g3^d1 * p^c, g1^d1 * g2^d2 * q^c) = c
          * If indeed c = hash(g3^r1, g1^r1 g2^r2), d1 = r1 - r*c,
          * d2 = r2 - secret*c.  And if indeed p = g3^r, q = g1^r * g2^secret
@@ -294,8 +285,7 @@ abstract class AbstractSMPState {
      * Proof of knowledge of logs with exponents being equal
      */
     @Nonnull
-    final BigInteger[] proofEqualLogs(@Nonnull final BigInteger qab,
-                                      @Nonnull final BigInteger x3, final int version) {
+    final BigInteger[] proofEqualLogs(@Nonnull final BigInteger qab, @Nonnull final BigInteger x3, final int version) {
         final BigInteger r = randomExponent();
 
         /* Compute the value of c, as c = h(g1^r, (Qa/Qb)^r) */
@@ -313,9 +303,8 @@ abstract class AbstractSMPState {
     /**
      * Verify a proof of knowledge of logs with exponents being equal
      */
-    final void checkEqualLogs(@Nonnull final BigInteger c, @Nonnull final BigInteger d,
-                              @Nonnull final BigInteger r, @Nonnull final BigInteger g3o,
-                              @Nonnull final BigInteger qab, final int version) throws SMException {
+    final void checkEqualLogs(@Nonnull final BigInteger c, @Nonnull final BigInteger d, @Nonnull final BigInteger r,
+            @Nonnull final BigInteger g3o, @Nonnull final BigInteger qab, final int version) throws SMException {
         /* Here, we recall the exponents used to create g3.
          * If we have previously seen g3o = g1^x where x is unknown
          * during the DH exchange to produce g3, then we may proceed with:

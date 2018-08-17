@@ -40,9 +40,9 @@ public final class AuthRMessages {
      */
     // TODO make sure that sender and receiver instance tags are verified prior to arriving here!
     public static void validate(@Nonnull final AuthRMessage message, @Nonnull final ClientProfilePayload ourClientProfilePayload,
-                                @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
-                                @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
-                                @Nonnull final String queryTag) throws OtrCryptoException, ValidationException {
+            @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
+            @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
+            @Nonnull final String queryTag) throws OtrCryptoException, ValidationException {
         if (message.getType() != AuthRMessage.MESSAGE_AUTH_R) {
             throw new IllegalStateException("Auth-R message should not have any other type than 0x91.");
         }
@@ -60,9 +60,9 @@ public final class AuthRMessages {
         final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
         final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
-            receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
-            message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
+                receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag,
+                message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
-            message.getSigma(), t);
+                message.getSigma(), t);
     }
 }

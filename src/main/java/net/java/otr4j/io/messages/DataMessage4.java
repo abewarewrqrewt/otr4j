@@ -48,10 +48,9 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      */
     // FIXME consider converting DataMessage4 to using InstanceTag instead of int types.
     public DataMessage4(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
-                        final byte flags, final int pn, final int i, final int j, @Nonnull final Point ecdhPublicKey,
-                        @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
-                        @Nonnull final byte[] ciphertext, @Nonnull final byte[] authenticator,
-                        @Nonnull final byte[] revealedMacs) {
+            final byte flags, final int pn, final int i, final int j, @Nonnull final Point ecdhPublicKey,
+            @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce, @Nonnull final byte[] ciphertext,
+            @Nonnull final byte[] authenticator, @Nonnull final byte[] revealedMacs) {
         super(protocolVersion, senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
         this.pn = pn;

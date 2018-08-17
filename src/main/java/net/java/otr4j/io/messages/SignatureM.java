@@ -36,7 +36,7 @@ public final class SignatureM implements OtrEncodable {
      * @param keyPairID              The key pair ID
      */
     public SignatureM(@Nonnull final DHPublicKey localPubKey, @Nonnull final DHPublicKey remotePublicKey,
-                      @Nonnull final DSAPublicKey localLongTermPublicKey, final int keyPairID) {
+            @Nonnull final DSAPublicKey localLongTermPublicKey, final int keyPairID) {
         this.localPubKey = requireNonNull(localPubKey);
         this.remotePubKey = requireNonNull(remotePublicKey);
         this.localLongTermPubKey = requireNonNull(localLongTermPublicKey);

@@ -206,7 +206,7 @@ public final class OtrCryptoEngine4 {
      * @param outputSize The size of the derivative output.
      */
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID,
-                            @Nonnull final byte[] input, final int outputSize) {
+            @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);
         requireAtLeast(0, outputSize);
         assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
@@ -333,7 +333,7 @@ public final class OtrCryptoEngine4 {
         requireNonNull(ciphertext);
         final XSalsa20Engine engine = new XSalsa20Engine();
         engine.init(false, new ParametersWithIV(new KeyParameter(key, 0, key.length),
-            requireNonNull(iv)));
+                requireNonNull(iv)));
         final byte[] out = new byte[ciphertext.length];
         if (engine.processBytes(ciphertext, 0, ciphertext.length, out, 0) != ciphertext.length) {
             throw new IllegalStateException("Expected to process exactly full size of the message.");
@@ -354,8 +354,7 @@ public final class OtrCryptoEngine4 {
      */
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
-                                 @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
-                                 @Nonnull final byte[] m) {
+            @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
         if (!Ed448.contains(longTermKeyPair.getPublicKey()) || !Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Points need to be on curve Ed448.");
         }
@@ -452,7 +451,7 @@ public final class OtrCryptoEngine4 {
      *                            value.
      */
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
-                                  @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
+            @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
             throw new OtrCryptoException("One of the public keys is invalid.");
         }
@@ -499,7 +498,7 @@ public final class OtrCryptoEngine4 {
         private final BigInteger r3;
 
         private Sigma(@Nonnull final BigInteger c1, @Nonnull final BigInteger r1, @Nonnull final BigInteger c2,
-                      @Nonnull final BigInteger r2, @Nonnull final BigInteger c3, @Nonnull final BigInteger r3) {
+                @Nonnull final BigInteger r2, @Nonnull final BigInteger c3, @Nonnull final BigInteger r3) {
             this.c1 = requireNonNull(c1);
             this.r1 = requireNonNull(r1);
             this.c2 = requireNonNull(c2);

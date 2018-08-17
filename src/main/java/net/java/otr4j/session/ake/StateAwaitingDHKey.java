@@ -128,7 +128,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         // OTR: "Select keyidB, a serial number for the D-H key computed earlier. It is an INT, and must be greater than 0."
         // OTR: "Compute the 32-byte value MB to be the SHA256-HMAC of the following data, using the key m1: gx (MPI), gy (MPI), pubB (PUBKEY), keyidB (INT)"
         final SignatureM sigM = new SignatureM((DHPublicKey) this.keypair.getPublic(), message.dhPublicKey,
-            (DSAPublicKey) longTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
+                (DSAPublicKey) longTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(sigM), s.m1());
         // OTR: "Let XB be the following structure: pubB (PUBKEY), keyidB (INT), sigB(MB) (SIG)"
         final byte[] signature = OtrCryptoEngine.sign(mhash, (DSAPrivateKey) longTermKeyPair.getPrivate());

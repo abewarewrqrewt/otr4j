@@ -56,7 +56,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             exchangeK = exchangeSecret.getK();
         }
         final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK,
-            params.getInitializationComponent());
+                params.getInitializationComponent());
         this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
     }
 
@@ -94,12 +94,12 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nonnull
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-                                         @Nonnull final List<TLV> tlvs) {
+            @Nonnull final List<TLV> tlvs) {
         final DoubleRatchet.Rotation rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
             LOGGER.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
-                new Object[]{rotation.dhPublicKey != null, rotation.revealedMacs.length});
+                    new Object[]{rotation.dhPublicKey != null, rotation.revealedMacs.length});
         } else {
             rotation = null;
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
@@ -119,13 +119,12 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     }
 
     @Nonnull
-    private byte[] generateDataMessageContent(final int ratchetId, final int messageId, @Nonnull final InstanceTag sender,
-                                       @Nonnull final InstanceTag receiver,
-                                       @Nullable final DoubleRatchet.Rotation rotation,
-                                       @Nonnull final Result encryptionResult) {
+    private byte[] generateDataMessageContent(final int ratchetId, final int messageId,
+            @Nonnull final InstanceTag sender, @Nonnull final InstanceTag receiver,
+            @Nullable final DoubleRatchet.Rotation rotation, @Nonnull final Result encryptionResult) {
         final OtrOutputStream out = new OtrOutputStream().writeShort(VERSION).writeByte(DATA_MESSAGE_TYPE)
-            .writeInt(sender.getValue()).writeInt(receiver.getValue()).writeByte(0x00).writeInt(this.ratchet.getPn())
-            .writeInt(ratchetId).writeInt(messageId).writePoint(this.ratchet.getECDHPublicKey());
+                .writeInt(sender.getValue()).writeInt(receiver.getValue()).writeByte(0x00).writeInt(this.ratchet.getPn())
+                .writeInt(ratchetId).writeInt(messageId).writePoint(this.ratchet.getECDHPublicKey());
         if (rotation == null || rotation.dhPublicKey == null) {
             out.writeData(new byte[0]);
         } else {
@@ -151,7 +150,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
-        throws OtrException, ProtocolException {
+            throws OtrException, ProtocolException {
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.
         // TODO try to decrypt using skipped message keys.

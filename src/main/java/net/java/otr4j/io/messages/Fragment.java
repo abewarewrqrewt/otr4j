@@ -70,8 +70,7 @@ public final class Fragment implements Message {
     private final String content;
 
     private Fragment(final int version, final int identifier, @Nonnull final InstanceTag sendertag,
-                     @Nonnull final InstanceTag receivertag, final int index, final int total,
-                     @Nonnull final String content) {
+            @Nonnull final InstanceTag receivertag, final int index, final int total, @Nonnull final String content) {
         this.version = version;
         this.identifier = identifier;
         this.sendertag = requireNonNull(sendertag);

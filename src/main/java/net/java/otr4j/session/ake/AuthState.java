@@ -40,7 +40,7 @@ public interface AuthState {
      */
     @Nonnull
     AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag,
-                                    @Nonnull final String queryTag);
+            @Nonnull final String queryTag);
 
     /**
      * Handle AKE message.

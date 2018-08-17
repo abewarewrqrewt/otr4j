@@ -50,8 +50,8 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
      * @param receiverInstance the receiver instance tag
      */
     public RevealSignatureMessage(final int protocolVersion, @Nonnull final byte[] xEncrypted,
-                                  @Nonnull final byte[] xEncryptedMAC, @Nonnull final byte[] revealedKey,
-                                  final int senderInstance, final int receiverInstance) {
+            @Nonnull final byte[] xEncryptedMAC, @Nonnull final byte[] revealedKey, final int senderInstance,
+            final int receiverInstance) {
         super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
         this.xEncrypted = Objects.requireNonNull(xEncrypted);
         this.xEncryptedMAC = Objects.requireNonNull(xEncryptedMAC);

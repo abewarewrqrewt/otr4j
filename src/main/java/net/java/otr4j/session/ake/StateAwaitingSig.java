@@ -76,7 +76,7 @@ final class StateAwaitingSig extends AbstractAuthState {
     @Nullable
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-        throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
+            throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
 
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
@@ -132,7 +132,7 @@ final class StateAwaitingSig extends AbstractAuthState {
 
     @Nullable
     private SignatureMessage handleSignatureMessage(@Nonnull final AuthContext context, @Nonnull final SignatureMessage message)
-        throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
+            throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
         // OTR: "Decrypt the encrypted signature, and verify the signature and the MACs."
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"
@@ -152,7 +152,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             // Transition to ENCRYPTED session state.
             // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
             final SecurityParameters params = new SecurityParameters(this.version, this.localDHKeyPair,
-                remoteX.getLongTermPublicKey(), remoteDHPublicKey, this.s);
+                    remoteX.getLongTermPublicKey(), remoteDHPublicKey, this.s);
             context.secure(params);
             return null;
         } finally {

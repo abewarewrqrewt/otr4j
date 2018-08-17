@@ -81,7 +81,7 @@ final class OtrFragmenter {
      * @param host OTR engine host calling upon OTR session
      */
     OtrFragmenter(@Nonnull final SecureRandom random, @Nonnull final OtrEngineHost host,
-                  @Nonnull final SessionID sessionID) {
+            @Nonnull final SessionID sessionID) {
         this.random = requireNonNull(random);
         this.host = requireNonNull(host);
         this.sessionID = requireNonNull(sessionID);
@@ -167,7 +167,7 @@ final class OtrFragmenter {
      */
     @Nonnull
     private String[] fragment(final int version, final int sendertag, final int receivertag,
-                              @Nonnull final String message, final int fragmentSize) throws ProtocolException {
+            @Nonnull final String message, final int fragmentSize) throws ProtocolException {
         if (fragmentSize >= message.length()) {
             return new String[]{message};
         }
@@ -185,7 +185,7 @@ final class OtrFragmenter {
 
             final String partialContent = message.substring(previous, end);
             fragments.add(createMessageFragment(version, id, sendertag, receivertag, fragments.size(), num,
-                partialContent));
+                    partialContent));
 
             previous = end;
         }
@@ -207,7 +207,7 @@ final class OtrFragmenter {
      */
     @Nonnull
     private String createMessageFragment(final int version, final int id, final int sendertag, final int receivertag,
-                                         final int count, final int total, @Nonnull final String partialContent) {
+            final int count, final int total, @Nonnull final String partialContent) {
         switch (version) {
         case Session.OTRv.TWO:
             return createV2MessageFragment(count, total, partialContent);
@@ -231,7 +231,7 @@ final class OtrFragmenter {
      */
     @Nonnull
     private String createV4MessageFragment(final int id, final int sendertag, final int receivertag, final int count,
-                                           final int total, @Nonnull final String partialContent) {
+            final int total, @Nonnull final String partialContent) {
         return String.format(OTRV4_MESSAGE_FRAGMENT_FORMAT, id, sendertag, receivertag, count + 1, total, partialContent);
     }
 
@@ -245,7 +245,7 @@ final class OtrFragmenter {
      */
     @Nonnull
     private String createV3MessageFragment(final int sendertag, final int receivertag, final int count, final int total,
-                                           @Nonnull final String partialContent) {
+            @Nonnull final String partialContent) {
         return String.format(OTRV3_MESSAGE_FRAGMENT_FORMAT, sendertag, receivertag, count + 1, total, partialContent);
     }
 

@@ -18,8 +18,8 @@ final class StateExpect2 extends AbstractSMPState {
     private final BigInteger x2;
     final BigInteger x3;
 
-    StateExpect2(@Nonnull final SecureRandom sr, @Nonnull final BigInteger secret_mpi,
-                 @Nonnull final BigInteger x2, @Nonnull final BigInteger x3) {
+    StateExpect2(@Nonnull final SecureRandom sr, @Nonnull final BigInteger secret_mpi, @Nonnull final BigInteger x2,
+            @Nonnull final BigInteger x3) {
         super(sr);
         this.secret_mpi = secret_mpi;
         this.x2 = x2;
