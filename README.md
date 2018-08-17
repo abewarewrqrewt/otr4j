@@ -88,6 +88,7 @@ Development stages:
   * ☑ Introduce compiler warnings failure at build-time
   * ☑ Introduce pmd analysis at build-time.
   * ☐ Introduce SpotBugs analysis at build-time
+  * ☑ Introduce checkstyle at build-time to guard formatting/style
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
 * ...
 
