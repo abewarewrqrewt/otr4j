@@ -155,7 +155,39 @@ public final class OtrCryptoEngine4 {
         /**
          * Usage ID for generating the authentication code for the ring signatures.
          */
-        AUTH((byte) 0x1C);
+        AUTH((byte) 0x1C),
+        /**
+         * Usage ID for SMP value 0x01.
+         */
+        SMP_VALUE_0x01((byte) 0x01),
+        /**
+         * Usage ID for SMP value 0x02.
+         */
+        SMP_VALUE_0x02((byte) 0x02),
+        /**
+         * Usage ID for SMP value 0x03.
+         */
+        SMP_VALUE_0x03((byte) 0x03),
+        /**
+         * Usage ID for SMP value 0x04.
+         */
+        SMP_VALUE_0x04((byte) 0x04),
+        /**
+         * Usage ID for SMP value 0x05.
+         */
+        SMP_VALUE_0x05((byte) 0x05),
+        /**
+         * Usage ID for SMP value 0x06.
+         */
+        SMP_VALUE_0x06((byte) 0x06),
+        /**
+         * Usage ID for SMP value 0x07.
+         */
+        SMP_VALUE_0x07((byte) 0x07),
+        /**
+         * Usage ID for SMP value 0x08.
+         */
+        SMP_VALUE_0x08((byte) 0x08);
 
         private final byte value;
 
@@ -426,6 +458,17 @@ public final class OtrCryptoEngine4 {
         } else {
             throw new IllegalStateException("BUG: eq1 or eq2 or e3 should always be true.");
         }
+    }
+
+    /**
+     * Generate a new random value in Z_q.
+     *
+     * @param random SecureRandom instance
+     * @return Returns a newly generated random value.
+     */
+    // FIXME SMP: not sure what this is exactly. Need to see how to reliably generate these values.
+    public static BigInteger generateRandomValueInZq(@Nonnull final SecureRandom random) {
+        return generateRandomValue(random);
     }
 
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])?

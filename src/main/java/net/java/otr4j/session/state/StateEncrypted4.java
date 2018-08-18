@@ -14,8 +14,9 @@ import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
-import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
+import net.java.otr4j.session.smpv4.SMP;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
+import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
 import net.java.otr4j.session.state.DoubleRatchet.RotationResult;
 import nl.dannyvanheumen.joldilocks.Points;
 
@@ -50,6 +51,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private final DoubleRatchet ratchet;
 
+    private final SMP smp;
+
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         super(context.getSessionID(), context.getHost());
         final byte[] exchangeK;
@@ -60,6 +63,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK,
                 params.getInitializationComponent());
         this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
+        this.smp = new SMP(context.secureRandom());
     }
 
     @Override
@@ -101,7 +105,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
             LOGGER.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
-                    new Object[]{rotation.dhPublicKey != null, rotation.revealedMacs.length});
+                    new Object[] {rotation.dhPublicKey != null, rotation.revealedMacs.length});
         } else {
             rotation = null;
             LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
@@ -111,13 +115,13 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final int ratchetId = this.ratchet.getI();
         final int messageId = this.ratchet.getJ();
         final byte[] dataMessageSectionsContent = generateDataMessageContent(ratchetId, messageId,
-            context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
         final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsContent);
         this.ratchet.rotateSendingChainKey();
         return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
-            this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
-            result.ciphertext, authenticator, rotation == null ? new byte[0] : rotation.revealedMacs);
+                context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
+                this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
+                result.ciphertext, authenticator, rotation == null ? new byte[0] : rotation.revealedMacs);
     }
 
     @Nonnull
@@ -201,7 +205,19 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
                 context.setState(new StateFinished(this.sessionID));
                 break;
-            // FIXME extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
+            case TLV.SMP1:
+            case TLV.SMP2:
+            case TLV.SMP3:
+            case TLV.SMP4:
+                final TLV response = this.smp.process(tlv);
+                if (response != null) {
+                    context.injectMessage(transformSending(context, "", singletonList(response)));
+                }
+                break;
+            case TLV.SMP_ABORT:
+                this.smp.abort();
+                break;
+            // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
                 logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
                 break;
