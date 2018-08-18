@@ -211,6 +211,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             case TLV.SMP4:
                 final TLV response = this.smp.process(tlv);
                 if (response != null) {
+                    // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
                     context.injectMessage(transformSending(context, "", singletonList(response)));
                 }
                 break;
