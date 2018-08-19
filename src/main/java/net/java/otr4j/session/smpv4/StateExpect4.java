@@ -1,19 +1,45 @@
 package net.java.otr4j.session.smpv4;
 
+import nl.dannyvanheumen.joldilocks.Ed448;
+import nl.dannyvanheumen.joldilocks.Point;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x08;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.session.smpv4.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
+import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
+import static org.bouncycastle.util.Arrays.concatenate;
 
 final class StateExpect4 implements SMPState {
 
+    private static final Logger LOGGER = Logger.getLogger(StateExpect4.class.getName());
+
     private final SecureRandom random;
 
-    StateExpect4(@Nonnull final SecureRandom random) {
+    private final BigInteger a3;
+    private final Point g3b;
+    private final Point pa;
+    private final Point pb;
+    private final Point qa;
+    private final Point qb;
+
+    StateExpect4(@Nonnull final SecureRandom random, @Nonnull final BigInteger a3, @Nonnull final Point g3b,
+            @Nonnull final Point pa, @Nonnull final Point pb, @Nonnull final Point qa, @Nonnull final Point qb) {
         this.random = requireNonNull(random);
+        this.a3 = requireNonNull(a3);
+        this.g3b = requireNonNull(g3b);
+        this.pa = requireNonNull(pa);
+        this.pb = requireNonNull(pb);
+        this.qa = requireNonNull(qa);
+        this.qb = requireNonNull(qb);
     }
 
     @Nonnull
@@ -30,31 +56,36 @@ final class StateExpect4 implements SMPState {
         throw new UnsupportedOperationException("To be implemented");
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    public SMPMessage2 process(@Nonnull final SMPContext context, @Nonnull final BigInteger secret,
-            @Nonnull final SMPMessage1 message) throws SMPAbortException {
+    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question, @Nonnull final BigInteger secret) {
+        LOGGER.log(Level.WARNING, "Requested to respond with secret answer, but no request is pending. Ignoring request.");
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
+            throws SMPAbortException {
+        if (message instanceof SMPMessage4) {
+            final SMPMessage4 smp4 = (SMPMessage4) message;
+            if (!Ed448.contains(smp4.rb)) {
+                throw new SMPAbortException("Message validation failed.");
+            }
+            final Point g = basePoint();
+            if (!smp4.cr.equals(hashToScalar(SMP_VALUE_0x08, concatenate(
+                    g.multiply(smp4.d7).add(this.g3b.multiply(smp4.cr)).encode(),
+                    this.qa.add(this.qb.negate()).multiply(smp4.d7).add(smp4.rb.multiply(smp4.cr)).encode())))) {
+                throw new SMPAbortException("Message validation failed.");
+            }
+            // Verify if the zero-knowledge proof succeeds on our end.
+            final Point rab = smp4.rb.multiply(this.a3);
+            if (!rab.equals(this.pa.add(this.pb.negate()))) {
+                throw new SMPAbortException("Final zero-knowledge proof failed.");
+            }
+            context.setState(new StateExpect1(this.random, SUCCEEDED));
+            return null;
+        }
         throw new SMPAbortException("Received SMP message 1 in StateExpect4.");
-    }
-
-    @Nonnull
-    @Override
-    public SMPMessage3 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage2 message)
-            throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 2 in StateExpect4.");
-    }
-
-    @Nonnull
-    @Override
-    public SMPMessage4 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage3 message)
-            throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 3 in StateExpect4.");
-    }
-
-    @Override
-    public void process(@Nonnull final SMPContext context, @Nonnull final SMPMessage4 message) {
-        // FIXME implement message 4 processing in StateExpect1
-        context.setState(new StateExpect1(this.random, SUCCEEDED));
-        throw new UnsupportedOperationException("To be implemented");
     }
 }

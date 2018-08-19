@@ -119,8 +119,10 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
                     this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(),
                     context.getLocalAccountID());
+            // FIXME check if we can pass in a previously validated profileBob instance.
             final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
-                    this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b);
+                    this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b, this.ourProfile.validate(),
+                    this.profileBob.validate());
             context.secure(params);
         } finally {
             context.setState(StateInitial.empty());

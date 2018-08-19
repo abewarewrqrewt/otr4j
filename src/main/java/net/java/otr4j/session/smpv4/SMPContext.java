@@ -10,4 +10,11 @@ interface SMPContext {
      * @param newState the new SMP state
      */
     void setState(@Nonnull SMPState newState);
+
+    /**
+     * Request the user for the answer to the question that is posed by the other party.
+     *
+     * @param question the question
+     */
+    void requestSecret(@Nonnull String question);
 }

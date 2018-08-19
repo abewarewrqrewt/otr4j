@@ -33,7 +33,6 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
-import static org.bouncycastle.util.Arrays.clear;
 
 /**
  * The OTRv4 ENCRYPTED message state.
@@ -47,8 +46,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private static final int VERSION = Session.OTRv.FOUR;
 
-    private final byte[] ssid;
-
     private final DoubleRatchet ratchet;
 
     private final SMP smp;
@@ -56,20 +53,23 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         super(context.getSessionID(), context.getHost());
         final byte[] exchangeK;
+        final byte[] ssid;
         try (SharedSecret4 exchangeSecret = createSharedSecret(context.secureRandom(), params)) {
-            this.ssid = exchangeSecret.generateSSID();
+            ssid = exchangeSecret.generateSSID();
             exchangeK = exchangeSecret.getK();
         }
         final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK,
                 params.getInitializationComponent());
         this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
-        this.smp = new SMP(context.secureRandom());
+        this.smp = new SMP(context.secureRandom(), context.getHost(), context.getSessionID(), ssid,
+                params.getOurProfile().getLongTermPublicKey(), params.getTheirProfile().getLongTermPublicKey(),
+                context.getReceiverInstanceTag());
     }
 
     @Override
     public void close() {
-        clear(this.ssid);
         this.ratchet.close();
+        this.smp.close();
     }
 
     @Override

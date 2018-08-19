@@ -1,12 +1,19 @@
 package net.java.otr4j.session.smpv4;
 
+import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x03;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x04;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x05;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x06;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x07;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
@@ -17,6 +24,8 @@ import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 final class StateExpect2 implements SMPState {
+
+    private static final Logger LOGGER = Logger.getLogger(StateExpect2.class.getName());
 
     private final SecureRandom random;
 
@@ -46,50 +55,56 @@ final class StateExpect2 implements SMPState {
         throw new UnsupportedOperationException("To be implemented");
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    public SMPMessage2 process(@Nonnull final SMPContext context, @Nonnull final BigInteger secret,
-            @Nonnull final SMPMessage1 message) throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 1 in StateExpect2.");
+    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question, @Nonnull final BigInteger secret) {
+        LOGGER.log(Level.WARNING, "Requested to respond with secret answer, but no request is pending. Ignoring request.");
+        return null;
     }
 
     @Nonnull
     @Override
-    public SMPMessage3 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage2 message) {
-        // FIXME check input
-        final BigInteger r4 = generateRandomValueInZq(this.random);
-        final BigInteger r5 = generateRandomValueInZq(this.random);
-        final BigInteger r6 = generateRandomValueInZq(this.random);
-        final BigInteger r7 = generateRandomValueInZq(this.random);
-        final Point g2 = message.g2b.multiply(this.a2);
-        final Point g3 = message.g3b.multiply(this.a3);
-        final Point pa = g3.multiply(r4);
-        final Point g = basePoint();
-        final BigInteger q = primeOrder();
-        final BigInteger secretModQ = this.secret.mod(q);
-        final Point qa = g.multiply(r4).add(g2.multiply(secretModQ));
-        final BigInteger cp = hashToScalar(SMP_VALUE_0x06, concatenate(g3.multiply(r5).encode(),
-                g.multiply(r5).add(g2.multiply(r6)).encode()));
-        final BigInteger d5 = r5.subtract(r4.multiply(cp)).mod(q);
-        final BigInteger d6 = r6.subtract(secretModQ.multiply(cp)).mod(q);
-        final Point ra = qa.add(message.qb.negate()).multiply(a3);
-        final BigInteger cr = hashToScalar(SMP_VALUE_0x07, concatenate(g.multiply(r7).encode(),
-                qa.add(message.qb.negate()).multiply(r7).encode()));
-        final BigInteger d7 = r7.subtract(a3.multiply(cr)).mod(q);
-        context.setState(new StateExpect4(this.random));
-        return new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
-    }
-
-    @Nonnull
-    @Override
-    public SMPMessage4 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage3 message)
+    public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 3 in StateExpect2.");
-    }
-
-    @Override
-    public void process(@Nonnull final SMPContext context, @Nonnull final SMPMessage4 message)
-            throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 4 in StateExpect2.");
+        if (message instanceof SMPMessage2) {
+            final SMPMessage2 smp2 = (SMPMessage2) message;
+            if (!Ed448.contains(smp2.g2b) || !Ed448.contains(smp2.g3b) || !Ed448.contains(smp2.pb)
+                    || !Ed448.contains(smp2.qb)) {
+                throw new SMPAbortException("Message failed verification.");
+            }
+            final Point g = basePoint();
+            if (!smp2.c2.equals(hashToScalar(SMP_VALUE_0x03, g.multiply(smp2.d2).add(smp2.g2b.multiply(smp2.c2)).encode()))) {
+                throw new SMPAbortException("Message failed verification.");
+            }
+            if (!smp2.c3.equals(hashToScalar(SMP_VALUE_0x04, g.multiply(smp2.d3).add(smp2.g3b.multiply(smp2.c3)).encode()))) {
+                throw new SMPAbortException("Message failed verification.");
+            }
+            final Point g2 = smp2.g2b.multiply(this.a2);
+            final Point g3 = smp2.g3b.multiply(this.a3);
+            if (!smp2.cp.equals(hashToScalar(SMP_VALUE_0x05, concatenate(
+                    g3.multiply(smp2.d5).add(smp2.pb.multiply(smp2.cp)).encode(),
+                    g.multiply(smp2.d5).add(g2.multiply(smp2.d6)).add(smp2.qb.multiply(smp2.cp)).encode())))) {
+                throw new SMPAbortException("Message failed verification.");
+            }
+            final BigInteger r4 = generateRandomValueInZq(this.random);
+            final BigInteger r5 = generateRandomValueInZq(this.random);
+            final BigInteger r6 = generateRandomValueInZq(this.random);
+            final BigInteger r7 = generateRandomValueInZq(this.random);
+            final Point pa = g3.multiply(r4);
+            final BigInteger q = primeOrder();
+            final BigInteger secretModQ = this.secret.mod(q);
+            final Point qa = g.multiply(r4).add(g2.multiply(secretModQ));
+            final BigInteger cp = hashToScalar(SMP_VALUE_0x06, concatenate(g3.multiply(r5).encode(),
+                    g.multiply(r5).add(g2.multiply(r6)).encode()));
+            final BigInteger d5 = r5.subtract(r4.multiply(cp)).mod(q);
+            final BigInteger d6 = r6.subtract(secretModQ.multiply(cp)).mod(q);
+            final Point ra = qa.add(smp2.qb.negate()).multiply(a3);
+            final BigInteger cr = hashToScalar(SMP_VALUE_0x07, concatenate(g.multiply(r7).encode(),
+                    qa.add(smp2.qb.negate()).multiply(r7).encode()));
+            final BigInteger d7 = r7.subtract(a3.multiply(cr)).mod(q);
+            context.setState(new StateExpect4(this.random, this.a3, smp2.g3b, pa, smp2.pb, qa, smp2.qb));
+            return new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
+        }
+        throw new SMPAbortException("Received unexpected SMP message in StateExpect2.");
     }
 }

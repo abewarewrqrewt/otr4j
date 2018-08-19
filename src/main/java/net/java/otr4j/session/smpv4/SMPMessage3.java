@@ -1,6 +1,5 @@
 package net.java.otr4j.session.smpv4;
 
-import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -9,7 +8,7 @@ import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
 
-final class SMPMessage3 implements OtrEncodable {
+final class SMPMessage3 implements SMPMessage {
 
     final Point pa;
 

@@ -1,5 +1,6 @@
 package net.java.otr4j.session.ake;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -22,6 +23,8 @@ public final class SecurityParameters4 {
     private final DHKeyPair dhKeyPair;
     private final Point x;
     private final BigInteger a;
+    private final ClientProfile ourProfile;
+    private final ClientProfile theirProfile;
 
     /**
      * Security parameters for an OTRv4 encrypted message state.
@@ -35,12 +38,15 @@ public final class SecurityParameters4 {
      */
     // TODO consider renaming x and a to something less wrong. x and a are specific for alice, however SecurityParameters4 is used for both parties.
     SecurityParameters4(@Nonnull final Component initializationComponent, @Nonnull final ECDHKeyPair ecdhKeyPair,
-            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a) {
+            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a,
+            @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile theirProfile) {
         this.initializationComponent = requireNonNull(initializationComponent);
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
+        this.ourProfile = requireNonNull(ourProfile);
+        this.theirProfile = requireNonNull(theirProfile);
     }
 
     /**
@@ -91,6 +97,26 @@ public final class SecurityParameters4 {
     @Nonnull
     public BigInteger getA() {
         return a;
+    }
+
+    /**
+     * Get our client profile used during DAKE.
+     *
+     * @return Returns our client profile.
+     */
+    @Nonnull
+    public ClientProfile getOurProfile() {
+        return ourProfile;
+    }
+
+    /**
+     * Get the other party's client profile.
+     *
+     * @return Returns their client profile.
+     */
+    @Nonnull
+    public ClientProfile getTheirProfile() {
+        return theirProfile;
     }
 
     /**

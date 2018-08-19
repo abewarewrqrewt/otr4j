@@ -1,11 +1,15 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.OtrCryptoEngine4;
+import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x01;
@@ -17,14 +21,48 @@ import static nl.dannyvanheumen.joldilocks.Ed448.modulus;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
 
+/**
+ * StateExpect1 is the initial state for SMP.
+ * <p>
+ * StateExpect1 exists of 2 variants, in order of occurrence:
+ * <ol>
+ * <li>StateExpect1 without message: initial state, we receive the initiation message and given that we have not yet
+ * acquired the secret from the local user, we can only request the secret and wait.</li>
+ * <li>StateExpect1 with message: we are remembering the message up to the moment where the user provides us with
+ * the secret. As soon as the secret answer is provided, we continue processing the remembered initiation message.
+ * </li>
+ * </ol>
+ */
 final class StateExpect1 implements SMPState {
 
-    private final SMPStatus status;
+    private static final Logger LOGGER = Logger.getLogger(StateExpect1.class.getName());
+
+    /**
+     * The SecureRandom instance.
+     */
     private final SecureRandom random;
+
+    /**
+     * The current SMP status.
+     */
+    private final SMPStatus status;
+
+    /**
+     * The previously received SMPMessage1. This field exists to remember the initiation message in the time we are
+     * requesting the local user to provide his answer to the posed question.
+     */
+    private final SMPMessage1 message;
 
     StateExpect1(@Nonnull final SecureRandom random, @Nonnull final SMPStatus status) {
         this.random = requireNonNull(random);
         this.status = requireNonNull(status);
+        this.message = null;
+    }
+
+    private StateExpect1(@Nonnull final SecureRandom random, @Nonnull final SMPStatus status, @Nonnull final SMPMessage1 message) {
+        this.random = requireNonNull(random);
+        this.status = requireNonNull(status);
+        this.message = requireNonNull(message);
     }
 
     @Nonnull
@@ -52,10 +90,18 @@ final class StateExpect1 implements SMPState {
         return new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    public SMPMessage2 process(@Nonnull final SMPContext context, @Nonnull final BigInteger secret, @Nonnull final SMPMessage1 message) {
-        // FIXME check input
+    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question,
+            @Nonnull final BigInteger secret) {
+        if (this.message == null) {
+            LOGGER.log(Level.WARNING, "The answer to the SMP question is provided, but no message is available. Ignoring answer.");
+            return null;
+        }
+        if (!question.equals(this.message.question)) {
+            LOGGER.log(Level.INFO, "The question does not match the question in the remembered message. The request-for-secret is probably outdated. Ignoring answer.");
+            return null;
+        }
         final BigInteger b2 = generateRandomValueInZq(this.random);
         final BigInteger b3 = generateRandomValueInZq(this.random);
         final BigInteger r2 = generateRandomValueInZq(this.random);
@@ -71,35 +117,38 @@ final class StateExpect1 implements SMPState {
         final BigInteger d2 = r2.subtract(b2.multiply(c2)).mod(q);
         final BigInteger c3 = hashToScalar(OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x04, g.multiply(r3).encode());
         final BigInteger d3 = r3.subtract(b3.multiply(c3)).mod(q);
-        final Point g2 = message.g2a.multiply(b2);
-        final Point g3 = message.g3a.multiply(b3);
+        final Point g2 = this.message.g2a.multiply(b2);
+        final Point g3 = this.message.g3a.multiply(b3);
         final Point pb = g3.multiply(r4);
         final Point qb = g.multiply(r4).add(g2.multiply(secret.mod(q)));
         final BigInteger cp = hashToScalar(OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x05, concatenate(g3.multiply(r5).encode(),
                 g.multiply(r5).add(g2.multiply(r6)).encode()));
         final BigInteger d5 = r5.subtract(r4.multiply(cp)).mod(q);
         final BigInteger d6 = r6.subtract(secret.mod(q).multiply(cp)).mod(q);
-        context.setState(new StateExpect3(this.random, qb, b3));
+        context.setState(new StateExpect3(this.random, pb, qb, b3, this.message.g3a, g2, g3));
         return new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    public SMPMessage3 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage2 message)
+    public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 2 in StateExpect1.");
-    }
-
-    @Nonnull
-    @Override
-    public SMPMessage4 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage3 message)
-            throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 3 in StateExpect1.");
-    }
-
-    @Override
-    public void process(@Nonnull final SMPContext context, @Nonnull final SMPMessage4 message)
-            throws SMPAbortException {
-        throw new SMPAbortException("Received SMP message 4 in StateExpect1.");
+        if (message instanceof SMPMessage1) {
+            final SMPMessage1 smp1 = (SMPMessage1) message;
+            if (!Ed448.contains(smp1.g2a) || !Ed448.contains(smp1.g3a)) {
+                throw new SMPAbortException("g2a or g3a failed verification.");
+            }
+            final Point g = basePoint();
+            if (!smp1.c2.equals(hashToScalar(SMP_VALUE_0x01, g.multiply(smp1.d2).add(smp1.g2a.multiply(smp1.c2)).encode()))) {
+                throw new SMPAbortException("c2 failed verification.");
+            }
+            if (!smp1.c3.equals(hashToScalar(SMP_VALUE_0x02, g.multiply(smp1.d3).add(smp1.g3a.multiply(smp1.c3)).encode()))) {
+                throw new SMPAbortException("c2 failed verification.");
+            }
+            context.requestSecret(smp1.question);
+            context.setState(new StateExpect1(this.random, this.status, smp1));
+            return null;
+        }
+        throw new SMPAbortException("Received unexpected SMP message in StateExpect1.");
     }
 }

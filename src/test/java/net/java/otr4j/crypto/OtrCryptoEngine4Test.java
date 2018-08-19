@@ -11,7 +11,6 @@ import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FINGERPRINT;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
@@ -26,7 +25,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.createPoint;
-import static nl.dannyvanheumen.joldilocks.Points.identity;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,38 +44,14 @@ public class OtrCryptoEngine4Test {
     private final ECDHKeyPair ephemeralKeyPair = ECDHKeyPair.generate(RANDOM);
 
     @Test(expected = NullPointerException.class)
-    public void testFingerprintNullDestination() {
-        fingerprint(null, identity());
-    }
-
-    @Test(expected = NullPointerException.class)
     public void testFingerprintNullPoint() {
-        fingerprint(new byte[FINGERPRINT_LENGTH_BYTES], null);
-    }
-
-    @Test(expected = ArrayIndexOutOfBoundsException.class)
-    public void testFingerprintDestinationZeroSize() {
-        fingerprint(new byte[0], identity());
-    }
-
-    @Test(expected = ArrayIndexOutOfBoundsException.class)
-    public void testFingerprintDestinationTooSmall() {
-        fingerprint(new byte[55], identity());
-    }
-
-    @Test
-    public void testFingerprintDestinationTooLarge() {
-        final byte[] expected = new byte[]{50, -88, 40, -102, 20, -109, -8, 68, 71, 76, -23, -19, -66, -56, 94, 17, 27, -12, -68, -66, -49, -5, -62, -18, -79, 54, -80, 122, 121, 39, 10, 70, -63, 83, -60, -121, 51, 35, 124, -116, -68, 92, 100, 64, -47, 113, 38, 117, -75, 111, 74, 5, -6, 14, -91, 118, 0};
-        final byte[] dst = new byte[57];
-        fingerprint(dst, basePoint());
-        assertArrayEquals(expected, dst);
+        fingerprint(null);
     }
 
     @Test
     public void testFingerprint() {
         final byte[] expected = new byte[]{50, -88, 40, -102, 20, -109, -8, 68, 71, 76, -23, -19, -66, -56, 94, 17, 27, -12, -68, -66, -49, -5, -62, -18, -79, 54, -80, 122, 121, 39, 10, 70, -63, 83, -60, -121, 51, 35, 124, -116, -68, 92, 100, 64, -47, 113, 38, 117, -75, 111, 74, 5, -6, 14, -91, 118};
-        final byte[] dst = new byte[FINGERPRINT_LENGTH_BYTES];
-        fingerprint(dst, basePoint());
+        final byte[] dst = fingerprint(basePoint());
         assertArrayEquals(expected, dst);
     }
 

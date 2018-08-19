@@ -42,6 +42,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
  *
  * @author Danny van Heumen
  */
+// FIXME integrate with smpv4.SMP as it seems to have a similar function. (Consider moving into 'smp' package.)
 public final class SmpTlvHandler {
 
     private static final byte[] VERSION_BYTE = new byte[]{1};

@@ -21,7 +21,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
+import static net.java.otr4j.io.EncodingConstants.SSID_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TLV_LEN;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
@@ -294,7 +296,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeNonce(@Nonnull final byte[] nonce) {
         requireLengthExactly(TYPE_LEN_NONCE, nonce);
-        this.out.write(nonce, 0, nonce.length);
+        this.out.write(nonce, 0, TYPE_LEN_NONCE);
         return this;
     }
 
@@ -308,7 +310,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeMacOTR4(@Nonnull final byte[] mac) {
         requireLengthExactly(TYPE_LEN_MAC_OTR4, mac);
-        this.out.write(mac, 0, mac.length);
+        this.out.write(mac, 0, TYPE_LEN_MAC_OTR4);
         return this;
     }
 
@@ -335,7 +337,33 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeEdDSASignature(@Nonnull final byte[] signature) {
         requireLengthExactly(EDDSA_SIGNATURE_LENGTH_BYTES, signature);
-        this.out.write(signature, 0, signature.length);
+        this.out.write(signature, 0, EDDSA_SIGNATURE_LENGTH_BYTES);
+        return this;
+    }
+
+    /**
+     * Write OTRv4 public key fingerprint.
+     *
+     * @param fingerprint the fingerprint of the public key
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
+    // FIXME write unit tests.
+    @Nonnull
+    public OtrOutputStream writeFingerprint(@Nonnull final byte[] fingerprint) {
+        this.out.write(requireLengthExactly(FINGERPRINT_LENGTH_BYTES, fingerprint), 0, FINGERPRINT_LENGTH_BYTES);
+        return this;
+    }
+
+    /**
+     * Write OTRv4 SSID (Secret Session ID).
+     *
+     * @param ssid 8-byte SSID value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
+    // FIXME write unit tests.
+    @Nonnull
+    public OtrOutputStream writeSSID(@Nonnull final byte[] ssid) {
+        this.out.write(requireLengthExactly(SSID_LENGTH_BYTES, ssid), 0, SSID_LENGTH_BYTES);
         return this;
     }
 

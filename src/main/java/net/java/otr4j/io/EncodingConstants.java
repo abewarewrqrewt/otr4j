@@ -44,6 +44,11 @@ final class EncodingConstants {
 
     static final int EDDSA_SIGNATURE_LENGTH_BYTES = 114;
 
+    // FIXME there are inconsistencies between fingerprint lengths. OtrCryptoEngine4 uses 56-byte length. (https://github.com/otrv4/otrv4/issues/172)
+    static final int FINGERPRINT_LENGTH_BYTES = 64;
+
+    static final int SSID_LENGTH_BYTES = 8;
+
     private EncodingConstants() {
         // No need to instantiate class.
     }

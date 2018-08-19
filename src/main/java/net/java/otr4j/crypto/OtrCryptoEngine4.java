@@ -153,6 +153,10 @@ public final class OtrCryptoEngine4 {
          */
         AUTHENTICATOR((byte) 0x1A),
         /**
+         * Usage ID for generating the secret used in the SMP negotiation.
+         */
+        SMP_SECRET((byte) 0x1B),
+        /**
          * Usage ID for generating the authentication code for the ring signatures.
          */
         AUTH((byte) 0x1C),
@@ -203,12 +207,13 @@ public final class OtrCryptoEngine4 {
     /**
      * Produce fingerprint for public key.
      *
-     * @param dst       The destination byte array to which to write the fingerprint.
      * @param publicKey The public key to fingerprint.
+     * @return Returns the fingerprint derived from the provided public key.
      */
-    public static void fingerprint(@Nonnull final byte[] dst, @Nonnull final Point publicKey) {
-        requireNonNull(dst);
+    public static byte[] fingerprint(@Nonnull final Point publicKey) {
+        final byte[] dst = new byte[FINGERPRINT_LENGTH_BYTES];
         kdf1(dst, 0, FINGERPRINT, publicKey.encode(), FINGERPRINT_LENGTH_BYTES);
+        return dst;
     }
 
     /**

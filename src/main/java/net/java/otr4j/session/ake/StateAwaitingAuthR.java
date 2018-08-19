@@ -109,7 +109,8 @@ final class StateAwaitingAuthR extends AbstractAuthState {
                 this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         try {
-            context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA()));
+            context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA(),
+                    ourClientProfile.validate(), theirClientProfile));
         } finally {
             // TODO should we preserve the most recent query tag or start with empty initial state?
             context.setState(StateInitial.empty());
