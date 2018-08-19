@@ -38,6 +38,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * Output stream for OTR encoding.
  */
 // TODO consider adding write-method for Iterable<OtrEncodable>
+// FIXME check if we are serializing/deserializing the SCALAR type correctly. Currently using BigInt, not sure if that's correct.
 public final class OtrOutputStream {
 
     private static final int ZERO_LENGTH = 0;

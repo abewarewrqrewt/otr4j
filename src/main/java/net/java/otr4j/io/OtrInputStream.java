@@ -44,6 +44,7 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
  * OtrInputStream provides only for the primitive types to be read. Composite objects should be read through use of the
  * primitive read methods and implemented outside of this class.
  */
+// FIXME check if we are serializing/deserializing the SCALAR type correctly. Currently using BigInt, not sure if that's correct.
 public final class OtrInputStream {
 
     private static final byte[] ZERO_BYTES = new byte[0];
