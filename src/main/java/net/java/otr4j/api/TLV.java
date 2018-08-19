@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 /**
  * Class representing OTR Type-Length-Value tuples.
  */
+// FIXME consider moving TLV constants to corresponding State implementation, as they differ between OTRv2/OTRv3 and OTRv4.
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class TLV {
 
