@@ -29,6 +29,7 @@ import net.java.otr4j.session.api.SMPHandler;
 /**
  * Interface to the Message state.
  */
+// FIXME we need to ensure that any use of, e.g. SMPHandler and subsequent messages to be sent, happen in the same state. We should not perform repeated method calls on the "current state". (Even if thread-safety shouldn't be an issue.)
 public interface State {
 
     /**

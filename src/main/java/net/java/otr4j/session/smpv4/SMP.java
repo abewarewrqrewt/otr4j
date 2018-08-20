@@ -30,6 +30,7 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * OTRv4 variant of the Socialist Millionaire's Protocol.
  */
+// FIXME write unit tests for OTRv4 Socialist Millionaire's Protocol
 public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SMP.class.getName());
@@ -141,7 +142,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
                 .writeFingerprint(fingerprint(initiatorPublicKey))
                 .writeFingerprint(fingerprint(responderPublicKey))
                 .writeSSID(this.ssid).writeData(answer).toByteArray();
-        // FIXME use hashToScalar or KDF1 with interpretation as unsigned little endian (or something else) afterwards? (https://github.com/otrv4/otrv4/issues/172)
+        // FIXME use KDF_1 and decode as little-endian to scalar value. (As per the answer in https://github.com/otrv4/otrv4/issues/172.)
         return hashToScalar(SMP_SECRET, secretInputData);
     }
 
@@ -156,18 +157,20 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      * @param tlv the SMP tlv
      * @return Returns an OtrEncodable with the response to SMP message 1.
      * @throws ProtocolException  In case of failure parsing SMP messages.
-     * @throws OtrCryptoException In case of failure to cryptographic parts of SMP messages.
+     * @throws OtrCryptoException In case of failure in cryptographic parts of SMP messages.
      */
     @Nullable
     public TLV process(@Nonnull final TLV tlv) throws ProtocolException, OtrCryptoException {
         final SMPMessage response;
         try {
             response = this.state.process(this, parse(tlv));
+            // FIXME set trust level based on the outcome of the SMP process.
             if (response == null) {
                 return null;
             }
         } catch (final SMPAbortException e) {
             setState(new StateExpect1(this.random, UNDECIDED));
+            // FIXME report that SMP has been aborted.
             return new TLV(TLV.SMP_ABORT, new byte[0]);
         }
         if (response instanceof SMPMessage1) {
@@ -189,6 +192,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     @Override
     public TLV abort() {
         setState(new StateExpect1(this.random, UNDECIDED));
+        // FIXME report abortion to SmpEngineHost.
         return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
     }
 }
