@@ -104,8 +104,8 @@ public final class SmpTlvHandler implements SMPHandler {
      * @throws SMException  In case of failure while processing SMP TLV record.
      */
     @Nonnull
-    private TLV initRespondSmp(@Nonnull final String question, @Nonnull final byte[] answer,
-            final boolean initiating) throws OtrException, SMException {
+    private TLV initRespondSmp(@Nonnull final String question, @Nonnull final byte[] answer, final boolean initiating)
+            throws OtrException, SMException {
         if (!initiating && this.sm.status() != SMPStatus.INPROGRESS) {
             throw new OtrException("There is no question to be answered.");
         }
@@ -170,15 +170,6 @@ public final class SmpTlvHandler implements SMPHandler {
     public TLV abort() {
         this.sm.abort();
         return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-    }
-
-    /**
-     * Reset SMP state to SMP_EXPECT1, the initial state, without sending an
-     * abort message to the counterpart.
-     */
-    // FIXME clean up unused methods
-    public void reset() {
-        this.sm.abort();
     }
 
     /**

@@ -216,6 +216,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 }
                 break;
             case TLV.SMP_ABORT:
+                // Abort SMP and ignore response TLV as were triggered by TLV 6 (SMP Abort) sent by the other party.
                 this.smp.abort();
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
@@ -226,7 +227,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         }
         return content.message.length() > 0 ? content.message : null;
     }
-
 
     @Nonnull
     @Override

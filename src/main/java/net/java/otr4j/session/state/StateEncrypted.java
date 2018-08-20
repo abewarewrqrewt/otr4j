@@ -132,7 +132,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
     
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage data) throws OtrException, ProtocolException {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage data)
+            throws OtrException, ProtocolException {
         logger.finest("Message state is ENCRYPTED. Trying to decrypt message.");
         final OtrEngineHost host = context.getHost();
         // Find matching session keys.
@@ -252,7 +253,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
     }
 
     @Override
-    public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage) throws OtrException {
+    public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage)
+            throws OtrException {
         super.handleErrorMessage(context, errorMessage);
         final OtrPolicy policy = context.getSessionPolicy();
         if (!policy.isErrorStartAKE()) {
@@ -267,7 +269,8 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
     @Override
     @Nonnull
-    public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
+    public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs) throws OtrException {
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
 

@@ -34,9 +34,8 @@ public final class SmpEngineHostUtil {
      * @param sender the sender instance tag
      * @param question The question sent by the other party.
      */
-    public static void askForSecret(@Nonnull final SmpEngineHost host,
-            @Nonnull final SessionID sessionID, @Nonnull final InstanceTag sender,
-            @Nullable final String question) {
+    public static void askForSecret(@Nonnull final SmpEngineHost host, @Nonnull final SessionID sessionID,
+            @Nonnull final InstanceTag sender, @Nullable final String question) {
         try {
             host.askForSecret(sessionID, sender, question);
         } catch (RuntimeException e) {
@@ -103,8 +102,7 @@ public final class SmpEngineHostUtil {
      * @param sessionID the session ID
      * @param fingerprint the fingerprint of the verified chat partner
      */
-    public static void verify(@Nonnull final SmpEngineHost host,
-            @Nonnull final SessionID sessionID,
+    public static void verify(@Nonnull final SmpEngineHost host, @Nonnull final SessionID sessionID,
             @Nonnull final String fingerprint) {
         try {
             host.verify(sessionID, fingerprint);
@@ -124,8 +122,8 @@ public final class SmpEngineHostUtil {
      * @param sessionID the session ID
      * @param fingerprint the fingerprint of the unverified chat partner
      */
-    public static void unverify(@Nonnull final SmpEngineHost host,
-            @Nonnull final SessionID sessionID, @Nonnull final String fingerprint) {
+    public static void unverify(@Nonnull final SmpEngineHost host, @Nonnull final SessionID sessionID,
+            @Nonnull final String fingerprint) {
         try {
             host.unverify(sessionID, fingerprint);
         } catch (RuntimeException e) {
