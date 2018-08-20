@@ -116,9 +116,9 @@ For a quick introduction on how to use the library have a look at the
 
 # Limitations
 
-* *otr4j supports message lengths up to 2^31.*  
-Message sizes in OTR are defined as 4-byte *unsigned*. Due to Java's signed integer types, this implementation currently uses a signed integer. Therefore, the highest bit of the message length is interpreted as sign bit. Lengths over 2^31 are unsupported.
-* *Message are not queued up.*
+* _otr4j supports message lengths up to 2^31._  
+Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed integer types, this implementation currently uses a signed integer. Therefore, the highest bit of the message length is interpreted as sign bit. Lengths over 2^31 are unsupported.
+* _Message are not queued up._
 messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
 # Contributing / Help needed

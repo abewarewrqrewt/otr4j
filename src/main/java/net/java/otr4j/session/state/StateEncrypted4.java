@@ -230,9 +230,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Nonnull
     @Override
-    public SmpTlvHandler getSmpTlvHandler() {
-        // FIXME to be implemented.
-        throw new UnsupportedOperationException("To be implemented.");
+    public SMP getSmpHandler() {
+        return this.smp;
     }
 
     @Override

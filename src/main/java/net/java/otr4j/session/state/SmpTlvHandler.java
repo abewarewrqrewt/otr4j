@@ -10,11 +10,11 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SmpEngineHost;
-import net.java.otr4j.api.SmpEngineHostUtil;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.io.messages.DataMessage;
+import net.java.otr4j.session.api.SMPHandler;
 import net.java.otr4j.session.smp.SM;
 import net.java.otr4j.session.smp.SMAbortedException;
 import net.java.otr4j.session.smp.SMException;
@@ -22,13 +22,12 @@ import net.java.otr4j.session.smp.SMPStatus;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
+import static net.java.otr4j.api.SmpEngineHostUtil.askForSecret;
 import static net.java.otr4j.api.SmpEngineHostUtil.smpAborted;
 import static net.java.otr4j.api.SmpEngineHostUtil.smpError;
 import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
@@ -43,7 +42,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
  * @author Danny van Heumen
  */
 // FIXME integrate with smpv4.SMP as it seems to have a similar function. (Consider moving into 'smp' package.)
-public final class SmpTlvHandler {
+public final class SmpTlvHandler implements SMPHandler {
 
     private static final byte[] VERSION_BYTE = new byte[]{1};
 
@@ -70,6 +69,26 @@ public final class SmpTlvHandler {
         this.sessionContext = Objects.requireNonNull(context);
     }
 
+    @Nonnull
+    @Override
+    public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException {
+        try {
+            return initRespondSmp(question, answer, true);
+        } catch (final SMException e) {
+            throw new OtrException("Failed to initiate SMP negotiation.", e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public TLV respond(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException {
+        try {
+            return initRespondSmp(question, answer, false);
+        } catch (final SMException e) {
+            throw new OtrException("Failed to respond to SMP with answer to the question.", e);
+        }
+    }
+
     /**
      * Respond to or initiate an SMP negotiation
      *
@@ -77,14 +96,15 @@ public final class SmpTlvHandler {
      *                   May be <code>null</code> for no question.
      *                   If not initiating, then it should be received question
      *                   in order to clarify whether this is shared secret verification.
-     * @param secret     The secret.
+     * @param answer     The secret.
      * @param initiating Whether we are initiating or responding to an initial request.
      * @return TLVs to send to the peer
      * @throws OtrException Failures in case an SMP step cannot be processed
      *                      successfully, or in case expected data is not provided.
      * @throws SMException  In case of failure while processing SMP TLV record.
      */
-    public List<TLV> initRespondSmp(@Nullable final String question, @Nonnull final String secret,
+    @Nonnull
+    private TLV initRespondSmp(@Nonnull final String question, @Nonnull final byte[] answer,
             final boolean initiating) throws OtrException, SMException {
         if (!initiating && this.sm.status() != SMPStatus.INPROGRESS) {
             throw new OtrException("There is no question to be answered.");
@@ -99,31 +119,28 @@ public final class SmpTlvHandler {
         final DSAPublicKey remotePublicKey = session.getRemotePublicKey();
         final byte[] theirFp = getFingerprintRaw(remotePublicKey);
         final byte[] sessionId = this.s.ssid();
-        final byte[] secretBytes = secret.getBytes(UTF_8);
-        final byte[] combinedSecret;
+        final byte[] secret;
         if (initiating) {
-            combinedSecret = sha256Hash(VERSION_BYTE, ourFp, theirFp, sessionId, secretBytes);
+            secret = sha256Hash(VERSION_BYTE, ourFp, theirFp, sessionId, answer);
         } else {
-            combinedSecret = sha256Hash(VERSION_BYTE, theirFp, ourFp, sessionId, secretBytes);
+            secret = sha256Hash(VERSION_BYTE, theirFp, ourFp, sessionId, answer);
         }
 
         byte[] smpmsg;
         if (initiating) {
             try {
-                smpmsg = sm.step1(combinedSecret);
+                smpmsg = sm.step1(secret);
             } catch (final SMAbortedException e) {
-                // As prescribed by OTR, we must always be allowed to initiate a
-                // new SMP exchange. In case another SMP exchange is in
-                // progress, an abort is signaled. We honor the abort exception
-                // and send the abort signal to the counter party. Then we
-                // immediately initiate a new SMP exchange as requested.
+                // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
+                // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
+                // to the counter party. Then we immediately initiate a new SMP exchange as requested.
                 sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));
                 smpAborted(engineHost, session.getSessionID());
-                smpmsg = sm.step1(combinedSecret);
+                smpmsg = sm.step1(secret);
             }
         } else {
             try {
-                smpmsg = sm.step2b(combinedSecret);
+                smpmsg = sm.step2b(secret);
             } catch (final SMAbortedException e) {
                 sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));
                 smpAborted(engineHost, session.getSessionID());
@@ -132,7 +149,7 @@ public final class SmpTlvHandler {
         }
 
         // If we've got a question, attach it to the smpmsg
-        if (question != null && initiating) {
+        if (!question.isEmpty() && initiating) {
             final byte[] questionBytes = question.getBytes(UTF_8);
             final byte[] qsmpmsg = new byte[questionBytes.length + 1 + smpmsg.length];
             System.arraycopy(questionBytes, 0, qsmpmsg, 0, questionBytes.length);
@@ -140,8 +157,7 @@ public final class SmpTlvHandler {
             smpmsg = qsmpmsg;
         }
 
-        final TLV sendtlv = new TLV(initiating ? question == null ? TLV.SMP1 : TLV.SMP1Q : TLV.SMP2, smpmsg);
-        return Collections.singletonList(sendtlv);
+        return new TLV(initiating ? question.isEmpty() ? TLV.SMP1 : TLV.SMP1Q : TLV.SMP2, smpmsg);
     }
 
     /**
@@ -150,16 +166,17 @@ public final class SmpTlvHandler {
      * @return TLVs to send to the peer
      */
     @Nonnull
-    public List<TLV> abortSmp() {
+    @Override
+    public TLV abort() {
         this.sm.abort();
-        final TLV sendtlv = new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-        return Collections.singletonList(sendtlv);
+        return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
     }
 
     /**
      * Reset SMP state to SMP_EXPECT1, the initial state, without sending an
      * abort message to the counterpart.
      */
+    // FIXME clean up unused methods
     public void reset() {
         this.sm.abort();
     }
@@ -170,7 +187,8 @@ public final class SmpTlvHandler {
      * @return true iff SMP is in progress, or false otherwise.
      */
     @CheckReturnValue
-    public boolean isSmpInProgress() {
+    @Override
+    public boolean isInProgress() {
         return this.sm.status() == SMPStatus.INPROGRESS;
     }
 
@@ -197,8 +215,7 @@ public final class SmpTlvHandler {
             }
             final byte[] plainq = new byte[qlen];
             System.arraycopy(question, 0, plainq, 0, qlen);
-            final String questionUTF = new String(plainq, UTF_8);
-            SmpEngineHostUtil.askForSecret(engineHost, session.getSessionID(), this.receiverInstanceTag, questionUTF);
+            askForSecret(engineHost, session.getSessionID(), this.receiverInstanceTag, new String(plainq, UTF_8));
         } catch (final SMAbortedException e) {
             sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));
             smpAborted(engineHost, session.getSessionID());
@@ -212,7 +229,7 @@ public final class SmpTlvHandler {
         // We can only do the verification half now. We must wait for the secret to be entered to continue.
         try {
             sm.step2a(tlv.getValue());
-            SmpEngineHostUtil.askForSecret(engineHost, session.getSessionID(), this.receiverInstanceTag, null);
+            askForSecret(engineHost, session.getSessionID(), this.receiverInstanceTag, null);
         } catch (final SMAbortedException e) {
             sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));
             smpAborted(engineHost, session.getSessionID());
@@ -227,8 +244,7 @@ public final class SmpTlvHandler {
             final byte[] nextmsg = sm.step3(tlv.getValue());
             // Send msg with next smp msg content.
             final TLV sendtlv = new TLV(TLV.SMP3, nextmsg);
-            final DataMessage m = session.transformSending(this.sessionContext,
-                    "", Collections.singletonList(sendtlv));
+            final DataMessage m = session.transformSending(this.sessionContext, "", singletonList(sendtlv));
             this.sessionContext.injectMessage(m);
         } catch (final SMAbortedException e) {
             sendTLV(new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY));
@@ -289,7 +305,7 @@ public final class SmpTlvHandler {
     }
 
     private void sendTLV(@Nonnull final TLV tlv) throws OtrException {
-        final DataMessage m = session.transformSending(this.sessionContext, "", Collections.singletonList(tlv));
+        final DataMessage m = session.transformSending(this.sessionContext, "", singletonList(tlv));
         this.sessionContext.injectMessage(m);
     }
 }

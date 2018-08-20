@@ -6,6 +6,7 @@ import net.java.otr4j.api.SmpEngineHost;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
+import net.java.otr4j.session.api.SMPHandler;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -29,7 +30,7 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * OTRv4 variant of the Socialist Millionaire's Protocol.
  */
-public final class SMP implements AutoCloseable, SMPContext {
+public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SMP.class.getName());
 
@@ -109,6 +110,7 @@ public final class SMP implements AutoCloseable, SMPContext {
      * @return Returns an OtrEncodable to be sent to the other party.
      */
     @Nonnull
+    @Override
     public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) {
         final BigInteger secret = generateSecret(answer, this.ourLongTermPublicKey, this.theirLongTermPublicKey);
         final SMPMessage1 response = this.state.initiate(this, question, secret);
@@ -122,7 +124,9 @@ public final class SMP implements AutoCloseable, SMPContext {
      * @param answer   the secret answer to the question
      * @return Returns TLV with response to be sent to the other party.
      */
-    public TLV respondWithSecret(@Nonnull final String question, @Nonnull final byte[] answer) {
+    @Nullable
+    @Override
+    public TLV respond(@Nonnull final String question, @Nonnull final byte[] answer) {
         final BigInteger secret = generateSecret(answer, this.theirLongTermPublicKey, this.ourLongTermPublicKey);
         final SMPMessage2 response = this.state.respondWithSecret(this, question, secret);
         if (response == null) {
@@ -139,6 +143,11 @@ public final class SMP implements AutoCloseable, SMPContext {
                 .writeSSID(this.ssid).writeData(answer).toByteArray();
         // FIXME use hashToScalar or KDF1 with interpretation as unsigned little endian (or something else) afterwards? (https://github.com/otrv4/otrv4/issues/172)
         return hashToScalar(SMP_SECRET, secretInputData);
+    }
+
+    @Override
+    public boolean isInProgress() {
+        return this.state.getStatus() == SMPStatus.INPROGRESS;
     }
 
     /**
@@ -176,7 +185,10 @@ public final class SMP implements AutoCloseable, SMPContext {
     /**
      * Abort an in-progress SMP negotiation.
      */
-    public void abort() {
+    @Nonnull
+    @Override
+    public TLV abort() {
         setState(new StateExpect1(this.random, UNDECIDED));
+        return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
     }
 }

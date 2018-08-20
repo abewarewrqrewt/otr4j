@@ -24,6 +24,7 @@ import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
+import net.java.otr4j.session.api.SMPHandler;
 
 /**
  * Interface to the Message state.
@@ -174,5 +175,5 @@ public interface State {
      * non-encrypted states.
      */
     @Nonnull
-    SmpTlvHandler getSmpTlvHandler() throws IncorrectStateException;
+    SMPHandler getSmpHandler() throws IncorrectStateException;
 }

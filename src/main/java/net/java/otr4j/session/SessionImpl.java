@@ -40,7 +40,6 @@ import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.ake.StateInitial;
-import net.java.otr4j.session.smp.SMException;
 import net.java.otr4j.session.state.Context;
 import net.java.otr4j.session.state.IncorrectStateException;
 import net.java.otr4j.session.state.State;
@@ -62,6 +61,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
@@ -1144,25 +1145,23 @@ final class SessionImpl implements Session, Context, AuthContext {
      * Initialize SMP negotiation.
      *
      * @param question The question, optional.
-     * @param secret The secret to be verified using ZK-proof.
+     * @param answer The answer to be verified using ZK-proof.
      * @throws OtrException In case of failure to init SMP or transform to
      * encoded message.
      */
     @Override
-    public void initSmp(@Nullable final String question, @Nonnull final String secret) throws OtrException {
+    public void initSmp(@Nullable final String question, @Nonnull final String answer) throws OtrException {
         if (this != outgoingSession) {
-            outgoingSession.initSmp(question, secret);
+            outgoingSession.initSmp(question, answer);
             return;
         }
-        final List<TLV> tlvs;
+        final TLV tlv;
         try {
-            tlvs = this.sessionState.getSmpTlvHandler().initRespondSmp(question, secret, true);
+            tlv = this.sessionState.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
         } catch (final IncorrectStateException e) {
             throw new OtrException("Initializing SMP failed because OTR is not in an encrypted messaging state.", e);
-        } catch (final SMException e) {
-            throw new OtrException("Failed to initiate SMP negotiation.", e);
         }
-        final Message m = this.sessionState.transformSending(this, "", tlvs);
+        final Message m = this.sessionState.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
         }
@@ -1207,21 +1206,18 @@ final class SessionImpl implements Session, Context, AuthContext {
      * Send SMP response.
      *
      * @param question (Optional) question
-     * @param secret secret of which we verify common knowledge
+     * @param answer   answer of which we verify common knowledge
      * @throws OtrException In case of failure to send, message state different
-     * from ENCRYPTED, issues with SMP processing.
+     *                      from ENCRYPTED, issues with SMP processing.
      */
-    private void sendResponseSmp(@Nullable final String question, @Nonnull final String secret) throws OtrException {
-        final List<TLV> tlvs;
+    private void sendResponseSmp(@Nullable final String question, @Nonnull final String answer) throws OtrException {
+        final TLV tlv;
         try {
-            tlvs = this.sessionState.getSmpTlvHandler().initRespondSmp(question, secret, false);
+            tlv = this.sessionState.getSmpHandler().respond(question == null ? "" : question, answer.getBytes(UTF_8));
         } catch (final IncorrectStateException e) {
-            throw new OtrException("Responding to SMP request failed, because OTR is not in an encrypted messaging state.",
-                e);
-        } catch (final SMException e) {
-            throw new OtrException("Responding to SMP initiation request failed.", e);
+            throw new OtrException("Responding to SMP request failed, because current session is not encrypted.", e);
         }
-        final Message m = this.sessionState.transformSending(this, "", tlvs);
+        final Message m = this.sessionState.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
         }
@@ -1238,14 +1234,13 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.abortSmp();
             return;
         }
-        final List<TLV> tlvs;
+        final TLV tlv;
         try {
-            tlvs = this.sessionState.getSmpTlvHandler().abortSmp();
+            tlv = this.sessionState.getSmpHandler().abort();
         } catch (final IncorrectStateException e) {
-            throw new OtrException("Aborting SMP is not possible, because OTR is not in an encrypted messaging state.",
-                e);
+            throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
-        final Message m = this.sessionState.transformSending(this, "", tlvs);
+        final Message m = this.sessionState.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
         }
@@ -1264,7 +1259,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return outgoingSession.isSmpInProgress();
         }
         try {
-            return this.sessionState.getSmpTlvHandler().isSmpInProgress();
+            return this.sessionState.getSmpHandler().isInProgress();
         } catch (final IncorrectStateException e) {
             return false;
         }

@@ -20,6 +20,7 @@ import net.java.otr4j.io.messages.DataMessage4;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
+import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -74,7 +75,7 @@ public final class StatePlaintext extends AbstractState {
 
     @Override
     @Nonnull
-    public SmpTlvHandler getSmpTlvHandler() throws IncorrectStateException {
+    public SMPHandler getSmpHandler() throws IncorrectStateException {
         throw new IncorrectStateException("SMP negotiation is not available in plaintext state.");
     }
 

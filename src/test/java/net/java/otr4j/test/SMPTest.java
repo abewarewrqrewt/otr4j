@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -29,6 +30,7 @@ public class SMPTest {
 
     private static final int DEFAULT_TIMEOUT_MS = 10000;
     private static final String SIMPLE_PASSWORD = "MATCH";
+
     private final String snippet;
 
     public SMPTest(final String snippet) {
@@ -41,9 +43,7 @@ public class SMPTest {
         // https://github.com/junit-team/junit/wiki/Parameterized-tests
         ArrayList<Object[]> list = new ArrayList<>(TestStrings.unicodes.length);
         for (String string : TestStrings.unicodes) {
-            list.add(new Object[] {
-                string
-            });
+            list.add(new Object[] {string});
         }
         return list;
     }
@@ -53,16 +53,16 @@ public class SMPTest {
         private final int aliceResult;
         private final int bobResult;
 
-        public SMPTestResult(final int aliceResult, final int bobResult) {
+        SMPTestResult(final int aliceResult, final int bobResult) {
             this.aliceResult = aliceResult;
             this.bobResult = bobResult;
         }
 
-        public int getAliceResult() {
+        int getAliceResult() {
             return this.aliceResult;
         }
 
-        public int getBobResult() {
+        int getBobResult() {
             return this.bobResult;
         }
 
@@ -97,8 +97,10 @@ public class SMPTest {
 
         // make sure that the SMP question arrived intact
         String bobReceivedQuestion = bob.getSmpQuestion(bobSession.getSessionID());
-        assertEquals(question, bobReceivedQuestion);
-        if (question != null) {
+        if (question == null || question.isEmpty()) {
+            assertNull(bobReceivedQuestion);
+        } else {
+            assertEquals(question, bobReceivedQuestion);
             assertEquals(question.length(), bobReceivedQuestion.length());
             assertEquals(question.getBytes(UTF_8).length, bobReceivedQuestion.getBytes(UTF_8).length);
             assertEquals(question.getBytes(UTF_8).length, bobReceivedQuestion.getBytes(UTF_8).length);

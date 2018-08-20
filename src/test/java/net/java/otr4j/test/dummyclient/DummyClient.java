@@ -386,8 +386,8 @@ public class DummyClient {
 
         @Override
 		public void askForSecret(@Nonnull SessionID sessionID, @Nonnull InstanceTag receiverTag, @Nullable String question) {
-            logger.finer("Ask for secret from: " + sessionID
-                    + ", instanceTag: " + receiverTag + ", question: " + question);
+            logger.finer("Ask for secret from: " + sessionID + ", instanceTag: " + receiverTag + ", question: "
+					+ question);
             smpQuestions.put(sessionID, question);
             if (lock != null)
                 lock.countDown();

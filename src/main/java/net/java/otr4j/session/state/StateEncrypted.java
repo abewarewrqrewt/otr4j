@@ -101,7 +101,7 @@ final class StateEncrypted extends AbstractStateEncrypted {
 
     @Override
     @Nonnull
-    public SmpTlvHandler getSmpTlvHandler() {
+    public SmpTlvHandler getSmpHandler() {
         return this.smpTlvHandler;
     }
 
