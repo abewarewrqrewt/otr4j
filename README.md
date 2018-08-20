@@ -76,6 +76,11 @@ Development stages:
   * ☐ Investigate effectiveness of clearing byte-arrays right before potential GC. (Maybe they are optimized away by JVM?)
 * Verify OTR-protocol obligations of other party:
   * ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
+* In-memory representation of data:
+  * ☐ Points kept as byte-arrays.  
+    _Need to consider the trade-offs. Investigate if/how BouncyCastle does this._
+  * ☐ Scalar values kept as byte-arrays.
+    _Need to consider the trade-offs. Investigate if/how BouncyCastle does this._
 * ...
 
 ## Developmental
