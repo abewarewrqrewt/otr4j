@@ -7,6 +7,7 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.session.api.SMPHandler;
+import net.java.otr4j.session.api.SMPStatus;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -26,10 +27,11 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.io.OtrEncodables.encode;
+import static net.java.otr4j.session.api.SMPStatus.FAILED;
+import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
+import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
+import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
-import static net.java.otr4j.session.smpv4.SMPStatus.FAILED;
-import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
-import static net.java.otr4j.session.smpv4.SMPStatus.UNDECIDED;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static org.bouncycastle.util.Arrays.clear;
 
@@ -155,7 +157,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     @Override
     public boolean isInProgress() {
-        return this.state.getStatus() == SMPStatus.INPROGRESS;
+        return this.state.getStatus() == INPROGRESS;
     }
 
     /**

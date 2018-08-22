@@ -31,9 +31,9 @@ import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
 import static net.java.otr4j.api.SmpEngineHostUtil.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
-import static net.java.otr4j.session.smp.SMPStatus.CHEATED;
-import static net.java.otr4j.session.smp.SMPStatus.INPROGRESS;
-import static net.java.otr4j.session.smp.SMPStatus.SUCCEEDED;
+import static net.java.otr4j.session.api.SMPStatus.CHEATED;
+import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
+import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 
 /**
  * SMP TLV Handler handles any interaction w.r.t. mutual authentication using

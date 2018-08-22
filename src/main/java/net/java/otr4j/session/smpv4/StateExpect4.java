@@ -1,5 +1,6 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.session.api.SMPStatus;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -13,9 +14,9 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x08;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
-import static net.java.otr4j.session.smpv4.SMPStatus.FAILED;
-import static net.java.otr4j.session.smpv4.SMPStatus.INPROGRESS;
-import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
+import static net.java.otr4j.session.api.SMPStatus.FAILED;
+import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
+import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static org.bouncycastle.util.Arrays.concatenate;
 

@@ -1,5 +1,6 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.session.api.SMPStatus;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -16,8 +17,9 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x07;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x08;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
-import static net.java.otr4j.session.smpv4.SMPStatus.FAILED;
-import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
+import static net.java.otr4j.session.api.SMPStatus.FAILED;
+import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
+import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -49,7 +51,7 @@ final class StateExpect3 implements SMPState {
     @Nonnull
     @Override
     public SMPStatus getStatus() {
-        return SMPStatus.INPROGRESS;
+        return INPROGRESS;
     }
 
     @Nonnull

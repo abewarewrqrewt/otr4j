@@ -9,6 +9,7 @@ package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
+import net.java.otr4j.session.api.SMPStatus;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 

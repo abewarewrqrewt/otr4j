@@ -1,4 +1,4 @@
-package net.java.otr4j.session.smpv4;
+package net.java.otr4j.session.api;
 
 /**
  * Statuses in SMP negotiation.
@@ -21,5 +21,11 @@ public enum SMPStatus {
      * SMP exchange final state for normal cases. SMP exchange has been
      * completed, but with negative outcome.
      */
-    FAILED;
+    FAILED,
+    /**
+     * SMP exchange final state for exceptional cases. This might indicate
+     * that invalid message were sent on purpose to play the protocol and as
+     * a consequence processing did not finish as expected.
+     */
+    CHEATED
 }

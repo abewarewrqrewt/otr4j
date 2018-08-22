@@ -1,5 +1,7 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.session.api.SMPStatus;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;

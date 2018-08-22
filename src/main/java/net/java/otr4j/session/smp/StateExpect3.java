@@ -1,6 +1,7 @@
 package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;

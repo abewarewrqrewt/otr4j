@@ -1,6 +1,7 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.session.api.SMPStatus;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
