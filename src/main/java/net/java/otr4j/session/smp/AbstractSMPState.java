@@ -227,7 +227,7 @@ abstract class AbstractSMPState {
      */
     @Nonnull
     final BigInteger[] proofEqualCoords(@Nonnull final BigInteger g2, @Nonnull final BigInteger g3,
-            @Nonnull final BigInteger secret_mpi, @Nonnull final BigInteger r, final int version) {
+            @Nonnull final BigInteger secret, @Nonnull final BigInteger r, final int version) {
         final BigInteger r1 = randomExponent();
         final BigInteger r2 = randomExponent();
 
@@ -242,7 +242,7 @@ abstract class AbstractSMPState {
         temp1 = r.multiply(c).mod(ORDER_S);
         final BigInteger d1 = r1.subtract(temp1).mod(ORDER_S);
 
-        temp1 = secret_mpi.multiply(c).mod(ORDER_S);
+        temp1 = secret.multiply(c).mod(ORDER_S);
         final BigInteger d2 = r2.subtract(temp1).mod(ORDER_S);
 
         return new BigInteger[] {c, d1, d2};

@@ -47,7 +47,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Length of a fingerprint in bytes.
      */
-    static final int FINGERPRINT_LENGTH_BYTES = 56;
+    private static final int FINGERPRINT_LENGTH_BYTES = 56;
 
     /**
      * Length of HashToScalar array of bytes.
@@ -389,6 +389,7 @@ public final class OtrCryptoEngine4 {
      * @param m               The message for which the signature should be generated.
      * @return Returns the sigma values that represent the ring signature.
      */
+    @SuppressWarnings ({"PMD.FormalParameterNamingConventions", "PMD.LocalVariableNamingConventions"})
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
             @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
@@ -498,6 +499,7 @@ public final class OtrCryptoEngine4 {
      * @throws OtrCryptoException In case verification fails on sigma, or in case A1, A2 or A3 contains an illegal
      *                            value.
      */
+    @SuppressWarnings ({"PMD.FormalParameterNamingConventions", "PMD.LocalVariableNamingConventions"})
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
             @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
         if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {

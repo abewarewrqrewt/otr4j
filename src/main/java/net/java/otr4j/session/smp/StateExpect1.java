@@ -56,9 +56,9 @@ final class StateExpect1 extends AbstractSMPState {
 
     @Override
     @Nonnull
-    byte[] startSMP(@Nonnull final SM astate, @Nonnull final byte[] secret) throws SMException {
+    byte[] startSMP(@Nonnull final SM astate, @Nonnull final byte[] secretBytes) {
         /* Initialize the sm state or update the secret */
-        final BigInteger secret_mpi = new BigInteger(1, secret);
+        final BigInteger secret = new BigInteger(1, secretBytes);
 
         final BigInteger x2 = randomExponent();
         final BigInteger x3 = randomExponent();
@@ -76,7 +76,7 @@ final class StateExpect1 extends AbstractSMPState {
 
         final byte[] ret = SM.serialize(msg1);
 
-        astate.setState(new StateExpect2(this.secureRandom(), secret_mpi, x2, x3));
+        astate.setState(new StateExpect2(this.secureRandom(), secret, x2, x3));
         return ret;
     }
 
@@ -113,7 +113,7 @@ final class StateExpect1 extends AbstractSMPState {
 
     @Override
     @Nonnull
-    byte[] smpMessage1b(@Nonnull final SM bstate, @Nonnull final byte[] secret) throws SMException {
+    byte[] smpMessage1b(@Nonnull final SM bstate, @Nonnull final byte[] secretBytes) throws SMException {
         if (status() != SMPStatus.INPROGRESS) {
             // In case a question gets answered before the question is received,
             // this is considered bad order of messages. Abort protocol and
@@ -124,7 +124,7 @@ final class StateExpect1 extends AbstractSMPState {
         }
 
         /* Convert the given secret to the proper form and store it */
-        final BigInteger secret_mpi = new BigInteger(1, secret);
+        final BigInteger secret = new BigInteger(1, secretBytes);
 
         final BigInteger[] msg2 = new BigInteger[11];
         msg2[0] = G1.modPow(x2, OtrCryptoEngine.MODULUS);
@@ -142,11 +142,11 @@ final class StateExpect1 extends AbstractSMPState {
         final BigInteger p = g3.modPow(r, OtrCryptoEngine.MODULUS);
         msg2[6] = p;
         final BigInteger qb1 = G1.modPow(r, OtrCryptoEngine.MODULUS);
-        final BigInteger qb2 = g2.modPow(secret_mpi, OtrCryptoEngine.MODULUS);
+        final BigInteger qb2 = g2.modPow(secret, OtrCryptoEngine.MODULUS);
         final BigInteger q = qb1.multiply(qb2).mod(OtrCryptoEngine.MODULUS);
         msg2[7] = q;
 
-        res = proofEqualCoords(g2, g3, secret_mpi, r, 5);
+        res = proofEqualCoords(g2, g3, secret, r, 5);
         msg2[8] = res[0];
         msg2[9] = res[1];
         msg2[10] = res[2];

@@ -14,14 +14,14 @@ import java.security.SecureRandom;
  */
 final class StateExpect2 extends AbstractSMPState {
 
-    private final BigInteger secret_mpi;
+    private final BigInteger secret;
     private final BigInteger x2;
     final BigInteger x3;
 
-    StateExpect2(@Nonnull final SecureRandom sr, @Nonnull final BigInteger secret_mpi, @Nonnull final BigInteger x2,
+    StateExpect2(@Nonnull final SecureRandom sr, @Nonnull final BigInteger secret, @Nonnull final BigInteger x2,
             @Nonnull final BigInteger x3) {
         super(sr);
-        this.secret_mpi = secret_mpi;
+        this.secret = secret;
         this.x2 = x2;
         this.x3 = x3;
     }
@@ -71,11 +71,11 @@ final class StateExpect2 extends AbstractSMPState {
         final BigInteger p = g3.modPow(r, OtrCryptoEngine.MODULUS);
         msg3[0] = p;
         final BigInteger qa1 = G1.modPow(r, OtrCryptoEngine.MODULUS);
-        final BigInteger qa2 = g2.modPow(secret_mpi, OtrCryptoEngine.MODULUS);
+        final BigInteger qa2 = g2.modPow(secret, OtrCryptoEngine.MODULUS);
         final BigInteger q = qa1.multiply(qa2).mod(OtrCryptoEngine.MODULUS);
         msg3[1] = q;
 
-        BigInteger[] res = proofEqualCoords(g2, g3, secret_mpi, r, 6);
+        BigInteger[] res = proofEqualCoords(g2, g3, secret, r, 6);
         msg3[2] = res[0];
         msg3[3] = res[1];
         msg3[4] = res[2];

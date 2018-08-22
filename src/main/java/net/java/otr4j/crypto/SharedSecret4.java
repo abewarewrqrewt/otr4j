@@ -239,6 +239,7 @@ public final class SharedSecret4 implements AutoCloseable {
         this.ecdhKeyPair.close();
     }
 
+    @SuppressWarnings("PMD.LocalVariableNamingConventions")
     private void regenerateK(final Rotation rotation, final boolean performDHRatchet) {
         requireInitializationCompleted();
         final byte[] k_ecdh;
