@@ -53,6 +53,6 @@ public interface SMPHandler {
      *
      * @return TLV containing abort message.
      */
-    @Nullable
+    @Nonnull
     TLV abort();
 }

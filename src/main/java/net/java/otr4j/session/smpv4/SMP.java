@@ -203,6 +203,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     @Nonnull
     @Override
     public TLV abort() {
+        // TODO consider not doing an unconditional state change, but instead check if "abort" has impact. (see OTRv3 implementation)
         setState(new StateExpect1(this.random, UNDECIDED));
         smpAborted(this.host, this.sessionID);
         return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
