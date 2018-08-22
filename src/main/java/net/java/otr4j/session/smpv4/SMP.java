@@ -28,7 +28,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
-import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
@@ -103,15 +102,6 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     }
 
     /**
-     * Get the current SMP state machine status.
-     *
-     * @return Returns the status.
-     */
-    public SMPStatus getStatus() {
-        return this.state.getStatus();
-    }
-
-    /**
      * Initiate a new SMP negotiation.
      *
      * @param question the question
@@ -155,9 +145,10 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         return hashToScalar(SMP_SECRET, secretInputData);
     }
 
+    @Nonnull
     @Override
-    public boolean isInProgress() {
-        return this.state.getStatus() == INPROGRESS;
+    public SMPStatus getStatus() {
+        return this.state.getStatus();
     }
 
     /**

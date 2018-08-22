@@ -3,7 +3,6 @@ package net.java.otr4j.session.api;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -45,8 +44,8 @@ public interface SMPHandler {
      *
      * @return Returns true iff negotiation is in progress.
      */
-    @CheckReturnValue
-    boolean isInProgress();
+    @Nonnull
+    SMPStatus getStatus();
 
     /**
      * Abort an existing SMP negotiation.

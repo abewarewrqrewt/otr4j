@@ -15,8 +15,8 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.session.api.SMPHandler;
+import net.java.otr4j.session.api.SMPStatus;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.SecureRandom;
@@ -174,10 +174,10 @@ public final class SmpTlvHandler implements SMPHandler {
         return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
     }
 
-    @CheckReturnValue
+    @Nonnull
     @Override
-    public boolean isInProgress() {
-        return this.sm.status() == INPROGRESS;
+    public SMPStatus getStatus() {
+        return this.sm.status();
     }
 
     /**

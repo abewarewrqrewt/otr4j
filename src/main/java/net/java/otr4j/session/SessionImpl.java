@@ -73,6 +73,7 @@ import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
 import static net.java.otr4j.io.MessageParser.parse;
+import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 
 /**
  * Implementation of the OTR session.
@@ -1263,7 +1264,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return outgoingSession.isSmpInProgress();
         }
         try {
-            return this.sessionState.getSmpHandler().isInProgress();
+            return this.sessionState.getSmpHandler().getStatus() == INPROGRESS;
         } catch (final IncorrectStateException e) {
             return false;
         }
