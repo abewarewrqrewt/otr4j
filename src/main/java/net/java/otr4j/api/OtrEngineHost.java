@@ -197,5 +197,6 @@ public interface OtrEngineHost extends SmpEngineHost {
      * contained TLV 8.
      * @param tlvData The data embedded in TLV 8.
      */
-    void extraSymmetricKeyDiscovered(@Nonnull final SessionID sessionID, @Nonnull final String message, @Nonnull final byte[] extraSymmetricKey, @Nonnull final byte[] tlvData);
+    void extraSymmetricKeyDiscovered(@Nonnull final SessionID sessionID, @Nonnull final String message,
+            @Nonnull final byte[] extraSymmetricKey, @Nonnull final byte[] tlvData);
 }

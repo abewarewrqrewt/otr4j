@@ -39,5 +39,6 @@ abstract class AbstractStateEncrypted extends AbstractState {
 
     @Nonnull
     @Override
-    public abstract AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs) throws OtrException;
+    public abstract AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText,
+            @Nonnull List<TLV> tlvs) throws OtrException;
 }

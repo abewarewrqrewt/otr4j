@@ -7,11 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import java.net.ProtocolException;
-import java.security.PublicKey;
-import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
@@ -26,10 +21,15 @@ import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.api.SMPHandler;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.net.ProtocolException;
+import java.security.PublicKey;
+import java.util.List;
+
 /**
  * Interface to the Message state.
  */
-// FIXME we need to ensure that any use of, e.g. SMPHandler and subsequent messages to be sent, happen in the same state. We should not perform repeated method calls on the "current state". (Even if thread-safety shouldn't be an issue.)
 public interface State {
 
     /**

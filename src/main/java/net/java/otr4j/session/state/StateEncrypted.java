@@ -82,10 +82,11 @@ final class StateEncrypted extends AbstractStateEncrypted {
     StateEncrypted(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
         super(context.getSessionID(), context.getHost());
         this.protocolVersion = params.getVersion();
-        this.smpTlvHandler = new SmpTlvHandler(this, context, params.getS());
+        this.smpTlvHandler = new SmpTlvHandler(context.secureRandom(), context.getSessionID(),
+                params.getRemoteLongTermPublicKey(), context.getReceiverInstanceTag(), context.getHost(), params.getS());
         this.remotePublicKey = params.getRemoteLongTermPublicKey();
         this.sessionKeyManager = new SessionKeyManager(context.secureRandom(), params.getLocalDHKeyPair(),
-            params.getRemoteDHPublicKey());
+                params.getRemoteDHPublicKey());
     }
 
     @Override
@@ -196,43 +197,22 @@ final class StateEncrypted extends AbstractStateEncrypted {
             case TLV.DISCONNECTED: // TLV1
                 context.setState(new StateFinished(this.sessionID));
                 break;
-            case TLV.SMP1Q: //TLV7
+            case TLV.SMP1: // TLV2
+            case TLV.SMP1Q:// TLV7
+            case TLV.SMP2: // TLV3
+            case TLV.SMP3: // TLV4
+            case TLV.SMP4: // TLV5
                 try {
-                    this.smpTlvHandler.processTlvSMP1Q(tlv);
+                    final TLV response = this.smpTlvHandler.process(tlv);
+                    if (response != null) {
+                        context.injectMessage(transformSending(context, "", singletonList(response)));
+                    }
                 } catch (final SMException e) {
                     throw new OtrException("Failed to process SMP1Q TLV.", e);
                 }
                 break;
-            case TLV.SMP1: // TLV2
-                try {
-                    this.smpTlvHandler.processTlvSMP1(tlv);
-                } catch (final SMException e) {
-                    throw new OtrException("Failed to process SMP1 TLV.", e);
-                }
-                break;
-            case TLV.SMP2: // TLV3
-                try {
-                    this.smpTlvHandler.processTlvSMP2(tlv);
-                } catch (final SMException e) {
-                    throw new OtrException("Failed to process SMP2 TLV.", e);
-                }
-                break;
-            case TLV.SMP3: // TLV4
-                try {
-                    this.smpTlvHandler.processTlvSMP3(tlv);
-                } catch (final SMException e) {
-                    throw new OtrException("Failed to process SMP3 TLV.", e);
-                }
-                break;
-            case TLV.SMP4: // TLV5
-                try {
-                    this.smpTlvHandler.processTlvSMP4(tlv);
-                } catch (final SMException e) {
-                    throw new OtrException("Failed to process SMP4 TLV.", e);
-                }
-                break;
             case TLV.SMP_ABORT: //TLV6
-                this.smpTlvHandler.processTlvSMPAbort();
+                this.smpTlvHandler.abort();
                 break;
             case TLV.USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();

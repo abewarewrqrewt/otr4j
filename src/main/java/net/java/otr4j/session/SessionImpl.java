@@ -71,6 +71,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
+import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
 import static net.java.otr4j.io.MessageParser.parse;
 
 /**
@@ -217,6 +218,8 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     private final OtrEngineListener slaveSessionsListener = new OtrEngineListener() {
 
+        // FIXME temporarily suppress PMD warning due to false-positive in use of existing static import. (https://github.com/pmd/pmd/issues/1316)
+        @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiver) {
             OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), sessionID, receiver);
@@ -360,7 +363,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     public void setState(@Nonnull final State state) {
         this.sessionState = requireNonNull(state);
-        OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), state.getSessionID(), this.receiverTag);
+        sessionStatusChanged(duplicate(listeners), state.getSessionID(), this.receiverTag);
     }
 
     @Override
@@ -432,6 +435,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             offerStatus = OfferStatus.accepted;
         }
 
+        final SessionID sessionID = this.sessionState.getSessionID();
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
         if (masterSession == this && m instanceof Fragment && ((Fragment) m).getVersion() > OTRv.TWO) {
             final Fragment fragment = (Fragment) m;
@@ -446,13 +450,13 @@ final class SessionImpl implements Session, Context, AuthContext {
                     && fragment.getReceivertag().getValue() != this.senderTag.getValue()) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
-                messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
+                messageFromAnotherInstanceReceived(this.host, sessionID);
                 return null;
             }
 
             SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
             if (slave == null) {
-                slave = new SessionImpl(this, this.sessionState.getSessionID(), this.host, this.senderTag,
+                slave = new SessionImpl(this, sessionID, this.host, this.senderTag,
                     fragment.getSendertag(), this.secureRandom, this.authState);
                 slave.addOtrEngineListener(slaveSessionsListener);
                 this.slaveSessions.put(fragment.getSendertag(), slave);
@@ -477,7 +481,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received an encoded message with receiver instance tag"
                         + " that is different from ours. Ignore this message.");
-                messageFromAnotherInstanceReceived(this.host, this.sessionState.getSessionID());
+                messageFromAnotherInstanceReceived(this.host, sessionID);
                 return null;
             }
 
@@ -489,8 +493,8 @@ final class SessionImpl implements Session, Context, AuthContext {
                 // DH commit message.
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(messageSenderInstance)) {
-                        final SessionImpl newSlaveSession = new SessionImpl(this, this.sessionState.getSessionID(),
-                                this.host, this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
+                        final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                                this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }
@@ -500,11 +504,8 @@ final class SessionImpl implements Session, Context, AuthContext {
                 // DH Key messages should be complete, however we may receive multiple of these messages.
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(messageSenderInstance)) {
-                        final SessionImpl newSlaveSession = new SessionImpl(
-                                this, this.sessionState.getSessionID(),
-                                this.host, this.senderTag,
-                                messageSenderInstance, this.secureRandom,
-                                this.authState);
+                        final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                                this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }
@@ -524,10 +525,10 @@ final class SessionImpl implements Session, Context, AuthContext {
                         logger.log(Level.INFO,
                                 "Slave session instance missing for receiver tag: {0}. Our buddy may be logged in at multiple locations.",
                                 messageSenderInstance.getValue());
-                        multipleInstancesDetected(this.host, this.sessionState.getSessionID());
-                        multipleInstancesDetected(duplicate(listeners), this.sessionState.getSessionID());
-                        final SessionImpl newSlaveSession = new SessionImpl(this, this.sessionState.getSessionID(),
-                                this.host, this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
+                        multipleInstancesDetected(this.host, sessionID);
+                        multipleInstancesDetected(duplicate(listeners), sessionID);
+                        final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                                this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(messageSenderInstance, newSlaveSession);
                     }
@@ -1095,13 +1096,12 @@ final class SessionImpl implements Session, Context, AuthContext {
     public PublicKey getRemotePublicKey(@Nonnull final InstanceTag tag) throws IncorrectStateException {
         if (tag.equals(this.receiverTag)) {
             return this.sessionState.getRemotePublicKey();
-        } else {
-            final SessionImpl slave = slaveSessions.get(tag);
-            if (slave == null) {
-                throw new IllegalArgumentException("Unknown tag specified: " + tag.getValue());
-            }
-            return slave.getRemotePublicKey();
         }
+        final SessionImpl slave = slaveSessions.get(tag);
+        if (slave == null) {
+            throw new IllegalArgumentException("Unknown tag specified: " + tag.getValue());
+        }
+        return slave.getRemotePublicKey();
     }
 
     /**
@@ -1155,13 +1155,14 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.initSmp(question, answer);
             return;
         }
+        final State session = this.sessionState;
         final TLV tlv;
         try {
-            tlv = this.sessionState.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
+            tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
         } catch (final IncorrectStateException e) {
             throw new OtrException("Initializing SMP failed because OTR is not in an encrypted messaging state.", e);
         }
-        final Message m = this.sessionState.transformSending(this, "", singletonList(tlv));
+        final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
         }
@@ -1211,13 +1212,14 @@ final class SessionImpl implements Session, Context, AuthContext {
      *                      from ENCRYPTED, issues with SMP processing.
      */
     private void sendResponseSmp(@Nullable final String question, @Nonnull final String answer) throws OtrException {
+        final State session = this.sessionState;
         final TLV tlv;
         try {
-            tlv = this.sessionState.getSmpHandler().respond(question == null ? "" : question, answer.getBytes(UTF_8));
+            tlv = session.getSmpHandler().respond(question == null ? "" : question, answer.getBytes(UTF_8));
         } catch (final IncorrectStateException e) {
             throw new OtrException("Responding to SMP request failed, because current session is not encrypted.", e);
         }
-        final Message m = this.sessionState.transformSending(this, "", singletonList(tlv));
+        final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
         }
@@ -1234,13 +1236,14 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.abortSmp();
             return;
         }
+        final State session = this.sessionState;
         final TLV tlv;
         try {
-            tlv = this.sessionState.getSmpHandler().abort();
+            tlv = session.getSmpHandler().abort();
         } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
-        final Message m = this.sessionState.transformSending(this, "", singletonList(tlv));
+        final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
         }
@@ -1285,8 +1288,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             return this.sessionState.getExtraSymmetricKey();
         } catch (final IncorrectStateException e) {
-            throw new OtrException("Cannot acquire Extra Symmetric Key, because OTR is not in an encrypted messaging state.",
-                e);
+            throw new OtrException("Cannot acquire Extra Symmetric Key, because current session is not encrypted.", e);
         }
     }
 }
