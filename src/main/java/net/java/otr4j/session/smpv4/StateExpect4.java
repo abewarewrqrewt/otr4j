@@ -69,25 +69,25 @@ final class StateExpect4 implements SMPState {
     @Override
     public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
-        if (message instanceof SMPMessage4) {
-            final SMPMessage4 smp4 = (SMPMessage4) message;
-            if (!Ed448.contains(smp4.rb)) {
-                throw new SMPAbortException("Message validation failed.");
-            }
-            final Point g = basePoint();
-            if (!smp4.cr.equals(hashToScalar(SMP_VALUE_0x08, concatenate(
-                    g.multiply(smp4.d7).add(this.g3b.multiply(smp4.cr)).encode(),
-                    this.qa.add(this.qb.negate()).multiply(smp4.d7).add(smp4.rb.multiply(smp4.cr)).encode())))) {
-                throw new SMPAbortException("Message validation failed.");
-            }
-            // Verify if the zero-knowledge proof succeeds on our end.
-            final Point rab = smp4.rb.multiply(this.a3);
-            if (!rab.equals(this.pa.add(this.pb.negate()))) {
-                throw new SMPAbortException("Final zero-knowledge proof failed.");
-            }
-            context.setState(new StateExpect1(this.random, SUCCEEDED));
-            return null;
+        if (!(message instanceof SMPMessage4)) {
+            throw new SMPAbortException("Received SMP message 1 in StateExpect4.");
         }
-        throw new SMPAbortException("Received SMP message 1 in StateExpect4.");
+        final SMPMessage4 smp4 = (SMPMessage4) message;
+        if (!Ed448.contains(smp4.rb)) {
+            throw new SMPAbortException("Message validation failed.");
+        }
+        final Point g = basePoint();
+        if (!smp4.cr.equals(hashToScalar(SMP_VALUE_0x08, concatenate(
+                g.multiply(smp4.d7).add(this.g3b.multiply(smp4.cr)).encode(),
+                this.qa.add(this.qb.negate()).multiply(smp4.d7).add(smp4.rb.multiply(smp4.cr)).encode())))) {
+            throw new SMPAbortException("Message validation failed.");
+        }
+        // Verify if the zero-knowledge proof succeeds on our end.
+        final Point rab = smp4.rb.multiply(this.a3);
+        if (!rab.equals(this.pa.add(this.pb.negate()))) {
+            throw new SMPAbortException("Final zero-knowledge proof failed.");
+        }
+        context.setState(new StateExpect1(this.random, SUCCEEDED));
+        return null;
     }
 }

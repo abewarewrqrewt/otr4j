@@ -133,22 +133,22 @@ final class StateExpect1 implements SMPState {
     @Override
     public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
-        if (message instanceof SMPMessage1) {
-            final SMPMessage1 smp1 = (SMPMessage1) message;
-            if (!Ed448.contains(smp1.g2a) || !Ed448.contains(smp1.g3a)) {
-                throw new SMPAbortException("g2a or g3a failed verification.");
-            }
-            final Point g = basePoint();
-            if (!smp1.c2.equals(hashToScalar(SMP_VALUE_0x01, g.multiply(smp1.d2).add(smp1.g2a.multiply(smp1.c2)).encode()))) {
-                throw new SMPAbortException("c2 failed verification.");
-            }
-            if (!smp1.c3.equals(hashToScalar(SMP_VALUE_0x02, g.multiply(smp1.d3).add(smp1.g3a.multiply(smp1.c3)).encode()))) {
-                throw new SMPAbortException("c2 failed verification.");
-            }
-            context.requestSecret(smp1.question);
-            context.setState(new StateExpect1(this.random, this.status, smp1));
-            return null;
+        if (!(message instanceof SMPMessage1)) {
+            throw new SMPAbortException("Received unexpected SMP message in StateExpect1.");
         }
-        throw new SMPAbortException("Received unexpected SMP message in StateExpect1.");
+        final SMPMessage1 smp1 = (SMPMessage1) message;
+        if (!Ed448.contains(smp1.g2a) || !Ed448.contains(smp1.g3a)) {
+            throw new SMPAbortException("g2a or g3a failed verification.");
+        }
+        final Point g = basePoint();
+        if (!smp1.c2.equals(hashToScalar(SMP_VALUE_0x01, g.multiply(smp1.d2).add(smp1.g2a.multiply(smp1.c2)).encode()))) {
+            throw new SMPAbortException("c2 failed verification.");
+        }
+        if (!smp1.c3.equals(hashToScalar(SMP_VALUE_0x02, g.multiply(smp1.d3).add(smp1.g3a.multiply(smp1.c3)).encode()))) {
+            throw new SMPAbortException("c2 failed verification.");
+        }
+        context.requestSecret(smp1.question);
+        context.setState(new StateExpect1(this.random, this.status, smp1));
+        return null;
     }
 }
