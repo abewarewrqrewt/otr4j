@@ -8,7 +8,7 @@ __Status__: _In active development. Current work should be considered __at most_
 
 Development stages:
 
-* Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
+* ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
 * Socialist Millionaire's Protocol for OTRv4.
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
@@ -81,7 +81,11 @@ Development stages:
     _Need to consider the trade-offs. Investigate if/how BouncyCastle does this._
   * ☐ Scalar values kept as byte-arrays.
     _Need to consider the trade-offs. Investigate if/how BouncyCastle does this._
-* ...
+* Robustness
+  * ☑ otr4j does not handle Error-type exceptions.  
+  _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
+  * ☑ otr4j protects itself against `RuntimeException`s caused by callbacks into the host application.
+  _Any occurrence of a `RuntimeException` is considered a bug on the host application side, and is caught and logged by otr4j._
 
 ## Developmental
 
