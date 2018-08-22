@@ -41,7 +41,6 @@ import static net.java.otr4j.session.smp.SMPStatus.SUCCEEDED;
  *
  * @author Danny van Heumen
  */
-// FIXME integrate with smpv4.SMP as it seems to have a similar function. (Merge with SM-class?)
 public final class SmpTlvHandler implements SMPHandler {
 
     private static final byte[] VERSION_BYTE = new byte[] {1};
@@ -126,23 +125,14 @@ public final class SmpTlvHandler implements SMPHandler {
         final byte[] secret = generateSecret(answer, initiatorFingerprint, responderFingerprint);
 
         byte[] smpmsg;
-        if (initiating) {
-            try {
-                smpmsg = sm.step1(secret);
-            } catch (final SMAbortedException e) {
-                // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
-                // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
-                // to the counter party. Then we immediately initiate a new SMP exchange as requested.
-                smpAborted(this.host, this.sessionID);
-                return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-            }
-        } else {
-            try {
-                smpmsg = sm.step2b(secret);
-            } catch (final SMAbortedException e) {
-                smpAborted(this.host, this.sessionID);
-                return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-            }
+        try {
+            smpmsg = initiating ? sm.step1(secret) : sm.step2b(secret);
+        } catch (final SMAbortedException e) {
+            // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
+            // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
+            // to the counter party. Then we immediately initiate a new SMP exchange as requested.
+            smpAborted(this.host, this.sessionID);
+            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         }
 
         // If we've got a question, attach it to the smpmsg

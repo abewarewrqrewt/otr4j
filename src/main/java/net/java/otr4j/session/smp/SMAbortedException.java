@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
  * SM Aborted exception indicates that the current SMP exchange is aborted
  * and the state reset to default.
  */
-public final class SMAbortedException extends SMException {
+final class SMAbortedException extends SMException {
 
     private static final long serialVersionUID = 8062094133300893010L;
 
@@ -31,7 +31,7 @@ public final class SMAbortedException extends SMException {
      * @return Returns true if SMP conversation was previously in progress,
      * or false if it was not.
      */
-    public boolean isInProgress() {
+    boolean isInProgress() {
         return this.inProgress;
     }
 }
