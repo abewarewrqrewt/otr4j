@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.SmpEngineHostUtil.askForSecret;
+import static net.java.otr4j.api.SmpEngineHostUtil.smpAborted;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
@@ -115,6 +116,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) {
         final BigInteger secret = generateSecret(answer, this.ourLongTermPublicKey, this.theirLongTermPublicKey);
         final SMPMessage1 response = this.state.initiate(this, question, secret);
+        // FIXME this assumes that the SMP abort will not interfere, which is not the case.
         return new TLV(TLV.SMP1, encode(response));
     }
 
@@ -170,7 +172,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
             }
         } catch (final SMPAbortException e) {
             setState(new StateExpect1(this.random, UNDECIDED));
-            // FIXME report that SMP has been aborted.
+            smpAborted(this.host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, new byte[0]);
         }
         if (response instanceof SMPMessage1) {

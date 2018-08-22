@@ -205,13 +205,15 @@ final class StateEncrypted extends AbstractStateEncrypted {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
+                        // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable?
                         context.injectMessage(transformSending(context, "", singletonList(response)));
                     }
                 } catch (final SMException e) {
-                    throw new OtrException("Failed to process SMP1Q TLV.", e);
+                    throw new OtrException("Failed to process TLV.", e);
                 }
                 break;
             case TLV.SMP_ABORT: //TLV6
+                // Abort SMP and ignore response TLV as we're triggered by TLV 6 (SMP Abort) sent by the other party.
                 this.smpTlvHandler.abort();
                 break;
             case TLV.USE_EXTRA_SYMMETRIC_KEY:

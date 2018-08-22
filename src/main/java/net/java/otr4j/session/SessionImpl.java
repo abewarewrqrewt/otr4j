@@ -1155,6 +1155,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.initSmp(question, answer);
             return;
         }
+        // FIXME in case running SMP negotiation is aborted, immediately try again to initiate SMP. (Can we tackle this generically?)
         final State session = this.sessionState;
         final TLV tlv;
         try {
@@ -1196,7 +1197,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     public void respondSmp(@Nonnull final InstanceTag receiverTag, @Nullable final String question,
             @Nonnull final String secret) throws OtrException {
-        final SessionImpl session = receiverTag.equals(this.receiverTag) ? this : slaveSessions.get(receiverTag);
+        final SessionImpl session = receiverTag.equals(this.receiverTag) ? this : this.slaveSessions.get(receiverTag);
         if (session == null) {
             throw new IllegalArgumentException("Unknown receiver instance tag: " + receiverTag.getValue());
         }

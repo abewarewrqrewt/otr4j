@@ -18,7 +18,6 @@ import net.java.otr4j.session.api.SMPHandler;
 import net.java.otr4j.session.smp.SM;
 import net.java.otr4j.session.smp.SMAbortedException;
 import net.java.otr4j.session.smp.SMException;
-import net.java.otr4j.session.smp.SMPStatus;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -35,6 +34,9 @@ import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
 import static net.java.otr4j.api.SmpEngineHostUtil.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
+import static net.java.otr4j.session.smp.SMPStatus.CHEATED;
+import static net.java.otr4j.session.smp.SMPStatus.INPROGRESS;
+import static net.java.otr4j.session.smp.SMPStatus.SUCCEEDED;
 
 /**
  * SMP TLV Handler handles any interaction w.r.t. mutual authentication using
@@ -112,7 +114,7 @@ public final class SmpTlvHandler implements SMPHandler {
     @Nonnull
     private TLV initRespondSmp(@Nonnull final String question, @Nonnull final byte[] answer, final boolean initiating)
             throws OtrException, SMException {
-        if (!initiating && this.sm.status() != SMPStatus.INPROGRESS) {
+        if (!initiating && this.sm.status() != INPROGRESS) {
             throw new OtrException("There is no question to be answered.");
         }
         final byte[] initiatorFingerprint;
@@ -134,14 +136,14 @@ public final class SmpTlvHandler implements SMPHandler {
                 // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
                 // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
                 // to the counter party. Then we immediately initiate a new SMP exchange as requested.
-                smpAborted(host, this.sessionID);
+                smpAborted(this.host, this.sessionID);
                 return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
             }
         } else {
             try {
                 smpmsg = sm.step2b(secret);
             } catch (final SMAbortedException e) {
-                smpAborted(host, this.sessionID);
+                smpAborted(this.host, this.sessionID);
                 return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
             }
         }
@@ -176,11 +178,6 @@ public final class SmpTlvHandler implements SMPHandler {
         return sha256Hash(VERSION_BYTE, initiatorFingerprint, responderFingerprint, this.s.ssid(), answer);
     }
 
-    /**
-     * Create an abort TLV and reset our state.
-     *
-     * @return TLVs to send to the peer
-     */
     @Nonnull
     @Override
     public TLV abort() {
@@ -193,7 +190,7 @@ public final class SmpTlvHandler implements SMPHandler {
     @CheckReturnValue
     @Override
     public boolean isInProgress() {
-        return this.sm.status() == SMPStatus.INPROGRESS;
+        return this.sm.status() == INPROGRESS;
     }
 
     /**
@@ -251,7 +248,7 @@ public final class SmpTlvHandler implements SMPHandler {
             smpAborted(host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
+            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
             throw e;
         }
     }
@@ -267,7 +264,7 @@ public final class SmpTlvHandler implements SMPHandler {
             smpAborted(host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
+            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
             throw e;
         }
     }
@@ -281,7 +278,7 @@ public final class SmpTlvHandler implements SMPHandler {
             smpAborted(host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
+            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
             throw e;
         }
     }
@@ -291,7 +288,7 @@ public final class SmpTlvHandler implements SMPHandler {
         try {
             final byte[] nextmsg = sm.step4(tlv.getValue());
             // Set trust level based on result.
-            if (this.sm.status() == SMPStatus.SUCCEEDED) {
+            if (this.sm.status() == SUCCEEDED) {
                 verify(host, this.sessionID, getFingerprint());
             } else {
                 unverify(host, this.sessionID, getFingerprint());
@@ -302,7 +299,7 @@ public final class SmpTlvHandler implements SMPHandler {
             smpAborted(host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
+            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
             throw e;
         }
     }
@@ -311,7 +308,7 @@ public final class SmpTlvHandler implements SMPHandler {
     private TLV processTlvSMP4(@Nonnull final TLV tlv) throws SMException {
         try {
             sm.step5(tlv.getValue());
-            if (this.sm.status() == SMPStatus.SUCCEEDED) {
+            if (this.sm.status() == SUCCEEDED) {
                 verify(host, this.sessionID, getFingerprint());
             } else {
                 unverify(host, this.sessionID, getFingerprint());
@@ -321,7 +318,7 @@ public final class SmpTlvHandler implements SMPHandler {
             smpAborted(host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == SMPStatus.CHEATED);
+            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
             throw e;
         }
     }

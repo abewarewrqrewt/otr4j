@@ -59,6 +59,8 @@ final class StateExpect4 implements SMPState {
     @Nullable
     @Override
     public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question, @Nonnull final BigInteger secret) {
+        // Given that this is an action by the local user, we don't see this as a violation of the protocol. Therefore,
+        // we don't abort.
         LOGGER.log(Level.WARNING, "Requested to respond with secret answer, but no request is pending. Ignoring request.");
         return null;
     }
