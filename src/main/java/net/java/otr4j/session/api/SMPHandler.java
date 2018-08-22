@@ -37,7 +37,6 @@ public interface SMPHandler {
      * @return Returns TLV with response.
      * @throws OtrException In case of issues while responding.
      */
-    // FIXME check if 'Nullable' is really needed.
     @Nullable
     TLV respond(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException;
 
