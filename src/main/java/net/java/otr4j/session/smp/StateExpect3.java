@@ -40,7 +40,7 @@ final class StateExpect3 extends AbstractSMPState {
     @Nonnull
     byte[] smpMessage3(@Nonnull final SM bstate, @Nonnull final byte[] input) throws SMException {
         /* Read from input to find the mpis */
-        final BigInteger[] msg3 = SM.unserialize(input);
+        final BigInteger[] msg3 = SM.deserialize(input);
 
         final BigInteger[] msg4 = new BigInteger[3];
 

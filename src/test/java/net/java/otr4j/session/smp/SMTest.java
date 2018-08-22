@@ -174,13 +174,13 @@ public class SMTest {
             BigInteger.valueOf(125L),
             BigInteger.valueOf(2500000L),
         };
-        assertArrayEquals(target, SM.unserialize(SM.serialize(target)));
+        assertArrayEquals(target, SM.deserialize(SM.serialize(target)));
     }
 
     @Test
     public void testUnserializeZeroLength() throws SMException {
         final byte[] data = new byte[] { 0, 0, 0, 0 };
-        final BigInteger[] result = SM.unserialize(data);
+        final BigInteger[] result = SM.deserialize(data);
         assertNotNull(result);
         assertEquals(0, result.length);
     }
@@ -188,7 +188,7 @@ public class SMTest {
     @Test(expected = SMException.class)
     public void testUnserializeLargeSignedLength() throws SMException {
         final byte[] data = new byte[] { (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff };
-        SM.unserialize(data);
+        SM.deserialize(data);
     }
 
     @Test(expected = NullPointerException.class)

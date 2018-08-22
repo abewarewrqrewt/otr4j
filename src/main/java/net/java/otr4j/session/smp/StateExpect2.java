@@ -37,7 +37,7 @@ final class StateExpect2 extends AbstractSMPState {
     byte[] smpMessage2(@Nonnull final SM astate, @Nonnull final byte[] input) throws SMException {
         /* Read from input to find the mpis */
 
-        final BigInteger[] msg2 = SM.unserialize(input);
+        final BigInteger[] msg2 = SM.deserialize(input);
 
         /* Verify parameters and let checks throw exceptions in case of failure.*/
         checkGroupElem(msg2[0]);

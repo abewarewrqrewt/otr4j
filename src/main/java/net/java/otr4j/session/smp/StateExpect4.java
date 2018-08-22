@@ -36,7 +36,7 @@ final class StateExpect4 extends AbstractSMPState {
     @Override
     void smpMessage4(@Nonnull final SM astate, @Nonnull final byte[] input) throws SMException {
         /* Read from input to find the mpis */
-        final BigInteger[] msg4 = SM.unserialize(input);
+        final BigInteger[] msg4 = SM.deserialize(input);
 
         /* Verify parameters and let checks throw exceptions in case of failure.*/
         checkGroupElem(msg4[0]);

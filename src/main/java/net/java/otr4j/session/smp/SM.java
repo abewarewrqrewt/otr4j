@@ -94,9 +94,8 @@ final class SM {
         return serialization.toByteArray();
     }
 
-    // TODO rename method from 'unserialize' to 'deserialize'.
     @Nonnull
-    static BigInteger[] unserialize(@Nonnull final byte[] bytes) throws SMException {
+    static BigInteger[] deserialize(@Nonnull final byte[] bytes) throws SMException {
         try {
             final OtrInputStream in = new OtrInputStream(bytes);
             final int len = in.readInt();

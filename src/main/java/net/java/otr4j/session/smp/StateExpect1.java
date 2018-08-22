@@ -85,7 +85,7 @@ final class StateExpect1 extends AbstractSMPState {
         /* Initialize the sm state if needed */
 
         /* Read from input to find the mpis */
-        final BigInteger[] msg1 = SM.unserialize(input);
+        final BigInteger[] msg1 = SM.deserialize(input);
 
         /* Verify parameters and let checks throw exceptions in case of failure.*/
         checkGroupElem(msg1[0]);
