@@ -16,6 +16,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x07;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x08;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
+import static net.java.otr4j.session.smpv4.SMPStatus.FAILED;
 import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
@@ -92,10 +93,11 @@ final class StateExpect3 implements SMPState {
         }
         // Verify if the zero-knowledge proof succeeds on our end.
         final Point rab = smp3.ra.multiply(this.b3);
-        if (!rab.equals(smp3.pa.add(this.pb.negate()))) {
-            throw new SMPAbortException("Final zero-knowledge proof failed.");
+        if (rab.equals(smp3.pa.add(this.pb.negate()))) {
+            context.setState(new StateExpect1(this.random, SUCCEEDED));
+        } else {
+            context.setState(new StateExpect1(this.random, FAILED));
         }
-        context.setState(new StateExpect1(this.random, SUCCEEDED));
         // Compose final message to other party.
         final Point rb = smp3.qa.add(this.qb.negate()).multiply(this.b3);
         final BigInteger r7 = generateRandomValueInZq(this.random);

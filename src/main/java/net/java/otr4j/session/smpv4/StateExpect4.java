@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x08;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
+import static net.java.otr4j.session.smpv4.SMPStatus.FAILED;
 import static net.java.otr4j.session.smpv4.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
@@ -84,10 +85,11 @@ final class StateExpect4 implements SMPState {
         }
         // Verify if the zero-knowledge proof succeeds on our end.
         final Point rab = smp4.rb.multiply(this.a3);
-        if (!rab.equals(this.pa.add(this.pb.negate()))) {
-            throw new SMPAbortException("Final zero-knowledge proof failed.");
+        if (rab.equals(this.pa.add(this.pb.negate()))) {
+            context.setState(new StateExpect1(this.random, SUCCEEDED));
+        } else {
+            context.setState(new StateExpect1(this.random, FAILED));
         }
-        context.setState(new StateExpect1(this.random, SUCCEEDED));
         return null;
     }
 }
