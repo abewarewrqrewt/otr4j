@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package net.java.otr4j.session.state;
+package net.java.otr4j.session.smp;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
@@ -15,9 +15,6 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.session.api.SMPHandler;
-import net.java.otr4j.session.smp.SM;
-import net.java.otr4j.session.smp.SMAbortedException;
-import net.java.otr4j.session.smp.SMException;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -44,7 +41,7 @@ import static net.java.otr4j.session.smp.SMPStatus.SUCCEEDED;
  *
  * @author Danny van Heumen
  */
-// FIXME integrate with smpv4.SMP as it seems to have a similar function. (Consider moving into 'smp' package.)
+// FIXME integrate with smpv4.SMP as it seems to have a similar function. (Merge with SM-class?)
 public final class SmpTlvHandler implements SMPHandler {
 
     private static final byte[] VERSION_BYTE = new byte[] {1};
@@ -66,7 +63,7 @@ public final class SmpTlvHandler implements SMPHandler {
      * @param host            the SMP engine host
      * @param s               the session's shared secret
      */
-    SmpTlvHandler(@Nonnull final SecureRandom random, @Nonnull final SessionID sessionID,
+    public SmpTlvHandler(@Nonnull final SecureRandom random, @Nonnull final SessionID sessionID,
             @Nonnull final DSAPublicKey remotePublicKey, @Nonnull final InstanceTag receiverTag,
             @Nonnull final SmpEngineHost host, @Nonnull final SharedSecret s) {
         this.sessionID = requireNonNull(sessionID);
@@ -202,19 +199,27 @@ public final class SmpTlvHandler implements SMPHandler {
      */
     @Nullable
     public TLV process(@Nonnull final TLV tlv) throws SMException {
-        switch (tlv.getType()) {
-        case TLV.SMP1:
-            return processTlvSMP1(tlv);
-        case TLV.SMP1Q:
-            return processTlvSMP1Q(tlv);
-        case TLV.SMP2:
-            return processTlvSMP2(tlv);
-        case TLV.SMP3:
-            return processTlvSMP3(tlv);
-        case TLV.SMP4:
-            return processTlvSMP4(tlv);
-        default:
-            throw new IllegalStateException("Unknown SMP TLV type: " + tlv.getType() + ". Cannot process this TLV.");
+        try {
+            switch (tlv.getType()) {
+            case TLV.SMP1:
+                return processTlvSMP1(tlv);
+            case TLV.SMP1Q:
+                return processTlvSMP1Q(tlv);
+            case TLV.SMP2:
+                return processTlvSMP2(tlv);
+            case TLV.SMP3:
+                return processTlvSMP3(tlv);
+            case TLV.SMP4:
+                return processTlvSMP4(tlv);
+            default:
+                throw new IllegalStateException("Unknown SMP TLV type: " + tlv.getType() + ". Cannot process this TLV.");
+            }
+        } catch (final SMAbortedException e) {
+            smpAborted(this.host, this.sessionID);
+            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+        } catch (final SMException e) {
+            smpError(this.host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
+            throw e;
         }
     }
 
@@ -235,92 +240,51 @@ public final class SmpTlvHandler implements SMPHandler {
         }
         final byte[] input = new byte[question.length - qlen];
         System.arraycopy(question, qlen, input, 0, question.length - qlen);
-        try {
-            sm.step2a(input);
-            if (qlen != 0) {
-                qlen--;
-            }
-            final byte[] plainq = new byte[qlen];
-            System.arraycopy(question, 0, plainq, 0, qlen);
-            askForSecret(host, this.sessionID, this.receiverTag, new String(plainq, UTF_8));
-            return null;
-        } catch (final SMAbortedException e) {
-            smpAborted(host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-        } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
-            throw e;
+        sm.step2a(input);
+        if (qlen != 0) {
+            qlen--;
         }
+        final byte[] plainq = new byte[qlen];
+        System.arraycopy(question, 0, plainq, 0, qlen);
+        askForSecret(host, this.sessionID, this.receiverTag, new String(plainq, UTF_8));
+        return null;
     }
 
     @Nullable
     private TLV processTlvSMP1(@Nonnull final TLV tlv) throws SMException {
         // We can only do the verification half now. We must wait for the secret to be entered to continue.
-        try {
-            sm.step2a(tlv.getValue());
-            askForSecret(host, this.sessionID, this.receiverTag, null);
-            return null;
-        } catch (final SMAbortedException e) {
-            smpAborted(host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-        } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
-            throw e;
-        }
+        sm.step2a(tlv.getValue());
+        askForSecret(host, this.sessionID, this.receiverTag, null);
+        return null;
     }
 
     @Nonnull
     private TLV processTlvSMP2(@Nonnull final TLV tlv) throws SMException {
-        try {
-            final byte[] nextmsg = sm.step3(tlv.getValue());
-            return new TLV(TLV.SMP3, nextmsg);
-        } catch (final SMAbortedException e) {
-            smpAborted(host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-        } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
-            throw e;
-        }
+        final byte[] nextmsg = sm.step3(tlv.getValue());
+        return new TLV(TLV.SMP3, nextmsg);
     }
 
     @Nonnull
     private TLV processTlvSMP3(@Nonnull final TLV tlv) throws SMException {
-        try {
-            final byte[] nextmsg = sm.step4(tlv.getValue());
-            // Set trust level based on result.
-            if (this.sm.status() == SUCCEEDED) {
-                verify(host, this.sessionID, getFingerprint());
-            } else {
-                unverify(host, this.sessionID, getFingerprint());
-            }
-            // Send msg with next smp msg content.
-            return new TLV(TLV.SMP4, nextmsg);
-        } catch (final SMAbortedException e) {
-            smpAborted(host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-        } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
-            throw e;
+        final byte[] nextmsg = sm.step4(tlv.getValue());
+        // Set trust level based on result.
+        if (this.sm.status() == SUCCEEDED) {
+            verify(host, this.sessionID, getFingerprint());
+        } else {
+            unverify(host, this.sessionID, getFingerprint());
         }
+        return new TLV(TLV.SMP4, nextmsg);
     }
 
     @Nullable
     private TLV processTlvSMP4(@Nonnull final TLV tlv) throws SMException {
-        try {
-            sm.step5(tlv.getValue());
-            if (this.sm.status() == SUCCEEDED) {
-                verify(host, this.sessionID, getFingerprint());
-            } else {
-                unverify(host, this.sessionID, getFingerprint());
-            }
-            return null;
-        } catch (final SMAbortedException e) {
-            smpAborted(host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
-        } catch (final SMException e) {
-            smpError(host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
-            throw e;
+        sm.step5(tlv.getValue());
+        if (this.sm.status() == SUCCEEDED) {
+            verify(host, this.sessionID, getFingerprint());
+        } else {
+            unverify(host, this.sessionID, getFingerprint());
         }
+        return null;
     }
 
     @Nonnull

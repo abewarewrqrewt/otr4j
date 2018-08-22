@@ -24,6 +24,7 @@ import net.java.otr4j.io.messages.PlainTextMessage;
 import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.smp.SMException;
+import net.java.otr4j.session.smp.SmpTlvHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -37,9 +37,8 @@ import java.util.logging.Logger;
 /**
  * Socialist Millionaire protocol implementation.
  */
-// FIXME Add OTRv4 support: new crypto primitives, include in StateEncrypted4.
 @SuppressWarnings({"PMD.AvoidRethrowingException", "PMD.AvoidCatchingGenericException"})
-public final class SM {
+final class SM {
 
     private static final Logger LOGGER = Logger.getLogger(SM.class.getName());
 
@@ -51,6 +50,9 @@ public final class SM {
      */
     private static final int MAX_MPI_ARRAY_SIZE = 100;
 
+    /**
+     * The current state of the Socialist Millionaire's Protocol.
+     */
     private AbstractSMPState state;
 
     /**
@@ -58,7 +60,7 @@ public final class SM {
      *
      * @param sr secure random instance
      */
-    public SM(@Nonnull final SecureRandom sr) {
+    SM(@Nonnull final SecureRandom sr) {
         this.state = new StateExpect1(sr);
     }
 
@@ -85,8 +87,7 @@ public final class SM {
 
     @Nonnull
     static byte[] serialize(@Nonnull final BigInteger[] ints) {
-        final OtrOutputStream serialization = new OtrOutputStream()
-                .writeInt(ints.length);
+        final OtrOutputStream serialization = new OtrOutputStream().writeInt(ints.length);
         for (final BigInteger i : ints) {
             serialization.writeBigInt(i);
         }
@@ -132,7 +133,7 @@ public final class SM {
      * @return Returns the current status.
      */
     @Nonnull
-    public SMPStatus status() {
+    SMPStatus status() {
         final SMPStatus status = this.state.status();
         LOGGER.log(Level.FINE, "Retrieving status for SMP exchange: {0}", status.name());
         return status;
@@ -149,7 +150,7 @@ public final class SM {
      * @return Returns true if SMP exchange was originally in progress. It will
      * return false in initial state and final states.
      */
-    public boolean abort() {
+    boolean abort() {
         LOGGER.fine("Aborting SMP exchange.");
         return this.state.smpAbort(this);
     }
@@ -173,7 +174,7 @@ public final class SM {
      * exchange.
      */
     @Nonnull
-    public byte[] step1(@Nonnull final byte[] secret) throws SMException {
+    byte[] step1(@Nonnull final byte[] secret) throws SMException {
         LOGGER.fine("Initiating SMP exchange.");
         // startSMP is solely controlled by the local user. In case an exception
         // occurs here, it is related to a programming error.
@@ -190,7 +191,7 @@ public final class SM {
      * @throws SMException Thrown in case of abort or failure to process SMP
      * message.
      */
-    public void step2a(@Nonnull final byte[] input) throws SMException {
+    void step2a(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received SMP exchange initiation request.");
         try {
             this.state.smpMessage1a(this, input);
@@ -225,7 +226,7 @@ public final class SM {
      * on abort.
      */
     @Nonnull
-    public byte[] step2b(@Nonnull final byte[] secret) throws SMException {
+    byte[] step2b(@Nonnull final byte[] secret) throws SMException {
         LOGGER.fine("Continuing SMP exchange initiation reply after receiving data from OtrEngineHost.");
         try {
             return this.state.smpMessage1b(this, secret);
@@ -257,7 +258,7 @@ public final class SM {
      * in case of abort.
      */
     @Nonnull
-    public byte[] step3(@Nonnull final byte[] input) throws SMException {
+    byte[] step3(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received reply to SMP exchange initiation request. Sending final message in SMP exchange.");
         try {
             return this.state.smpMessage2(this, input);
@@ -289,7 +290,7 @@ public final class SM {
      * in case of abort.
      */
     @Nonnull
-    public byte[] step4(@Nonnull final byte[] input) throws SMException {
+    byte[] step4(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received final SMP response. Concluding SMP exchange and sending final response.");
         try {
             return this.state.smpMessage3(this, input);
@@ -314,10 +315,9 @@ public final class SM {
      * NO_ERROR. If the secrets differ, an INV_VALUE error is returned instead.
      *
      * @param input The final SMP message to be received.
-     * @throws SMException Thrown in case of failure to process SMP message or
-     * in case of abort.
+     * @throws SMException Thrown in case of failure to process SMP message or in case of abort.
      */
-    public void step5(@Nonnull final byte[] input) throws SMException {
+    void step5(@Nonnull final byte[] input) throws SMException {
         LOGGER.fine("Received final SMP response. Concluding SMP exchange.");
         try {
             this.state.smpMessage4(this, input);

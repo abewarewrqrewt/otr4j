@@ -59,10 +59,9 @@ abstract class AbstractSMPState {
     byte[] startSMP(@Nonnull final SM astate, @Nonnull final byte[] secret) throws SMException {
         final boolean inprogress = status() == SMPStatus.INPROGRESS;
         astate.setState(new StateExpect1(this.sr));
-        throw new SMAbortedException(inprogress,
-                "Received start SMP request at incorrect state of the protocol. ("
-                        + this.getClass().getCanonicalName()
-                        + ") It is allowed to call startSMP() immediately after having sent the type 6 TLV signaling SMP abort in order to immediately start a new SMP exchange.");
+        throw new SMAbortedException(inprogress, "Received start SMP request at incorrect state of the protocol. ("
+                + this.getClass().getCanonicalName()
+                + ") It is allowed to call startSMP() immediately after having sent the type 6 TLV signaling SMP abort in order to immediately start a new SMP exchange.");
     }
 
     /**
@@ -91,9 +90,8 @@ abstract class AbstractSMPState {
     void smpMessage1a(@Nonnull final SM bstate, @Nonnull final byte[] input) throws SMException {
         final boolean inprogress = status() == SMPStatus.INPROGRESS;
         bstate.setState(new StateExpect1(this.sr));
-        throw new SMAbortedException(inprogress,
-                "Received SMP message 1 at incorrect state of the protocol. ("
-                        + this.getClass().getCanonicalName() + ")");
+        throw new SMAbortedException(inprogress, "Received SMP message 1 at incorrect state of the protocol. ("
+                + this.getClass().getCanonicalName() + ")");
     }
 
     /**
@@ -125,9 +123,8 @@ abstract class AbstractSMPState {
     byte[] smpMessage2(@Nonnull final SM astate, @Nonnull final byte[] input) throws SMException {
         final boolean inprogress = status() == SMPStatus.INPROGRESS;
         astate.setState(new StateExpect1(this.sr));
-        throw new SMAbortedException(inprogress,
-                "Received SMP message 2 at incorrect state of the protocol. ("
-                        + this.getClass().getCanonicalName() + ")");
+        throw new SMAbortedException(inprogress, "Received SMP message 2 at incorrect state of the protocol. ("
+                + this.getClass().getCanonicalName() + ")");
     }
 
     /**
@@ -142,9 +139,8 @@ abstract class AbstractSMPState {
     byte[] smpMessage3(@Nonnull final SM bstate, @Nonnull final byte[] input) throws SMException {
         final boolean inprogress = status() == SMPStatus.INPROGRESS;
         bstate.setState(new StateExpect1(this.sr));
-        throw new SMAbortedException(inprogress,
-                "Received SMP message 3 at incorrect state of the protocol. ("
-                        + this.getClass().getCanonicalName() + ")");
+        throw new SMAbortedException(inprogress, "Received SMP message 3 at incorrect state of the protocol. ("
+                + this.getClass().getCanonicalName() + ")");
     }
 
     /**
