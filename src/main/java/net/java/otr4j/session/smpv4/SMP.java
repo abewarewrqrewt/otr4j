@@ -20,12 +20,17 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.SmpEngineHostUtil.askForSecret;
 import static net.java.otr4j.api.SmpEngineHostUtil.smpAborted;
+import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
+import static net.java.otr4j.api.SmpEngineHostUtil.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
+import static net.java.otr4j.session.smpv4.SMPStatus.FAILED;
+import static net.java.otr4j.session.smpv4.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.smpv4.SMPStatus.UNDECIDED;
+import static net.java.otr4j.util.ByteArrays.toHexString;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
@@ -166,16 +171,19 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         final SMPMessage response;
         try {
             response = this.state.process(this, parse(tlv));
-            // FIXME set trust level based on the outcome of the SMP process.
-            if (response == null) {
-                return null;
-            }
         } catch (final SMPAbortException e) {
             setState(new StateExpect1(this.random, UNDECIDED));
             smpAborted(this.host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, new byte[0]);
         }
-        if (response instanceof SMPMessage1) {
+        if (this.state.getStatus() == SUCCEEDED) {
+            verify(this.host, this.sessionID, toHexString(fingerprint(this.theirLongTermPublicKey)));
+        } else if (this.state.getStatus() == FAILED) {
+            unverify(this.host, this.sessionID, toHexString(fingerprint(this.theirLongTermPublicKey)));
+        }
+        if (response == null) {
+            return null;
+        } else if (response instanceof SMPMessage1) {
             return new TLV(TLV.SMP1, encode(response));
         } else if (response instanceof SMPMessage2) {
             return new TLV(TLV.SMP2, encode(response));
@@ -194,7 +202,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     @Override
     public TLV abort() {
         setState(new StateExpect1(this.random, UNDECIDED));
-        // FIXME report abortion to SmpEngineHost.
+        smpAborted(this.host, this.sessionID);
         return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
     }
 }
