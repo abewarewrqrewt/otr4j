@@ -67,8 +67,10 @@ final class SMPMessages {
             final BigInteger d7 = in.readBigInt();
             return new SMPMessage4(rb, cr, d7);
         }
+        case TLV.SMP_ABORT:
+            throw new IllegalStateException("SMP_Abort (TLV 6) should not be processed as SMP message, but instead handled outside of the SMP logic.");
         default:
-            throw new IllegalArgumentException("No other TLV type can be processed as SMP message.");
+            throw new IllegalArgumentException("No other TLV type can be processed as SMP message: " + tlv.getType());
         }
     }
 }

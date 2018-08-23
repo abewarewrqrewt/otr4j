@@ -146,7 +146,7 @@ final class StateExpect1 implements SMPState {
             throw new SMPAbortException("c2 failed verification.");
         }
         if (!smp1.c3.equals(hashToScalar(SMP_VALUE_0x02, g.multiply(smp1.d3).add(smp1.g3a.multiply(smp1.c3)).encode()))) {
-            throw new SMPAbortException("c2 failed verification.");
+            throw new SMPAbortException("c3 failed verification.");
         }
         context.requestSecret(smp1.question);
         context.setState(new StateExpect1(this.random, this.status, smp1));
