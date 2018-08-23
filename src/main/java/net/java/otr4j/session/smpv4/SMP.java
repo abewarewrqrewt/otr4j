@@ -25,13 +25,14 @@ import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
 import static net.java.otr4j.api.SmpEngineHostUtil.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
 import static net.java.otr4j.util.ByteArrays.toHexString;
+import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
@@ -41,6 +42,8 @@ import static org.bouncycastle.util.Arrays.clear;
 public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SMP.class.getName());
+
+    private static final int SMP_SECRET_LENGTH_BYTES = 64;
 
     private static final byte VERSION = 1;
 
@@ -141,8 +144,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
                 .writeFingerprint(fingerprint(initiatorPublicKey))
                 .writeFingerprint(fingerprint(responderPublicKey))
                 .writeSSID(this.ssid).writeData(answer).toByteArray();
-        // FIXME use KDF_1 and decode as little-endian to scalar value. (As per the answer in https://github.com/otrv4/otrv4/issues/172.)
-        return hashToScalar(SMP_SECRET, secretInputData);
+        return decodeLittleEndian(kdf1(SMP_SECRET, secretInputData, SMP_SECRET_LENGTH_BYTES));
     }
 
     @Nonnull
