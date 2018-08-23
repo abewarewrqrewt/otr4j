@@ -12,6 +12,7 @@ import java.net.ProtocolException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+// FIXME consider defining special method for reading and writing SCALAR values. (reading mod q)
 final class SMPMessages {
 
     private SMPMessages() {
