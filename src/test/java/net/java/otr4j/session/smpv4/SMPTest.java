@@ -11,8 +11,10 @@ import org.junit.Test;
 
 import java.net.ProtocolException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
+import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static net.java.otr4j.util.ByteArrays.toHexString;
@@ -20,6 +22,7 @@ import static net.java.otr4j.util.SecureRandoms.random;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -61,5 +64,62 @@ public final class SMPTest {
         assertNull(smpAlice.process(smp4));
         assertEquals(SUCCEEDED, smpAlice.getStatus());
         verify(hostAlice).verify(sessionIDAlice, toHexString(fingerprint(publicKeyBob)));
+    }
+
+    @Test
+    public void testSMPStraightforwardFailedBadAnswer() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SmpEngineHost hostBob = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid, publicKeyBob, publicKeyAlice, tagAlice);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertEquals(UNDECIDED, smpBob.getStatus());
+        final TLV smp1 = smpAlice.initiate(question, new byte[] {'a', 'l', 'i', 'c', 'e' });
+        assertNotNull(smp1);
+        assertNull(smpBob.process(smp1));
+        verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
+        final TLV smp2 = smpBob.respond(question, new byte[] {'b', 'o', 'b'});
+        assertNotNull(smp2);
+        final TLV smp3 = smpAlice.process(smp2);
+        assertNotNull(smp3);
+        final TLV smp4 = smpBob.process(smp3);
+        assertNotNull(smp4);
+        assertEquals(FAILED, smpBob.getStatus());
+        verify(hostBob).unverify(sessionIDBob, toHexString(fingerprint(publicKeyAlice)));
+        assertNull(smpAlice.process(smp4));
+        assertEquals(FAILED, smpAlice.getStatus());
+        verify(hostAlice).unverify(sessionIDAlice, toHexString(fingerprint(publicKeyBob)));
+    }
+
+    @Test
+    public void testSMPStraightforwardFailedBadSSID() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] ssid1 = random(RANDOM, new byte[8]);
+        final byte[] ssid2 = random(RANDOM, new byte[8]);
+        assumeTrue("With all the luck in the world, the same ssid is generated randomly twice.",
+                !Arrays.equals(ssid1, ssid2));
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SmpEngineHost hostBob = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid1, publicKeyAlice, publicKeyBob, tagBob);
+        final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid2, publicKeyBob, publicKeyAlice, tagAlice);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertEquals(UNDECIDED, smpBob.getStatus());
+        final TLV smp1 = smpAlice.initiate(question, answer);
+        assertNotNull(smp1);
+        assertNull(smpBob.process(smp1));
+        verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
+        final TLV smp2 = smpBob.respond(question, answer);
+        assertNotNull(smp2);
+        final TLV smp3 = smpAlice.process(smp2);
+        assertNotNull(smp3);
+        final TLV smp4 = smpBob.process(smp3);
+        assertNotNull(smp4);
+        assertEquals(FAILED, smpBob.getStatus());
+        verify(hostBob).unverify(sessionIDBob, toHexString(fingerprint(publicKeyAlice)));
+        assertNull(smpAlice.process(smp4));
+        assertEquals(FAILED, smpAlice.getStatus());
+        verify(hostAlice).unverify(sessionIDAlice, toHexString(fingerprint(publicKeyBob)));
     }
 }
