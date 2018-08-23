@@ -20,7 +20,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x05;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
-import static nl.dannyvanheumen.joldilocks.Ed448.modulus;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
 
@@ -84,7 +83,7 @@ final class StateExpect1 implements SMPState {
         final Point g = basePoint();
         final Point g2a = g.multiply(a2);
         final Point g3a = g.multiply(a3);
-        final BigInteger q = modulus();
+        final BigInteger q = primeOrder();
         final BigInteger c2 = hashToScalar(SMP_VALUE_0x01, g.multiply(r2).encode());
         final BigInteger d2 = r2.subtract(a2.multiply(c2)).mod(q);
         final BigInteger c3 = hashToScalar(SMP_VALUE_0x02, g.multiply(r3).encode());
