@@ -52,6 +52,16 @@ public final class SMPMessagesTest {
         assertEquals(valueOf(5L), result.d3);
     }
 
+    @Test(expected = ProtocolException.class)
+    public void testParseTLVSMP1CorruptedQuestion() throws OtrCryptoException, ProtocolException {
+        final Point g2a = basePoint().multiply(valueOf(2L));
+        final Point g3a = basePoint().multiply(valueOf(3L));
+        final byte[] input = new OtrOutputStream().writeByte(0xff).writeByte(0xff).writeByte(0xff).writeByte(0xff)
+                .writePoint(g2a).writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(g3a)
+                .writeBigInt(valueOf(4L)).writeBigInt(valueOf(5L)).toByteArray();
+        parse(new TLV(TLV.SMP1, input));
+    }
+
     @Test
     public void testParseTLVSMP1TooMuchData() throws OtrCryptoException, ProtocolException {
         final String question = "This is my question";
