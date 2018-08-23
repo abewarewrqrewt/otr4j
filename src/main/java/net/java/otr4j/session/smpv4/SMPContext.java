@@ -2,6 +2,9 @@ package net.java.otr4j.session.smpv4;
 
 import javax.annotation.Nonnull;
 
+/**
+ * The SMP context object, as specified by the State pattern, provides access to the context of the SMP state machine.
+ */
 interface SMPContext {
 
     /**

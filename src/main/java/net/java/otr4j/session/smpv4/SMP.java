@@ -64,12 +64,12 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      * Constructor for SMP implementation.
      *
      * @param random                 SecureRandom instance
-     * @param host                   SMP engine host
+     * @param host                   SMP engine host instance, used for interaction with the host application
      * @param sessionID              the session ID
      * @param ssid                   the ssid for the established encrypted session
      * @param ourLongTermPublicKey   local user's long-term public key
      * @param theirLongTermPublicKey the remote party's long-term public key
-     * @param receiverTag            receiver tag this SMP instance maintains
+     * @param receiverTag            receiver tag this SMP instance belongs to
      */
     public SMP(@Nonnull final SecureRandom random, @Nonnull final SmpEngineHost host, @Nonnull final SessionID sessionID,
             @Nonnull final byte[] ssid, @Nonnull final Point ourLongTermPublicKey,
