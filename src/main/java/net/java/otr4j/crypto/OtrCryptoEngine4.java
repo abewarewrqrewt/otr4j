@@ -482,6 +482,7 @@ public final class OtrCryptoEngine4 {
         // FIXME size of 54 bytes was arbitrarily chosen to work within the bounds of q. (Needs to be replaced with verified solution)
         final byte[] data = new byte[54];
         random.nextBytes(data);
+        // FIXME generate larger value, then mod q?
         final BigInteger value = decodeLittleEndian(data);
         assert ZERO.compareTo(value) <= 0 && primeOrder().compareTo(value) > 0
             : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
