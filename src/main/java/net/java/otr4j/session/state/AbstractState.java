@@ -38,7 +38,7 @@ abstract class AbstractState implements State {
 
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
-        context.setState(new StateEncrypted(context, params));
+        context.setState(new StateEncrypted3(context, params));
     }
 
     @Override

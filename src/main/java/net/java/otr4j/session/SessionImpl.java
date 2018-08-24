@@ -43,6 +43,7 @@ import net.java.otr4j.session.ake.StateInitial;
 import net.java.otr4j.session.state.Context;
 import net.java.otr4j.session.state.IncorrectStateException;
 import net.java.otr4j.session.state.State;
+import net.java.otr4j.session.state.StateEncrypted;
 import net.java.otr4j.session.state.StatePlaintext;
 
 import javax.annotation.Nonnull;
@@ -1166,27 +1167,20 @@ final class SessionImpl implements Session, Context, AuthContext {
             return;
         }
         final State session = this.sessionState;
-        if (session.getStatus() != ENCRYPTED) {
+        if (!(session instanceof StateEncrypted)) {
             logger.log(Level.INFO, "Not initiating SMP negotiation as we are currently not in an Encrypted messaging state.");
             return;
         }
-        // First try, we may find that we get an SMP Abort response. In that case, a running SMP negotiation was
-        // aborted.
+        // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        final Message m = session.transformSending(this, "", singletonList(tlv));
-        if (m != null) {
-            injectMessage(m);
-        }
+        injectMessage(session.transformSending(this, "", singletonList(tlv)));
         if (tlv.getType() != TLV.SMP_ABORT) {
             return;
         }
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
         // if this aborts a running SMP negotiation.
         final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        final Message m2 = session.transformSending(this, "", singletonList(tlv2));
-        if (m2 != null) {
-            injectMessage(m2);
-        }
+        injectMessage(session.transformSending(this, "", singletonList(tlv2)));
     }
 
     /**

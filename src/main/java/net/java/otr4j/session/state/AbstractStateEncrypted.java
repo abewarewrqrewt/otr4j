@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 
-abstract class AbstractStateEncrypted extends AbstractState {
+abstract class AbstractStateEncrypted extends AbstractState implements StateEncrypted {
 
     final SessionID sessionID;
 
