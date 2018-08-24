@@ -46,6 +46,7 @@
 //    This is part of section "When you receive a Data Message:".
 //  * Are or aren't active attacks part of the scope of OTRv4?
 //    Section "Deletion of Stored Message Keys" describes measures against active malicious participants.
+//  * What about out-of-order SMP messages support?
 /**
  * otr4j.
  */
