@@ -1157,8 +1157,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      *
      * @param question The question, optional.
      * @param answer The answer to be verified using ZK-proof.
-     * @throws OtrException In case of failure to init SMP or transform to
-     * encoded message.
+     * @throws OtrException In case of failure to init SMP or transform to encoded message.
      */
     @Override
     public void initSmp(@Nullable final String question, @Nonnull final String answer) throws OtrException {
@@ -1167,6 +1166,10 @@ final class SessionImpl implements Session, Context, AuthContext {
             return;
         }
         final State session = this.sessionState;
+        if (session.getStatus() != ENCRYPTED) {
+            logger.log(Level.INFO, "Not initiating SMP negotiation as we are currently not in an Encrypted messaging state.");
+            return;
+        }
         // First try, we may find that we get an SMP Abort response. In that case, a running SMP negotiation was
         // aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
