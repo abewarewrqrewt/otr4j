@@ -49,6 +49,8 @@ final class EncodingConstants {
     // XSalsa20 IV (nonce)
     static final int NONCE_LENGTH_BYTES = 24;
 
+    static final int POINT_LENGTH_BYTES = 57;
+
     static final int SCALAR_LENGTH_BYTES = 56;
 
     private EncodingConstants() {

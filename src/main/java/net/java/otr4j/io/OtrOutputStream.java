@@ -323,7 +323,8 @@ public final class OtrOutputStream {
     // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writePoint(@Nonnull final Point p) {
-        writeData(p.encode());
+        final byte[] data = p.encode();
+        this.out.write(data, 0, data.length);
         return this;
     }
 
@@ -333,6 +334,7 @@ public final class OtrOutputStream {
      * @param s the scalar value
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
+    // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writeScalar(@Nonnull final BigInteger s) {
         final byte[] value = new byte[SCALAR_LENGTH_BYTES];

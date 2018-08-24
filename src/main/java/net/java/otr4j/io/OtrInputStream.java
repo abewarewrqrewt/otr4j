@@ -25,6 +25,7 @@ import java.security.interfaces.DSAPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.POINT_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
 import static net.java.otr4j.io.EncodingConstants.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
@@ -289,16 +290,12 @@ public final class OtrInputStream {
      * Read Ed448 point.
      *
      * @return Returns Ed448 point.
-     * @throws ProtocolException          In case of failure to read from input stream.
-     * @throws OtrCryptoException         In case of failure decoding Point, meaning point data is invalid.
+     * @throws ProtocolException  In case of failure to read from input stream.
+     * @throws OtrCryptoException In case of failure decoding Point, meaning point data is invalid.
      */
     @Nonnull
     public Point readPoint() throws OtrCryptoException, ProtocolException {
-        try {
-            return decodePoint(readData());
-        } catch (final UnsupportedLengthException e) {
-            throw new ProtocolException("Data field that should contain Point data is exceptionally large.");
-        }
+        return decodePoint(checkedRead(POINT_LENGTH_BYTES));
     }
 
     /**

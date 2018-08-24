@@ -291,23 +291,6 @@ public class OtrInputStreamTest {
     }
 
     @Test(expected = ProtocolException.class)
-    public void testReadPointShifted() throws OtrCryptoException, ProtocolException {
-        final byte[] data = new OtrOutputStream().writeByte(0xff).writePoint(keypair.getPublicKey()).toByteArray();
-        new OtrInputStream(data).readPoint();
-    }
-
-    @Test(expected = ProtocolException.class)
-    public void testReadPointPartial() throws OtrCryptoException, ProtocolException {
-        final byte[] data = new byte[60];
-        final byte[] full = new OtrOutputStream().writePoint(keypair.getPublicKey()).toByteArray();
-        System.arraycopy(full, 0, data, 0, full.length-1);
-        final Point result = new OtrInputStream(data).readPoint();
-        assertNotNull(result);
-        assertEquals(this.keypair.getPublicKey().x(), result.x());
-        assertEquals(this.keypair.getPublicKey().y(), result.y());
-    }
-
-    @Test(expected = ProtocolException.class)
     public void testReadEdDSASignatureBytesMissing() throws ProtocolException {
         final byte[] sig = this.keypair.sign("hello world".getBytes(UTF_8));
         final byte[] data = new byte[113];
