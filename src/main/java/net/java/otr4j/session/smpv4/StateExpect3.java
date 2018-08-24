@@ -21,6 +21,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
+import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -58,9 +59,9 @@ final class StateExpect3 implements SMPState {
     @Nonnull
     @Override
     public SMPMessage1 initiate(@Nonnull final SMPContext context, @Nonnull final String question,
-            @Nonnull final BigInteger secret) {
-        // FIXME implement SMP initiation in StateExpect1
-        throw new UnsupportedOperationException("To be implemented");
+            @Nonnull final BigInteger secret) throws SMPAbortException {
+        context.setState(new StateExpect1(this.random, UNDECIDED));
+        throw new SMPAbortException("Not in initial state. Aborting running SMP negotiation.");
     }
 
     @Nullable

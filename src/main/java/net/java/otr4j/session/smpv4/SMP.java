@@ -23,6 +23,12 @@ import static net.java.otr4j.api.SmpEngineHostUtil.askForSecret;
 import static net.java.otr4j.api.SmpEngineHostUtil.smpAborted;
 import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
 import static net.java.otr4j.api.SmpEngineHostUtil.verify;
+import static net.java.otr4j.api.TLV.EMPTY_BODY;
+import static net.java.otr4j.api.TLV.SMP1;
+import static net.java.otr4j.api.TLV.SMP2;
+import static net.java.otr4j.api.TLV.SMP3;
+import static net.java.otr4j.api.TLV.SMP4;
+import static net.java.otr4j.api.TLV.SMP_ABORT;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
@@ -113,10 +119,13 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     @Nonnull
     @Override
     public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) {
-        final BigInteger secret = generateSecret(answer, this.ourLongTermPublicKey, this.theirLongTermPublicKey);
-        final SMPMessage1 response = this.state.initiate(this, question, secret);
-        // FIXME this assumes that the SMP abort will not interfere, which is not the case.
-        return new TLV(TLV.SMP1, encode(response));
+        try {
+            final BigInteger secret = generateSecret(answer, this.ourLongTermPublicKey, this.theirLongTermPublicKey);
+            final SMPMessage1 response = this.state.initiate(this, question, secret);
+            return new TLV(SMP1, encode(response));
+        } catch (final SMPAbortException e) {
+            return new TLV(SMP_ABORT, EMPTY_BODY);
+        }
     }
 
     /**
@@ -132,9 +141,10 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         final BigInteger secret = generateSecret(answer, this.theirLongTermPublicKey, this.ourLongTermPublicKey);
         final SMPMessage2 response = this.state.respondWithSecret(this, question, secret);
         if (response == null) {
+            // TODO decide if we want to throw an exception or silently ignore bad (or badly timed) SMP init responses.
             return null;
         }
-        return new TLV(TLV.SMP2, encode(response));
+        return new TLV(SMP2, encode(response));
     }
 
     private BigInteger generateSecret(@Nonnull final byte[] answer, @Nonnull final Point initiatorPublicKey,
@@ -168,7 +178,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         } catch (final SMPAbortException e) {
             setState(new StateExpect1(this.random, UNDECIDED));
             smpAborted(this.host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, new byte[0]);
+            return new TLV(SMP_ABORT, new byte[0]);
         }
         if (this.state.getStatus() == SUCCEEDED) {
             verify(this.host, this.sessionID, toHexString(fingerprint(this.theirLongTermPublicKey)));
@@ -178,13 +188,13 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         if (response == null) {
             return null;
         } else if (response instanceof SMPMessage1) {
-            return new TLV(TLV.SMP1, encode(response));
+            return new TLV(SMP1, encode(response));
         } else if (response instanceof SMPMessage2) {
-            return new TLV(TLV.SMP2, encode(response));
+            return new TLV(SMP2, encode(response));
         } else if (response instanceof SMPMessage3) {
-            return new TLV(TLV.SMP3, encode(response));
+            return new TLV(SMP3, encode(response));
         } else if (response instanceof SMPMessage4) {
-            return new TLV(TLV.SMP4, encode(response));
+            return new TLV(SMP4, encode(response));
         }
         throw new IllegalStateException("Unknown SMP response type: " + response.getClass() + ". Cannot construct corresponding TLV.");
     }
@@ -198,6 +208,6 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         // TODO consider not doing an unconditional state change, but instead check if "abort" has impact. (see OTRv3 implementation)
         setState(new StateExpect1(this.random, UNDECIDED));
         smpAborted(this.host, this.sessionID);
-        return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+        return new TLV(SMP_ABORT, EMPTY_BODY);
     }
 }

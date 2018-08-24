@@ -28,9 +28,11 @@ interface SMPState {
      * @param question the question posed to the other party
      * @param secret   the secret MPI derived from the user-supplied answer
      * @return Returns the SMP initiating message to be included as TLV payload in a data message.
+     * @throws SMPAbortException Indicates that a running SMP negotiation is aborted.
      */
     @Nonnull
-    SMPMessage1 initiate(@Nonnull SMPContext context, @Nonnull String question, @Nonnull BigInteger secret);
+    SMPMessage1 initiate(@Nonnull SMPContext context, @Nonnull String question, @Nonnull BigInteger secret)
+            throws SMPAbortException;
 
     /**
      * Respond to SMP initiation request with response based on our own secret answer.

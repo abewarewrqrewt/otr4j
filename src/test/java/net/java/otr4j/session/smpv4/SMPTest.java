@@ -175,4 +175,24 @@ public final class SMPTest {
         assertEquals(FAILED, smpAlice.getStatus());
         verify(hostAlice).unverify(sessionIDAlice, toHexString(fingerprint(publicKeyBob)));
     }
+
+    @Test
+    public void testSMPAbortsRunningSMP() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SmpEngineHost hostBob = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid, publicKeyBob, publicKeyAlice, tagAlice);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertEquals(UNDECIDED, smpBob.getStatus());
+        final TLV smp1 = smpAlice.initiate(question, answer);
+        assertNotNull(smp1);
+        assertNull(smpBob.process(smp1));
+        verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
+        final TLV abortTLV = smpAlice.initiate(question, answer);
+        assertEquals(TLV.SMP_ABORT, abortTLV.getType());
+        final TLV initTLV = smpAlice.initiate(question, answer);
+        assertEquals(TLV.SMP1, initTLV.getType());
+    }
 }

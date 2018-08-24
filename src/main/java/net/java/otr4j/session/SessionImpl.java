@@ -1166,17 +1166,23 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.initSmp(question, answer);
             return;
         }
-        // FIXME in case running SMP negotiation is aborted, immediately try again to initiate SMP. (Can we tackle this generically?)
         final State session = this.sessionState;
-        final TLV tlv;
-        try {
-            tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        } catch (final IncorrectStateException e) {
-            throw new OtrException("Initializing SMP failed because OTR is not in an encrypted messaging state.", e);
-        }
+        // First try, we may find that we get an SMP Abort response. In that case, a running SMP negotiation was
+        // aborted.
+        final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
         final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
+        }
+        if (tlv.getType() != TLV.SMP_ABORT) {
+            return;
+        }
+        // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
+        // if this aborts a running SMP negotiation.
+        final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
+        final Message m2 = session.transformSending(this, "", singletonList(tlv2));
+        if (m2 != null) {
+            injectMessage(m2);
         }
     }
 
