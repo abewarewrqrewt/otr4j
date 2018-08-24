@@ -591,12 +591,21 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final ProtocolException e) {
             throw new OtrException("Protocol violation encountered while processing reassembled OTR-encoded message.", e);
         }
-        // FIXME ensure that we verify the encoded message for appropriate sender and receiver tags match. (Fragment may contain different data.)
         // TODO should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
         if (encoded instanceof AbstractEncodedMessage) {
+            // There is no good reason why the reassembled message should have any other protocol version, sender
+            // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
+            // inconsistencies to ensure that the inconsistencies cannot be exploited.
+            // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
+            if (((AbstractEncodedMessage) encoded).protocolVersion != fragment.getVersion()
+                    || ((AbstractEncodedMessage) encoded).senderInstanceTag != fragment.getSendertag().getValue()
+                    || ((AbstractEncodedMessage) encoded).receiverInstanceTag != fragment.getReceivertag().getValue()) {
+                logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
+                return null;
+            }
             return handleEncodedMessage((AbstractEncodedMessage) encoded);
         }
-        throw new OtrException("Only OTR-encoded message is a valid from reconstructed message fragments.");
+        throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
     }
 
     /**
