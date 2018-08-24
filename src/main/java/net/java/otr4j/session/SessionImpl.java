@@ -72,6 +72,7 @@ import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
+import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 
@@ -321,7 +322,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final OtrCryptoException e) {
             throw new InteractionFailedException(e);
         }
-        if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
+        if (this.sessionState.getStatus() != ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
         }
         logger.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
@@ -350,7 +351,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             logger.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.",
                     e);
         }
-        if (this.sessionState.getStatus() != SessionStatus.ENCRYPTED) {
+        if (this.sessionState.getStatus() != ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
         }
         logger.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
@@ -881,7 +882,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Override
     public void startSession() throws OtrException {
-        if (this.getSessionStatus() == SessionStatus.ENCRYPTED) {
+        if (this.getSessionStatus() == ENCRYPTED) {
             logger.info("startSession was called, however an encrypted session is already established.");
             return;
         }
