@@ -67,7 +67,60 @@ public final class SMPTest {
     }
 
     @Test
-    public void testSMPStraightforwardFailedBadAnswer() throws OtrCryptoException, ProtocolException {
+    public void testSMPSuccessfulVeryLargeSecret() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = random(RANDOM, new byte[16384]);
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SmpEngineHost hostBob = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid, publicKeyBob, publicKeyAlice, tagAlice);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertEquals(UNDECIDED, smpBob.getStatus());
+        final TLV smp1 = smpAlice.initiate(question, answer);
+        assertNotNull(smp1);
+        assertNull(smpBob.process(smp1));
+        verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
+        final TLV smp2 = smpBob.respond(question, answer);
+        assertNotNull(smp2);
+        final TLV smp3 = smpAlice.process(smp2);
+        assertNotNull(smp3);
+        final TLV smp4 = smpBob.process(smp3);
+        assertNotNull(smp4);
+        assertEquals(SUCCEEDED, smpBob.getStatus());
+        verify(hostBob).verify(sessionIDBob, toHexString(fingerprint(publicKeyAlice)));
+        assertNull(smpAlice.process(smp4));
+        assertEquals(SUCCEEDED, smpAlice.getStatus());
+        verify(hostAlice).verify(sessionIDAlice, toHexString(fingerprint(publicKeyBob)));
+    }
+
+    @Test
+    public void testSMPMissingQuestionSuccessful() throws OtrCryptoException, ProtocolException {
+        final byte[] answer = random(RANDOM, new byte[16384]);
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SmpEngineHost hostBob = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid, publicKeyBob, publicKeyAlice, tagAlice);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertEquals(UNDECIDED, smpBob.getStatus());
+        final TLV smp1 = smpAlice.initiate("", answer);
+        assertNotNull(smp1);
+        assertNull(smpBob.process(smp1));
+        verify(hostBob).askForSecret(sessionIDBob, tagAlice, "");
+        final TLV smp2 = smpBob.respond("", answer);
+        assertNotNull(smp2);
+        final TLV smp3 = smpAlice.process(smp2);
+        assertNotNull(smp3);
+        final TLV smp4 = smpBob.process(smp3);
+        assertNotNull(smp4);
+        assertEquals(SUCCEEDED, smpBob.getStatus());
+        verify(hostBob).verify(sessionIDBob, toHexString(fingerprint(publicKeyAlice)));
+        assertNull(smpAlice.process(smp4));
+        assertEquals(SUCCEEDED, smpAlice.getStatus());
+        verify(hostAlice).verify(sessionIDAlice, toHexString(fingerprint(publicKeyBob)));
+    }
+
+    @Test
+    public void testSMPFailsBadAnswer() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SmpEngineHost hostBob = mock(SmpEngineHost.class);
@@ -93,7 +146,7 @@ public final class SMPTest {
     }
 
     @Test
-    public void testSMPStraightforwardFailedBadSSID() throws OtrCryptoException, ProtocolException {
+    public void testSMPFailsBadSSID() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
         final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
         final byte[] ssid1 = random(RANDOM, new byte[8]);
