@@ -89,7 +89,6 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     @Override
     public void close() {
-        // FIXME investigate what else needs to be cleared at resource clean-up.
         clear(this.ssid);
     }
 
