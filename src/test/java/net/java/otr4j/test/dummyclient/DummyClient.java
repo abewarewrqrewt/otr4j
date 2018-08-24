@@ -125,7 +125,7 @@ public class DummyClient {
 		if (session == null) {
             final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
-			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
+			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
 		}
         session.startSession();
     }
@@ -134,7 +134,7 @@ public class DummyClient {
 		if (session == null) {
             final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
-			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
+			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
 		}
 		String[] outgoingMessage = session.transformSending(s, Collections.<TLV>emptyList());
 		for (String part : outgoingMessage) {
@@ -174,7 +174,7 @@ public class DummyClient {
 		if (session == null) {
             final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
-			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
+			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
 		}
 
 		session.startSession();
@@ -214,7 +214,7 @@ public class DummyClient {
 			if (session == null) {
                 final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 				final SessionID sessionID = new SessionID(account, m.getSender(), "DummyProtocol");
-				session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl(), senderInstanceTag);
+				session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
 			}
 
 			String receivedMessage = session.transformReceiving(m.getContent());
@@ -293,6 +293,7 @@ public class DummyClient {
 
 	public class DummyOtrEngineHostImpl implements OtrEngineHost {
 
+    	private final InstanceTag instanceTag = InstanceTag.random(RANDOM);
 	    private final HashMap<SessionID, KeyPair> keypairs = new HashMap<>();
 
         @Override
@@ -373,7 +374,13 @@ public class DummyClient {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
 
-        @Override
+		@Nonnull
+		@Override
+		public InstanceTag getInstanceTag(@Nonnull final SessionID sessionID) {
+			return this.instanceTag;
+		}
+
+		@Override
 		public OtrPolicy getSessionPolicy(@Nonnull SessionID ctx) {
 			return policy;
 		}

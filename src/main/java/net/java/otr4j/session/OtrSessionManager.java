@@ -7,29 +7,27 @@
 
 package net.java.otr4j.session;
 
-import java.security.SecureRandom;
+import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.OtrEngineHost;
+import net.java.otr4j.api.OtrEngineListener;
+import net.java.otr4j.api.OtrEngineListenerUtil;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.SessionID;
+
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import javax.annotation.Nonnull;
 
-import net.java.otr4j.api.OtrEngineHost;
-import net.java.otr4j.api.OtrEngineListener;
-import net.java.otr4j.api.OtrEngineListenerUtil;
-import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
-import net.java.otr4j.api.SessionID;
+import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 
 /**
  * @author George Politis
  * @author Danny van Heumen
  */
-// TODO how to manage the owner instance tag in the OTR Session Manager? If we want to vary instance tags per session ID, you would need to query which instance tag to use. (Additionally, it needs to match with the instance tag in the ClientProfile.)
 public final class OtrSessionManager {
-
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
      * The OTR Engine Host instance.
@@ -61,7 +59,7 @@ public final class OtrSessionManager {
      * logic.
      */
     public OtrSessionManager(@Nonnull final OtrEngineHost host) {
-        this.host = Objects.requireNonNull(host, "OtrEngineHost is required");
+        this.host = requireNonNull(host, "OtrEngineHost is required");
     }
 
     /**
@@ -71,13 +69,11 @@ public final class OtrSessionManager {
      *
      * @param sessionID         The session ID
      * @param host              The OTR engine host
-     * @param senderInstanceTag The persistent sender instance tag, required for OTRv4.
      * @return Returns a newly created OTR session instance.
      */
     @Nonnull
-    public static Session createSession(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host,
-            @Nonnull final InstanceTag senderInstanceTag) {
-        return new SessionImpl(sessionID, host, senderInstanceTag);
+    public static Session createSession(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
+        return new SessionImpl(sessionID, host);
     }
 
     /**
@@ -88,26 +84,21 @@ public final class OtrSessionManager {
      * all new sessions.
      */
     private final OtrEngineListener sessionManagerListener = new OtrEngineListener() {
-        // Note that this implementation must be context-agnostic as the same
-        // instance is now reused in all sessions.
+        // Note that this implementation must be context-agnostic as the same instance is now reused in all sessions.
 
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiverTag) {
-            OtrEngineListenerUtil.sessionStatusChanged(
-                    OtrEngineListenerUtil.duplicate(listeners),
-                    sessionID, receiverTag);
+            OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), sessionID, receiverTag);
         }
 
         @Override
         public void multipleInstancesDetected(@Nonnull final SessionID sessionID) {
-            OtrEngineListenerUtil.multipleInstancesDetected(
-                    OtrEngineListenerUtil.duplicate(listeners), sessionID);
+            OtrEngineListenerUtil.multipleInstancesDetected(duplicate(listeners), sessionID);
         }
 
         @Override
         public void outgoingSessionChanged(@Nonnull final SessionID sessionID) {
-            OtrEngineListenerUtil.outgoingSessionChanged(
-                    OtrEngineListenerUtil.duplicate(listeners), sessionID);
+            OtrEngineListenerUtil.outgoingSessionChanged(duplicate(listeners), sessionID);
         }
     };
 
@@ -130,7 +121,7 @@ public final class OtrSessionManager {
                 // Don't differentiate between existing but null and
                 // non-existing. If we do not get a valid instance, then we
                 // create a new instance.
-                session = new SessionImpl(sessionID, this.host, InstanceTag.random(RANDOM));
+                session = new SessionImpl(sessionID, this.host);
                 session.addOtrEngineListener(sessionManagerListener);
                 sessions.put(sessionID, session);
             }
@@ -144,7 +135,7 @@ public final class OtrSessionManager {
      * @param l the listener
      */
     public void addOtrEngineListener(@Nonnull final OtrEngineListener l) {
-        Objects.requireNonNull(l, "null is not a valid listener");
+        requireNonNull(l, "null is not a valid listener");
         synchronized (listeners) {
             if (!listeners.contains(l)) {
                 listeners.add(l);
@@ -158,7 +149,7 @@ public final class OtrSessionManager {
      * @param l the listener
      */
     public void removeOtrEngineListener(@Nonnull final OtrEngineListener l) {
-        Objects.requireNonNull(l, "null is not a valid listener");
+        requireNonNull(l, "null is not a valid listener");
         synchronized (listeners) {
             listeners.remove(l);
         }

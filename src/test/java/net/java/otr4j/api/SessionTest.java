@@ -889,6 +889,8 @@ public class SessionTest {
 
         private final Logger logger;
 
+        private final InstanceTag instanceTag = InstanceTag.random(RANDOM);
+
         private final KeyPair dsaKeyPair;
 
         private final EdDSAKeyPair ed448KeyPair;
@@ -916,11 +918,10 @@ public class SessionTest {
             this.policy = requireNonNull(policy);
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
-            final InstanceTag senderInstanceTag = InstanceTag.random(random);
-            final ClientProfile profile = new ClientProfile(senderInstanceTag, this.ed448KeyPair.getPublicKey(),
+            final ClientProfile profile = new ClientProfile(this.instanceTag, this.ed448KeyPair.getPublicKey(),
                 Collections.singleton(OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000, null);
             this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
-            this.session = createSession(sessionID, this, senderInstanceTag);
+            this.session = createSession(sessionID, this);
         }
 
         void setMessageSize(final int messageSize) {
@@ -1010,6 +1011,12 @@ public class SessionTest {
         @Override
         public ClientProfilePayload getClientProfile(@Nonnull final SessionID sessionID) {
             return this.profilePayload;
+        }
+
+        @Nonnull
+        @Override
+        public InstanceTag getInstanceTag(@Nonnull final SessionID sessionID) {
+            return this.instanceTag;
         }
 
         @Override

@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 /**
  * Instance tag used in message fragments.
  */
-// FIXME ensure that instance tags are persistent. Nowhere can we arbitrarily generate instance tags as they require matching up with the instance tag value in the Client Profile.
 public final class InstanceTag {
 
     /**

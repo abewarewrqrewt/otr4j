@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 // TODO verify that logging with parameters ('{}') works correctly.
-// FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305.
+// FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305. (Are these supported in IntelliJ?)
 // FIXME use @CleanupObligation to verify correct clean-up of cryptographically sensitive material.
 // TODO Verify rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
 // TODO Use maven-site-plugin (or similar) to generate a full report on the status of otr4j project.

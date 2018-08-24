@@ -109,6 +109,7 @@ import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
  * @author George Politis
  * @author Danny van Heumen
  */
+// TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
 final class SessionImpl implements Session, Context, AuthContext {
 
     private static final String DEFAULT_FALLBACK_MESSAGE = "Your contact is requesting to start an encrypted chat. Please install an app that supports OTR: https://github.com/otr4j/otr4j/wiki/Apps";
@@ -244,17 +245,16 @@ final class SessionImpl implements Session, Context, AuthContext {
      * <p>
      * Package-private constructor for creating new sessions. To create a sessions without using the OTR session
      * manager, we offer a static method that (indirectly) provides access to the session implementation. See
-     * {@link OtrSessionManager#createSession(SessionID, OtrEngineHost, InstanceTag)}.
+     * {@link OtrSessionManager#createSession(SessionID, OtrEngineHost)}.
      *
      * This constructor constructs a master session instance.
      *
      * @param sessionID The session ID
-     * @param listener  The OTR engine host listener.
-     * @param senderInstanceTag Our own instance tag with which new OTR-encoded messages are sent.
+     * @param host  The OTR engine host listener.
      */
-    SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost listener,
-            @Nonnull final InstanceTag senderInstanceTag) {
-        this(null, sessionID, listener, senderInstanceTag, ZERO_TAG, new SecureRandom(), StateInitial.empty());
+    SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
+        this(null, sessionID, host, host.getInstanceTag(sessionID), ZERO_TAG, new SecureRandom(),
+                StateInitial.empty());
     }
 
     /**
