@@ -28,11 +28,7 @@ final class EncodingConstants {
     static final int TYPE_LEN_INT = 4;
     static final int TYPE_LEN_LONG = 8;
     static final int TYPE_LEN_MAC = 20;
-    static final int TYPE_LEN_MAC_OTR4 = 64;
     static final int TYPE_LEN_CTR = 8;
-
-    // XSalsa20 IV (nonce)
-    static final int TYPE_LEN_NONCE = 24;
 
     static final int DATA_LEN = TYPE_LEN_INT;
     static final int TLV_LEN = TYPE_LEN_SHORT;
@@ -44,9 +40,14 @@ final class EncodingConstants {
 
     static final int EDDSA_SIGNATURE_LENGTH_BYTES = 114;
 
+    static final int MAC_OTR4_LENGTH_BYTES = 64;
+
     static final int FINGERPRINT_LENGTH_BYTES = 56;
 
     static final int SSID_LENGTH_BYTES = 8;
+
+    // XSalsa20 IV (nonce)
+    static final int NONCE_LENGTH_BYTES = 24;
 
     static final int SCALAR_LENGTH_BYTES = 56;
 

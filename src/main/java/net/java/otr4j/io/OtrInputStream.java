@@ -32,8 +32,8 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_INT;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_LONG;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
-import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC_OTR4;
-import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_NONCE;
+import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
@@ -271,7 +271,7 @@ public final class OtrInputStream {
      */
     @Nonnull
     public byte[] readNonce() throws ProtocolException {
-        return checkedRead(TYPE_LEN_NONCE);
+        return checkedRead(NONCE_LENGTH_BYTES);
     }
 
     /**
@@ -282,7 +282,7 @@ public final class OtrInputStream {
      */
     @Nonnull
     public byte[] readMacOTR4() throws ProtocolException {
-        return checkedRead(TYPE_LEN_MAC_OTR4);
+        return checkedRead(MAC_OTR4_LENGTH_BYTES);
     }
 
     /**

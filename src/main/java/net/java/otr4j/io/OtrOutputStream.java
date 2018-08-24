@@ -31,8 +31,8 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_INT;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_LONG;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
-import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC_OTR4;
-import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_NONCE;
+import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
@@ -295,8 +295,8 @@ public final class OtrOutputStream {
     // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writeNonce(@Nonnull final byte[] nonce) {
-        requireLengthExactly(TYPE_LEN_NONCE, nonce);
-        this.out.write(nonce, 0, TYPE_LEN_NONCE);
+        requireLengthExactly(NONCE_LENGTH_BYTES, nonce);
+        this.out.write(nonce, 0, NONCE_LENGTH_BYTES);
         return this;
     }
 
@@ -309,8 +309,8 @@ public final class OtrOutputStream {
     // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writeMacOTR4(@Nonnull final byte[] mac) {
-        requireLengthExactly(TYPE_LEN_MAC_OTR4, mac);
-        this.out.write(mac, 0, TYPE_LEN_MAC_OTR4);
+        requireLengthExactly(MAC_OTR4_LENGTH_BYTES, mac);
+        this.out.write(mac, 0, MAC_OTR4_LENGTH_BYTES);
         return this;
     }
 
