@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 
 /**
  * EdDSA key pair.
@@ -47,7 +48,8 @@ public final class EdDSAKeyPair {
      * @throws OtrCryptoException In case the signature does not match.
      */
     public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature)
-        throws OtrCryptoException {
+            throws OtrCryptoException {
+        assert !allZeroBytes(signature) : "Expected random data for signature instead of all zero-bytes.";
         try {
             Ed448.verify(ED448_CONTEXT, publicKey, message, signature);
         } catch (final Ed448.SignatureVerificationFailedException e) {

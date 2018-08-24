@@ -25,6 +25,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.NEXT_CHAIN_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ROOT_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateNonce;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.Arrays.clear;
@@ -372,6 +373,7 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
+        assert !allZeroBytes(chainkey) : "Expected chainkey of random data instead of all zero-bytes.";
         final byte[] encrypt = kdf1(MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
         final byte[] extraSymmetricKey = kdf1(EXTRA_SYMMETRIC_KEY, chainkey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
         return new MessageKeys(this.random, encrypt, extraSymmetricKey);
@@ -520,7 +522,9 @@ final class DoubleRatchet implements AutoCloseable {
         private MessageKeys(@Nonnull final SecureRandom random, @Nonnull final byte[] encrypt,
                 @Nonnull final byte[] extraSymmetricKey) {
             this.random = requireNonNull(random);
+            assert !allZeroBytes(encrypt) : "Expected encryption key of \"random\" data, instead of all zero-bytes.";
             this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
+            assert !allZeroBytes(extraSymmetricKey) : "Expected extra symmetric key of \"random\" data, instead of all zero-bytes.";
             this.extraSymmetricKey = requireLengthExactly(EXTRA_SYMMETRIC_KEY_LENGTH_BYTES, extraSymmetricKey);
         }
 
