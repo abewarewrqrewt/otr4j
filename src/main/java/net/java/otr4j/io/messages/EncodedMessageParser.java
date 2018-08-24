@@ -1,7 +1,7 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
@@ -150,12 +150,12 @@ public final class EncodedMessageParser {
             final ClientProfilePayload profile = ClientProfilePayload.readFrom(input);
             final Point x = input.readPoint();
             final BigInteger a = input.readBigInt();
-            final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
+            final Sigma sigma = Sigma.readFrom(input);
             return new AuthRMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, profile, x, a, sigma);
         }
         case MESSAGE_AUTH_I: {
             requireOTR4(protocolVersion);
-            final OtrCryptoEngine4.Sigma sigma = OtrCryptoEngine4.Sigma.readFrom(input);
+            final Sigma sigma = Sigma.readFrom(input);
             return new AuthIMessage(protocolVersion, senderInstanceTag, recipientInstanceTag, sigma);
         }
         default:

@@ -40,8 +40,8 @@ public final class SMPMessagesTest {
         final Point g2a = basePoint().multiply(valueOf(2L));
         final Point g3a = basePoint().multiply(valueOf(3L));
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(g3a).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         final SMPMessage1 result = (SMPMessage1) parse(new TLV(TLV.SMP1, input));
         assertEquals(question, result.question);
         assertEquals(g2a, result.g2a);
@@ -57,8 +57,8 @@ public final class SMPMessagesTest {
         final Point g2a = basePoint().multiply(valueOf(2L));
         final Point g3a = basePoint().multiply(valueOf(3L));
         final byte[] input = new OtrOutputStream().writeByte(0xff).writeByte(0xff).writeByte(0xff).writeByte(0xff)
-                .writePoint(g2a).writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(g3a)
-                .writeBigInt(valueOf(4L)).writeBigInt(valueOf(5L)).toByteArray();
+                .writePoint(g2a).writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a)
+                .writeScalar(valueOf(4L)).writeScalar(valueOf(5L)).toByteArray();
         parse(new TLV(TLV.SMP1, input));
     }
 
@@ -68,8 +68,8 @@ public final class SMPMessagesTest {
         final Point g2a = basePoint().multiply(valueOf(2L));
         final Point g3a = basePoint().multiply(valueOf(3L));
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(g3a).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         final SMPMessage1 result = (SMPMessage1) parse(new TLV(TLV.SMP1, copyOf(input, input.length + 1)));
         assertEquals(question, result.question);
         assertEquals(g2a, result.g2a);
@@ -85,8 +85,8 @@ public final class SMPMessagesTest {
         final String question = "This is my question";
         final Point g3a = basePoint().multiply(valueOf(3L));
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(ILLEGAL_POINT)
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(g3a).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         parse(new TLV(TLV.SMP1, input));
     }
 
@@ -95,8 +95,8 @@ public final class SMPMessagesTest {
         final String question = "This is my question";
         final Point g2a = basePoint().multiply(valueOf(2L));
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ILLEGAL_POINT).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ILLEGAL_POINT).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         parse(new TLV(TLV.SMP1, input));
     }
 
@@ -106,8 +106,8 @@ public final class SMPMessagesTest {
         final Point g2a = basePoint().multiply(valueOf(2L));
         final Point g3a = basePoint().multiply(valueOf(3L));
         final byte[] data = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(g3a).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
                 parse(new TLV(TLV.SMP1, copyOf(data, i)));
@@ -125,9 +125,9 @@ public final class SMPMessagesTest {
         final Point g3b = basePoint().multiply(valueOf(3L));
         final Point pb = basePoint().multiply(valueOf(4L));
         final Point qb = basePoint().multiply(valueOf(5L));
-        final byte[] input = new OtrOutputStream().writePoint(g2b).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(g3b).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(pb).writePoint(qb)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         final SMPMessage2 result = (SMPMessage2) parse(new TLV(TLV.SMP2, input));
         assertEquals(g2b, result.g2b);
         assertEquals(valueOf(1L), result.c2);
@@ -148,9 +148,9 @@ public final class SMPMessagesTest {
         final Point g3b = basePoint().multiply(valueOf(3L));
         final Point pb = basePoint().multiply(valueOf(4L));
         final Point qb = basePoint().multiply(valueOf(5L));
-        final byte[] input = new OtrOutputStream().writePoint(g2b).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(g3b).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(pb).writePoint(qb)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         final SMPMessage2 result = (SMPMessage2) parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
         assertEquals(g2b, result.g2b);
         assertEquals(valueOf(1L), result.c2);
@@ -170,9 +170,9 @@ public final class SMPMessagesTest {
         final Point g3b = basePoint().multiply(valueOf(3L));
         final Point pb = basePoint().multiply(valueOf(4L));
         final Point qb = basePoint().multiply(valueOf(5L));
-        final byte[] input = new OtrOutputStream().writePoint(ILLEGAL_POINT).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(g3b).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(pb).writePoint(qb)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(ILLEGAL_POINT).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
     }
 
@@ -181,9 +181,9 @@ public final class SMPMessagesTest {
         final Point g2b = basePoint().multiply(valueOf(2L));
         final Point pb = basePoint().multiply(valueOf(4L));
         final Point qb = basePoint().multiply(valueOf(5L));
-        final byte[] input = new OtrOutputStream().writePoint(g2b).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(ILLEGAL_POINT).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(pb).writePoint(qb)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(ILLEGAL_POINT).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
     }
 
@@ -192,9 +192,9 @@ public final class SMPMessagesTest {
         final Point g2b = basePoint().multiply(valueOf(2L));
         final Point g3b = basePoint().multiply(valueOf(3L));
         final Point qb = basePoint().multiply(valueOf(5L));
-        final byte[] input = new OtrOutputStream().writePoint(g2b).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(g3b).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(ILLEGAL_POINT).writePoint(qb)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(ILLEGAL_POINT).writePoint(qb)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
     }
 
@@ -203,9 +203,9 @@ public final class SMPMessagesTest {
         final Point g2b = basePoint().multiply(valueOf(2L));
         final Point g3b = basePoint().multiply(valueOf(3L));
         final Point pb = basePoint().multiply(valueOf(4L));
-        final byte[] input = new OtrOutputStream().writePoint(g2b).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(g3b).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(pb).writePoint(ILLEGAL_POINT)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(ILLEGAL_POINT)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
     }
 
@@ -215,9 +215,9 @@ public final class SMPMessagesTest {
         final Point g3b = basePoint().multiply(valueOf(3L));
         final Point pb = basePoint().multiply(valueOf(4L));
         final Point qb = basePoint().multiply(valueOf(5L));
-        final byte[] data = new OtrOutputStream().writePoint(g2b).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
-                .writePoint(g3b).writeBigInt(valueOf(3L)).writeBigInt(valueOf(4L)).writePoint(pb).writePoint(qb)
-                .writeBigInt(valueOf(5L)).writeBigInt(valueOf(6L)).writeBigInt(valueOf(7L)).toByteArray();
+        final byte[] data = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
+                .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
+                .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
                 parse(new TLV(TLV.SMP2, copyOf(data, i)));
@@ -234,9 +234,9 @@ public final class SMPMessagesTest {
         final Point pa = basePoint().multiply(valueOf(2L));
         final Point qa = basePoint().multiply(valueOf(3L));
         final Point ra = basePoint().multiply(valueOf(4L));
-        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeBigInt(valueOf(1L))
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ra).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         final SMPMessage3 result = (SMPMessage3) parse(new TLV(TLV.SMP3, input));
         assertEquals(pa, result.pa);
         assertEquals(qa, result.qa);
@@ -253,9 +253,9 @@ public final class SMPMessagesTest {
         final Point pa = basePoint().multiply(valueOf(2L));
         final Point qa = basePoint().multiply(valueOf(3L));
         final Point ra = basePoint().multiply(valueOf(4L));
-        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeBigInt(valueOf(1L))
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ra).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         final SMPMessage3 result = (SMPMessage3) parse(new TLV(TLV.SMP3, copyOf(input, input.length + 3)));
         assertEquals(pa, result.pa);
         assertEquals(qa, result.qa);
@@ -271,9 +271,9 @@ public final class SMPMessagesTest {
     public void testParseTLVSMP3BadPointPA() throws OtrCryptoException, ProtocolException {
         final Point qa = basePoint().multiply(valueOf(3L));
         final Point ra = basePoint().multiply(valueOf(4L));
-        final byte[] input = new OtrOutputStream().writePoint(ILLEGAL_POINT).writePoint(qa).writeBigInt(valueOf(1L))
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ra).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(ILLEGAL_POINT).writePoint(qa).writeScalar(valueOf(1L))
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         parse(new TLV(TLV.SMP3, input));
     }
 
@@ -281,9 +281,9 @@ public final class SMPMessagesTest {
     public void testParseTLVSMP3BadPointQA() throws OtrCryptoException, ProtocolException {
         final Point pa = basePoint().multiply(valueOf(2L));
         final Point ra = basePoint().multiply(valueOf(4L));
-        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(ILLEGAL_POINT).writeBigInt(valueOf(1L))
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ra).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(ILLEGAL_POINT).writeScalar(valueOf(1L))
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         parse(new TLV(TLV.SMP3, input));
     }
 
@@ -291,9 +291,9 @@ public final class SMPMessagesTest {
     public void testParseTLVSMP3BadPointRA() throws OtrCryptoException, ProtocolException {
         final Point pa = basePoint().multiply(valueOf(2L));
         final Point qa = basePoint().multiply(valueOf(3L));
-        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeBigInt(valueOf(1L))
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ILLEGAL_POINT).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+        final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ILLEGAL_POINT).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         parse(new TLV(TLV.SMP3, input));
     }
 
@@ -302,9 +302,9 @@ public final class SMPMessagesTest {
         final Point pa = basePoint().multiply(valueOf(2L));
         final Point qa = basePoint().multiply(valueOf(3L));
         final Point ra = basePoint().multiply(valueOf(4L));
-        final byte[] data = new OtrOutputStream().writePoint(pa).writePoint(qa).writeBigInt(valueOf(1L))
-                .writeBigInt(valueOf(2L)).writeBigInt(valueOf(3L)).writePoint(ra).writeBigInt(valueOf(4L))
-                .writeBigInt(valueOf(5L)).toByteArray();
+        final byte[] data = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
+                .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
+                .writeScalar(valueOf(5L)).toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
                 parse(new TLV(TLV.SMP3, copyOf(data, i)));
@@ -319,7 +319,7 @@ public final class SMPMessagesTest {
     @Test
     public void testParseTLVSMP4() throws OtrCryptoException, ProtocolException {
         final Point rb = basePoint().multiply(valueOf(2L));
-        final byte[] input = new OtrOutputStream().writePoint(rb).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
+        final byte[] input = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
         final SMPMessage4 result = (SMPMessage4) parse(new TLV(TLV.SMP4, input));
         assertEquals(rb, result.rb);
@@ -330,7 +330,7 @@ public final class SMPMessagesTest {
     @Test
     public void testParseTLVSMP4TooMuchData() throws OtrCryptoException, ProtocolException {
         final Point rb = basePoint().multiply(valueOf(2L));
-        final byte[] input = new OtrOutputStream().writePoint(rb).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
+        final byte[] input = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
         final SMPMessage4 result = (SMPMessage4) parse(new TLV(TLV.SMP4, copyOf(input, input.length + 3)));
         assertEquals(rb, result.rb);
@@ -341,7 +341,7 @@ public final class SMPMessagesTest {
     @Test(expected = OtrCryptoException.class)
     public void testParseTLVSMP4BadPointRB() throws OtrCryptoException, ProtocolException {
         final Point rb = ILLEGAL_POINT;
-        final byte[] input = new OtrOutputStream().writePoint(rb).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
+        final byte[] input = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
         final SMPMessage4 result = (SMPMessage4) parse(new TLV(TLV.SMP4, input));
         assertEquals(rb, result.rb);
@@ -352,7 +352,7 @@ public final class SMPMessagesTest {
     @Test
     public void testParseTLVSMP4IncompleteMessage() throws OtrCryptoException, ProtocolException {
         final Point rb = basePoint().multiply(valueOf(2L));
-        final byte[] data = new OtrOutputStream().writePoint(rb).writeBigInt(valueOf(1L)).writeBigInt(valueOf(2L))
+        final byte[] data = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {

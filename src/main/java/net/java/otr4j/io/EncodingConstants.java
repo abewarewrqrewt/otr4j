@@ -48,6 +48,8 @@ final class EncodingConstants {
 
     static final int SSID_LENGTH_BYTES = 8;
 
+    static final int SCALAR_LENGTH_BYTES = 56;
+
     private EncodingConstants() {
         // No need to instantiate class.
     }

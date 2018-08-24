@@ -23,6 +23,7 @@ import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
+import static net.java.otr4j.io.EncodingConstants.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.SSID_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TLV_LEN;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
@@ -34,13 +35,12 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC_OTR4;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_NONCE;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
  * Output stream for OTR encoding.
  */
-// TODO consider adding write-method for Iterable<OtrEncodable>
-// FIXME check if we are serializing/deserializing the SCALAR type correctly. Currently using BigInt, not sure if that's correct.
 public final class OtrOutputStream {
 
     private static final int ZERO_LENGTH = 0;
@@ -324,6 +324,20 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writePoint(@Nonnull final Point p) {
         writeData(p.encode());
+        return this;
+    }
+
+    /**
+     * Write OTRv4 SCALAR value.
+     *
+     * @param s the scalar value
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
+    @Nonnull
+    public OtrOutputStream writeScalar(@Nonnull final BigInteger s) {
+        final byte[] value = new byte[SCALAR_LENGTH_BYTES];
+        encodeLittleEndianTo(value, 0, s);
+        this.out.write(value, 0, value.length);
         return this;
     }
 

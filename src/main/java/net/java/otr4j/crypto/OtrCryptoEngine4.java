@@ -2,7 +2,6 @@ package net.java.otr4j.crypto;
 
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
-import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -30,7 +29,6 @@ import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
-import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndian;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.Arrays.clear;
 
@@ -566,17 +564,13 @@ public final class OtrCryptoEngine4 {
          * @throws ProtocolException In case of failure to read sigma from input.
          */
         public static Sigma readFrom(@Nonnull final OtrInputStream in) throws ProtocolException {
-            try {
-                final BigInteger c1 = decodeLittleEndian(in.readData());
-                final BigInteger r1 = decodeLittleEndian(in.readData());
-                final BigInteger c2 = decodeLittleEndian(in.readData());
-                final BigInteger r2 = decodeLittleEndian(in.readData());
-                final BigInteger c3 = decodeLittleEndian(in.readData());
-                final BigInteger r3 = decodeLittleEndian(in.readData());
-                return new Sigma(c1, r1, c2, r2, c3, r3);
-            } catch (final UnsupportedLengthException e) {
-                throw new ProtocolException("Either a 'c' or 'r' value contains an exceptionally large value. This is not according to specification.");
-            }
+            final BigInteger c1 = in.readScalar();
+            final BigInteger r1 = in.readScalar();
+            final BigInteger c2 = in.readScalar();
+            final BigInteger r2 = in.readScalar();
+            final BigInteger c3 = in.readScalar();
+            final BigInteger r3 = in.readScalar();
+            return new Sigma(c1, r1, c2, r2, c3, r3);
         }
 
         /**
@@ -586,12 +580,12 @@ public final class OtrCryptoEngine4 {
          */
         @Override
         public void writeTo(@Nonnull final OtrOutputStream out) {
-            out.writeData(encodeLittleEndian(this.c1));
-            out.writeData(encodeLittleEndian(this.r1));
-            out.writeData(encodeLittleEndian(this.c2));
-            out.writeData(encodeLittleEndian(this.r2));
-            out.writeData(encodeLittleEndian(this.c3));
-            out.writeData(encodeLittleEndian(this.r3));
+            out.writeScalar(this.c1);
+            out.writeScalar(this.r1);
+            out.writeScalar(this.c2);
+            out.writeScalar(this.r2);
+            out.writeScalar(this.c3);
+            out.writeScalar(this.r3);
         }
     }
 }

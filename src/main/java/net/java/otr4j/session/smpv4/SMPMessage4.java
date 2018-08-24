@@ -24,6 +24,6 @@ final class SMPMessage4 implements SMPMessage {
 
     @Override
     public void writeTo(@Nonnull final OtrOutputStream out) {
-        out.writePoint(this.rb).writeBigInt(this.cr).writeBigInt(this.d7);
+        out.writePoint(this.rb).writeScalar(this.cr).writeScalar(this.d7);
     }
 }

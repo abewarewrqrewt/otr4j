@@ -26,6 +26,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
+import static net.java.otr4j.io.EncodingConstants.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_INT;
@@ -34,6 +35,8 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC_OTR4;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_NONCE;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
+import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
+import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**
  * OTR input stream.
@@ -44,7 +47,6 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
  * OtrInputStream provides only for the primitive types to be read. Composite objects should be read through use of the
  * primitive read methods and implemented outside of this class.
  */
-// FIXME check if we are serializing/deserializing the SCALAR type correctly. Currently using BigInt, not sure if that's correct.
 public final class OtrInputStream {
 
     private static final byte[] ZERO_BYTES = new byte[0];
@@ -297,6 +299,17 @@ public final class OtrInputStream {
         } catch (final UnsupportedLengthException e) {
             throw new ProtocolException("Data field that should contain Point data is exceptionally large.");
         }
+    }
+
+    /**
+     * Read OTRv4 SCALAR value.
+     *
+     * @return Returns Ed448 SCALAR value.
+     * @throws ProtocolException In case of failure to read SCALAR from input stream.
+     */
+    @Nonnull
+    public BigInteger readScalar() throws ProtocolException {
+        return decodeLittleEndian(checkedRead(SCALAR_LENGTH_BYTES)).mod(primeOrder());
     }
 
     /**

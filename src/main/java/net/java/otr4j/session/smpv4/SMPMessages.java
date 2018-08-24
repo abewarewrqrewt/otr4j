@@ -12,7 +12,6 @@ import java.net.ProtocolException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-// FIXME consider defining special method for reading and writing SCALAR values. (reading mod q)
 final class SMPMessages {
 
     private SMPMessages() {
@@ -30,42 +29,42 @@ final class SMPMessages {
                 throw new ProtocolException("The question for SMP negotiation is too large. The message may have been damaged/malformed.");
             }
             final Point g2a = in.readPoint();
-            final BigInteger c2 = in.readBigInt();
-            final BigInteger d2 = in.readBigInt();
+            final BigInteger c2 = in.readScalar();
+            final BigInteger d2 = in.readScalar();
             final Point g3a = in.readPoint();
-            final BigInteger c3 = in.readBigInt();
-            final BigInteger d3 = in.readBigInt();
+            final BigInteger c3 = in.readScalar();
+            final BigInteger d3 = in.readScalar();
             return new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
         }
         case TLV.SMP2: {
             final Point g2b = in.readPoint();
-            final BigInteger c2 = in.readBigInt();
-            final BigInteger d2 = in.readBigInt();
+            final BigInteger c2 = in.readScalar();
+            final BigInteger d2 = in.readScalar();
             final Point g3b = in.readPoint();
-            final BigInteger c3 = in.readBigInt();
-            final BigInteger d3 = in.readBigInt();
+            final BigInteger c3 = in.readScalar();
+            final BigInteger d3 = in.readScalar();
             final Point pb = in.readPoint();
             final Point qb = in.readPoint();
-            final BigInteger cp = in.readBigInt();
-            final BigInteger d5 = in.readBigInt();
-            final BigInteger d6 = in.readBigInt();
+            final BigInteger cp = in.readScalar();
+            final BigInteger d5 = in.readScalar();
+            final BigInteger d6 = in.readScalar();
             return new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
         }
         case TLV.SMP3: {
             final Point pa = in.readPoint();
             final Point qa = in.readPoint();
-            final BigInteger cp = in.readBigInt();
-            final BigInteger d5 = in.readBigInt();
-            final BigInteger d6 = in.readBigInt();
+            final BigInteger cp = in.readScalar();
+            final BigInteger d5 = in.readScalar();
+            final BigInteger d6 = in.readScalar();
             final Point ra = in.readPoint();
-            final BigInteger cr = in.readBigInt();
-            final BigInteger d7 = in.readBigInt();
+            final BigInteger cr = in.readScalar();
+            final BigInteger d7 = in.readScalar();
             return new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
         }
         case TLV.SMP4: {
             final Point rb = in.readPoint();
-            final BigInteger cr = in.readBigInt();
-            final BigInteger d7 = in.readBigInt();
+            final BigInteger cr = in.readScalar();
+            final BigInteger d7 = in.readScalar();
             return new SMPMessage4(rb, cr, d7);
         }
         case TLV.SMP_ABORT:
