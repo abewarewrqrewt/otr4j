@@ -19,6 +19,7 @@ import java.util.logging.Logger;
  * @author George Politis
  */
 // TODO consider removing OTRv1 methods altogether
+// TODO consider implementing OTRv4 "Modes" by way of standard profiles based on OtrPolicy.
 public final class OtrPolicy {
 
     private static final Logger LOGGER = Logger.getLogger(OtrPolicy.class.getName());

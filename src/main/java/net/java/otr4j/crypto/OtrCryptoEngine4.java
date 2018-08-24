@@ -35,6 +35,7 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * Crypto engine for OTRv4.
  */
+// FIXME what do we need to do to correctly use the "COFACTOR" component of Ed448? (No special attention paid to this so far.)
 public final class OtrCryptoEngine4 {
 
     /**

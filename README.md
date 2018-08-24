@@ -13,7 +13,7 @@ Development stages:
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
 * Full implementation for Interactive use-case
-* ... (non-interactive use case, ...)
+* ... (non-interactive use case) ...
 
 ## Functionality
 
@@ -22,6 +22,7 @@ Development stages:
   * ☐ Persistent instance tags
   * ☐ OTRv4 extension to OTR Error messages
   * ☐ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
+  * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
 * Cryptographic primitives:
   * Edd448-Goldilocks elliptic curve (temporary solution)
     * ☑ Temporary working solution
