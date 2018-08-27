@@ -30,6 +30,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID The session ID
      * @param msg The message to inject
      */
+    // TODO consider adding IOException to method signature. The whole protocol is intended for networking-like purposes, so it is reasonable to expect that an IOException might occur at some point.
     void injectMessage(@Nonnull SessionID sessionID, @Nonnull String msg);
 
     /**
@@ -118,6 +119,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID the session ID
      * @return Returns the local long-term Ed448-goldilocks key pair.
      */
+    // TODO consider if this method is still useful. Should we simply pass on the (non-payload) ClientProfile and have it contain the EdDSA key pair?
     @Nonnull
     EdDSAKeyPair getLongTermKeyPair(@Nonnull SessionID sessionID);
 
