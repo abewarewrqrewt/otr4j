@@ -19,7 +19,7 @@ Development stages:
 
 * General Off-the-record operation:
   * ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
-  * ☐ Persistent instance tags
+  * ☑ Persistent instance tags
   * ☐ OTRv4 extension to OTR Error messages
   * ☐ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
   * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
