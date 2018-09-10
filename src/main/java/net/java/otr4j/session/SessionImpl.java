@@ -448,7 +448,6 @@ final class SessionImpl implements Session, Context, AuthContext {
                 return null;
             }
 
-            // TODO consider if we MUST require receiver instance tag to be valid. (Maybe some fragmented messages are AKE messages at time when receiver tag is still unknown, such as DH-Commit and Identity.)
             if (fragment.getReceivertag().getValue() != 0
                     && fragment.getReceivertag().getValue() != this.senderTag.getValue()) {
                 // The message is not intended for us. Discarding...
