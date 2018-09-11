@@ -24,7 +24,6 @@ public interface SMPHandler {
      * @return Returns the TLV that will request initiation of SMP.
      * @throws OtrException In case of issues while initiating SMP.
      */
-    // FIXME check if this OtrException is really needed.
     @Nonnull
     TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException;
 

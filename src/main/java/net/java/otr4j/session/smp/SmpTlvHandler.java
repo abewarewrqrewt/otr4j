@@ -76,8 +76,26 @@ public final class SmpTlvHandler implements SMPHandler {
     @Nonnull
     @Override
     public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException {
+        final byte[] initiatorFingerprint = this.host.getLocalFingerprintRaw(this.sessionID);
+        final byte[] responderFingerprint = getFingerprintRaw(this.remotePublicKey);
+        final byte[] secret = generateSecret(answer, initiatorFingerprint, responderFingerprint);
         try {
-            return initRespondSmp(question, answer, true);
+            final byte[] smpmsg = sm.step1(secret);
+            if (question.isEmpty()) {
+                return new TLV(TLV.SMP1, smpmsg);
+            }
+            // A question needs to be attached to the SMP message.
+            final byte[] questionBytes = question.getBytes(UTF_8);
+            final byte[] questionSmpmsg = new byte[questionBytes.length + 1 + smpmsg.length];
+            System.arraycopy(questionBytes, 0, questionSmpmsg, 0, questionBytes.length);
+            System.arraycopy(smpmsg, 0, questionSmpmsg, questionBytes.length + 1, smpmsg.length);
+            return new TLV(TLV.SMP1Q, questionSmpmsg);
+        } catch (final SMAbortedException e) {
+            // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
+            // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
+            // to the counter party. Then we immediately initiate a new SMP exchange as requested.
+            smpAborted(this.host, this.sessionID);
+            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
             throw new OtrException("Failed to initiate SMP negotiation.", e);
         }
@@ -86,65 +104,24 @@ public final class SmpTlvHandler implements SMPHandler {
     @Nonnull
     @Override
     public TLV respond(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException {
-        try {
-            return initRespondSmp(question, answer, false);
-        } catch (final SMException e) {
-            throw new OtrException("Failed to respond to SMP with answer to the question.", e);
-        }
-    }
-
-    /**
-     * Respond to or initiate an SMP negotiation
-     *
-     * @param question   The question to present to the peer, if initiating.
-     *                   May be <code>null</code> for no question.
-     *                   If not initiating, then it should be received question
-     *                   in order to clarify whether this is shared secret verification.
-     * @param answer     The secret.
-     * @param initiating Whether we are initiating or responding to an initial request.
-     * @return TLVs to send to the peer
-     * @throws OtrException Failures in case an SMP step cannot be processed
-     *                      successfully, or in case expected data is not provided.
-     * @throws SMException  In case of failure while processing SMP TLV record.
-     */
-    @Nonnull
-    private TLV initRespondSmp(@Nonnull final String question, @Nonnull final byte[] answer, final boolean initiating)
-            throws OtrException, SMException {
-        if (!initiating && this.sm.status() != INPROGRESS) {
+        if (this.sm.status() != INPROGRESS) {
             throw new OtrException("There is no question to be answered.");
         }
-        final byte[] initiatorFingerprint;
-        final byte[] responderFingerprint;
-        if (initiating) {
-            initiatorFingerprint = this.host.getLocalFingerprintRaw(this.sessionID);
-            responderFingerprint = getFingerprintRaw(this.remotePublicKey);
-        } else {
-            initiatorFingerprint = getFingerprintRaw(this.remotePublicKey);
-            responderFingerprint = this.host.getLocalFingerprintRaw(this.sessionID);
-        }
+        final byte[] initiatorFingerprint = getFingerprintRaw(this.remotePublicKey);
+        final byte[] responderFingerprint = this.host.getLocalFingerprintRaw(this.sessionID);
         final byte[] secret = generateSecret(answer, initiatorFingerprint, responderFingerprint);
-
-        byte[] smpmsg;
         try {
-            smpmsg = initiating ? sm.step1(secret) : sm.step2b(secret);
+            return new TLV(TLV.SMP2, sm.step2b(secret));
         } catch (final SMAbortedException e) {
             // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
             // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
             // to the counter party. Then we immediately initiate a new SMP exchange as requested.
+            // TODO check if we really also need to abort when responding to SMP1(Q). I suspect that this is an error, and we should only allow aborting when *initiating* a new SMP.
             smpAborted(this.host, this.sessionID);
             return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+        } catch (final SMException e) {
+            throw new OtrException("Failed to respond to SMP with answer to the question.", e);
         }
-
-        // If we've got a question, attach it to the smpmsg
-        if (!question.isEmpty() && initiating) {
-            final byte[] questionBytes = question.getBytes(UTF_8);
-            final byte[] qsmpmsg = new byte[questionBytes.length + 1 + smpmsg.length];
-            System.arraycopy(questionBytes, 0, qsmpmsg, 0, questionBytes.length);
-            System.arraycopy(smpmsg, 0, qsmpmsg, questionBytes.length + 1, smpmsg.length);
-            smpmsg = qsmpmsg;
-        }
-
-        return new TLV(initiating ? question.isEmpty() ? TLV.SMP1 : TLV.SMP1Q : TLV.SMP2, smpmsg);
     }
 
     /**
