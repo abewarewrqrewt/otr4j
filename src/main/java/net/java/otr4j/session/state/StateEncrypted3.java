@@ -62,6 +62,22 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 final class StateEncrypted3 extends AbstractStateEncrypted {
 
     /**
+     * TLV 8 notifies the recipient to use the extra symmetric key to set up an
+     * out-of-band encrypted connection.
+     *
+     * Payload:
+     *  - 4-byte indication of what to use it for, e.g. file transfer, voice
+     *    encryption, ...
+     *  - undefined, free for use. Subsequent data might be the file name of
+     *    your confidential file transfer.
+     *
+     * WARNING! You should NEVER send the extra symmetric key as payload inside
+     * the TLV record. The recipient can already generate the extra symmetric
+     * key.
+     */
+    private static final int USE_EXTRA_SYMMETRIC_KEY = 0x0008;
+
+    /**
      * Active version of the protocol in use in this encrypted session.
      */
     private final int protocolVersion;
@@ -211,7 +227,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
             case TLV.DISCONNECTED: // TLV1
                 context.setState(new StateFinished(this.sessionID));
                 break;
-            case TLV.USE_EXTRA_SYMMETRIC_KEY:
+            case USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();
                 extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key, tlv.getValue());
                 break;

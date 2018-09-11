@@ -29,22 +29,6 @@ public final class TLV {
      * The sender has thrown away his OTR session keys with you.
      */
     public static final int DISCONNECTED = 0x0001;
-    /**
-     * TLV 8 notifies the recipient to use the extra symmetric key to set up an
-     * out-of-band encrypted connection.
-     *
-     * Payload:
-     *  - 4-byte indication of what to use it for, e.g. file transfer, voice
-     *    encryption, ...
-     *  - undefined, free for use. Subsequent data might be the file name of
-     *    your confidential file transfer.
-     *
-     * WARNING! You should NEVER send the extra symmetric key as payload inside
-     * the TLV record. The recipient can already generate the extra symmetric
-     * key.
-     */
-    // FIXME consider moving TLV constant to corresponding State implementation, as they differ between OTRv2/OTRv3 and OTRv4.
-    public static final int USE_EXTRA_SYMMETRIC_KEY = 0x0008;
 
     private final int type;
     private final byte[] value;
