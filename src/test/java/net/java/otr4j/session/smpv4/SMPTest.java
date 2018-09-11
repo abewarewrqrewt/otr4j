@@ -17,6 +17,8 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static net.java.otr4j.util.SecureRandoms.random;
 import static org.junit.Assert.assertEquals;
@@ -191,8 +193,8 @@ public final class SMPTest {
         assertNull(smpBob.process(smp1));
         verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
         final TLV abortTLV = smpAlice.initiate(question, answer);
-        assertEquals(TLV.SMP_ABORT, abortTLV.getType());
+        assertEquals(SMP_ABORT, abortTLV.getType());
         final TLV initTLV = smpAlice.initiate(question, answer);
-        assertEquals(TLV.SMP1, initTLV.getType());
+        assertEquals(SMP1, initTLV.getType());
     }
 }

@@ -53,4 +53,13 @@ public interface SMPHandler {
      */
     @Nonnull
     TLV abort();
+
+    /**
+     * Test if TLV is for purpose of aborting SMP.
+     *
+     * @param tlv TLV
+     * @return Returns true iff TLV is intended to signal aborting SMP.
+     */
+    // TODO is there a better method name for this?
+    boolean smpAbortedTLV(@Nonnull final TLV tlv);
 }

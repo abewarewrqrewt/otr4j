@@ -12,6 +12,10 @@ import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOf;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP2;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP3;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.createPoint;
@@ -42,7 +46,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        final SMPMessage1 result = (SMPMessage1) parse(new TLV(TLV.SMP1, input));
+        final SMPMessage1 result = (SMPMessage1) parse(new TLV(SMP1, input));
         assertEquals(question, result.question);
         assertEquals(g2a, result.g2a);
         assertEquals(valueOf(2L), result.c2);
@@ -59,7 +63,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writeByte(0xff).writeByte(0xff).writeByte(0xff).writeByte(0xff)
                 .writePoint(g2a).writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a)
                 .writeScalar(valueOf(4L)).writeScalar(valueOf(5L)).toByteArray();
-        parse(new TLV(TLV.SMP1, input));
+        parse(new TLV(SMP1, input));
     }
 
     @Test
@@ -70,7 +74,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        final SMPMessage1 result = (SMPMessage1) parse(new TLV(TLV.SMP1, copyOf(input, input.length + 1)));
+        final SMPMessage1 result = (SMPMessage1) parse(new TLV(SMP1, copyOf(input, input.length + 1)));
         assertEquals(question, result.question);
         assertEquals(g2a, result.g2a);
         assertEquals(valueOf(2L), result.c2);
@@ -87,7 +91,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(ILLEGAL_POINT)
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(g3a).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        parse(new TLV(TLV.SMP1, input));
+        parse(new TLV(SMP1, input));
     }
 
     @Test(expected = OtrCryptoException.class)
@@ -97,7 +101,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writeData(question.getBytes(UTF_8)).writePoint(g2a)
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ILLEGAL_POINT).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        parse(new TLV(TLV.SMP1, input));
+        parse(new TLV(SMP1, input));
     }
 
     @Test
@@ -110,13 +114,13 @@ public final class SMPMessagesTest {
                 .writeScalar(valueOf(5L)).toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
-                parse(new TLV(TLV.SMP1, copyOf(data, i)));
+                parse(new TLV(SMP1, copyOf(data, i)));
                 fail("Did not expect to successfully parse an incomplete message. Something is probably wrong here.");
             } catch (final ProtocolException ignored) {
                 // No need to worry, this was expected to happen.
             }
         }
-        assertNotNull(parse(new TLV(TLV.SMP1, data)));
+        assertNotNull(parse(new TLV(SMP1, data)));
     }
 
     @Test
@@ -128,7 +132,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
-        final SMPMessage2 result = (SMPMessage2) parse(new TLV(TLV.SMP2, input));
+        final SMPMessage2 result = (SMPMessage2) parse(new TLV(SMP2, input));
         assertEquals(g2b, result.g2b);
         assertEquals(valueOf(1L), result.c2);
         assertEquals(valueOf(2L), result.d2);
@@ -151,7 +155,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
-        final SMPMessage2 result = (SMPMessage2) parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
+        final SMPMessage2 result = (SMPMessage2) parse(new TLV(SMP2, copyOf(input, input.length + 2)));
         assertEquals(g2b, result.g2b);
         assertEquals(valueOf(1L), result.c2);
         assertEquals(valueOf(2L), result.d2);
@@ -173,7 +177,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(ILLEGAL_POINT).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
-        parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
+        parse(new TLV(SMP2, copyOf(input, input.length + 2)));
     }
 
     @Test(expected = OtrCryptoException.class)
@@ -184,7 +188,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .writePoint(ILLEGAL_POINT).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(qb)
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
-        parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
+        parse(new TLV(SMP2, copyOf(input, input.length + 2)));
     }
 
     @Test(expected = OtrCryptoException.class)
@@ -195,7 +199,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(ILLEGAL_POINT).writePoint(qb)
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
-        parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
+        parse(new TLV(SMP2, copyOf(input, input.length + 2)));
     }
 
     @Test(expected = OtrCryptoException.class)
@@ -206,7 +210,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(g2b).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .writePoint(g3b).writeScalar(valueOf(3L)).writeScalar(valueOf(4L)).writePoint(pb).writePoint(ILLEGAL_POINT)
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
-        parse(new TLV(TLV.SMP2, copyOf(input, input.length + 2)));
+        parse(new TLV(SMP2, copyOf(input, input.length + 2)));
     }
 
     @Test
@@ -220,13 +224,13 @@ public final class SMPMessagesTest {
                 .writeScalar(valueOf(5L)).writeScalar(valueOf(6L)).writeScalar(valueOf(7L)).toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
-                parse(new TLV(TLV.SMP2, copyOf(data, i)));
+                parse(new TLV(SMP2, copyOf(data, i)));
                 fail("Did not expect to successfully parse an incomplete message. Something is probably wrong here.");
             } catch (final ProtocolException ignored) {
                 // No need to worry, this was expected to happen.
             }
         }
-        assertNotNull(parse(new TLV(TLV.SMP2, data)));
+        assertNotNull(parse(new TLV(SMP2, data)));
     }
 
     @Test
@@ -237,7 +241,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        final SMPMessage3 result = (SMPMessage3) parse(new TLV(TLV.SMP3, input));
+        final SMPMessage3 result = (SMPMessage3) parse(new TLV(SMP3, input));
         assertEquals(pa, result.pa);
         assertEquals(qa, result.qa);
         assertEquals(valueOf(1L), result.cp);
@@ -256,7 +260,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        final SMPMessage3 result = (SMPMessage3) parse(new TLV(TLV.SMP3, copyOf(input, input.length + 3)));
+        final SMPMessage3 result = (SMPMessage3) parse(new TLV(SMP3, copyOf(input, input.length + 3)));
         assertEquals(pa, result.pa);
         assertEquals(qa, result.qa);
         assertEquals(valueOf(1L), result.cp);
@@ -274,7 +278,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(ILLEGAL_POINT).writePoint(qa).writeScalar(valueOf(1L))
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        parse(new TLV(TLV.SMP3, input));
+        parse(new TLV(SMP3, input));
     }
 
     @Test(expected = OtrCryptoException.class)
@@ -284,7 +288,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(ILLEGAL_POINT).writeScalar(valueOf(1L))
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ra).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        parse(new TLV(TLV.SMP3, input));
+        parse(new TLV(SMP3, input));
     }
 
     @Test(expected = OtrCryptoException.class)
@@ -294,7 +298,7 @@ public final class SMPMessagesTest {
         final byte[] input = new OtrOutputStream().writePoint(pa).writePoint(qa).writeScalar(valueOf(1L))
                 .writeScalar(valueOf(2L)).writeScalar(valueOf(3L)).writePoint(ILLEGAL_POINT).writeScalar(valueOf(4L))
                 .writeScalar(valueOf(5L)).toByteArray();
-        parse(new TLV(TLV.SMP3, input));
+        parse(new TLV(SMP3, input));
     }
 
     @Test
@@ -307,13 +311,13 @@ public final class SMPMessagesTest {
                 .writeScalar(valueOf(5L)).toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
-                parse(new TLV(TLV.SMP3, copyOf(data, i)));
+                parse(new TLV(SMP3, copyOf(data, i)));
                 fail("Did not expect to successfully parse an incomplete message. Something is probably wrong here.");
             } catch (final ProtocolException ignored) {
                 // No need to worry, this was expected to happen.
             }
         }
-        assertNotNull(parse(new TLV(TLV.SMP3, data)));
+        assertNotNull(parse(new TLV(SMP3, data)));
     }
 
     @Test
@@ -321,7 +325,7 @@ public final class SMPMessagesTest {
         final Point rb = basePoint().multiply(valueOf(2L));
         final byte[] input = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
-        final SMPMessage4 result = (SMPMessage4) parse(new TLV(TLV.SMP4, input));
+        final SMPMessage4 result = (SMPMessage4) parse(new TLV(SMP4, input));
         assertEquals(rb, result.rb);
         assertEquals(valueOf(1L), result.cr);
         assertEquals(valueOf(2L), result.d7);
@@ -332,7 +336,7 @@ public final class SMPMessagesTest {
         final Point rb = basePoint().multiply(valueOf(2L));
         final byte[] input = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
-        final SMPMessage4 result = (SMPMessage4) parse(new TLV(TLV.SMP4, copyOf(input, input.length + 3)));
+        final SMPMessage4 result = (SMPMessage4) parse(new TLV(SMP4, copyOf(input, input.length + 3)));
         assertEquals(rb, result.rb);
         assertEquals(valueOf(1L), result.cr);
         assertEquals(valueOf(2L), result.d7);
@@ -343,7 +347,7 @@ public final class SMPMessagesTest {
         final Point rb = ILLEGAL_POINT;
         final byte[] input = new OtrOutputStream().writePoint(rb).writeScalar(valueOf(1L)).writeScalar(valueOf(2L))
                 .toByteArray();
-        final SMPMessage4 result = (SMPMessage4) parse(new TLV(TLV.SMP4, input));
+        final SMPMessage4 result = (SMPMessage4) parse(new TLV(SMP4, input));
         assertEquals(rb, result.rb);
         assertEquals(valueOf(1L), result.cr);
         assertEquals(valueOf(2L), result.d7);
@@ -356,12 +360,12 @@ public final class SMPMessagesTest {
                 .toByteArray();
         for (int i = 0; i < data.length; i++) {
             try {
-                parse(new TLV(TLV.SMP4, copyOf(data, i)));
+                parse(new TLV(SMP4, copyOf(data, i)));
                 fail("Did not expect to successfully parse an incomplete message. Something is probably wrong here.");
             } catch (final ProtocolException ignored) {
                 // No need to worry, this was expected to happen.
             }
         }
-        assertNotNull(parse(new TLV(TLV.SMP4, data)));
+        assertNotNull(parse(new TLV(SMP4, data)));
     }
 }

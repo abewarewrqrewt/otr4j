@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 /**
  * Class representing OTR Type-Length-Value tuples.
  */
-// FIXME consider moving TLV constants to corresponding State implementation, as they differ between OTRv2/OTRv3 and OTRv4.
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class TLV {
 
@@ -31,30 +30,6 @@ public final class TLV {
      */
     public static final int DISCONNECTED = 0x0001;
     /**
-     * The message contains a step in the Socialist Millionaires' Protocol.
-     */
-    public static final int SMP1 = 0x0002;
-    /**
-     * The message contains a step in the Socialist Millionaires' Protocol.
-     */
-    public static final int SMP2 = 0x0003;
-    /**
-     * The message contains a step in the Socialist Millionaires' Protocol.
-     */
-    public static final int SMP3 = 0x0004;
-    /**
-     * The message contains a step in the Socialist Millionaires' Protocol.
-     */
-    public static final int SMP4 = 0x0005;
-    /**
-     * The message indicates any in-progress SMP session must be aborted.
-     */
-    public static final int SMP_ABORT = 0x0006;
-    /**
-     * Like SMP1, but there's a question for the buddy at the beginning.
-     */
-    public static final int SMP1Q = 0x0007;
-    /**
      * TLV 8 notifies the recipient to use the extra symmetric key to set up an
      * out-of-band encrypted connection.
      *
@@ -68,6 +43,7 @@ public final class TLV {
      * the TLV record. The recipient can already generate the extra symmetric
      * key.
      */
+    // FIXME consider moving TLV constant to corresponding State implementation, as they differ between OTRv2/OTRv3 and OTRv4.
     public static final int USE_EXTRA_SYMMETRIC_KEY = 0x0008;
 
     private final int type;

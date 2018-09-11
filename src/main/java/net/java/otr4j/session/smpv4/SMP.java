@@ -24,11 +24,6 @@ import static net.java.otr4j.api.SmpEngineHostUtil.smpAborted;
 import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
 import static net.java.otr4j.api.SmpEngineHostUtil.verify;
 import static net.java.otr4j.api.TLV.EMPTY_BODY;
-import static net.java.otr4j.api.TLV.SMP1;
-import static net.java.otr4j.api.TLV.SMP2;
-import static net.java.otr4j.api.TLV.SMP3;
-import static net.java.otr4j.api.TLV.SMP4;
-import static net.java.otr4j.api.TLV.SMP_ABORT;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
@@ -36,6 +31,11 @@ import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP2;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP3;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
@@ -91,6 +91,18 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         this.ourLongTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.theirLongTermPublicKey = requireNonNull(theirLongTermPublicKey);
         this.state = new StateExpect1(random, UNDECIDED);
+    }
+
+    /**
+     * Check if TLV is relevant to SMP.
+     *
+     * @param tlv TLV to inspect
+     * @return Returns true iff TLV contains SMP payload.
+     */
+    // FIXME write unit tests for smpTlv(tlv)
+    public static boolean smpTlv(@Nonnull final TLV tlv) {
+        final int type = tlv.getType();
+        return type == SMP1 || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
     }
 
     @Override
@@ -172,6 +184,10 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      */
     @Nullable
     public TLV process(@Nonnull final TLV tlv) throws ProtocolException, OtrCryptoException {
+        if (tlv.getType() == SMP_ABORT) {
+            abort();
+            return null;
+        }
         final SMPMessage response;
         try {
             response = this.state.process(this, parse(tlv));
@@ -209,5 +225,10 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         setState(new StateExpect1(this.random, UNDECIDED));
         smpAborted(this.host, this.sessionID);
         return new TLV(SMP_ABORT, EMPTY_BODY);
+    }
+
+    @Override
+    public boolean smpAbortedTLV(@Nonnull final TLV tlv) {
+        return tlv.getType() == SMP_ABORT;
     }
 }

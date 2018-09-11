@@ -33,6 +33,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
+import static net.java.otr4j.session.smpv4.SMP.smpTlv;
 
 /**
  * The OTRv4 ENCRYPTED message state.
@@ -197,6 +198,14 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
+            if (smpTlv(tlv)) {
+                final TLV response = this.smp.process(tlv);
+                if (response != null) {
+                    // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
+                    context.injectMessage(transformSending(context, "", singletonList(response)));
+                }
+                continue;
+            }
             switch (tlv.getType()) {
             case TLV.PADDING: // TLV0
                 // nothing to do here, just ignore the padding
@@ -204,20 +213,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             case TLV.DISCONNECTED: // TLV1
                 // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
                 context.setState(new StateFinished(this.sessionID));
-                break;
-            case TLV.SMP1:
-            case TLV.SMP2:
-            case TLV.SMP3:
-            case TLV.SMP4:
-                final TLV response = this.smp.process(tlv);
-                if (response != null) {
-                    // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
-                    context.injectMessage(transformSending(context, "", singletonList(response)));
-                }
-                break;
-            case TLV.SMP_ABORT:
-                // Abort SMP and ignore response TLV as we're triggered by TLV 6 (SMP Abort) sent by the other party.
-                this.smp.abort();
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:

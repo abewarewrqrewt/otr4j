@@ -1173,7 +1173,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
         injectMessage(session.transformSending(this, "", singletonList(tlv)));
-        if (tlv.getType() != TLV.SMP_ABORT) {
+        if (!session.getSmpHandler().smpAbortedTLV(tlv)) {
             return;
         }
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
@@ -1257,6 +1257,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
+        // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
         final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);

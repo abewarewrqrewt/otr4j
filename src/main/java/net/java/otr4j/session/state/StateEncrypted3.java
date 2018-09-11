@@ -48,6 +48,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hmac;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
+import static net.java.otr4j.session.smp.SmpTlvHandler.smpTlv;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -191,18 +192,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
-            switch (tlv.getType()) {
-            case TLV.PADDING: // TLV0
-                // nothing to do here, just ignore the padding
-                break;
-            case TLV.DISCONNECTED: // TLV1
-                context.setState(new StateFinished(this.sessionID));
-                break;
-            case TLV.SMP1: // TLV2
-            case TLV.SMP1Q:// TLV7
-            case TLV.SMP2: // TLV3
-            case TLV.SMP3: // TLV4
-            case TLV.SMP4: // TLV5
+            if (smpTlv(tlv)) {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
@@ -212,10 +202,14 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 } catch (final SMException e) {
                     throw new OtrException("Failed to process TLV.", e);
                 }
+                continue;
+            }
+            switch (tlv.getType()) {
+            case TLV.PADDING: // TLV0
+                // nothing to do here, just ignore the padding
                 break;
-            case TLV.SMP_ABORT: //TLV6
-                // Abort SMP and ignore response TLV as we're triggered by TLV 6 (SMP Abort) sent by the other party.
-                this.smpTlvHandler.abort();
+            case TLV.DISCONNECTED: // TLV1
+                context.setState(new StateFinished(this.sessionID));
                 break;
             case TLV.USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();

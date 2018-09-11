@@ -44,6 +44,30 @@ import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 public final class SmpTlvHandler implements SMPHandler {
 
     private static final byte[] VERSION_BYTE = new byte[] {1};
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
+    private static final int SMP1 = 0x0002;
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
+    private static final int SMP2 = 0x0003;
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
+    private static final int SMP3 = 0x0004;
+    /**
+     * The message contains a step in the Socialist Millionaires' Protocol.
+     */
+    private static final int SMP4 = 0x0005;
+    /**
+     * The message indicates any in-progress SMP session must be aborted.
+     */
+    private static final int SMP_ABORT = 0x0006;
+    /**
+     * Like SMP1, but there's a question for the buddy at the beginning.
+     */
+    private static final int SMP1Q = 0x0007;
 
     private final SmpEngineHost host;
     private final SessionID sessionID;
@@ -73,6 +97,18 @@ public final class SmpTlvHandler implements SMPHandler {
         this.receiverTag = requireNonNull(receiverTag);
     }
 
+    /**
+     * Check if TLV is an SMP TLV payload.
+     *
+     * @param tlv TLV
+     * @return Returns true iff TLV contains SMP payload.
+     */
+    // FIXME write unit tests smpTlv(tlv)
+    public static boolean smpTlv(@Nonnull final TLV tlv) {
+        final int type = tlv.getType();
+        return type == SMP1 || type == SMP1Q || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
+    }
+
     @Nonnull
     @Override
     public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) throws OtrException {
@@ -82,20 +118,20 @@ public final class SmpTlvHandler implements SMPHandler {
         try {
             final byte[] smpmsg = sm.step1(secret);
             if (question.isEmpty()) {
-                return new TLV(TLV.SMP1, smpmsg);
+                return new TLV(SMP1, smpmsg);
             }
             // A question needs to be attached to the SMP message.
             final byte[] questionBytes = question.getBytes(UTF_8);
             final byte[] questionSmpmsg = new byte[questionBytes.length + 1 + smpmsg.length];
             System.arraycopy(questionBytes, 0, questionSmpmsg, 0, questionBytes.length);
             System.arraycopy(smpmsg, 0, questionSmpmsg, questionBytes.length + 1, smpmsg.length);
-            return new TLV(TLV.SMP1Q, questionSmpmsg);
+            return new TLV(SMP1Q, questionSmpmsg);
         } catch (final SMAbortedException e) {
             // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
             // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
             // to the counter party. Then we immediately initiate a new SMP exchange as requested.
             smpAborted(this.host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+            return new TLV(SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
             throw new OtrException("Failed to initiate SMP negotiation.", e);
         }
@@ -111,14 +147,14 @@ public final class SmpTlvHandler implements SMPHandler {
         final byte[] responderFingerprint = this.host.getLocalFingerprintRaw(this.sessionID);
         final byte[] secret = generateSecret(answer, initiatorFingerprint, responderFingerprint);
         try {
-            return new TLV(TLV.SMP2, sm.step2b(secret));
+            return new TLV(SMP2, sm.step2b(secret));
         } catch (final SMAbortedException e) {
             // As prescribed by OTR, we must always be allowed to initiate a new SMP exchange. In case another SMP
             // exchange is in progress, an abort is signaled. We honor the abort exception and send the abort signal
             // to the counter party. Then we immediately initiate a new SMP exchange as requested.
             // TODO check if we really also need to abort when responding to SMP1(Q). I suspect that this is an error, and we should only allow aborting when *initiating* a new SMP.
             smpAborted(this.host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+            return new TLV(SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
             throw new OtrException("Failed to respond to SMP with answer to the question.", e);
         }
@@ -148,7 +184,12 @@ public final class SmpTlvHandler implements SMPHandler {
         if (this.sm.abort()) {
             smpAborted(host, this.sessionID);
         }
-        return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+        return new TLV(SMP_ABORT, TLV.EMPTY_BODY);
+    }
+
+    @Override
+    public boolean smpAbortedTLV(@Nonnull final TLV tlv) {
+        return tlv.getType() == SMP_ABORT;
     }
 
     @Nonnull
@@ -168,22 +209,25 @@ public final class SmpTlvHandler implements SMPHandler {
     public TLV process(@Nonnull final TLV tlv) throws SMException {
         try {
             switch (tlv.getType()) {
-            case TLV.SMP1:
+            case SMP_ABORT:
+                abort();
+                return null;
+            case SMP1:
                 return processTlvSMP1(tlv);
-            case TLV.SMP1Q:
+            case SMP1Q:
                 return processTlvSMP1Q(tlv);
-            case TLV.SMP2:
+            case SMP2:
                 return processTlvSMP2(tlv);
-            case TLV.SMP3:
+            case SMP3:
                 return processTlvSMP3(tlv);
-            case TLV.SMP4:
+            case SMP4:
                 return processTlvSMP4(tlv);
             default:
                 throw new IllegalStateException("Unknown SMP TLV type: " + tlv.getType() + ". Cannot process this TLV.");
             }
         } catch (final SMAbortedException e) {
             smpAborted(this.host, this.sessionID);
-            return new TLV(TLV.SMP_ABORT, TLV.EMPTY_BODY);
+            return new TLV(SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
             smpError(this.host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
             throw e;
@@ -228,7 +272,7 @@ public final class SmpTlvHandler implements SMPHandler {
     @Nonnull
     private TLV processTlvSMP2(@Nonnull final TLV tlv) throws SMException {
         final byte[] nextmsg = sm.step3(tlv.getValue());
-        return new TLV(TLV.SMP3, nextmsg);
+        return new TLV(SMP3, nextmsg);
     }
 
     @Nonnull
@@ -240,7 +284,7 @@ public final class SmpTlvHandler implements SMPHandler {
         } else {
             unverify(host, this.sessionID, getFingerprint());
         }
-        return new TLV(TLV.SMP4, nextmsg);
+        return new TLV(SMP4, nextmsg);
     }
 
     @Nullable
