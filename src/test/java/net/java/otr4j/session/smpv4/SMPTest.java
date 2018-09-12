@@ -6,28 +6,42 @@ import net.java.otr4j.api.SmpEngineHost;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.session.api.SMPStatus;
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
+import org.mockito.Matchers;
 
+import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
+import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
+import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
+import static net.java.otr4j.session.smpv4.SMP.smpTlv;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static net.java.otr4j.util.SecureRandoms.random;
+import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
 public final class SMPTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -196,5 +210,126 @@ public final class SMPTest {
         assertEquals(SMP_ABORT, abortTLV.getType());
         final TLV initTLV = smpAlice.initiate(question, answer);
         assertEquals(SMP1, initTLV.getType());
+    }
+
+    @Test
+    public void testSMPRespondBeforeSMP1() {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertNull(smpAlice.respond(question, answer));
+    }
+
+    @Test
+    public void testSMPRespondDifferentQuestion() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SmpEngineHost hostBob = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid, publicKeyBob, publicKeyAlice, tagAlice);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertEquals(UNDECIDED, smpBob.getStatus());
+        final TLV smp1 = smpAlice.initiate(question, answer);
+        assertNotNull(smp1);
+        assertNull(smpBob.process(smp1));
+        verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
+        assertNull(smpBob.respond("Responding to different question.", answer));
+    }
+
+    @Test
+    public void testSMPProcessAbortTLV() throws OtrCryptoException, ProtocolException {
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertNull(smpAlice.process(new TLV(SMP_ABORT, new byte[0])));
+    }
+
+    @Test
+    public void testSMPProcessAbortTLVInProgress() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertNotNull(smpAlice.initiate(question, answer));
+        assertEquals(INPROGRESS, smpAlice.getStatus());
+        assertNull(smpAlice.process(new TLV(SMP_ABORT, new byte[0])));
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+    }
+
+    @Test
+    public void testSMPUnexpectedTLVAborts() throws OtrCryptoException, ProtocolException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+        assertNotNull(smpAlice.initiate(question, answer));
+        assertEquals(INPROGRESS, smpAlice.getStatus());
+        final byte[] tlvPayload = encode(new SMPMessage4(basePoint(), generateRandomValueInZq(RANDOM),
+                generateRandomValueInZq(RANDOM)));
+        final TLV abortTLV = smpAlice.process(new TLV(SMP4, tlvPayload));
+        assertEquals(SMP_ABORT, abortTLV.getType());
+        assertEquals(UNDECIDED, smpAlice.getStatus());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSMPUnexpectedSMPMessageProcessingResult() throws OtrCryptoException, ProtocolException, SMPAbortException {
+        final String question = "Who am I? (I know it's a lousy question ...)";
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final SMPState badSMPState = mock(SMPState.class);
+        final Point g2a = basePoint().multiply(BigInteger.valueOf(2L));
+        final BigInteger c2 = generateRandomValueInZq(RANDOM);
+        final BigInteger d2 = generateRandomValueInZq(RANDOM);
+        final BigInteger c3 = generateRandomValueInZq(RANDOM);
+        final BigInteger d3 = generateRandomValueInZq(RANDOM);
+        final Point g3a = basePoint().multiply(BigInteger.valueOf(3L));
+        final SMPMessage1 illegalMessage = new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
+        when(badSMPState.getStatus()).thenReturn(SMPStatus.INPROGRESS);
+        when(badSMPState.process(Matchers.eq(smpAlice), any(SMPMessage.class))).thenReturn(illegalMessage);
+        smpAlice.setState(badSMPState);
+        final byte[] tlvPayload = encode(new SMPMessage4(basePoint(), generateRandomValueInZq(RANDOM),
+                generateRandomValueInZq(RANDOM)));
+        smpAlice.process(new TLV(SMP4, tlvPayload));
+    }
+
+    @Test
+    public void testSMPRepeatedClosingAllowed() {
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        smpAlice.close();
+        smpAlice.close();
+    }
+
+    @Test
+    public void testSmpAbortedTLVCheck() {
+        final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
+        final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
+        final TLV initSMP = smpAlice.initiate("Hello world", new byte[10]);
+        final TLV abortTLV = smpAlice.abort();
+        assertFalse(smpAlice.smpAbortedTLV(initSMP));
+        assertTrue(smpAlice.smpAbortedTLV(abortTLV));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testSmpTlvNull() {
+        smpTlv(null);
+    }
+
+    @Test
+    public void testSmpTlvVerifyAllSMPTLVs() {
+        assertFalse("TLV type 0", smpTlv(new TLV(0, new byte[0])));
+        assertFalse("TLV type 1", smpTlv(new TLV(1, new byte[0])));
+        for (int i = 2; i < 7; i++) {
+            assertTrue("TLV type " + i, smpTlv(new TLV(i, new byte[0])));
+        }
+        for (int i = 7; i < 200; i++) {
+            assertFalse("TLV type " + i, smpTlv(new TLV(i, new byte[0])));
+        }
     }
 }

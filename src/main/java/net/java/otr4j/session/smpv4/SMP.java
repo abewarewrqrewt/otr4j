@@ -44,7 +44,6 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * OTRv4 variant of the Socialist Millionaire's Protocol.
  */
-// FIXME write unit tests for OTRv4 Socialist Millionaire's Protocol
 public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SMP.class.getName());
@@ -99,7 +98,6 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      * @param tlv TLV to inspect
      * @return Returns true iff TLV contains SMP payload.
      */
-    // FIXME write unit tests for smpTlv(tlv)
     public static boolean smpTlv(@Nonnull final TLV tlv) {
         final int type = tlv.getType();
         return type == SMP1 || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
@@ -203,16 +201,12 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         }
         if (response == null) {
             return null;
-        } else if (response instanceof SMPMessage1) {
-            return new TLV(SMP1, encode(response));
-        } else if (response instanceof SMPMessage2) {
-            return new TLV(SMP2, encode(response));
         } else if (response instanceof SMPMessage3) {
             return new TLV(SMP3, encode(response));
         } else if (response instanceof SMPMessage4) {
             return new TLV(SMP4, encode(response));
         }
-        throw new IllegalStateException("Unknown SMP response type: " + response.getClass() + ". Cannot construct corresponding TLV.");
+        throw new IllegalStateException("Unexpected SMP response type: " + response.getClass() + ". Cannot construct corresponding TLV.");
     }
 
     /**

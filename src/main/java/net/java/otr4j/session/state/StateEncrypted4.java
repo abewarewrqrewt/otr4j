@@ -18,6 +18,7 @@ import net.java.otr4j.session.smpv4.SMP;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
 import net.java.otr4j.session.state.DoubleRatchet.RotationResult;
+import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
 import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
@@ -189,7 +190,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         } catch (final RotationLimitationException e) {
             // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
             throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
-        } catch (final DoubleRatchet.VerificationException e) {
+        } catch (final VerificationException e) {
             // FIXME check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
             throw new OtrException("Message has failed verification.", e);
         }

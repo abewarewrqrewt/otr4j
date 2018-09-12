@@ -35,6 +35,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * </li>
  * </ol>
  */
+// FIXME write unit tests for OTRv4 StateExpect1
 final class StateExpect1 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect1.class.getName());

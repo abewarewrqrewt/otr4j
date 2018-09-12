@@ -41,6 +41,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 /**
  * Output stream for OTR encoding.
  */
+// FIXME consider adding assertions for all-zero byte-arrays, everywhere where parameter requests bytes.
 public final class OtrOutputStream {
 
     private static final int ZERO_LENGTH = 0;
