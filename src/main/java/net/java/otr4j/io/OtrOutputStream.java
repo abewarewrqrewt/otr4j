@@ -34,6 +34,7 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
 import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
@@ -41,7 +42,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 /**
  * Output stream for OTR encoding.
  */
-// FIXME consider adding assertions for all-zero byte-arrays, everywhere where parameter requests bytes.
 public final class OtrOutputStream {
 
     private static final int ZERO_LENGTH = 0;
@@ -223,6 +223,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeMac(@Nonnull final byte[] mac) {
         requireLengthExactly(TYPE_LEN_MAC, mac);
+        assert !allZeroBytes(mac) : "Expected MAC to contain non-zero bytes.";
         this.out.write(mac, 0, mac.length);
         return this;
     }
@@ -283,6 +284,7 @@ public final class OtrOutputStream {
      */
     @Nonnull
     public OtrOutputStream writeDSASignature(@Nonnull final byte[] signature) {
+        assert !allZeroBytes(signature) : "Expected DSA signature to contain non-zero bytes.";
         this.out.write(signature, 0, signature.length);
         return this;
     }
@@ -297,6 +299,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeNonce(@Nonnull final byte[] nonce) {
         requireLengthExactly(NONCE_LENGTH_BYTES, nonce);
+        assert !allZeroBytes(nonce) : "Expected nonce to contain non-zero bytes.";
         this.out.write(nonce, 0, NONCE_LENGTH_BYTES);
         return this;
     }
@@ -311,6 +314,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeMacOTR4(@Nonnull final byte[] mac) {
         requireLengthExactly(MAC_OTR4_LENGTH_BYTES, mac);
+        assert !allZeroBytes(mac) : "Expected OTRv4 MAC to contain non-zero bytes.";
         this.out.write(mac, 0, MAC_OTR4_LENGTH_BYTES);
         return this;
     }
@@ -354,6 +358,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeEdDSASignature(@Nonnull final byte[] signature) {
         requireLengthExactly(EDDSA_SIGNATURE_LENGTH_BYTES, signature);
+        assert !allZeroBytes(signature) : "Expected EdDSA signature to contain non-zero bytes.";
         this.out.write(signature, 0, EDDSA_SIGNATURE_LENGTH_BYTES);
         return this;
     }
@@ -367,7 +372,9 @@ public final class OtrOutputStream {
     // FIXME write unit tests.
     @Nonnull
     public OtrOutputStream writeFingerprint(@Nonnull final byte[] fingerprint) {
-        this.out.write(requireLengthExactly(FINGERPRINT_LENGTH_BYTES, fingerprint), 0, FINGERPRINT_LENGTH_BYTES);
+        requireLengthExactly(FINGERPRINT_LENGTH_BYTES, fingerprint);
+        assert !allZeroBytes(fingerprint) : "Expected OTRv4 fingerprint to contain non-zero bytes.";
+        this.out.write(fingerprint, 0, FINGERPRINT_LENGTH_BYTES);
         return this;
     }
 
@@ -380,7 +387,9 @@ public final class OtrOutputStream {
     // FIXME write unit tests.
     @Nonnull
     public OtrOutputStream writeSSID(@Nonnull final byte[] ssid) {
-        this.out.write(requireLengthExactly(SSID_LENGTH_BYTES, ssid), 0, SSID_LENGTH_BYTES);
+        requireLengthExactly(SSID_LENGTH_BYTES, ssid);
+        assert !allZeroBytes(ssid) : "Expected OTRv4 ssid to contain non-zero bytes.";
+        this.out.write(ssid, 0, SSID_LENGTH_BYTES);
         return this;
     }
 
