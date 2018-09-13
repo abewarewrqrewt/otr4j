@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -26,6 +27,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
+// FIXME convert 'clear' method to 'close' (AutoCloseable)
 public final class SharedSecret {
 
     private static final Logger LOGGER = Logger.getLogger(SharedSecret.class.getName());
@@ -45,6 +47,7 @@ public final class SharedSecret {
     private final byte[] secbytes;
 
     SharedSecret(@Nonnull final byte[] secret) {
+        assert !allZeroBytes(secret) : "Expected non-zero byte-array for a secret. Something critical might be going wrong.";
         final BigInteger s = new BigInteger(1, secret);
         this.secbytes = new OtrOutputStream().writeBigInt(s).toByteArray();
         LOGGER.finest("Generated shared secret s.");

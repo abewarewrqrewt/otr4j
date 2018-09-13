@@ -35,22 +35,18 @@ public class DoubleRatchetTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private static final byte[] INITIAL_K = new byte[64];
-
     private static final byte[] MESSAGE = "Hello world".getBytes(UTF_8);
-
-    static {
-        RANDOM.nextBytes(INITIAL_K);
-    }
 
     @Test(expected = NullPointerException.class)
     public void testConstructDoubleRatchetNullSecureRandom() {
-        new DoubleRatchet(null, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        new DoubleRatchet(null, generateSharedSecret(), initialK);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructDoubleRatchetNullSharedSecret() {
-        new DoubleRatchet(RANDOM, null, INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        new DoubleRatchet(RANDOM, null, initialK);
     }
 
     @Test(expected = NullPointerException.class)
@@ -60,31 +56,36 @@ public class DoubleRatchetTest {
 
     @Test
     public void testConstructDoubleRatchet() {
-        new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testEncryptionBeforeRotation() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.encrypt(MESSAGE);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAuthenticationBeforeRotation() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.authenticate(MESSAGE);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testRotateBeforeReceptionNotPermitted() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.rotateSenderKeys();
         ratchet.rotateSenderKeys();
     }
 
     @Test
     public void testEncryptionAfterRotation() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.rotateSenderKeys();
         final EncryptionResult result = ratchet.encrypt(MESSAGE);
         assertNotNull(result);
@@ -95,7 +96,8 @@ public class DoubleRatchetTest {
 
     @Test
     public void testAuthenticationAfterRotation() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.rotateSenderKeys();
         final byte[] auth1 = ratchet.authenticate(MESSAGE);
         final byte[] auth2 = ratchet.authenticate(MESSAGE);
@@ -104,7 +106,8 @@ public class DoubleRatchetTest {
 
     @Test
     public void testAuthenticatorsDifferentAfterRotation() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.rotateSenderKeys();
         final int firstMessageId = ratchet.getJ();
         final byte[] auth1 = ratchet.authenticate(MESSAGE);
@@ -116,7 +119,8 @@ public class DoubleRatchetTest {
 
     @Test
     public void testTwoEncryptionsDontUseSameNonce() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.rotateSenderKeys();
         // Note that encrypting twice without rotation chain key is not intended use. The only reason to support this is
         // if the message never got sent.
@@ -138,7 +142,8 @@ public class DoubleRatchetTest {
 
     @Test
     public void testRepeatedCloseIsAllowed() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.close();
         ratchet.close();
         ratchet.close();
@@ -147,7 +152,8 @@ public class DoubleRatchetTest {
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsEncryption() {
         final byte[] message = "Hello World!".getBytes(UTF_8);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.close();
         ratchet.encrypt(message);
     }
@@ -155,7 +161,8 @@ public class DoubleRatchetTest {
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsVerify() throws RotationLimitationException {
         final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.rotateSenderKeys();
         final byte[] authenticator = ratchet.authenticate(message);
         ratchet.close();
@@ -164,7 +171,8 @@ public class DoubleRatchetTest {
 
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsGetExtraSymmetricKey() {
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), INITIAL_K);
+        final byte[] initialK = random(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK);
         ratchet.close();
         ratchet.rotateSenderKeys();
     }

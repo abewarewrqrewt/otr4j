@@ -98,6 +98,7 @@ final class DoubleRatchet implements AutoCloseable {
         this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
         this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);
+        assert !allZeroBytes(this.rootKey) : "Expected random data, instead of all zero-bytes. There might be something severely wrong.";
         this.senderRatchet = new Ratchet();
         this.receiverRatchet = new Ratchet();
     }

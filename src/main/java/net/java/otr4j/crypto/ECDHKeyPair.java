@@ -62,8 +62,8 @@ public final class ECDHKeyPair implements AutoCloseable {
     @Nonnull
     public static ECDHKeyPair generate(@Nonnull final byte[] r) {
         //  - pick a random value r (57 bytes)
-        assert !allZeroBytes(r) : "Expected 57 bytes of random data, instead of all zeroes.";
         requireLengthExactly(SECRET_KEY_LENGTH_BYTES, r);
+        assert !allZeroBytes(r) : "Expected 57 bytes of random data, instead of all zeroes.";
         //  - Hash the 'r' using 'SHAKE-256(r, 114)'. Store the digest in a
         //    114-byte buffer. Only the lower 57 bytes (denoted 'h') are used for
         //    generating the public key.

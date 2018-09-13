@@ -21,8 +21,12 @@ import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
 
+import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hash;
+
 // TODO consider doing lazy evaluation of generating 's', 'receivingCtr' and 'sendingCtr'. (Would save some memory/computation in case this session key combination is not actually used.)
 // TODO Does it make sense to randomly generate the initial sending counter value to further avoid reuse?
+// FIXME convert 'clear' method to 'close' (AutoCloseable)
 final class SessionKey {
 
     private static final Logger LOGGER = Logger.getLogger(SessionKey.class.getName());
@@ -67,12 +71,10 @@ final class SessionKey {
             throws OtrCryptoException {
         this.localKeyID = localKeyID;
         this.remoteKeyID = remoteKeyID;
-        this.localKeyPair = Objects.requireNonNull(localKeyPair);
-        this.remotePublicKey = Objects.requireNonNull(remotePublicKey);
-        this.s = OtrCryptoEngine.generateSecret(localKeyPair.getPrivate(),
-                Objects.requireNonNull(remotePublicKey));
-        this.high = ((DHPublicKey) this.localKeyPair.getPublic()).getY()
-                .compareTo(remotePublicKey.getY()) > 0;
+        this.localKeyPair = requireNonNull(localKeyPair);
+        this.remotePublicKey = requireNonNull(remotePublicKey);
+        this.s = OtrCryptoEngine.generateSecret(localKeyPair.getPrivate(), requireNonNull(remotePublicKey));
+        this.high = ((DHPublicKey) this.localKeyPair.getPublic()).getY().compareTo(remotePublicKey.getY()) > 0;
         this.used = false;
     }
 
@@ -150,7 +152,7 @@ final class SessionKey {
     @Nonnull
     byte[] sendingMAC() {
         LOGGER.finest("Calculated sending MAC key.");
-        return OtrCryptoEngine.sha1Hash(sendingAESKey());
+        return sha1Hash(sendingAESKey());
     }
 
     /**
@@ -176,7 +178,7 @@ final class SessionKey {
     @Nonnull
     byte[] receivingMAC() {
         LOGGER.finest("Calculated receiving MAC key.");
-        return OtrCryptoEngine.sha1Hash(receivingAESKey());
+        return sha1Hash(receivingAESKey());
     }
 
     /**

@@ -231,7 +231,7 @@ public final class OtrCryptoEngine {
      * @throws OtrCryptoException In case of illegal key value.
      */
     @Nonnull
-    public static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
+    private static byte[] sha256Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key, final int length)
             throws OtrCryptoException {
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
@@ -308,7 +308,6 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static byte[] sha256Hash(@Nonnull final byte[] first, final byte[]... next) {
-        // FIXME consider adding assertions to sha256Hash?
         final MessageDigest sha256;
         try {
             sha256 = MessageDigest.getInstance(MD_SHA256);
@@ -331,7 +330,6 @@ public final class OtrCryptoEngine {
      */
     @Nonnull
     public static byte[] sha1Hash(@Nonnull final byte[] first, final byte[]... next) {
-        // FIXME consider adding assertions to sha1Hash?
         final MessageDigest sha1;
         try {
             sha1 = MessageDigest.getInstance(MD_SHA1);
