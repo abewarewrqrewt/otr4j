@@ -13,6 +13,7 @@ import org.junit.Test;
  *
  * @author Danny van Heumen
  */
+@SuppressWarnings("ConstantConditions")
 public class SharedSecretTest {
 
     private static final byte[] MY_SHARED_BYTES = new byte[]{'o', 't', 'r'};
@@ -95,7 +96,7 @@ public class SharedSecretTest {
         final SharedSecret s = new SharedSecret(MY_SHARED_BYTES);
         assertArrayEquals(new byte[]{-27, -30, -56, 57, -23, -12, -12, -30, 101,
                 43, 106, 41, 96, -23, 48, 15}, s.c());
-        s.clear();
+        s.close();
         final ByteBuffer expectedBuffer = ByteBuffer.wrap(
                 OtrCryptoEngine.sha256Hash(new byte[]{1}, new byte[MY_SHARED_BYTES.length + 4]));
         final byte[] expectedC = new byte[16];

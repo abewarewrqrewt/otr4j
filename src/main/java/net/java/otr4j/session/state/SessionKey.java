@@ -26,8 +26,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hash;
 
 // TODO consider doing lazy evaluation of generating 's', 'receivingCtr' and 'sendingCtr'. (Would save some memory/computation in case this session key combination is not actually used.)
 // TODO Does it make sense to randomly generate the initial sending counter value to further avoid reuse?
-// FIXME convert 'clear' method to 'close' (AutoCloseable)
-final class SessionKey {
+final class SessionKey implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(SessionKey.class.getName());
 
@@ -267,8 +266,9 @@ final class SessionKey {
      * Clear SessionKey instance. Everything will be zeroed, so user should
      * make sure that the SessionKey isn't accidentally used afterwards.
      */
-    void clear() {
-        this.s.clear();
+    @Override
+    public void close() {
+        this.s.close();
         Arrays.fill(this.receivingCtr, (byte) 0);
         Arrays.fill(this.sendingCtr, (byte) 0);
     }

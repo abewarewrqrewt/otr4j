@@ -27,8 +27,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
-// FIXME convert 'clear' method to 'close' (AutoCloseable)
-public final class SharedSecret {
+public final class SharedSecret implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(SharedSecret.class.getName());
 
@@ -193,11 +192,11 @@ public final class SharedSecret {
     }
 
     /**
-     * Clear the shared secret. (This zeroes the secret, so if the SharedSecret
-     * instance is reused after clearing, you will end up with "invalid"
-     * (unexpected) results.
+     * Clear the shared secret. (This zeroes the secret, so if the SharedSecret instance is reused after clearing, you
+     * will end up with "invalid" (unexpected) results.
      */
-    public void clear() {
+    @Override
+    public void close() {
         Arrays.fill(this.secbytes, (byte) 0);
     }
 }
