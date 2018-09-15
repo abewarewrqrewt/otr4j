@@ -42,6 +42,12 @@ public final class StateExpect4Test {
             new BigInteger("243919295076423503288241325716951068924347181567637759634078287663516781375902876181296806140094995694034332370011945034139749942390997", 10));
     private static final BigInteger cr = new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10);
     private static final BigInteger d7 = new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10);
+    private static final Point ra = createPoint(
+            new BigInteger("314477180835505334456514522697211639823564271172558398781788373480025093584267496798280363802109367409945899677297245744207604995798215", 10),
+            new BigInteger("314029684065464803946366772814894787049170212355244776063157390940002824357662292553115470960421307470791608461875703125153400706900709", 10));
+    private static final BigInteger cp = new BigInteger("77816735911757946719447405301929329577374213233553378783621970734989972850028859935350835911100334011448998047272156287285184162475910", 10);
+    private static final BigInteger d5 = new BigInteger("168402301387910408888564889044656243554121209615331400658802104743919568546071693427503525480092417336791762973045156197916739168241313", 10);
+    private static final BigInteger d6 = new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10);
 
     @Test(expected = NullPointerException.class)
     public void testConstructNullSecureRandom() {
@@ -146,8 +152,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb.negate(), cr, d7);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -155,8 +160,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, ONE, d7);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -164,8 +168,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -173,8 +176,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(createPoint(ONE, ONE), cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -182,8 +184,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, ONE, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -191,8 +192,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b.negate(), pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -200,8 +200,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa.negate(), pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -209,8 +208,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa.negate(), qb);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
@@ -218,7 +216,14 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb.negate());
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
-        assertNull(state.process(context, message));
-        verify(context).setState(any(StateExpect1.class));
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessWrongMessage() throws SMPAbortException {
+        final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb.negate());
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
+        state.process(context, message);
     }
 }
