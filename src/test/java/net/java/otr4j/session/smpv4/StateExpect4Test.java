@@ -135,6 +135,7 @@ public final class StateExpect4Test {
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, d7);
         assertNull(state.process(context, message));
+        // TODO investigate if following verification statement works. There seem to be some unexpected results.
         verify(context).setState(any(StateExpect1.class));
     }
 
@@ -144,6 +145,7 @@ public final class StateExpect4Test {
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, d7);
         assertNull(state.process(context, message));
+        // TODO investigate if following verification statement works. There seem to be some unexpected results.
         verify(context).setState(any(StateExpect1.class));
     }
 
