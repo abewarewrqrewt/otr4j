@@ -25,7 +25,6 @@ import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
 
-// FIXME write unit tests for OTRv4 StateExpect2
 final class StateExpect2 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect2.class.getName());

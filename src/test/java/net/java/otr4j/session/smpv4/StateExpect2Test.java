@@ -7,11 +7,13 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static nl.dannyvanheumen.joldilocks.Points.createPoint;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -35,15 +37,6 @@ public final class StateExpect2Test {
     private static final Point qb = createPoint(
             new BigInteger("423430412264875129675225626571000691034761078275754236126134904918998073249689389127999342833148835049651469030268345753112431699348696", 10),
             new BigInteger("27371249592200388578572706841215291643260958466414201154940100359190642782246779086087976919600673242377448605891352376861486556308423", 10));
-    private static final Point g3a = createPoint(
-            new BigInteger("518174644249461528695945953725187603845615868738496167939067703005335185228858161198005082414857631829817255298083903928767327400128404", 10),
-            new BigInteger("411593944040901258928967352546948763853118126911749716436241852339527571133863427871032238507886034736469451532393155247111763030574468", 10));
-    private static final Point g2 = createPoint(
-            new BigInteger("461040231870912278223335051003007589124444431620652617813251747737875255390128010129415238249086909415909114003045585587473495359933842", 10),
-            new BigInteger("378179442616209022897918842999078744137085816218860340532337222199856750749813374446200431224005985387770293772337897615452902812899754", 10));
-    private static final Point g3 = createPoint(
-            new BigInteger("64712806652336856881234519237674951336100608683154962969591387101780248238545172716068676332096324991830846385623416736375164371616205", 10),
-            new BigInteger("210386130815266405388184355964395704043399087077006199960064048841865230842670391032599659513617832767135871367377513619788370536757084", 10));
     private static final Point pa = createPoint(
             new BigInteger("465943338087689210004311262653217262867584260336764995023461214036125904185851440432009245692764184419275942574209323203357723240467548", 10),
             new BigInteger("171512624718754523296213069499915004048105351732065305821916994076620475525139204045825568923885234090579511388053138214933231286738769", 10));
@@ -53,16 +46,12 @@ public final class StateExpect2Test {
     private static final Point ra = createPoint(
             new BigInteger("314477180835505334456514522697211639823564271172558398781788373480025093584267496798280363802109367409945899677297245744207604995798215", 10),
             new BigInteger("314029684065464803946366772814894787049170212355244776063157390940002824357662292553115470960421307470791608461875703125153400706900709", 10));
-    private static final Point rb = createPoint(
-            new BigInteger("207262232174680451060776976413201759833926533152870268659156413710415430620278577554952401659472618835066253611213476907998866291547848", 10),
-            new BigInteger("243919295076423503288241325716951068924347181567637759634078287663516781375902876181296806140094995694034332370011945034139749942390997", 10));
     private static final BigInteger r4 = new BigInteger("4848823671279697407137727930542462362850237819434391365386462331719995539129866443292840169805814262621847420649345769965317287348", 10);
     private static final BigInteger r5 = new BigInteger("6093723104156361563235633010766054571606619914455883426503126819249759028984281412972947332166622716165667676992220970018247617818", 10);
     private static final BigInteger r6 = new BigInteger("4898355827584876372361803991328154525279690424308456604711524616971929965834305690790568318779002259332597465317036597829614224197", 10);
     private static final BigInteger r7 = new BigInteger("10327876212163104498832270384706478291329857475634355830265712208763978612460575175501454261843646764359066094297572626480874373321", 10);
     private static final BigInteger a2 = new BigInteger("673848653576269490820269595107132458021950184923936107336090953739462122027562298199756197615735822162566149329088995049443871609", 10);
     private static final BigInteger a3 = new BigInteger("10992407629513027537721921961288862111472222592979105676178912973948354718168450900717698573770450980134969731918121327601220662649", 10);
-    private static final BigInteger b3 = new BigInteger("6620572565451325478577935676729801683996665547132615779785633946993382844827938072605777950304437030465346847174123905281902647976", 10);
     private static final BigInteger c2 = new BigInteger("111022924696436872341199729470810106169691412099562751065315157956932607321704386418842646614967543212975232690938096962929374138840360", 10);
     private static final BigInteger d2 = new BigInteger("101345345229065684334282374371023601758415295857263117254747849658520035320960346748846057135976056655742957171515534523417214373693098", 10);
     private static final BigInteger c3 = new BigInteger("62617459100015197706706660769267850673374894996485466090690871115733599023295580435733677134748019493119048062634692839095351921724769", 10);
@@ -74,9 +63,7 @@ public final class StateExpect2Test {
     private static final BigInteger d6 = new BigInteger("94724577901200260682137525745100301807843255453810112147553827587265819853644379707894360868997126906680725252985586449377226774745039", 10);
     private static final BigInteger responseD6 = new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10);
     private static final BigInteger cr = new BigInteger("48212869955179756863375262751674186371416622227372458498814862703043948906876869678112891347756106998961858786630233240056114069543171", 10);
-    private static final BigInteger responseCr = new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10);
     private static final BigInteger d7 = new BigInteger("92942743748171249034039202643159748376089330632273362315367772348633802592365130463925174120166078027659350437796406524022645144750795", 10);
-    private static final BigInteger responseD7 = new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10);
 
     @Test
     public void testConstruct() {
@@ -174,5 +161,245 @@ public final class StateExpect2Test {
         verify(context).setState(any(StateExpect1.class));
     }
 
-    // TODO continue with exception cases.
+    @Test
+    public void testProcessMessageBadSecret() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret.negate(), a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        final SMPMessage3 response = state.process(context, message);
+        assertEquals(pa, response.pa);
+        assertNotEquals(qa, response.qa);
+        assertEquals(responseCp, response.cp);
+        assertEquals(responseD5, response.d5);
+        assertNotEquals(responseD6, response.d6);
+        assertNotEquals(ra, response.ra);
+        assertNotEquals(cr, response.cr);
+        assertNotEquals(d7, response.d7);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBada2() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, ONE, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBada3() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, ONE);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageIllegalg2b() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(createPoint(ONE, ONE), c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadg2b() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b.negate(), c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageIllegalg3b() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, createPoint(ONE, ONE), c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadg3b() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b.negate(), c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageIllegalpb() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, createPoint(ONE, ONE), qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadpb() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb.negate(), qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageIllegalqb() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, createPoint(ONE, ONE), cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadqb() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb.negate(), cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadc2() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, ONE, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadd2() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, ONE, g3b, c3, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadc3() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, ONE, d3, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadd3() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, ONE, pb, qb, cp, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadcp() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, ONE, d5, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadd5() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, ONE, d6);
+        state.process(context, message);
+    }
+
+    @Test(expected = SMPAbortException.class)
+    public void testProcessMessageBadd6() throws SMPAbortException {
+        final byte[] fakeRandomData = new byte[4*54];
+        encodeLittleEndianTo(fakeRandomData, 0, r4);
+        encodeLittleEndianTo(fakeRandomData, 54, r5);
+        encodeLittleEndianTo(fakeRandomData, 108, r6);
+        encodeLittleEndianTo(fakeRandomData, 162, r7);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
+        final SMPContext context = mock(SMPContext.class);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, ONE);
+        state.process(context, message);
+    }
 }
