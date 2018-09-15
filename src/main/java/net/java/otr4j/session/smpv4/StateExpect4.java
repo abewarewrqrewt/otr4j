@@ -73,6 +73,8 @@ final class StateExpect4 implements SMPState {
     @Override
     public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
+        requireNonNull(context);
+        requireNonNull(message);
         if (!(message instanceof SMPMessage4)) {
             throw new SMPAbortException("Received SMP message 1 in StateExpect4.");
         }

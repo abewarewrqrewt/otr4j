@@ -109,7 +109,14 @@ public final class StateExpect4Test {
         assertNull(state.respondWithSecret(null, null, null));
     }
 
-    @Test(expected = SMPAbortException.class)
+    @Test(expected = NullPointerException.class)
+    public void testProcessNullContext() throws SMPAbortException {
+        final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, d7);
+        state.process(null, message);
+    }
+
+    @Test(expected = NullPointerException.class)
     public void testProcessNullMessage() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
