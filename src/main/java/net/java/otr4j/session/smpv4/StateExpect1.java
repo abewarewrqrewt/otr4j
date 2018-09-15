@@ -35,7 +35,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * </li>
  * </ol>
  */
-// FIXME write unit tests for OTRv4 StateExpect1
 final class StateExpect1 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect1.class.getName());
@@ -62,7 +61,8 @@ final class StateExpect1 implements SMPState {
         this.message = null;
     }
 
-    private StateExpect1(@Nonnull final SecureRandom random, @Nonnull final SMPStatus status, @Nonnull final SMPMessage1 message) {
+    private StateExpect1(@Nonnull final SecureRandom random, @Nonnull final SMPStatus status,
+            @Nonnull final SMPMessage1 message) {
         this.random = requireNonNull(random);
         this.status = requireNonNull(status);
         this.message = requireNonNull(message);
@@ -76,7 +76,9 @@ final class StateExpect1 implements SMPState {
 
     @Nonnull
     @Override
-    public SMPMessage1 initiate(@Nonnull final SMPContext context, @Nonnull final String question, @Nonnull final BigInteger secret) {
+    public SMPMessage1 initiate(@Nonnull final SMPContext context, @Nonnull final String question,
+            @Nonnull final BigInteger secret) {
+        requireNonNull(context);
         final BigInteger a2 = generateRandomValueInZq(this.random);
         final BigInteger a3 = generateRandomValueInZq(this.random);
         final BigInteger r2 = generateRandomValueInZq(this.random);
@@ -97,6 +99,7 @@ final class StateExpect1 implements SMPState {
     @Override
     public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question,
             @Nonnull final BigInteger secret) {
+        requireNonNull(context);
         if (this.message == null) {
             LOGGER.log(Level.WARNING, "The answer to the SMP question is provided, but no message is available. Ignoring answer.");
             return null;
