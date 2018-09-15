@@ -78,6 +78,8 @@ final class StateExpect3 implements SMPState {
     @Override
     public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
+        requireNonNull(context);
+        requireNonNull(message);
         if (!(message instanceof SMPMessage3)) {
             throw new SMPAbortException("Received unexpected SMP message in StateExpect3.");
         }
