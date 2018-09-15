@@ -69,7 +69,7 @@ final class StateExpect2 implements SMPState {
 
     @Nonnull
     @Override
-    public SMPMessage process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
+    public SMPMessage3 process(@Nonnull final SMPContext context, @Nonnull final SMPMessage message)
             throws SMPAbortException {
         requireNonNull(context);
         requireNonNull(message);
