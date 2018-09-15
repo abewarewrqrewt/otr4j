@@ -22,7 +22,6 @@ import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static org.bouncycastle.util.Arrays.concatenate;
 
-// FIXME write unit tests for OTRv4 StateExpect4
 final class StateExpect4 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect4.class.getName());
