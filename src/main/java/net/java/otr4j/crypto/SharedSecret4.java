@@ -1,6 +1,7 @@
 package net.java.otr4j.crypto;
 
 import net.java.otr4j.session.ake.SecurityParameters4;
+import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -10,6 +11,7 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
+import static net.java.otr4j.crypto.DHKeyPair.checkPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPair.SECRET_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DH_FIRST_EPHEMERAL;
@@ -224,16 +226,22 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param performDHRatchet   Indicates whether we need to perform a DH ratchet.
      * @param theirECDHPublicKey Their ECDH public key.
      * @param theirDHPublicKey   Their DH public key. (Optional)
+     * @throws OtrCryptoException In case of failure to rotate the public keys.
      */
     public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
-            @Nullable final BigInteger theirDHPublicKey) {
+            @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
         if (this.ecdhKeyPair == null || this.dhKeyPair == null) {
             throw new IllegalStateException("To rotate other party's public keys, it is required that our own keys are available.");
         }
-        // FIXME verify requirements of public key before accepting it.
-        this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
+        if (!Ed448.contains(requireNonNull(theirECDHPublicKey))) {
+            throw new OtrCryptoException("ECDH public key failed verification.");
+        }
+        this.theirECDHPublicKey = theirECDHPublicKey;
         if (performDHRatchet) {
-            this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
+            if (!checkPublicKey(requireNonNull(theirDHPublicKey))) {
+                throw new OtrCryptoException("DH public key failed verification.");
+            }
+            this.theirDHPublicKey = theirDHPublicKey;
         }
         regenerateK(Rotation.RECEIVER_KEYS, performDHRatchet);
         this.ecdhKeyPair.close();

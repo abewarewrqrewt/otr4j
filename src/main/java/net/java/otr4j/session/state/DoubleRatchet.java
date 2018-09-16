@@ -1,6 +1,7 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -339,14 +340,14 @@ final class DoubleRatchet implements AutoCloseable {
      * @param nextDH   The other party's DH public key.
      */
     // TODO preserve message keys in previous ratchet before rotating away.
-    void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) {
+    void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
         requireNotClosed();
         LOGGER.log(Level.FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});
-        this.pn = this.senderRatchet.messageID;
         final boolean performDHRatchet = this.i % 3 == 0;
         final byte[] previousRootKey = this.rootKey.clone();
         this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
+        this.pn = this.senderRatchet.messageID;
         final byte[] newK = this.sharedSecret.getK();
         final byte[] concatPreviousRootKeyNewK = concatenate(previousRootKey, newK);
         kdf1(this.rootKey, 0, ROOT_KEY, concatPreviousRootKeyNewK, ROOT_KEY_LENGTH_BYTES);

@@ -2,6 +2,7 @@ package net.java.otr4j.session.state;
 
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
@@ -178,7 +179,7 @@ public class DoubleRatchetTest {
     }
 
     @Test
-    public void testDoubleRatchetWorksSymmetrically() throws VerificationException, RotationLimitationException {
+    public void testDoubleRatchetWorksSymmetrically() throws VerificationException, RotationLimitationException, OtrCryptoException {
         final byte[] message = "Hello Alice!".getBytes(UTF_8);
         // Prepare ratchets for Alice and Bob
         final byte[] initialRootKey = random(RANDOM, new byte[64]);
@@ -202,7 +203,7 @@ public class DoubleRatchetTest {
     }
 
     @Test(expected = VerificationException.class)
-    public void testDoubleRatchetWorksBadAuthenticator() throws VerificationException, RotationLimitationException {
+    public void testDoubleRatchetWorksBadAuthenticator() throws VerificationException, RotationLimitationException, OtrCryptoException {
         final byte[] message = "Hello Alice!".getBytes(UTF_8);
         // Prepare ratchets for Alice and Bob
         final byte[] initialRootKey = random(RANDOM, new byte[64]);
@@ -229,7 +230,7 @@ public class DoubleRatchetTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testDoubleRatchetPrematureClosing() throws VerificationException, RotationLimitationException {
+    public void testDoubleRatchetPrematureClosing() throws VerificationException, RotationLimitationException, OtrCryptoException {
         final byte[] message = "Hello Alice!".getBytes(UTF_8);
         // Prepare ratchets for Alice and Bob
         final byte[] initialRootKey = random(RANDOM, new byte[64]);
@@ -251,7 +252,7 @@ public class DoubleRatchetTest {
     }
 
     @Test
-    public void testDoubleRatchetSkipMessagesLostMessageKeys() throws VerificationException, RotationLimitationException {
+    public void testDoubleRatchetSkipMessagesLostMessageKeys() throws VerificationException, RotationLimitationException, OtrCryptoException {
         final byte[] message = "Hello Alice!".getBytes(UTF_8);
         // Prepare ratchets for Alice and Bob
         final byte[] initialRootKey = random(RANDOM, new byte[64]);
@@ -276,7 +277,7 @@ public class DoubleRatchetTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testDoubleRatchetRetrievePreviousMessageKeys() throws RotationLimitationException {
+    public void testDoubleRatchetRetrievePreviousMessageKeys() throws RotationLimitationException, OtrCryptoException {
         final byte[] message = "Hello Alice!".getBytes(UTF_8);
         // Prepare ratchets for Alice and Bob
         final byte[] initialRootKey = random(RANDOM, new byte[64]);
@@ -319,7 +320,7 @@ public class DoubleRatchetTest {
     }
 
     @Test
-    public void testDoubleRatchetWorksSymmetricallyWithRotations() throws VerificationException, RotationLimitationException {
+    public void testDoubleRatchetWorksSymmetricallyWithRotations() throws VerificationException, RotationLimitationException, OtrCryptoException {
         final byte[] message = "Hello Alice!".getBytes(UTF_8);
         // Prepare ratchets for Alice and Bob
         final byte[] initialRootKey = random(RANDOM, new byte[64]);

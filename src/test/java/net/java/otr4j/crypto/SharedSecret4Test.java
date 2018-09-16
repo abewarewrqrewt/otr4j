@@ -147,7 +147,7 @@ public class SharedSecret4Test {
     }
 
     @Test
-    public void testRotateTheirKeys() {
+    public void testRotateTheirKeys() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -159,7 +159,7 @@ public class SharedSecret4Test {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testRotateTheirKeysNullECDH() {
+    public void testRotateTheirKeysNullECDH() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -167,7 +167,7 @@ public class SharedSecret4Test {
     }
 
     @Test
-    public void testRotateTheirKeysNullDHNonThirdIteration() {
+    public void testRotateTheirKeysNullDHNonThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -179,7 +179,7 @@ public class SharedSecret4Test {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testRotateTheirKeysNullDHThirdIteration() {
+    public void testRotateTheirKeysNullDHThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -187,7 +187,7 @@ public class SharedSecret4Test {
     }
 
     @Test
-    public void testGetKNotModifiable() {
+    public void testGetKNotModifiable() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -200,7 +200,7 @@ public class SharedSecret4Test {
 
     // FIXME This notes that it is possible to go back to an earlier ratchet state by providing the same public keys again, ... within reason for a short while. Is this by design?
     @Test
-    public void testRotateSamePublicKeysEveryThirdIteration() {
+    public void testRotateSamePublicKeysEveryThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -211,7 +211,7 @@ public class SharedSecret4Test {
     }
 
     @Test
-    public void testRotateDifferentPublicKeysEveryThirdIteration() {
+    public void testRotateDifferentPublicKeysEveryThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
@@ -222,7 +222,7 @@ public class SharedSecret4Test {
     }
 
     @Test
-    public void testRotateSamePublicKeysEveryNonThirdIteration() {
+    public void testRotateSamePublicKeysEveryNonThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
