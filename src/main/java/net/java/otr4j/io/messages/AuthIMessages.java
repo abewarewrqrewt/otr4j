@@ -49,6 +49,9 @@ public final class AuthIMessages {
             throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");
         }
         final ClientProfile profileBob = profilePayloadBob.validate();
+        if (message.senderInstanceTag != profileBob.getInstanceTag().getValue()) {
+            throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
+        }
         final ClientProfile ourProfile = ourProfilePayload.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.

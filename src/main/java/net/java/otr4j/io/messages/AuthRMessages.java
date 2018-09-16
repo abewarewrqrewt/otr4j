@@ -51,8 +51,8 @@ public final class AuthRMessages {
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
         final ClientProfile theirProfile = message.getClientProfile().validate();
-        if (theirProfile.getInstanceTag().getValue() != message.senderInstanceTag) {
-            throw new ValidationException("The message sender's instance tag is different from the client profile's instance tag.");
+        if (message.senderInstanceTag != theirProfile.getInstanceTag().getValue()) {
+            throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         // TODO how should we handle the case where our own client profile is not valid (anymore)?
         final ClientProfile ourClientProfile = ourClientProfilePayload.validate();

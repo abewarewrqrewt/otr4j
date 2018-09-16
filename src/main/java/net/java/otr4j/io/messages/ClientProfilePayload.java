@@ -47,7 +47,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * client profiles are validated before trusted use.
  */
 // FIXME write unit tests
-// FIXME everywhere where ClientProfilePayload is validated, ensure that owner instance tag matches with sender instance tag of message.
 @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public final class ClientProfilePayload implements OtrEncodable {
 
@@ -197,7 +196,6 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @return Returns ClientProfile iff validation succeeds.
      * @throws ValidationException In case of validation failure.
      */
-    // FIXME ensure that we validate the ClientProfilePayload first, then verify that the ClientProfile contains the same sender instance tag as the message.
     @Nonnull
     public ClientProfile validate() throws ValidationException {
         validate(this.fields, this.signature, new Date());
