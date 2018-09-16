@@ -13,10 +13,13 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 /**
  * The OTRv4 data message.
  */
+// TODO two constants defined in duplicate, due to value needed in multiple packages: XSALSA20_IV_LENGTH_BYTES, MAC_LENGTH_BYTES
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 
     private static final int MESSAGE_DATA = 0x03;
+    private static final int XSALSA20_IV_LENGTH_BYTES = 24;
+    private static final int MAC_LENGTH_BYTES = 64;
 
     private final byte flags;
     private final int pn;
@@ -58,11 +61,9 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         this.j = j;
         this.ecdhPublicKey = requireNonNull(ecdhPublicKey);
         this.dhPublicKey = dhPublicKey;
-        // FIXME replace literal with constant of XSALSA20_IV_LENGTH_BYTES.
-        this.nonce = requireLengthExactly(24, nonce);
+        this.nonce = requireLengthExactly(XSALSA20_IV_LENGTH_BYTES, nonce);
         this.ciphertext = requireNonNull(ciphertext);
-        // FIXME replace literal with constant of OTRv4 MAC length.
-        this.authenticator = requireLengthExactly(64, authenticator);
+        this.authenticator = requireLengthExactly(MAC_LENGTH_BYTES, authenticator);
         this.revealedMacs = requireNonNull(revealedMacs);
     }
 

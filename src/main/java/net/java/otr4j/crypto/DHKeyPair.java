@@ -58,7 +58,6 @@ public final class DHKeyPair implements AutoCloseable {
      */
     private DHKeyPair(@Nonnull final byte[] r) {
         assert !allZeroBytes(r) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
-        // FIXME should we verify the resulting secret key using the same verification conditions as the public key?
         this.secretKey = new BigInteger(1, requireLengthExactly(DH_PRIVATE_KEY_LENGTH_BYTES, r));
         this.publicKey = G3.modPow(this.secretKey, MODULUS);
         assert checkPublicKey(this.publicKey) : "Expected generated public key to be valid.";
@@ -69,6 +68,7 @@ public final class DHKeyPair implements AutoCloseable {
      *
      * @return Returns the modulus used by DHKeyPair.
      */
+    @Nonnull
     static BigInteger modulus() {
         return MODULUS;
     }

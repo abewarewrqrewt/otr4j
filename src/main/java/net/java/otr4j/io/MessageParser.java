@@ -2,6 +2,7 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.messages.EncodedMessageParser;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Fragment;
@@ -70,12 +71,12 @@ public final class MessageParser {
      *
      * @param text the content represented as plain text
      * @return Returns the message instance of the message that the text represented.
-     * @throws ProtocolException                         In case of protocol violations.
-     * @throws OtrCryptoException                        In case of cryptographic violations, such as illegal values.
-     * @throws OtrInputStream.UnsupportedLengthException In case we run into the limitations of the otr4j implementation.
+     * @throws ProtocolException          In case of protocol violations.
+     * @throws OtrCryptoException         In case of cryptographic violations, such as illegal values.
+     * @throws UnsupportedLengthException In case we run into the limitations of the otr4j implementation.
      */
     @Nonnull
-    public static Message parse(@Nonnull final String text) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public static Message parse(@Nonnull final String text) throws ProtocolException, OtrCryptoException, UnsupportedLengthException {
         final int idxHead = text.indexOf(HEAD);
         if (idxHead > -1) {
             // Message **contains** the string "?OTR". Check to see if it is an error message, a query message or a data
@@ -103,7 +104,6 @@ public final class MessageParser {
                     versionString = content.substring(0, content.indexOf('?'));
                 } else {
                     // OTR v1 ONLY query tags will be caught in this else clause and is unsupported.
-                    // FIXME Consider if we even want to return a QueryMessage here. The only accepted versions are unsupported version, hence we can just as well return null.
                     return new QueryMessage("", Collections.<Integer>emptySet());
                 }
                 final Set<Integer> versions = parseVersionString(versionString);

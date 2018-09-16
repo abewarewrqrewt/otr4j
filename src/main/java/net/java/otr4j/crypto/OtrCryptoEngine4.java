@@ -476,12 +476,10 @@ public final class OtrCryptoEngine4 {
         return generateRandomValue(random);
     }
 
-    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])?
+    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (54 bytes was arbitrarily chosen. We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?).
     private static BigInteger generateRandomValue(@Nonnull final SecureRandom random) {
-        // FIXME size of 54 bytes was arbitrarily chosen to work within the bounds of q. (Needs to be replaced with verified solution)
         final byte[] data = new byte[54];
         random.nextBytes(data);
-        // FIXME generate larger value, then mod q?
         final BigInteger value = decodeLittleEndian(data);
         assert ZERO.compareTo(value) <= 0 && primeOrder().compareTo(value) > 0
             : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
