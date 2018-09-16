@@ -18,11 +18,11 @@ import javax.annotation.Nonnull;
 import java.io.StringWriter;
 import java.net.ProtocolException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.sort;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
@@ -94,7 +94,7 @@ public final class SerializationUtils {
                 writer.write(HEAD);
                 writer.write(HEAD_QUERY_V);
                 final ArrayList<Integer> versions = new ArrayList<>(query.getVersions());
-                Collections.sort(versions);
+                sort(versions);
                 writer.write(encodeVersionString(versions));
                 writer.write(HEAD_QUERY_Q);
             }

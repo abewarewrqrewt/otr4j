@@ -188,11 +188,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             this.ratchet.verify(message.getI(), message.getJ(), out.toByteArray(), message.getAuthenticator());
             dmc = this.ratchet.decrypt(message.getI(), message.getJ(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
-            // TODO check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
-            throw new OtrException("Message cannot be processed as key material for next ratchet is still missing.", e);
+            LOGGER.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
+            return null;
         } catch (final VerificationException e) {
-            // FIXME check with spec if there is a way to resolve this limitation. (Or to handle it earlier in the process in order to prevent this exception.)
-            throw new OtrException("Message has failed verification.", e);
+            LOGGER.log(Level.FINE, "Received message fails verification. Rejecting the message.");
+            return null;
         }
         this.ratchet.rotateReceivingChainKey();
         // Process decrypted message contents. Extract and process TLVs.

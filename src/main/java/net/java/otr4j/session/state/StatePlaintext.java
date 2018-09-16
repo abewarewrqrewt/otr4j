@@ -11,7 +11,6 @@ import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.OtrPolicyUtil;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
@@ -34,6 +33,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
+import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 
 /**
  * Message state PLAINTEXT. This is the only message state that is publicly
@@ -142,7 +142,7 @@ public final class StatePlaintext extends AbstractState {
         }
         // Continue with crafting a special whitespace message tag and embedding
         // it into the original message.
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(otrPolicy);
+        final Set<Integer> versions = allowedVersions(otrPolicy);
         if (versions.isEmpty()) {
             // Catch situation where we do not actually offer any versions.
             // At this point, reaching this state is considered a bug.
