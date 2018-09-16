@@ -16,6 +16,7 @@ import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP2;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP3;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
+import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static nl.dannyvanheumen.joldilocks.Points.createPoint;
@@ -367,5 +368,10 @@ public final class SMPMessagesTest {
             }
         }
         assertNotNull(parse(new TLV(SMP4, data)));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testParseTLVSMPAbortMessage() throws OtrCryptoException, ProtocolException {
+        parse(new TLV(SMP_ABORT, new byte[0]));
     }
 }

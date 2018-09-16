@@ -22,6 +22,7 @@ final class SMPMessages {
         // No need to instantiate utility class.
     }
 
+    @Nonnull
     static SMPMessage parse(@Nonnull final TLV tlv) throws ProtocolException, OtrCryptoException {
         final OtrInputStream in = new OtrInputStream(tlv.getValue());
         switch (tlv.getType()) {
@@ -72,7 +73,7 @@ final class SMPMessages {
             return new SMPMessage4(rb, cr, d7);
         }
         case SMP_ABORT:
-            throw new IllegalStateException("SMP_Abort (TLV 6) should not be processed as SMP message, but instead handled outside of the SMP logic.");
+            throw new UnsupportedOperationException("SMP_Abort (TLV 6) should not be processed as SMP message, but instead handled outside of the SMP logic.");
         default:
             throw new IllegalArgumentException("No other TLV type can be processed as SMP message: " + tlv.getType());
         }
