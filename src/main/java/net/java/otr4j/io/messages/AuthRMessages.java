@@ -38,7 +38,6 @@ public final class AuthRMessages {
      *                             public keys or the ring signature.
      * @throws ValidationException In case any part fails validation.
      */
-    // TODO make sure that sender and receiver instance tags are verified prior to arriving here!
     public static void validate(@Nonnull final AuthRMessage message, @Nonnull final ClientProfilePayload ourClientProfilePayload,
             @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
             @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
@@ -49,7 +48,6 @@ public final class AuthRMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Auth-R message should not have any other protocol version than 4.");
         }
-        // FIXME Check that the receiver's instance tag matches your sender's instance tag. (Really needed? I would expect this to happen earlier.)
         verifyECDHPublicKey(message.getX());
         verifyDHPublicKey(message.getA());
         final ClientProfile theirProfile = message.getClientProfile().validate();

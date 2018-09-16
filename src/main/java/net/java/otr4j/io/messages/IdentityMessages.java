@@ -1,8 +1,7 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.api.ClientProfile;
+import net.java.otr4j.crypto.OtrCryptoException;
 
 import javax.annotation.Nonnull;
 
@@ -28,12 +27,8 @@ public final class IdentityMessages {
      */
     // TODO consider wrapping OtrCryptoException in ValidationException.
     public static void validate(@Nonnull final IdentityMessage message) throws OtrCryptoException, ValidationException {
-
         if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {
             throw new IllegalStateException("Identity message should not have any other type than 0x08.");
-        }
-        if (message.protocolVersion != Session.OTRv.FOUR) {
-            throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
         // FIXME verify instance tags now or move it up in the reading/parsing process?
         if (!isValidInstanceTag(message.senderInstanceTag)) {

@@ -1,8 +1,7 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.api.ClientProfile;
+import net.java.otr4j.crypto.OtrCryptoException;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -46,12 +45,8 @@ public final class AuthIMessages {
             @Nonnull final BigInteger a, @Nonnull final BigInteger b, @Nonnull final String senderAccountID,
             @Nonnull final String receiverAccountID)
             throws OtrCryptoException, ValidationException {
-
         if (message.getType() != AuthIMessage.MESSAGE_AUTH_I) {
             throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");
-        }
-        if (message.protocolVersion != Session.OTRv.FOUR) {
-            throw new IllegalStateException("Identity message should not have any other protocol version than 4.");
         }
         final ClientProfile profileBob = profilePayloadBob.validate();
         final ClientProfile ourProfile = ourProfilePayload.validate();

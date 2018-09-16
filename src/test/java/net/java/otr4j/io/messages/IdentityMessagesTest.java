@@ -38,16 +38,6 @@ public final class IdentityMessagesTest {
         validate(message);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testValidateIdentityBadProtocolVersion() throws OtrCryptoException, ValidationException {
-        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(),
-            Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
-        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
-        final IdentityMessage message = new IdentityMessage(3, InstanceTag.SMALLEST_VALUE,
-            InstanceTag.HIGHEST_VALUE, profilePayload, ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
-        validate(message);
-    }
-
     // TODO should instance tag be verified here or earlier in the process?
     @Test(expected = ValidationException.class)
     public void testValidateIdentityBadSenderInstanceTag() throws OtrCryptoException, ValidationException {
