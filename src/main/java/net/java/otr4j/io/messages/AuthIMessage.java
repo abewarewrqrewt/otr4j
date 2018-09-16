@@ -14,8 +14,7 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
  */
 public final class AuthIMessage extends AbstractEncodedMessage {
 
-    // FIXME update message type ID (check message IDs of other message types)
-    static final byte MESSAGE_AUTH_I = (byte) 0x88;
+    static final byte MESSAGE_AUTH_I = (byte) 0x37;
 
     private final Sigma sigma;
 
