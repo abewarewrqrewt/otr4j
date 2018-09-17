@@ -103,7 +103,7 @@ public final class SmpTlvHandler implements SMPHandler {
      * @param tlv TLV
      * @return Returns true iff TLV contains SMP payload.
      */
-    public static boolean smpTlv(@Nonnull final TLV tlv) {
+    public static boolean smpPayload(@Nonnull final TLV tlv) {
         final int type = tlv.getType();
         return type == SMP1 || type == SMP1Q || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
     }

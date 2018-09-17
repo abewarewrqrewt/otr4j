@@ -98,7 +98,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      * @param tlv TLV to inspect
      * @return Returns true iff TLV contains SMP payload.
      */
-    public static boolean smpTlv(@Nonnull final TLV tlv) {
+    public static boolean smpPayload(@Nonnull final TLV tlv) {
         final int type = tlv.getType();
         return type == SMP1 || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
     }

@@ -34,7 +34,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
-import static net.java.otr4j.session.smpv4.SMP.smpTlv;
+import static net.java.otr4j.session.smpv4.SMP.smpPayload;
 
 /**
  * The OTRv4 ENCRYPTED message state.
@@ -199,7 +199,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
-            if (smpTlv(tlv)) {
+            if (smpPayload(tlv)) {
                 final TLV response = this.smp.process(tlv);
                 if (response != null) {
                     // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.

@@ -23,7 +23,7 @@ import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
-import static net.java.otr4j.session.smpv4.SMP.smpTlv;
+import static net.java.otr4j.session.smpv4.SMP.smpPayload;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
@@ -318,18 +318,18 @@ public final class SMPTest {
 
     @Test(expected = NullPointerException.class)
     public void testSmpTlvNull() {
-        smpTlv(null);
+        smpPayload(null);
     }
 
     @Test
     public void testSmpTlvVerifyAllSMPTLVs() {
-        assertFalse("TLV type 0", smpTlv(new TLV(0, new byte[0])));
-        assertFalse("TLV type 1", smpTlv(new TLV(1, new byte[0])));
+        assertFalse("TLV type 0", smpPayload(new TLV(0, new byte[0])));
+        assertFalse("TLV type 1", smpPayload(new TLV(1, new byte[0])));
         for (int i = 2; i < 7; i++) {
-            assertTrue("TLV type " + i, smpTlv(new TLV(i, new byte[0])));
+            assertTrue("TLV type " + i, smpPayload(new TLV(i, new byte[0])));
         }
         for (int i = 7; i < 200; i++) {
-            assertFalse("TLV type " + i, smpTlv(new TLV(i, new byte[0])));
+            assertFalse("TLV type " + i, smpPayload(new TLV(i, new byte[0])));
         }
     }
 }

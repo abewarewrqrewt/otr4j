@@ -48,7 +48,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hmac;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.io.SerializationUtils.Content;
 import static net.java.otr4j.io.SerializationUtils.extractContents;
-import static net.java.otr4j.session.smp.SmpTlvHandler.smpTlv;
+import static net.java.otr4j.session.smp.SmpTlvHandler.smpPayload;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -208,7 +208,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
-            if (smpTlv(tlv)) {
+            if (smpPayload(tlv)) {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
