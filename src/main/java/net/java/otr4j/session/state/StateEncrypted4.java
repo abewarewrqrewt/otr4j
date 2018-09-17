@@ -212,7 +212,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
-                // FIXME shouldn't we send remaining MACs-to-be-revealed here? (Not sure if this is specified in OTRv3 or OTRv4.)
                 context.setState(new StateFinished(this.sessionID));
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
@@ -236,14 +235,10 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         throw new IllegalStateException("Transitioning to lower protocol version ENCRYPTED message state is forbidden.");
     }
 
-    // FIXME Verify in test that indeed MACs are correctly revealed.
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
-        // Determine whether or not we need to add MACs to be revealed. If we are intending to rotate, there is no need
-        // to add the MAC keys here.
-        final byte[] revealedMACs = this.ratchet.isNeedSenderKeyRotation() ? TLV.EMPTY_BODY
-            : this.ratchet.collectRemainingMACsToReveal();
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, revealedMACs);
+        // Note: although we send a TLV 1 (DISCONNECT) here, we should not reveal remaining MACs.
+        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, new byte[0]);
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
         try {
             context.injectMessage(m);
