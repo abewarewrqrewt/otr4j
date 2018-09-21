@@ -19,7 +19,6 @@ import java.io.StringWriter;
 import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.sort;

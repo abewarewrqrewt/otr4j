@@ -239,6 +239,7 @@ public final class OtrOutputStream {
         if (ctr.length <= ZERO_LENGTH) {
             return this;
         }
+        // FIXME the intention of this logic was to write at most 8 bytes of CTR value, because the constructed CTR value in OTRv3 consists of (8-byte-counter, 8-byte-zeroes). Issue is, right now we might write less than 8 bytes.
         int i = 0;
         while (i < TYPE_LEN_CTR && i < ctr.length) {
             this.out.write(ctr[i]);

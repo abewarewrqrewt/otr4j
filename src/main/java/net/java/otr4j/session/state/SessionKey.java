@@ -208,9 +208,8 @@ final class SessionKey implements AutoCloseable {
      */
     @Nonnull
     byte[] acquireSendingCtr() {
-        LOGGER.log(Level.FINEST,
-                "Incrementing counter for (localkeyID, remoteKeyID) = ({0},{1})",
-                new Object[]{this.localKeyID, remoteKeyID});
+        LOGGER.log(Level.FINEST, "Incrementing counter for (localkeyID, remoteKeyID) = ({0},{1})",
+                new Object[] {this.localKeyID, remoteKeyID});
         for (int i = this.sendingCtr.length - 1; i >= 0; i--) {
             sendingCtr[i]++;
             if (this.sendingCtr[i] != 0) {
