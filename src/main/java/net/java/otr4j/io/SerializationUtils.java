@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.sort;
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
@@ -161,8 +162,8 @@ public final class SerializationUtils {
         public final List<TLV> tlvs;
 
         private Content(@Nonnull final String message, @Nonnull final List<TLV> tlvs) {
-            this.message = Objects.requireNonNull(message);
-            this.tlvs = Objects.requireNonNull(tlvs);
+            this.message = requireNonNull(message);
+            this.tlvs = requireNonNull(tlvs);
         }
     }
 }
