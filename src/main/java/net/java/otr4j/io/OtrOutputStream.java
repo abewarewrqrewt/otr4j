@@ -310,7 +310,6 @@ public final class OtrOutputStream {
      * @param mac 64-byte MAC as used in OTRv4
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writeMacOTR4(@Nonnull final byte[] mac) {
         requireLengthExactly(MAC_OTR4_LENGTH_BYTES, mac);
@@ -369,7 +368,6 @@ public final class OtrOutputStream {
      * @param fingerprint the fingerprint of the public key
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME write unit tests.
     @Nonnull
     public OtrOutputStream writeFingerprint(@Nonnull final byte[] fingerprint) {
         requireLengthExactly(FINGERPRINT_LENGTH_BYTES, fingerprint);
@@ -384,7 +382,6 @@ public final class OtrOutputStream {
      * @param ssid 8-byte SSID value
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME write unit tests.
     @Nonnull
     public OtrOutputStream writeSSID(@Nonnull final byte[] ssid) {
         requireLengthExactly(SSID_LENGTH_BYTES, ssid);
