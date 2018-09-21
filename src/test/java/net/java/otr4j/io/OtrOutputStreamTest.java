@@ -173,6 +173,11 @@ public class OtrOutputStreamTest {
         assertArrayEquals(mac, new OtrOutputStream().writeMac(mac).toByteArray());
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testWriteMacNull() {
+        new OtrOutputStream().writeMac(null);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testWriteMacTooSmall() {
         final byte[] mac = random(RANDOM, new byte[19]);
@@ -189,6 +194,11 @@ public class OtrOutputStreamTest {
     public void testWriteMacOTR4() {
         final byte[] mac = random(RANDOM, new byte[64]);
         assertArrayEquals(mac, new OtrOutputStream().writeMacOTR4(mac).toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteMacOTR4Null() {
+        new OtrOutputStream().writeMacOTR4(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -209,6 +219,11 @@ public class OtrOutputStreamTest {
         assertArrayEquals(ssid, new OtrOutputStream().writeSSID(ssid).toByteArray());
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testWriteSSIDOTR4Null() {
+        new OtrOutputStream().writeSSID(null);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testWriteSSIDOTR4TooSmall() {
         final byte[] ssid = random(RANDOM, new byte[7]);
@@ -225,6 +240,11 @@ public class OtrOutputStreamTest {
     public void testWriteFingerprint() {
         final byte[] fingerprint = random(RANDOM, new byte[56]);
         assertArrayEquals(fingerprint, new OtrOutputStream().writeFingerprint(fingerprint).toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteFingerprintNull() {
+        new OtrOutputStream().writeFingerprint(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
