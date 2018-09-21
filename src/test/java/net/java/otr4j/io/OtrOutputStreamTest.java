@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.copyOfRange;
+import static java.util.Arrays.fill;
 import static java.util.Collections.singleton;
 import static net.java.otr4j.util.SecureRandoms.random;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -257,5 +259,30 @@ public class OtrOutputStreamTest {
     public void testWriteFingerprintTooLarge() {
         final byte[] fingerprint = random(RANDOM, new byte[55]);
         new OtrOutputStream().writeFingerprint(fingerprint);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteCtrNull() {
+        new OtrOutputStream().writeCtr(null);
+    }
+
+    @Test
+    public void testWriteCtr() {
+        final byte[] ctr = random(RANDOM, new byte[8]);
+        assertArrayEquals(ctr, new OtrOutputStream().writeCtr(ctr).toByteArray());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWriteCtrTooSmall() {
+        final byte[] ctr = random(RANDOM, new byte[7]);
+        new OtrOutputStream().writeCtr(ctr);
+    }
+
+    @Test
+    public void testWriteCtrAsInOTRv3() {
+        final byte[] ctr = random(RANDOM, new byte[16]);
+        fill(ctr, 8, 16, (byte) 0);
+        final byte[] expected = copyOfRange(ctr, 0, 8);
+        assertArrayEquals(expected, new OtrOutputStream().writeCtr(ctr).toByteArray());
     }
 }

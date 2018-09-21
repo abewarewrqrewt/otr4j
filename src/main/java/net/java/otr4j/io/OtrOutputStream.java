@@ -35,6 +35,7 @@ import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
+import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
@@ -43,8 +44,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * Output stream for OTR encoding.
  */
 public final class OtrOutputStream {
-
-    private static final int ZERO_LENGTH = 0;
 
     private final ByteArrayOutputStream out;
 
@@ -230,21 +229,19 @@ public final class OtrOutputStream {
 
     /**
      * Write OTRv3 counter value to the output stream.
+     * <p>
+     * The input requires a byte-array of at least 8 characters. As OTR internally manages a larger counter-value that
+     * includes a number of zero-bytes at the end, we expect at least 8 bytes and will only write the first 8 bytes to
+     * the output stream.
      *
-     * @param ctr the counter value
+     * @param ctr the counter value (only its first 8 bytes are relevant)
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
     @Nonnull
     public OtrOutputStream writeCtr(@Nonnull final byte[] ctr) {
-        if (ctr.length <= ZERO_LENGTH) {
-            return this;
-        }
-        // FIXME the intention of this logic was to write at most 8 bytes of CTR value, because the constructed CTR value in OTRv3 consists of (8-byte-counter, 8-byte-zeroes). Issue is, right now we might write less than 8 bytes.
-        int i = 0;
-        while (i < TYPE_LEN_CTR && i < ctr.length) {
-            this.out.write(ctr[i]);
-            i++;
-        }
+        requireLengthAtLeast(TYPE_LEN_CTR, ctr);
+        assert !allZeroBytes(ctr) : "Expected non-zero bytes in ctr value.";
+        this.out.write(ctr, 0, TYPE_LEN_CTR);
         return this;
     }
 
