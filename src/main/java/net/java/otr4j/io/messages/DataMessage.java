@@ -12,8 +12,8 @@ import net.java.otr4j.io.OtrOutputStream;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.util.Arrays;
-import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
@@ -98,11 +98,11 @@ public final class DataMessage extends AbstractEncodedMessage {
         this.flags = flags;
         this.senderKeyID = senderKeyID;
         this.recipientKeyID = recipientKeyID;
-        this.nextDH = Objects.requireNonNull(nextDH);
-        this.ctr = Objects.requireNonNull(ctr);
-        this.encryptedMessage = Objects.requireNonNull(encryptedMessage);
-        this.mac = Objects.requireNonNull(mac);
-        this.oldMACKeys = Objects.requireNonNull(oldMacKeys);
+        this.nextDH = requireNonNull(nextDH);
+        this.ctr = requireNonNull(ctr);
+        this.encryptedMessage = requireNonNull(encryptedMessage);
+        this.mac = requireNonNull(mac);
+        this.oldMACKeys = requireNonNull(oldMacKeys);
     }
 
     /**
