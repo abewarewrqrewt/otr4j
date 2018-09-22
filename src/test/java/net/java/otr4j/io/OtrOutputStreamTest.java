@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static java.math.BigInteger.ONE;
+import static java.math.BigInteger.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
 import static java.util.Arrays.fill;
@@ -330,5 +332,30 @@ public class OtrOutputStreamTest {
     public void testWriteEdDSASignature() {
         final byte[] signature = random(RANDOM, new byte[114]);
         assertArrayEquals(signature, new OtrOutputStream().writeEdDSASignature(signature).toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteScalarNull() {
+        new OtrOutputStream().writeScalar(null);
+    }
+
+    @Test
+    public void testWriteScalar() {
+        final byte[] expected = new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        assertArrayEquals(expected, new OtrOutputStream().writeScalar(ONE).toByteArray());
+    }
+
+    @Test
+    public void testWriteScalar2() {
+        final byte[] expected = new byte[] {(byte) 0x8f, 0, (byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        assertArrayEquals(expected, new OtrOutputStream().writeScalar(valueOf(16711823L)).toByteArray());
+    }
+
+    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    public void testWriteScalarTooBig() {
+        final byte[] valueBytes = random(RANDOM, new byte[57]);
+        valueBytes[56] |= 0b00000001;
+        final BigInteger value = new BigInteger(1, valueBytes);
+        assertArrayEquals(valueBytes, new OtrOutputStream().writeScalar(value).toByteArray());
     }
 }
