@@ -4,12 +4,12 @@
 
 ## Progress
 
-__Status__: _In active development. Current work should be considered __at most__ _prototype-quality and guaranteed insecure._
+__Status__: _In active development. Current work should be considered __at most__ _prototype-quality and guaranteed insecure._ The development follows the _master_ branch of [OTRv4], but may lag behind in areas that currently lack development focus.
 
 Development stages:
 
 * ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
-* Socialist Millionaire's Protocol for OTRv4.
+* ✔ Socialist Millionaire's Protocol for OTRv4.
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
 * Full implementation for Interactive use-case
@@ -92,15 +92,15 @@ Development stages:
 
 * ☑ Encapsulate cryptographic material such that design facilitates appropriate use and maintenance.
 * ☑ States, such as Message states, isolated as to prevent mistakes in mixing up variables and state management for different states.
-* ☐ Strategically placed assertions to discover mistakes such as uninitialized/cleared byte-arrays.
+* ☑ Strategically placed assertions to discover mistakes such as uninitialized/cleared byte-arrays.
 * Tool support:
   * ☑ JSR-305 annotations for static analysis
   * ☑ Introduce compiler warnings failure at build-time
   * ☑ Introduce pmd analysis at build-time.
-  * ☐ Introduce SpotBugs analysis at build-time
+  * ☑ Introduce SpotBugs analysis at build-time
   * ☑ Introduce checkstyle at build-time to guard formatting/style
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
-* ...
+* ☐ Significant amount of unit tests to accompany the library. (Currently: 1000+)
 
 ## Architectural considerations
 
