@@ -321,7 +321,6 @@ public final class OtrOutputStream {
      * @param p The Edwards point.
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writePoint(@Nonnull final Point p) {
         final byte[] data = p.encode();

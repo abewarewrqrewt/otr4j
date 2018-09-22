@@ -1,6 +1,8 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.TLV;
+import nl.dannyvanheumen.joldilocks.Point;
+import nl.dannyvanheumen.joldilocks.Points;
 import org.bouncycastle.util.BigIntegers;
 import org.junit.Test;
 
@@ -19,6 +21,7 @@ import static java.util.Arrays.copyOfRange;
 import static java.util.Arrays.fill;
 import static java.util.Collections.singleton;
 import static net.java.otr4j.util.SecureRandoms.random;
+import static nl.dannyvanheumen.joldilocks.Points.decode;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -357,5 +360,28 @@ public class OtrOutputStreamTest {
         valueBytes[56] |= 0b00000001;
         final BigInteger value = new BigInteger(1, valueBytes);
         assertArrayEquals(valueBytes, new OtrOutputStream().writeScalar(value).toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWritePointNull() {
+        new OtrOutputStream().writePoint(null);
+    }
+
+    @Test
+    public void testWritePointWithPositiveX() throws Points.InvalidDataException {
+        final byte[] expected = new byte[]{(byte) 0xa8, 0x1b, 0x2e, (byte) 0x8a, 0x70, (byte) 0xa5, (byte) 0xac, (byte) 0x94, (byte) 0xff, (byte) 0xdb, (byte) 0xcc, (byte) 0x9b, (byte) 0xad, (byte) 0xfc, 0x3f, (byte) 0xeb, 0x08, 0x01, (byte) 0xf2, 0x58, 0x57, (byte) 0x8b, (byte) 0xb1, 0x14, (byte) 0xad, 0x44, (byte) 0xec, (byte) 0xe1, (byte) 0xec, 0x0e, 0x79, (byte) 0x9d, (byte) 0xa0, (byte) 0x8e, (byte) 0xff, (byte) 0xb8, 0x1c, 0x5d, 0x68, 0x5c, 0x0c, 0x56, (byte) 0xf6, 0x4e, (byte) 0xec, (byte) 0xae, (byte) 0xf8, (byte) 0xcd, (byte) 0xf1, 0x1c, (byte) 0xc3, (byte) 0x87, 0x37, (byte) 0x83, (byte) 0x8c, (byte) 0xf4, 0x00};
+        // Sanity-check of encoding logic as there was previously a problem with it.
+        assertArrayEquals(expected, decode(expected).encode());
+        final Point p = decode(expected);
+        assertArrayEquals(expected, new OtrOutputStream().writePoint(p).toByteArray());
+    }
+
+    @Test
+    public void testWritePointWithNegativeX() throws Points.InvalidDataException {
+        final byte[] expected = new byte[]{(byte) 0xb3, (byte) 0xda, 0x07, (byte) 0x9b, 0x0a, (byte) 0xa4, (byte) 0x93, (byte) 0xa5, 0x77, 0x20, 0x29, (byte) 0xf0, 0x46, 0x7b, (byte) 0xae, (byte) 0xbe, (byte) 0xe5, (byte) 0xa8, 0x11, 0x2d, (byte) 0x9d, 0x3a, 0x22, 0x53, 0x23, 0x61, (byte) 0xda, 0x29, 0x4f, 0x7b, (byte) 0xb3, (byte) 0x81, 0x5c, 0x5d, (byte) 0xc5, (byte) 0x9e, 0x17, 0x6b, 0x4d, (byte) 0x9f, 0x38, 0x1c, (byte) 0xa0, (byte) 0x93, (byte) 0x8e, 0x13, (byte) 0xc6, (byte) 0xc0, 0x7b, 0x17, 0x4b, (byte) 0xe6, 0x5d, (byte) 0xfa, 0x57, (byte) 0x8e, (byte) 0x80};
+        // Sanity-check of encoding logic as there was previously a problem with it.
+        assertArrayEquals(expected, decode(expected).encode());
+        final Point p = decode(expected);
+        assertArrayEquals(expected, new OtrOutputStream().writePoint(p).toByteArray());
     }
 }
