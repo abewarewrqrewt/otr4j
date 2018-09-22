@@ -293,7 +293,6 @@ public final class OtrOutputStream {
      * @param nonce The nonce.
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writeNonce(@Nonnull final byte[] nonce) {
         requireLengthExactly(NONCE_LENGTH_BYTES, nonce);
@@ -351,7 +350,6 @@ public final class OtrOutputStream {
      * @param signature A signature consisting of exactly 114 bytes is expected.
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME add unit tests.
     @Nonnull
     public OtrOutputStream writeEdDSASignature(@Nonnull final byte[] signature) {
         requireLengthExactly(EDDSA_SIGNATURE_LENGTH_BYTES, signature);

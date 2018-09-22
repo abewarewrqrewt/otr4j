@@ -285,4 +285,50 @@ public class OtrOutputStreamTest {
         final byte[] expected = copyOfRange(ctr, 0, 8);
         assertArrayEquals(expected, new OtrOutputStream().writeCtr(ctr).toByteArray());
     }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteNonceNull() {
+        new OtrOutputStream().writeNonce(null);
+    }
+
+    @Test
+    public void testWriteNonce() {
+        final byte[] nonce = random(RANDOM, new byte[24]);
+        assertArrayEquals(nonce, new OtrOutputStream().writeNonce(nonce).toByteArray());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWriteNonceTooSmall() {
+        final byte[] nonce = random(RANDOM, new byte[23]);
+        new OtrOutputStream().writeNonce(nonce);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWriteNonceTooLarge() {
+        final byte[] nonce = random(RANDOM, new byte[25]);
+        new OtrOutputStream().writeNonce(nonce);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteEdDSASignatureNull() {
+        new OtrOutputStream().writeEdDSASignature(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWriteEdDSASignatureTooSmall() {
+        final byte[] signature = random(RANDOM, new byte[113]);
+        new OtrOutputStream().writeEdDSASignature(signature);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWriteEdDSASignatureTooLarge() {
+        final byte[] signature = random(RANDOM, new byte[115]);
+        new OtrOutputStream().writeEdDSASignature(signature);
+    }
+
+    @Test
+    public void testWriteEdDSASignature() {
+        final byte[] signature = random(RANDOM, new byte[114]);
+        assertArrayEquals(signature, new OtrOutputStream().writeEdDSASignature(signature).toByteArray());
+    }
 }
