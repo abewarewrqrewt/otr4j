@@ -88,14 +88,14 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nonnull
     @Override
     public PublicKey getRemotePublicKey() {
-        // FIXME to be implemented.
+        // TODO to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 
     @Nonnull
     @Override
     public byte[] getExtraSymmetricKey() {
-        // FIXME Requires specific way-of-working to keep track of context information such as TLV payload and counter of extra symmetric key exposures. See https://github.com/otrv4/otrv4/blob/master/otrv4.md#extra-symmetric-key)
+        // TODO Requires specific way-of-working to keep track of context information such as TLV payload and counter of extra symmetric key exposures. See https://github.com/otrv4/otrv4/blob/master/otrv4.md#extra-symmetric-key)
         throw new UnsupportedOperationException("To be implemented.");
     }
 

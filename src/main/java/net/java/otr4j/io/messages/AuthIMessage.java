@@ -1,6 +1,6 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -28,7 +28,7 @@ public final class AuthIMessage extends AbstractEncodedMessage {
      */
     public AuthIMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
             @Nonnull final Sigma sigma) {
-        super(requireAtLeast(Session.OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
+        super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
         this.sigma = requireNonNull(sigma);
     }
 

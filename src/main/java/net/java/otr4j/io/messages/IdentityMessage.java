@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -36,7 +37,7 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     // FIXME need to do additional validation for values being injected in constructor?
     public IdentityMessage(final int protocolVersion, final int senderInstance, final int receiverInstance,
             @Nonnull final ClientProfilePayload clientProfile, @Nonnull final Point y, @Nonnull final BigInteger b) {
-        super(requireAtLeast(4, protocolVersion), senderInstance, receiverInstance);
+        super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.y = requireNonNull(y);
         this.b = requireNonNull(b);

@@ -412,7 +412,7 @@ public final class OtrCryptoEngine4 {
         final Point T1;
         final Point T2;
         final Point T3;
-        // FIXME replace with constant-time selection
+        // TODO replace with constant-time selection
         if (eq1) {
             // "Compute T1 = G * t1."
             T1 = multiplyByBase(ti);
@@ -452,7 +452,7 @@ public final class OtrCryptoEngine4 {
         final BigInteger ci = c.subtract(cj).subtract(ck).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
         final BigInteger ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
-        // FIXME replace with constant-time selection
+        // TODO replace with constant-time selection
         if (eq1) {
             // "Send sigma = (c1, r1, c2, r2, c3, r3)."
             return new Sigma(ci, ri, cj, rj, ck, rk);

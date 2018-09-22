@@ -85,4 +85,9 @@ public class EncodedMessageParserTest {
             }
         }
     }
+
+    @Test(expected = ProtocolException.class)
+    public void testUnsupportedVersion() throws UnsupportedLengthException, ProtocolException, OtrCryptoException {
+        parse(new OtrInputStream(new byte[] {0, 1}));
+    }
 }

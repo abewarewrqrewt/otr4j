@@ -37,8 +37,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for OtrInputStream.
  *
- * Some of these tests are set up to test the limitations of (signed) ints in
- * otr4j implementation.
+ * Some of these tests are set up to test the limitations of (signed) ints in otr4j implementation.
  *
  * @author Danny van Heumen
  */

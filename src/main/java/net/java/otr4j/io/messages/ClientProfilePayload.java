@@ -298,7 +298,6 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.write(dsaPublicKeyFields.get(0));
         }
         final byte[] partialM = out.toByteArray();
-        // FIXME verify that we only add the DSA long-term public key after successful verification of the transitional signature.
         final byte[] m;
         if (transitionalSignatureFields.size() > 1) {
             throw new ValidationException("Expected at most one transitional signature, got: " + transitionalSignatureFields.size());
@@ -322,6 +321,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         } catch (final OtrCryptoException e) {
             throw new ValidationException("Verification of EdDSA signature failed.", e);
         }
+        // FIXME verify that we only add the DSA long-term public key after successful verification of the transitional signature.
     }
 
     /**
@@ -363,8 +363,7 @@ public final class ClientProfilePayload implements OtrEncodable {
          *
          * This signature is defined as a signature over fields 0x0001, 0x0002, 0x0003, 0x0004, 0x0005 and 0x006 only.
          */
-        // TODO verify that Transitional Signature type remains ID 0x0008. (i.e. 0x0007 is missing)
-        TRANSITIONAL_SIGNATURE(0x0008);
+        TRANSITIONAL_SIGNATURE(0x0007);
 
         private final int type;
 

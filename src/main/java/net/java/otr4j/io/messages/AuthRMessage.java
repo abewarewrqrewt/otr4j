@@ -1,6 +1,6 @@
 package net.java.otr4j.io.messages;
 
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -41,7 +41,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     public AuthRMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
             @Nonnull final ClientProfilePayload clientProfile, @Nonnull final Point x, @Nonnull final BigInteger a,
             @Nonnull final OtrCryptoEngine4.Sigma sigma) {
-        super(requireAtLeast(Session.OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
+        super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
