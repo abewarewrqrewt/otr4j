@@ -1,6 +1,7 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoEngine;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 import org.bouncycastle.util.BigIntegers;
@@ -9,7 +10,9 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.security.SecureRandom;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +27,7 @@ import static net.java.otr4j.util.SecureRandoms.random;
 import static nl.dannyvanheumen.joldilocks.Points.decode;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("ConstantConditions")
 public class OtrOutputStreamTest {
@@ -379,5 +383,33 @@ public class OtrOutputStreamTest {
         final byte[] expected = new byte[] {(byte) 0xb3, (byte) 0xda, 0x07, (byte) 0x9b, 0x0a, (byte) 0xa4, (byte) 0x93, (byte) 0xa5, 0x77, 0x20, 0x29, (byte) 0xf0, 0x46, 0x7b, (byte) 0xae, (byte) 0xbe, (byte) 0xe5, (byte) 0xa8, 0x11, 0x2d, (byte) 0x9d, 0x3a, 0x22, 0x53, 0x23, 0x61, (byte) 0xda, 0x29, 0x4f, 0x7b, (byte) 0xb3, (byte) 0x81, 0x5c, 0x5d, (byte) 0xc5, (byte) 0x9e, 0x17, 0x6b, 0x4d, (byte) 0x9f, 0x38, 0x1c, (byte) 0xa0, (byte) 0x93, (byte) 0x8e, 0x13, (byte) 0xc6, (byte) 0xc0, 0x7b, 0x17, 0x4b, (byte) 0xe6, 0x5d, (byte) 0xfa, 0x57, (byte) 0x8e, (byte) 0x80};
         final Point p = decode(expected);
         assertArrayEquals(expected, new OtrOutputStream().writePoint(p).toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteDSASignatureNull() {
+        new OtrOutputStream().writeDSASignature(null);
+    }
+
+    @Test
+    public void testWriteDSASignature() {
+        final byte[] signature = random(RANDOM, new byte[20]);
+        assertArrayEquals(signature, new OtrOutputStream().writeDSASignature(signature).toByteArray());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteDSAPublicKeyNull() {
+        new OtrOutputStream().writePublicKey(null);
+    }
+
+    @Test
+    public void testWriteDSAPublicKey() throws ProtocolException {
+        final DSAPublicKey publicKey = (DSAPublicKey) OtrCryptoEngine.generateDSAKeyPair().getPublic();
+        final byte[] result = new OtrOutputStream().writePublicKey(publicKey).toByteArray();
+        final OtrInputStream in = new OtrInputStream(result);
+        assertEquals(0, in.readShort());
+        assertEquals(publicKey.getParams().getP(), in.readBigInt());
+        assertEquals(publicKey.getParams().getQ(), in.readBigInt());
+        assertEquals(publicKey.getParams().getG(), in.readBigInt());
+        assertEquals(publicKey.getY(), in.readBigInt());
     }
 }
