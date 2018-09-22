@@ -4,10 +4,10 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
-import org.bouncycastle.util.BigIntegers;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.net.ProtocolException;
@@ -26,6 +26,7 @@ import static java.util.Collections.singleton;
 import static net.java.otr4j.util.SecureRandoms.random;
 import static nl.dannyvanheumen.joldilocks.Points.decode;
 import static org.bouncycastle.util.Arrays.concatenate;
+import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -67,7 +68,7 @@ public class OtrOutputStreamTest {
     @Test
     public void testProduceBigIntResult() {
         final BigInteger value = new BigInteger("9876543211234567890");
-        final byte[] expected = concatenate(new byte[] { 0, 0, 0, 8}, BigIntegers.asUnsignedByteArray(value));
+        final byte[] expected = concatenate(new byte[] { 0, 0, 0, 8}, asUnsignedByteArray(value));
         assertArrayEquals(expected, new OtrOutputStream().writeBigInt(value).toByteArray());
     }
 
@@ -411,5 +412,18 @@ public class OtrOutputStreamTest {
         assertEquals(publicKey.getParams().getQ(), in.readBigInt());
         assertEquals(publicKey.getParams().getG(), in.readBigInt());
         assertEquals(publicKey.getY(), in.readBigInt());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteDHPublicKeyNull() {
+        new OtrOutputStream().writeDHPublicKey(null);
+    }
+
+    @Test
+    public void testWriteDHPublicKey() throws OtrInputStream.UnsupportedLengthException, ProtocolException {
+        final DHPublicKey publicKey = (DHPublicKey) OtrCryptoEngine.generateDHKeyPair(RANDOM).getPublic();
+        final byte[] result = new OtrOutputStream().writeDHPublicKey(publicKey).toByteArray();
+        final byte[] publicKeyBytes = asUnsignedByteArray(publicKey.getY());
+        assertArrayEquals(publicKeyBytes, new OtrInputStream(result).readData());
     }
 }
