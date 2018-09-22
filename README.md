@@ -57,7 +57,7 @@ Development stages:
   * ☑ Re-assembling fragmented messages
 * Socialist Millionaire's Protocol:
   * ☑ OTRv2/OTRv3
-  * ☐ OTRv4
+  * ☑ OTRv4
 * Client and PreKey Profiles:
   * ☑ Client Profile support
   * ☐ PreKey profile support
@@ -79,9 +79,9 @@ Development stages:
   * ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
 * In-memory representation of data:
   * ☐ Points kept as byte-arrays.  
-    _Need to consider the trade-offs. Investigate if/how BouncyCastle does this._
-  * ☐ Scalar values kept as byte-arrays.
-    _Need to consider the trade-offs. Investigate if/how BouncyCastle does this._
+    _Consider the trade-offs. Investigate if/how BouncyCastle does this._
+  * ☐ Scalar values kept as byte-arrays.  
+    _Consider the trade-offs. Investigate if/how BouncyCastle does this._
 * Robustness
   * ☑ otr4j does not handle Error-type exceptions.  
   _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
@@ -128,8 +128,8 @@ For a quick introduction on how to use the library have a look at the
 
 * _otr4j supports message lengths up to 2^31._  
 Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed integer types, this implementation currently uses a signed integer. Therefore, the highest bit of the message length is interpreted as sign bit. Lengths over 2^31 are unsupported.
-* _Message are not queued up._
-messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
+* _Message are not queued up._  
+Messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
 # Contributing / Help needed
 
