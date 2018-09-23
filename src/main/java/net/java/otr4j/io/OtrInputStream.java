@@ -115,7 +115,6 @@ public final class OtrInputStream {
      * @return Returns the instance tag.
      * @throws ProtocolException In case of failure to read instance tag value from input stream.
      */
-    // FIXME write unit tests for reading instance tag
     @Nonnull
     public InstanceTag readInstanceTag() throws ProtocolException {
         final int value = readInt();

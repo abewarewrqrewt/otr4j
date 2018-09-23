@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
@@ -27,6 +28,8 @@ import java.security.Security;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
+import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -322,5 +325,30 @@ public class OtrInputStreamTest {
         System.arraycopy(sig, 0, data, 1, sig.length);
         final byte[] result = new OtrInputStream(data).readEdDSASignature();
         assertFalse(Arrays.equals(sig, result));
+    }
+
+    @Test
+    public void testReadInstanceTag() throws ProtocolException {
+        final InstanceTag tag = new OtrInputStream(new byte[] {0, 0, 0, 0}).readInstanceTag();
+        assertNotNull(tag);
+        assertEquals(0, tag.getValue());
+    }
+
+    @Test
+    public void testReadInstanceTagSmallest() throws ProtocolException {
+        final InstanceTag tag = new OtrInputStream(new byte[] {0, 0, 1, 0}).readInstanceTag();
+        assertEquals(SMALLEST_TAG, tag);
+    }
+
+    @Test
+    public void testReadInstanceTagLargest() throws ProtocolException {
+        final InstanceTag tag = new OtrInputStream(new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff})
+                .readInstanceTag();
+        assertEquals(HIGHEST_TAG, tag);
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testReadInstanceTagIllegal() throws ProtocolException {
+        new OtrInputStream(new byte[] {0, 0, 0, 1}).readInstanceTag();
     }
 }
