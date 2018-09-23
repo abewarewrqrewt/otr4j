@@ -287,9 +287,8 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         final DHPublicKey nextDH = (DHPublicKey) mostRecentKeys.getLocalKeyPair().getPublic();
 
         // Calculate T.
-        final MysteriousT t = new MysteriousT(this.protocolVersion, context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue(), (byte) 0, senderKeyID, recipientKeyID, nextDH, ctr,
-                encryptedMsg);
+        final MysteriousT t = new MysteriousT(this.protocolVersion, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), (byte) 0, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMsg);
 
         // Calculate T hash.
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
@@ -299,8 +298,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
         // Get old MAC keys to be revealed.
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();
-        return new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue());
+        return new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag(), context.getReceiverInstanceTag());
     }
 
     @Override

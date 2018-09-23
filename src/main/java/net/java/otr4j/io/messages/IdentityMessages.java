@@ -5,7 +5,6 @@ import net.java.otr4j.crypto.OtrCryptoException;
 
 import javax.annotation.Nonnull;
 
-import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
 import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
 
@@ -30,16 +29,9 @@ public final class IdentityMessages {
         if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {
             throw new IllegalStateException("Identity message should not have any other type than 0x08.");
         }
-        // FIXME verify instance tags now or move it up in the reading/parsing process?
-        if (!isValidInstanceTag(message.senderInstanceTag)) {
-            throw new ValidationException("Illegal sender instance tag.");
-        }
-        if (!isValidInstanceTag(message.receiverInstanceTag)) {
-            throw new ValidationException("Illegal receiver instance tag.");
-        }
         // TODO consider moving this out to first use case, instead of prematurely validating here.
         final ClientProfile profile = message.getClientProfile().validate();
-        if (message.senderInstanceTag != profile.getInstanceTag().getValue()) {
+        if (!message.senderInstanceTag.equals(profile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         verifyECDHPublicKey(message.getY());

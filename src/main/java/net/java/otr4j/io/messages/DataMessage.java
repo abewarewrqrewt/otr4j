@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
@@ -69,7 +70,7 @@ public final class DataMessage extends AbstractEncodedMessage {
      * @param receiverInstanceTag the receiver instance tag
      */
     public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,
-            final int senderInstanceTag, final int receiverInstanceTag) {
+            @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag) {
         this(t.protocolVersion, t.flags, t.senderKeyID, t.recipientKeyID, t.nextDH, t.ctr, t.encryptedMessage, mac,
             oldMacKeys, senderInstanceTag, receiverInstanceTag);
     }
@@ -93,7 +94,7 @@ public final class DataMessage extends AbstractEncodedMessage {
             final int recipientKeyID, @Nonnull final DHPublicKey nextDH,
             @Nonnull final byte[] ctr, @Nonnull final byte[] encryptedMessage,
             @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,
-            final int senderInstanceTag, final int receiverInstanceTag) {
+            @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag) {
         super(protocolVersion, senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
         this.senderKeyID = senderKeyID;

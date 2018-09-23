@@ -82,7 +82,7 @@ abstract class AbstractAuthState implements AuthState {
         final byte[] publicKeyHash = sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
-                context.getSenderInstanceTag().getValue(), receiverTag.getValue());
+                context.getSenderInstanceTag(), receiverTag);
         LOGGER.finest("Sending DH commit message.");
         context.setState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
@@ -94,11 +94,9 @@ abstract class AbstractAuthState implements AuthState {
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
-        final int senderTagValue = context.getSenderInstanceTag().getValue();
-        final int receiverTagValue = receiverTag.getValue();
         final ClientProfilePayload profilePayload = context.getClientProfile();
-        final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, senderTagValue, receiverTagValue,
-                profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
+        final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
+                receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
         context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, message));
         return message;
     }

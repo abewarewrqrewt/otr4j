@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
@@ -30,14 +31,15 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
     /**
      * Sender instance tag.
      */
-    public final int senderInstanceTag;
+    public final InstanceTag senderInstanceTag;
 
     /**
      * Receiver instance tag.
      */
-    public final int receiverInstanceTag;
+    public final InstanceTag receiverInstanceTag;
 
-    AbstractEncodedMessage(final int protocolVersion, final int senderInstanceTag, final int recipientInstanceTag) {
+    AbstractEncodedMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstanceTag,
+            @Nonnull final InstanceTag recipientInstanceTag) {
         this.protocolVersion = protocolVersion;
         this.senderInstanceTag = senderInstanceTag;
         this.receiverInstanceTag = recipientInstanceTag;
@@ -47,8 +49,8 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
     public int hashCode() {
         int hash = 7;
         hash = 97 * hash + this.protocolVersion;
-        hash = 97 * hash + this.senderInstanceTag;
-        hash = 97 * hash + this.receiverInstanceTag;
+        hash = 97 * hash + this.senderInstanceTag.hashCode();
+        hash = 97 * hash + this.receiverInstanceTag.hashCode();
         return hash;
     }
 
@@ -67,10 +69,10 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         if (this.protocolVersion != other.protocolVersion) {
             return false;
         }
-        if (this.senderInstanceTag != other.senderInstanceTag) {
+        if (!this.senderInstanceTag.equals(other.senderInstanceTag)) {
             return false;
         }
-        return this.receiverInstanceTag == other.receiverInstanceTag;
+        return this.receiverInstanceTag.equals(other.receiverInstanceTag);
     }
 
     @OverridingMethodsMustInvokeSuper
@@ -85,8 +87,8 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
             break;
         case OTRv.THREE:
         case OTRv.FOUR:
-            writer.writeInt(this.senderInstanceTag);
-            writer.writeInt(this.receiverInstanceTag);
+            writer.writeInstanceTag(this.senderInstanceTag);
+            writer.writeInstanceTag(this.receiverInstanceTag);
             break;
         default:
             throw new UnsupportedOperationException("Unsupported protocol version.");

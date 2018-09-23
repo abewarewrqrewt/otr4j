@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
+import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -78,7 +79,7 @@ public class IOTest {
 	@Test
 	public void testIODHKeyMessage() throws Exception {
 		KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
-		DHKeyMessage source = new DHKeyMessage(OTRv.THREE, (DHPublicKey) pair.getPublic(), 0, 0);
+		DHKeyMessage source = new DHKeyMessage(OTRv.THREE, (DHPublicKey) pair.getPublic(), ZERO_TAG, ZERO_TAG);
 		String base64 = SerializationUtils.toString(source);
 		DHKeyMessage result = (DHKeyMessage) MessageParser.parse(base64);
         assertEquals(source, result);
@@ -93,7 +94,7 @@ public class IOTest {
 			xEncryptedMAC[i] = (byte) i;
 		byte[] revealedKey = new byte[] { 1, 2, 3, 4 };
 		RevealSignatureMessage source = new RevealSignatureMessage(
-				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, 0, 0);
+				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, ZERO_TAG, ZERO_TAG);
 		String base64 = SerializationUtils.toString(source);
 		RevealSignatureMessage result = (RevealSignatureMessage) MessageParser.parse(base64);
         assertEquals(source, result);

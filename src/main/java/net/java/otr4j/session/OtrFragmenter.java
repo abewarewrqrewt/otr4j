@@ -117,7 +117,7 @@ final class OtrFragmenter {
      * @throws ProtocolException if fragment size is too small.
      */
     private int computeFragmentNumber(final int version, @Nonnull final String message, final int fragmentSize)
-        throws ProtocolException {
+            throws ProtocolException {
         final int overhead = computeHeaderSize(version);
         final int payloadSize = fragmentSize - overhead;
         if (payloadSize <= 0) {
@@ -147,7 +147,7 @@ final class OtrFragmenter {
      */
     @Nonnull
     String[] fragment(final int version, final int sender, final int receiver, @Nonnull final String message)
-        throws ProtocolException {
+            throws ProtocolException {
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
         return fragment(version, sender, receiver, message, fragmentSize);
     }

@@ -6,8 +6,10 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 
+import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 
+@SuppressWarnings("ConstantConditions")
 public final class IdentityMessageTest {
 
     private static final ClientProfileTestUtils profileTestUtils = new ClientProfileTestUtils();
@@ -17,28 +19,28 @@ public final class IdentityMessageTest {
         final ClientProfilePayload clientProfile = profileTestUtils.createTransitionalUserProfile();
         final Point y = basePoint();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(4, 0, 0, clientProfile, y, b);
+        new IdentityMessage(4, ZERO_TAG, ZERO_TAG, clientProfile, y, b);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullUserProfile() {
         final Point y = basePoint();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(4, 0, 0, null, y, b);
+        new IdentityMessage(4, ZERO_TAG, ZERO_TAG, null, y, b);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructIdentityMessageNullY() {
         final ClientProfilePayload clientProfile = profileTestUtils.createUserProfile();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(4, 0, 0, clientProfile, null, b);
+        new IdentityMessage(4, ZERO_TAG, ZERO_TAG, clientProfile, null, b);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructIdentityMessageNullB() {
         final ClientProfilePayload clientProfile = profileTestUtils.createUserProfile();
         final Point y = basePoint();
-        new IdentityMessage(4, 0, 0, clientProfile, y, null);
+        new IdentityMessage(4, ZERO_TAG, ZERO_TAG, clientProfile, y, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -46,6 +48,6 @@ public final class IdentityMessageTest {
         final ClientProfilePayload clientProfile = profileTestUtils.createUserProfile();
         final Point y = basePoint();
         final BigInteger b = BigInteger.TEN;
-        new IdentityMessage(3, 0, 0, clientProfile, y, b);
+        new IdentityMessage(3, ZERO_TAG, ZERO_TAG, clientProfile, y, b);
     }
 }

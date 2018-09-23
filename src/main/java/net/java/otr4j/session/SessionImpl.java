@@ -66,7 +66,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
 import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
@@ -471,15 +470,15 @@ final class SessionImpl implements Session, Context, AuthContext {
             // session.
             final AbstractEncodedMessage encodedM = (AbstractEncodedMessage) m;
 
-            if (encodedM.senderInstanceTag == 0 || !isValidInstanceTag(encodedM.senderInstanceTag)) {
+            if (ZERO_TAG.equals(encodedM.senderInstanceTag)) {
                 // An encoded message without a sender instance tag is always bad.
                 logger.warning("Encoded message is missing sender instance tag or sender instance tag is bad. Ignoring message.");
                 return null;
             }
 
-            if (encodedM.receiverInstanceTag != this.senderTag.getValue()
-                    && !(encodedM instanceof DHCommitMessage && encodedM.receiverInstanceTag == 0)
-                    && !(encodedM instanceof IdentityMessage && encodedM.receiverInstanceTag == 0)) {
+            if (!encodedM.receiverInstanceTag.equals(this.senderTag)
+                    && !(encodedM instanceof DHCommitMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))
+                    && !(encodedM instanceof IdentityMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received an encoded message with receiver instance tag"
                         + " that is different from ours. Ignore this message.");
@@ -487,31 +486,30 @@ final class SessionImpl implements Session, Context, AuthContext {
                 return null;
             }
 
-            final InstanceTag messageSenderInstance = new InstanceTag(encodedM.senderInstanceTag);
             final SessionImpl session;
             if (encodedM instanceof DHCommitMessage || encodedM instanceof IdentityMessage) {
                 // We are more flexible with processing the DH Commit message as the message's receiver tag may be zero.
                 // It is zero as we may not have announced our sender tag yet, therefore they cannot include it in the
                 // DH commit message.
                 synchronized (slaveSessions) {
-                    if (!slaveSessions.containsKey(messageSenderInstance)) {
+                    if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
                         final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
+                                this.senderTag, encodedM.senderInstanceTag, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
-                        slaveSessions.put(messageSenderInstance, newSlaveSession);
+                        slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
                     }
-                    session = slaveSessions.get(messageSenderInstance);
+                    session = slaveSessions.get(encodedM.senderInstanceTag);
                 }
             } else if (encodedM instanceof DHKeyMessage) {
                 // DH Key messages should be complete, however we may receive multiple of these messages.
                 synchronized (slaveSessions) {
-                    if (!slaveSessions.containsKey(messageSenderInstance)) {
+                    if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
                         final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
+                                this.senderTag, encodedM.senderInstanceTag, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
-                        slaveSessions.put(messageSenderInstance, newSlaveSession);
+                        slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
                     }
-                    session = slaveSessions.get(messageSenderInstance);
+                    session = slaveSessions.get(encodedM.senderInstanceTag);
                 }
                 // Replicate AKE state to slave session for continuation of AKE negotiation. We may receive multiple
                 // DH Key replies as we may have sent a DH Commit message without specifying a receiver tag, hence
@@ -523,21 +521,22 @@ final class SessionImpl implements Session, Context, AuthContext {
                 // Handle other encoded messages. By now we expect the message sender's (receiver) tag to be known. If
                 // not we consider this a bad message and ignore it.
                 synchronized (slaveSessions) {
-                    if (!slaveSessions.containsKey(messageSenderInstance)) {
+                    if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
                         logger.log(Level.INFO,
                                 "Slave session instance missing for receiver tag: {0}. Our buddy may be logged in at multiple locations.",
-                                messageSenderInstance.getValue());
+                                encodedM.senderInstanceTag.getValue());
                         multipleInstancesDetected(this.host, sessionID);
                         multipleInstancesDetected(duplicate(listeners), sessionID);
                         final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                this.senderTag, messageSenderInstance, this.secureRandom, this.authState);
+                                this.senderTag, encodedM.senderInstanceTag, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
-                        slaveSessions.put(messageSenderInstance, newSlaveSession);
+                        slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
                     }
-                    session = slaveSessions.get(messageSenderInstance);
+                    session = slaveSessions.get(encodedM.senderInstanceTag);
                 }
             }
-            logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}", messageSenderInstance.getValue());
+            logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}",
+                    encodedM.senderInstanceTag.getValue());
             // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
             return session.handleEncodedMessage(encodedM);
         }
@@ -599,8 +598,8 @@ final class SessionImpl implements Session, Context, AuthContext {
             // inconsistencies to ensure that the inconsistencies cannot be exploited.
             // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
             if (((AbstractEncodedMessage) encoded).protocolVersion != fragment.getVersion()
-                    || ((AbstractEncodedMessage) encoded).senderInstanceTag != fragment.getSendertag().getValue()
-                    || ((AbstractEncodedMessage) encoded).receiverInstanceTag != fragment.getReceivertag().getValue()) {
+                    || !((AbstractEncodedMessage) encoded).senderInstanceTag.equals(fragment.getSendertag())
+                    || !((AbstractEncodedMessage) encoded).receiverInstanceTag.equals(fragment.getReceivertag())) {
                 logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
                 return null;
             }
@@ -703,8 +702,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
-                fragments = this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag,
-                        encoded.receiverInstanceTag, serialized);
+                fragments = this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag.getValue(),
+                        encoded.receiverInstanceTag.getValue(), serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment OTR-encoded message to specified protocol parameters.", e);
             }
@@ -864,8 +863,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
-                return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag,
-                    encoded.receiverInstanceTag, serialized);
+                return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag.getValue(),
+                    encoded.receiverInstanceTag.getValue(), serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment message according to protocol parameters.", e);
             }

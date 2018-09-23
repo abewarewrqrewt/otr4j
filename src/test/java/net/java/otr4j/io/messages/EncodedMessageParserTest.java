@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -45,7 +46,8 @@ public class EncodedMessageParserTest {
     public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException, UnsupportedLengthException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
-        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
+        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(),
+                new InstanceTag(12345), new InstanceTag(9876543));
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
         m.writeTo(otrOutput);
@@ -68,7 +70,8 @@ public class EncodedMessageParserTest {
     public void testConstructAndParsePartialDHKeyMessage() throws UnsupportedLengthException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
-        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(), 12345, 9876543);
+        final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(),
+                new InstanceTag(12345), new InstanceTag(9876543));
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
         m.writeTo(otrOutput);

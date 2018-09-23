@@ -115,7 +115,7 @@ public final class StateInitial extends AbstractAuthState {
         LOGGER.finest("Sending D-H key message.");
         // OTR: "Sends Bob gy"
         return new DHKeyMessage(message.protocolVersion, (DHPublicKey) keypair.getPublic(),
-                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue());
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag());
     }
 
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
@@ -138,9 +138,8 @@ public final class StateInitial extends AbstractAuthState {
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
                 theirClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
-        final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(),
-                sigma);
+        final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
                 message.getClientProfile()));
         return authRMessage;

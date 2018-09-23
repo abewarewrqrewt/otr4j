@@ -120,10 +120,10 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
         final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsContent);
         this.ratchet.rotateSendingChainKey();
-        return new DataMessage4(VERSION, context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue(), (byte) 0x00, this.ratchet.getPn(), ratchetId, messageId,
-                this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
-                result.ciphertext, authenticator, rotation == null ? new byte[0] : rotation.revealedMacs);
+        return new DataMessage4(VERSION, context.getSenderInstanceTag(), context.getReceiverInstanceTag(), (byte) 0x00,
+                this.ratchet.getPn(), ratchetId, messageId, this.ratchet.getECDHPublicKey(),
+                rotation == null ? null : rotation.dhPublicKey, result.nonce, result.ciphertext, authenticator,
+                rotation == null ? new byte[0] : rotation.revealedMacs);
     }
 
     @Nonnull

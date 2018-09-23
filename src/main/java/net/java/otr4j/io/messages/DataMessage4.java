@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -49,11 +50,10 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      * @param authenticator       the authenticator code
      * @param revealedMacs        the revealed MAC keys
      */
-    // FIXME consider converting DataMessage4 to using InstanceTag instead of int types.
-    public DataMessage4(final int protocolVersion, final int senderInstanceTag, final int receiverInstanceTag,
-            final byte flags, final int pn, final int i, final int j, @Nonnull final Point ecdhPublicKey,
-            @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce, @Nonnull final byte[] ciphertext,
-            @Nonnull final byte[] authenticator, @Nonnull final byte[] revealedMacs) {
+    public DataMessage4(final int protocolVersion, @Nonnull final InstanceTag senderInstanceTag,
+            @Nonnull final InstanceTag receiverInstanceTag, final byte flags, final int pn, final int i, final int j,
+            @Nonnull final Point ecdhPublicKey, @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
+            @Nonnull final byte[] ciphertext, @Nonnull final byte[] authenticator, @Nonnull final byte[] revealedMacs) {
         super(protocolVersion, senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
         this.pn = pn;

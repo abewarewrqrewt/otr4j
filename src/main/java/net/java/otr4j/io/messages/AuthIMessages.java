@@ -37,7 +37,6 @@ public final class AuthIMessages {
      * @throws OtrCryptoException  In case of failure during ring signature verification.
      * @throws ValidationException In case validation fails.
      */
-    // TODO ensure that sender and receiver instance tags are verified prior to arriving here!
     // FIXME pass ClientProfile i.s.o. ClientProfilePayload. We only need to validate them once.
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
             @Nonnull final ClientProfilePayload ourProfilePayload,
@@ -49,14 +48,15 @@ public final class AuthIMessages {
             throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");
         }
         final ClientProfile profileBob = profilePayloadBob.validate();
-        if (message.senderInstanceTag != profileBob.getInstanceTag().getValue()) {
+        if (!message.senderInstanceTag.equals(profileBob.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         final ClientProfile ourProfile = ourProfilePayload.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
-        final byte[] t = encode(AUTH_I, ourProfilePayload, profilePayloadBob, x, y, a, b, message.senderInstanceTag,
-            message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
+        final byte[] t = encode(AUTH_I, ourProfilePayload, profilePayloadBob, x, y, a, b,
+                message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
+                receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, X}, t)."
         ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), x, message.getSigma(), t);
     }

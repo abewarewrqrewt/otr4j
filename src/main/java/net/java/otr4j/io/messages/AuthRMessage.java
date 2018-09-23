@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.io.OtrOutputStream;
@@ -38,9 +39,9 @@ public final class AuthRMessage extends AbstractEncodedMessage {
      * @param a                 the DH public key 'A'
      * @param sigma             the ring signature
      */
-    public AuthRMessage(final int protocolVersion, final int senderInstance, final int recipientInstance,
-            @Nonnull final ClientProfilePayload clientProfile, @Nonnull final Point x, @Nonnull final BigInteger a,
-            @Nonnull final OtrCryptoEngine4.Sigma sigma) {
+    public AuthRMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
+            @Nonnull final InstanceTag recipientInstance, @Nonnull final ClientProfilePayload clientProfile,
+            @Nonnull final Point x, @Nonnull final BigInteger a, @Nonnull final OtrCryptoEngine4.Sigma sigma) {
         super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.x = requireNonNull(x);

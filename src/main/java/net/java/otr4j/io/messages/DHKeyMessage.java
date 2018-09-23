@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
@@ -38,7 +39,8 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
      * @param senderInstance   the sender instance tag
      * @param receiverInstance the receiver instance tag
      */
-    public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey, final int senderInstance, final int receiverInstance) {
+    public DHKeyMessage(final int protocolVersion, @Nonnull final DHPublicKey dhPublicKey,
+            @Nonnull final InstanceTag senderInstance, @Nonnull final InstanceTag receiverInstance) {
         super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
         this.dhPublicKey = Objects.requireNonNull(dhPublicKey);
     }

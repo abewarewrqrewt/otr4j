@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.security.SecureRandom;
 
+import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.io.messages.AuthIMessage.MESSAGE_AUTH_I;
 import static org.junit.Assert.assertArrayEquals;
@@ -34,29 +35,29 @@ public final class AuthIMessageTest {
 
     @Test
     public void testConstruction() {
-        final AuthIMessage m = new AuthIMessage(4, INSTANCE_TAG.getValue(), INSTANCE_TAG.getValue(), SIG);
+        final AuthIMessage m = new AuthIMessage(4, INSTANCE_TAG, INSTANCE_TAG, SIG);
         assertEquals(OTRv.FOUR, m.protocolVersion);
-        assertEquals(INSTANCE_TAG.getValue(), m.senderInstanceTag);
-        assertEquals(INSTANCE_TAG.getValue(), m.receiverInstanceTag);
+        assertEquals(INSTANCE_TAG, m.senderInstanceTag);
+        assertEquals(INSTANCE_TAG, m.receiverInstanceTag);
         assertEquals(MESSAGE_AUTH_I, m.getType());
         assertSame(SIG, m.getSigma());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructionIllegalVersion() {
-        new AuthIMessage(OTRv.THREE, INSTANCE_TAG.getValue(), INSTANCE_TAG.getValue(), SIG);
+        new AuthIMessage(OTRv.THREE, INSTANCE_TAG, INSTANCE_TAG, SIG);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullRingSignature() {
-        new AuthIMessage(OTRv.FOUR, INSTANCE_TAG.getValue(), INSTANCE_TAG.getValue(), null);
+        new AuthIMessage(OTRv.FOUR, INSTANCE_TAG, INSTANCE_TAG, null);
     }
 
     @Test
     public void testWriteTo() {
         final byte[] expected = new OtrOutputStream().writeShort(4).writeByte(MESSAGE_AUTH_I).writeInt(256)
                 .writeInt(256).write(SIG).toByteArray();
-        final AuthIMessage m = new AuthIMessage(4, 256, 256, SIG);
+        final AuthIMessage m = new AuthIMessage(4, SMALLEST_TAG, SMALLEST_TAG, SIG);
         OtrOutputStream out = new OtrOutputStream();
         m.writeTo(out);
         assertArrayEquals(expected, out.toByteArray());

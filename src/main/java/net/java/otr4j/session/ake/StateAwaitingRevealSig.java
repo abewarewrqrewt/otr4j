@@ -109,7 +109,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
         return new DHKeyMessage(message.protocolVersion, (DHPublicKey) this.keypair.getPublic(),
-                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue());
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag());
     }
 
     /**
@@ -192,7 +192,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2p());
         LOGGER.finest("Creating signature message for response.");
         // OTR: "Sends Bob AESc'(XA), MACm2'(AESc'(XA))"
-        return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue());
+        return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag());
     }
 }

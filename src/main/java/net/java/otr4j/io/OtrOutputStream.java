@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -210,6 +211,19 @@ public final class OtrOutputStream {
             b[i] = (byte) ((value >>> offset) & 0xFF);
         }
         this.out.write(b, 0, b.length);
+        return this;
+    }
+
+    /**
+     * Write instance tag value.
+     *
+     * @param tag instance tag
+     * @return Returns this instance of OtrOutputStream such that method calls can be chained.
+     */
+    // FIXME write unit tests for writeInstanceTag
+    @Nonnull
+    public OtrOutputStream writeInstanceTag(@Nonnull final InstanceTag tag) {
+        writeInt(tag.getValue());
         return this;
     }
 

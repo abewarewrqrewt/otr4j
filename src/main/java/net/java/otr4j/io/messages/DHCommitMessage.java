@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
@@ -45,7 +46,8 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
      * @param receiverInstance     the receiver instance tag
      */
     public DHCommitMessage(final int protocolVersion, @Nonnull final byte[] dhPublicKeyHash,
-            @Nonnull final byte[] dhPublicKeyEncrypted, final int senderInstance, final int receiverInstance) {
+            @Nonnull final byte[] dhPublicKeyEncrypted, @Nonnull final InstanceTag senderInstance,
+            @Nonnull final InstanceTag receiverInstance) {
         super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
         this.dhPublicKeyEncrypted = requireNonNull(dhPublicKeyEncrypted);
         this.dhPublicKeyHash = requireNonNull(dhPublicKeyHash);

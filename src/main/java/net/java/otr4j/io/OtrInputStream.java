@@ -7,6 +7,7 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
@@ -22,6 +23,7 @@ import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
+import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
@@ -105,6 +107,22 @@ public final class OtrInputStream {
      */
     public int readShort() throws ProtocolException {
         return readNumber(TYPE_LEN_SHORT);
+    }
+
+    /**
+     * Read instance tag.
+     *
+     * @return Returns the instance tag.
+     * @throws ProtocolException In case of failure to read instance tag value from input stream.
+     */
+    // FIXME write unit tests for reading instance tag
+    @Nonnull
+    public InstanceTag readInstanceTag() throws ProtocolException {
+        final int value = readInt();
+        if (!isValidInstanceTag(value)) {
+            throw new ProtocolException("Illegal instance tag encountered.");
+        }
+        return new InstanceTag(value);
     }
 
     /**

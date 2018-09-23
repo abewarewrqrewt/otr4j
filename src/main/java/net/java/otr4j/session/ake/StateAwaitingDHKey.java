@@ -102,8 +102,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // resending D-H Commit message to every instance, now dedicate it
             // to the sender of the received D-H Commit message. That way, we do
             // not needlessly trigger other OTRv2 and OTRv3 clients.
-            return new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted,
-                    context.getSenderInstanceTag().getValue(), message.senderInstanceTag);
+            return new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted, context.getSenderInstanceTag(),
+                    message.senderInstanceTag);
         } else {
             // OTR: "Otherwise: Forget your old gx value that you sent (encrypted) earlier, and pretend you're in AUTHSTATE_NONE;
             // i.e. reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
@@ -112,7 +112,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             final KeyPair newKeypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
             context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
             return new DHKeyMessage(message.protocolVersion, (DHPublicKey) newKeypair.getPublic(),
-                    context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue());
+                    context.getSenderInstanceTag(), context.getReceiverInstanceTag());
         }
     }
 
@@ -141,9 +141,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
         // OTR: "Sends Alice r, AESc(XB), MACm2(AESc(XB))"
         final RevealSignatureMessage revealSigMessage = new RevealSignatureMessage(
-                this.version, xEncrypted, xEncryptedHash, this.r,
-                context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue());
+                this.version, xEncrypted, xEncryptedHash, this.r, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag());
         context.setState(new StateAwaitingSig(this.version, this.keypair,
                 message.dhPublicKey, s, revealSigMessage));
         return revealSigMessage;

@@ -112,7 +112,7 @@ final class StateAwaitingSig extends AbstractAuthState {
         LOGGER.finest("Ignoring AWAITING_SIG state and sending a new DH key message.");
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
         return new DHKeyMessage(message.protocolVersion, (DHPublicKey) newKeypair.getPublic(),
-                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue());
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag());
     }
 
     @Nullable

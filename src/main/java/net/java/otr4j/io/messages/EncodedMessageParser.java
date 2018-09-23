@@ -1,5 +1,6 @@
 package net.java.otr4j.io.messages;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -49,6 +50,7 @@ public final class EncodedMessageParser {
      *                                    otr4j.
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
+    // FIXME write unit tests to confirm that illegal instance tag cannot get through
     // TODO consider making a hard split between OTRv2, OTRv3 and OTRv4 parsing based on protocol version to prevent unsupported message types from being parsed.
     @Nonnull
     public static AbstractEncodedMessage parse(@Nonnull final OtrInputStream input) throws OtrCryptoException,
@@ -58,14 +60,14 @@ public final class EncodedMessageParser {
             throw new ProtocolException("Unsupported protocol version " + protocolVersion);
         }
         final byte messageType = input.readByte();
-        final int senderInstanceTag;
-        final int recipientInstanceTag;
+        final InstanceTag senderInstanceTag;
+        final InstanceTag recipientInstanceTag;
         if (protocolVersion == OTRv.THREE || protocolVersion == OTRv.FOUR) {
-            senderInstanceTag = input.readInt();
-            recipientInstanceTag = input.readInt();
+            senderInstanceTag = input.readInstanceTag();
+            recipientInstanceTag = input.readInstanceTag();
         } else {
-            senderInstanceTag = 0;
-            recipientInstanceTag = 0;
+            senderInstanceTag = InstanceTag.ZERO_TAG;
+            recipientInstanceTag = InstanceTag.ZERO_TAG;
         }
         switch (messageType) {
         case MESSAGE_DATA: {
