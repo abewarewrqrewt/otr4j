@@ -220,7 +220,6 @@ public final class OtrOutputStream {
      * @param tag instance tag
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
-    // FIXME write unit tests for writeInstanceTag
     @Nonnull
     public OtrOutputStream writeInstanceTag(@Nonnull final InstanceTag tag) {
         writeInt(tag.getValue());

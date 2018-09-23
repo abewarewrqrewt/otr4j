@@ -1,5 +1,6 @@
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -23,6 +24,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
 import static java.util.Arrays.fill;
 import static java.util.Collections.singleton;
+import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
+import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
+import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.util.SecureRandoms.random;
 import static nl.dannyvanheumen.joldilocks.Points.decode;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -425,5 +429,33 @@ public class OtrOutputStreamTest {
         final byte[] result = new OtrOutputStream().writeDHPublicKey(publicKey).toByteArray();
         final byte[] publicKeyBytes = asUnsignedByteArray(publicKey.getY());
         assertArrayEquals(publicKeyBytes, new OtrInputStream(result).readData());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testWriteInstanceTagNull() {
+        new OtrOutputStream().writeInstanceTag(null);
+    }
+
+    @Test
+    public void testWriteInstanceTag() {
+        assertArrayEquals(new byte[] {0, 0, 1, 0}, new OtrOutputStream().writeInstanceTag(SMALLEST_TAG).toByteArray());
+    }
+
+    @Test
+    public void testWriteInstanceTagZero() {
+        assertArrayEquals(new byte[] {0, 0, 0, 0}, new OtrOutputStream().writeInstanceTag(ZERO_TAG).toByteArray());
+    }
+
+    @Test
+    public void testWriteInstanceTagHighest() {
+        assertArrayEquals(new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff}, new OtrOutputStream().writeInstanceTag(HIGHEST_TAG).toByteArray());
+    }
+
+    @Test
+    public void testWriteInstanceTagArbitraryValue() throws ProtocolException {
+        final InstanceTag expectedTag = InstanceTag.random(RANDOM);
+        final InstanceTag readTag = new OtrInputStream(new OtrOutputStream().writeInstanceTag(expectedTag).toByteArray())
+                .readInstanceTag();
+        assertEquals(expectedTag, readTag);
     }
 }
