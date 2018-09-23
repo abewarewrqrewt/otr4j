@@ -15,6 +15,8 @@ import net.java.otr4j.io.OtrOutputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Abstract class representing base for encoded messages.
  *
@@ -41,8 +43,8 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
     AbstractEncodedMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstanceTag,
             @Nonnull final InstanceTag recipientInstanceTag) {
         this.protocolVersion = protocolVersion;
-        this.senderInstanceTag = senderInstanceTag;
-        this.receiverInstanceTag = recipientInstanceTag;
+        this.senderInstanceTag = requireNonNull(senderInstanceTag);
+        this.receiverInstanceTag = requireNonNull(recipientInstanceTag);
     }
 
     @Override
