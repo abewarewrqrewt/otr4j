@@ -1,6 +1,6 @@
 package net.java.otr4j.io;
 
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.messages.EncodedMessageParser;
@@ -134,15 +134,15 @@ public final class MessageParser {
         while (matcher.find()) {
             // Ignore group 1 (OTRv1 tag) as V1 is not supported anymore.
             if (!v2 && matcher.start(2) > -1) {
-                versions.add(Session.OTRv.TWO);
+                versions.add(OTRv.TWO);
                 v2 = true;
             }
             if (!v3 && matcher.start(3) > -1) {
-                versions.add(Session.OTRv.THREE);
+                versions.add(OTRv.THREE);
                 v3 = true;
             }
             if (!v4 && matcher.start(4) > -1) {
-                versions.add(Session.OTRv.FOUR);
+                versions.add(OTRv.FOUR);
                 v4 = true;
             }
             if (v2 && v3 && v4) {

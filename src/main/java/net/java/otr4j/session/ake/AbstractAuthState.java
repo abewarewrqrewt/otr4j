@@ -8,7 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
@@ -42,12 +42,12 @@ abstract class AbstractAuthState implements AuthState {
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
             @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
-        if (!Session.OTRv.SUPPORTED.contains(version)) {
+        if (!OTRv.SUPPORTED.contains(version)) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
         }
-        if (version == Session.OTRv.TWO || version == Session.OTRv.THREE) {
+        if (version == OTRv.TWO || version == OTRv.THREE) {
             return initiateVersion3(context, version, receiverTag);
-        } else if (version == Session.OTRv.FOUR) {
+        } else if (version == OTRv.FOUR) {
             return initiateVersion4(context, receiverTag, queryTag);
         } else {
             throw new UnsupportedOperationException("Unsupported protocol version.");
@@ -95,7 +95,7 @@ abstract class AbstractAuthState implements AuthState {
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
         final ClientProfilePayload profilePayload = context.getClientProfile();
-        final IdentityMessage message = new IdentityMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
+        final IdentityMessage message = new IdentityMessage(OTRv.FOUR, context.getSenderInstanceTag(),
                 receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
         context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, message));
         return message;
