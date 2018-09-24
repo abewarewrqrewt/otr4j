@@ -92,11 +92,25 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         throw new UnsupportedOperationException("To be implemented.");
     }
 
+    /**
+     * The extra symmetric key is the "raw" key. It does not perform the additional multi-key-derivations that are
+     * described in the OTRv4 specification in case of multiple TLV 7 payloads using index and payload context (first 4
+     * bytes).
+     * <p>
+     * The acquired extra symmetric key is the key that corresponds to the next message that is sent.
+     * <p>
+     * Note: the user is responsible for cleaning up the extra symmetric key material after use.
+     * <p>
+     * Note: if a message is subsequently received from the other party that triggers a remote public key rotation, then
+     * the key will become outdated.
+     * <p>
+     * {@inheritDoc}
+     */
+    // FIXME write unit tests for acquisition and use of extra symmetric key
     @Nonnull
     @Override
     public byte[] getExtraSymmetricKey() {
-        // TODO Requires specific way-of-working to keep track of context information such as TLV payload and counter of extra symmetric key exposures. See https://github.com/otrv4/otrv4/blob/master/otrv4.md#extra-symmetric-key)
-        throw new UnsupportedOperationException("To be implemented.");
+        return this.ratchet.extraSymmetricKey();
     }
 
     @Nonnull
