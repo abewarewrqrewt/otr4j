@@ -134,7 +134,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     @Nonnull
     public byte[] getExtraSymmetricKey() {
         if (this.protocolVersion == OTRv.TWO) {
-            throw new IllegalStateException("An OTR version 2 session was negotiated. The Extra Symmetric Key is not available in this version of the protocol.");
+            throw new UnsupportedOperationException("An OTR version 2 session was negotiated. The Extra Symmetric Key is not available in this version of the protocol.");
         }
         return this.sessionKeyManager.extraSymmetricKey();
     }
