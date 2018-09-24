@@ -1,5 +1,7 @@
 **NOTE**: *This version of otr4j is in active development for the adoption of the [OTRv4][OTRv4] specification that is being developed at this moment.*
 
+The repository for otr4j OTRv4 development is [gitlab.com/cobratbq/otr4j][gitlab-repo] and is mirrored to [github.com/cobratbq/otr4j][github-repo].
+
 # otr4j
 
 ## Progress
@@ -142,3 +144,5 @@ Messages will be rejected while the connection is being established. Once the se
   [OTRv3]: https://otr.cypherpunks.ca/Protocol-v3-4.1.1.html
   [OTRv4]: https://github.com/otrv4/otrv4
   [otr4j/otr4j]: https://github.com/otr4j/otr4j
+  [gitlab-repo]: https://gitlab.com/cobratbq/otr4j
+  [github-repo]: https://github.com/cobratbq/otr4j
