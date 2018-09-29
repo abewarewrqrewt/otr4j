@@ -39,7 +39,17 @@ public class EncodedMessageParserTest {
 
     @Test(expected = ProtocolException.class)
     public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
-        parse(new OtrInputStream(new byte[] { 0x00, 0x03 }));
+        parse(new OtrInputStream(new byte[] {0x00, 0x03}));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testParsingIllegalSenderInstanceTag() throws IOException, OtrCryptoException, UnsupportedLengthException {
+        parse(new OtrInputStream(new byte[] {0x00, 0x04, 0x35, 0x00, 0x00, 0x00, (byte) 0xff}));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testParsingIllegalReceiverInstanceTag() throws IOException, OtrCryptoException, UnsupportedLengthException {
+        parse(new OtrInputStream(new byte[] {0x00, 0x04, 0x35, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, (byte) 0xff}));
     }
 
     @Test

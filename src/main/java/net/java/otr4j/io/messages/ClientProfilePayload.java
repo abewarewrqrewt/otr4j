@@ -321,7 +321,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         } catch (final OtrCryptoException e) {
             throw new ValidationException("Verification of EdDSA signature failed.", e);
         }
-        // FIXME verify that we only add the DSA long-term public key after successful verification of the transitional signature.
+        // FIXME verify that we only add the DSA long-term public key *after* successful verification of the transitional signature.
     }
 
     /**
