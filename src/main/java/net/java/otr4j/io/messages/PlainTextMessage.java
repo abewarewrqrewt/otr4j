@@ -61,7 +61,8 @@ public final class PlainTextMessage extends QueryMessage {
     // TODO consider if this is the best location for the whitespace tag utility
     @Nonnull
     private static String generateWhitespaceTag(@Nonnull final Iterable<Integer> versions) {
-        final StringBuilder builder = new StringBuilder(" \t  \t\t\t\t \t \t \t  ");
+        final StringBuilder builder = new StringBuilder(58);
+        builder.append(" \t  \t\t\t\t \t \t \t  ");
         for (final int version : versions) {
             if (version == OTRv.TWO) {
                 builder.append("  \t\t  \t ");
