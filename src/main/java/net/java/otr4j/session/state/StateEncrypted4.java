@@ -175,12 +175,13 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException, ProtocolException {
-        // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
-        // message is verified and decrypted with that key which is deleted from the storage.
-        // TODO try to decrypt using skipped message keys.
         if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
+            // FIXME need to verify that public keys were not encountered previously.
             // FIXME condition above should include check on "... and the 'Public DH Key' is different from their_dh -if present-"
-            // FIXME what to do if ratchetId < 'i' and messageId == 0? We shouldn't blindly start processing, but this case does not seem to be caught earlier in either implementation or spec.
+            if (message.getI() < this.ratchet.getI()) {
+                // Ratchet ID < our current ratchet ID. This is technically impossible, so should not be supported.
+                throw new ProtocolException("The double ratchet does not allow for first messages of previous ratchet ID to arrive at a later time. This is an illegal message.");
+            }
             // If a new ratchet key has been received, any message keys corresponding to skipped messages from the previous
             // receiving ratchet are stored. A new DH ratchet is performed.
             // TODO generate and store skipped message for previous chain key.
