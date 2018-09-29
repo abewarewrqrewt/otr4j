@@ -680,12 +680,12 @@ final class SessionImpl implements Session, Context, AuthContext {
         assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
+                new Object[] {sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
         try {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final ProtocolException e) {
-            // FIXME evaluate whether or not it makes sense to return an OtrException for this message. It seems that returning null makes more sense, as we simply ignore the invalid message. Some logging would be useful.
-            throw new OtrException("Failed to process full data message.", e);
+            logger.log(Level.FINE, "An illegal message was received. Processing was aborted.", e);
+            return null;
         }
     }
 
