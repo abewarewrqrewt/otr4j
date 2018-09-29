@@ -70,25 +70,25 @@ public class SerializationUtilsTest {
         versions.add(OTRv.TWO);
         versions.add(OTRv.THREE);
         versions.add(OTRv.FOUR);
-        final PlainTextMessage m = new PlainTextMessage("", versions, "Hello");
+        final PlainTextMessage m = new PlainTextMessage(versions, "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ", SerializationUtils.toString(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion2Only() {
-        final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.TWO), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.TWO), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t ", SerializationUtils.toString(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion3Only() {
-        final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.THREE), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.THREE), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t\t", SerializationUtils.toString(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion4Only() {
-        final PlainTextMessage m = new PlainTextMessage("", Collections.singleton(OTRv.FOUR), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.FOUR), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t \t  ", SerializationUtils.toString(m));
     }
 

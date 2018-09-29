@@ -138,18 +138,16 @@ public final class StatePlaintext extends AbstractState {
         if (!otrPolicy.isSendWhitespaceTag() || context.getOfferStatus() == OfferStatus.rejected) {
             // As we do not want to send a specially crafted whitespace tag
             // message, just return the original message text to be sent.
-            return new PlainTextMessage("", Collections.<Integer>emptySet(), msgText);
+            return new PlainTextMessage(Collections.<Integer>emptySet(), msgText);
         }
-        // Continue with crafting a special whitespace message tag and embedding
-        // it into the original message.
+        // Continue with crafting a special whitespace message tag and embedding it into the original message.
         final Set<Integer> versions = allowedVersions(otrPolicy);
         if (versions.isEmpty()) {
             // Catch situation where we do not actually offer any versions.
             // At this point, reaching this state is considered a bug.
             throw new IllegalStateException("The current OTR policy does not allow any supported version of OTR. The software should either enable some protocol version or disable sending whitespace tags.");
         }
-        // FIXME we do not insert the right whitespace tag here.
-        final PlainTextMessage m = new PlainTextMessage("FIXME THIS IS STILL BAD WHITESPACE TAG", versions, msgText);
+        final PlainTextMessage m = new PlainTextMessage(versions, msgText);
         context.setOfferStatusSent();
         return m;
     }

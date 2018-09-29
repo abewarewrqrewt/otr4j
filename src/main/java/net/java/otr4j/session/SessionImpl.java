@@ -408,7 +408,6 @@ final class SessionImpl implements Session, Context, AuthContext {
     public String transformReceiving(@Nonnull final String msgText) throws OtrException {
         logger.log(Level.FINEST, "Entering {0} session.", masterSession == this ? "master" : "slave");
 
-        // FIXME verify that it is okay to return with empty message early (should be so)
         if (msgText.length() == 0) {
             return msgText;
         }
@@ -861,7 +860,10 @@ final class SessionImpl implements Session, Context, AuthContext {
             return new String[0];
         }
         final String serialized = SerializationUtils.toString(m);
-        if (m instanceof AbstractEncodedMessage) {
+        if (m instanceof PlainTextMessage) {
+            setState(new StateInitial(((PlainTextMessage) m).getTag()));
+            return new String[] {serialized};
+        } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
                 return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag.getValue(),

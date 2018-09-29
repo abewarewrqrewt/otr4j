@@ -6,7 +6,6 @@
  */
 package net.java.otr4j.io;
 
-import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
@@ -71,20 +70,7 @@ public final class SerializationUtils {
         } else if (m instanceof PlainTextMessage) {
             final PlainTextMessage plaintxt = (PlainTextMessage) m;
             writer.write(plaintxt.getCleanText());
-            if (!plaintxt.getVersions().isEmpty()) {
-                writer.write(" \t  \t\t\t\t \t \t \t  ");
-                for (final int version : plaintxt.getVersions()) {
-                    if (version == OTRv.TWO) {
-                        writer.write("  \t\t  \t ");
-                    }
-                    if (version == OTRv.THREE) {
-                        writer.write("  \t\t  \t\t");
-                    }
-                    if (version == OTRv.FOUR) {
-                        writer.write("  \t\t \t  ");
-                    }
-                }
-            }
+            writer.write(plaintxt.getTag());
         } else if (m instanceof QueryMessage) {
             final QueryMessage query = (QueryMessage) m;
             if (query.getVersions().size() == 1 && query.getVersions().contains(1)) {
