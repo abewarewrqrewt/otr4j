@@ -192,6 +192,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             // TODO verify that we indeed do not care about equality of DH public keys
             this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
         }
+        // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
+        // message is verified and decrypted with that key which is deleted from the storage.
+        // TODO try to decrypt using skipped message keys.
         // If a new message from the current receiving ratchet is received, any message keys corresponding to skipped
         // messages from the same ratchet are stored, and a symmetric-key ratchet is performed to derive the current
         // message key and the next receiving chain key. The message is then verified and decrypted.

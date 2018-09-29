@@ -12,10 +12,11 @@ Development stages:
 
 * ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
 * ✔ Socialist Millionaire's Protocol for OTRv4.
+* Migrate Ed448-Goldilocks implementation to Bouncy Castle.
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
-* Full implementation for Interactive use-case
-* ... (non-interactive use case) ...
+* Full implementation for "OTRv4 Interactive" use-case
+* ...
 
 ## Functionality
 
@@ -34,6 +35,7 @@ Development stages:
     * ☐ Verify if current solution is acceptable, otherwise migrate to JCA/BC
   * ☑ XSalsa20 symmetric cipher
   * ☑ SHAKE-256
+  * ☑ Ring signatures
 * Key Exchange:
   * ☑ Interactive DAKE
   * ☐ Non-interactive DAKE
@@ -65,7 +67,9 @@ Development stages:
   * ☐ PreKey profile support
 * Extra Symmetric Key support:
   * ☑ OTRv3
-  * ☐ OTRv4 (including prescribed key derivation)
+  * OTRv4
+    * ☑ Base "Extra Symmetric Key" available for use.
+    * ☐ Derived keys based on OTRv4 prescribed key derivation
 * ...
 
 ## Operational

@@ -684,6 +684,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final ProtocolException e) {
+            // FIXME evaluate whether or not it makes sense to return an OtrException for this message. It seems that returning null makes more sense, as we simply ignore the invalid message. Some logging would be useful.
             throw new OtrException("Failed to process full data message.", e);
         }
     }
