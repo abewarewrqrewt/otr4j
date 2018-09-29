@@ -6,7 +6,8 @@ The repository for otr4j OTRv4 development is [gitlab.com/cobratbq/otr4j][gitlab
 
 ## Progress
 
-__Status__: _In active development. Current work should be considered __at most__ _prototype-quality and guaranteed insecure._ The development follows the _master_ branch of [OTRv4], but may lag behind in areas that currently lack development focus.
+__Status__: _In active development_  
+Current work should be considered __at most__ _prototype-quality and guaranteed insecure._ The development follows the _master_ branch of [OTRv4], but may lag behind in areas that currently lack development focus.
 
 Development stages:
 
