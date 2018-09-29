@@ -100,16 +100,14 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
      * <p>
      * Note: the user is responsible for cleaning up the extra symmetric key material after use.
      * <p>
-     * Note: if a message is subsequently received from the other party that triggers a remote public key rotation, then
-     * the key will become outdated.
-     * <p>
      * {@inheritDoc}
      */
     // FIXME write unit tests for acquisition and use of extra symmetric key
+    // FIXME how to expose Extra Symmetric Key for receiving?
     @Nonnull
     @Override
     public byte[] getExtraSymmetricKey() {
-        return this.ratchet.extraSymmetricKey();
+        return this.ratchet.extraSymmetricSendingKey();
     }
 
     @Nonnull

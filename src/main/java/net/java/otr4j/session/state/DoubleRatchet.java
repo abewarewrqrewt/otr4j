@@ -289,19 +289,30 @@ final class DoubleRatchet implements AutoCloseable {
      * <p>
      * Note that this is the "raw" extra symmetric key. OTRv4 specifies how one can derive additional keys from this
      * "raw" input data. These additional steps are not performed.
-     * <p>
-     * The extra symmetric key may change if a key rotation is performed before the next message is sent.
      *
-     * @return The "raw" extra symmetric key. (User needs to clean up the data after use.)
+     * @return The "raw" extra symmetric key. (User needs to clean up the byte-array after use.)
      */
-    // FIXME write unit tests for acquisition and use of extra symmetric key
-    // TODO the extra symmetric key may change if a message from the other party arrives that triggers a remote key rotation. IIUC this would enforce a refresh of the shared secret, meaning that for the next message to be sent, new keys based on the rotated remote public keys would be generated.
     @Nonnull
-    byte[] extraSymmetricKey() {
+    byte[] extraSymmetricSendingKey() {
         requireNotClosed();
         LOGGER.log(Level.FINEST, "Generating extra symmetric keys for encryption of ratchet {0}, message {1}.",
                 new Object[] {this.i - 1, this.senderRatchet.messageID});
         try (MessageKeys keys = generateSendingKeys()) {
+            return keys.getExtraSymmetricKey();
+        }
+    }
+
+    /**
+     * Acquire the extra symmetric key that corresponds to received messages.
+     *
+     * @return The "raw" extra symmetric key. (User needs to clean up the byte-array after use.)
+     */
+    @Nonnull
+    byte[] extraSymmetricReceivingKey(final int ratchetId, final int messageId) throws RotationLimitationException {
+        requireNotClosed();
+        LOGGER.log(Level.FINEST, "Generating extra symmetric keys for encryption of ratchet {0}, message {1}.",
+                new Object[] {this.i - 1, this.senderRatchet.messageID});
+        try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
             return keys.getExtraSymmetricKey();
         }
     }
