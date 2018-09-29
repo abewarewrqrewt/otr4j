@@ -1,6 +1,7 @@
 package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -10,6 +11,7 @@ import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * The OTRv4 data message.
@@ -54,7 +56,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
             @Nonnull final InstanceTag receiverInstanceTag, final byte flags, final int pn, final int i, final int j,
             @Nonnull final Point ecdhPublicKey, @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
             @Nonnull final byte[] ciphertext, @Nonnull final byte[] authenticator, @Nonnull final byte[] revealedMacs) {
-        super(protocolVersion, senderInstanceTag, receiverInstanceTag);
+        super(requireInRange(OTRv.FOUR, OTRv.FOUR, protocolVersion), senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
         this.pn = pn;
         this.i = i;

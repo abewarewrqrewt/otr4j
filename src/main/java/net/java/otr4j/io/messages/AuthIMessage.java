@@ -8,7 +8,7 @@ import net.java.otr4j.io.OtrOutputStream;
 import javax.annotation.Nonnull;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.util.Integers.requireAtLeast;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * OTRv4 Interactive DAKE Auth I Message.
@@ -24,12 +24,12 @@ public final class AuthIMessage extends AbstractEncodedMessage {
      *
      * @param protocolVersion   the protocol version
      * @param senderInstance    the sender instance tag
-     * @param recipientInstance the receiver instance tag
+     * @param receiverInstance the receiver instance tag
      * @param sigma             the ring signature
      */
     public AuthIMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
-            @Nonnull final InstanceTag recipientInstance, @Nonnull final Sigma sigma) {
-        super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
+            @Nonnull final InstanceTag receiverInstance, @Nonnull final Sigma sigma) {
+        super(requireInRange(OTRv.FOUR, OTRv.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.sigma = requireNonNull(sigma);
     }
 

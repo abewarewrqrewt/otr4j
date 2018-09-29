@@ -2,7 +2,7 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.io.OtrOutputStream;
 import nl.dannyvanheumen.joldilocks.Point;
 
@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.util.Integers.requireAtLeast;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * OTRv4 Interactive DAKE Auth R Message.
@@ -26,23 +26,23 @@ public final class AuthRMessage extends AbstractEncodedMessage {
 
     private final BigInteger a;
 
-    private final OtrCryptoEngine4.Sigma sigma;
+    private final Sigma sigma;
 
     /**
      * Auth-R Message as used in OTRv4.
      *
      * @param protocolVersion   the protocol version
      * @param senderInstance    the sender instance tag
-     * @param recipientInstance the receiver instance tag
+     * @param receiverInstance the receiver instance tag
      * @param clientProfile     the client profile (as payload)
      * @param x                 the ECDH public key 'X'
      * @param a                 the DH public key 'A'
      * @param sigma             the ring signature
      */
     public AuthRMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
-            @Nonnull final InstanceTag recipientInstance, @Nonnull final ClientProfilePayload clientProfile,
-            @Nonnull final Point x, @Nonnull final BigInteger a, @Nonnull final OtrCryptoEngine4.Sigma sigma) {
-        super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, recipientInstance);
+            @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
+            @Nonnull final Point x, @Nonnull final BigInteger a, @Nonnull final Sigma sigma) {
+        super(requireInRange(OTRv.FOUR, OTRv.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
@@ -90,7 +90,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
      * @return Returns the ring signature.
      */
     @Nonnull
-    public OtrCryptoEngine4.Sigma getSigma() {
+    public Sigma getSigma() {
         return sigma;
     }
 

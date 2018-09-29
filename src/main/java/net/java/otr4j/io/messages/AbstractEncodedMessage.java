@@ -41,10 +41,10 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
     public final InstanceTag receiverInstanceTag;
 
     AbstractEncodedMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstanceTag,
-            @Nonnull final InstanceTag recipientInstanceTag) {
+            @Nonnull final InstanceTag receiverInstanceTag) {
         this.protocolVersion = protocolVersion;
         this.senderInstanceTag = requireNonNull(senderInstanceTag);
-        this.receiverInstanceTag = requireNonNull(recipientInstanceTag);
+        this.receiverInstanceTag = requireNonNull(receiverInstanceTag);
     }
 
     @Override

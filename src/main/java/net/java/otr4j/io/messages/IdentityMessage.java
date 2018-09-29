@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.util.Integers.requireAtLeast;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * OTRv4 Interactive DAKE Identity Message.
@@ -39,7 +39,7 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     public IdentityMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
             @Nonnull final Point y, @Nonnull final BigInteger b) {
-        super(requireAtLeast(OTRv.FOUR, protocolVersion), senderInstance, receiverInstance);
+        super(requireInRange(OTRv.FOUR, OTRv.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.y = requireNonNull(y);
         this.b = requireNonNull(b);
