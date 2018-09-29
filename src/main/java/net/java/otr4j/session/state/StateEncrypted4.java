@@ -19,7 +19,6 @@ import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
 import net.java.otr4j.session.state.DoubleRatchet.RotationResult;
 import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
-import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -175,9 +174,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException, ProtocolException {
-        if (message.getJ() == 0 && !Points.equals(this.ratchet.getECDHPublicKey(), message.getEcdhPublicKey())) {
-            // FIXME need to verify that public keys were not encountered previously.
-            // FIXME condition above should include check on "... and the 'Public DH Key' is different from their_dh -if present-"
+        if (message.getJ() == 0) {
             if (message.getI() < this.ratchet.getI()) {
                 // Ratchet ID < our current ratchet ID. This is technically impossible, so should not be supported.
                 throw new ProtocolException("The double ratchet does not allow for first messages of previous ratchet ID to arrive at a later time. This is an illegal message.");
@@ -190,7 +187,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
             }
-            // TODO verify that we indeed do not care about equality of DH public keys
             this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
         }
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the

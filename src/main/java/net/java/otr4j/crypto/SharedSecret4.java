@@ -3,6 +3,7 @@ package net.java.otr4j.crypto;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
+import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -228,6 +229,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param theirDHPublicKey   Their DH public key. (Optional)
      * @throws OtrCryptoException In case of failure to rotate the public keys.
      */
+    // FIXME need to verify that public keys (ECDH and DH) were not encountered previously.
     public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
             @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
         if (this.ecdhKeyPair == null || this.dhKeyPair == null) {
@@ -235,6 +237,12 @@ public final class SharedSecret4 implements AutoCloseable {
         }
         if (!Ed448.contains(requireNonNull(theirECDHPublicKey))) {
             throw new OtrCryptoException("ECDH public key failed verification.");
+        }
+        if (Points.equals(this.ecdhKeyPair.getPublicKey(), theirECDHPublicKey)) {
+            throw new OtrCryptoException("A new, different ECDH public key is expected for initializing the new ratchet.");
+        }
+        if (this.dhKeyPair.getPublicKey().equals(theirDHPublicKey)) {
+            throw new OtrCryptoException("A new, different DH public key is expected for initializing the new ratchet.");
         }
         this.theirECDHPublicKey = theirECDHPublicKey;
         if (performDHRatchet) {
