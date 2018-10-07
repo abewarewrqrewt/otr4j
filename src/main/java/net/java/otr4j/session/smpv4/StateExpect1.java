@@ -12,11 +12,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x01;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x02;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x03;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x04;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x05;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X01;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X02;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X03;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X04;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X05;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
@@ -87,9 +87,9 @@ final class StateExpect1 implements SMPState {
         final Point g2a = g.multiply(a2);
         final Point g3a = g.multiply(a3);
         final BigInteger q = primeOrder();
-        final BigInteger c2 = hashToScalar(SMP_VALUE_0x01, g.multiply(r2).encode());
+        final BigInteger c2 = hashToScalar(SMP_VALUE_0X01, g.multiply(r2).encode());
         final BigInteger d2 = r2.subtract(a2.multiply(c2)).mod(q);
-        final BigInteger c3 = hashToScalar(SMP_VALUE_0x02, g.multiply(r3).encode());
+        final BigInteger c3 = hashToScalar(SMP_VALUE_0X02, g.multiply(r3).encode());
         final BigInteger d3 = r3.subtract(a3.multiply(c3)).mod(q);
         context.setState(new StateExpect2(this.random, secret, a2, a3));
         return new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
@@ -119,15 +119,15 @@ final class StateExpect1 implements SMPState {
         final Point g2b = g.multiply(b2);
         final Point g3b = g.multiply(b3);
         final BigInteger q = primeOrder();
-        final BigInteger c2 = hashToScalar(SMP_VALUE_0x03, g.multiply(r2).encode());
+        final BigInteger c2 = hashToScalar(SMP_VALUE_0X03, g.multiply(r2).encode());
         final BigInteger d2 = r2.subtract(b2.multiply(c2)).mod(q);
-        final BigInteger c3 = hashToScalar(SMP_VALUE_0x04, g.multiply(r3).encode());
+        final BigInteger c3 = hashToScalar(SMP_VALUE_0X04, g.multiply(r3).encode());
         final BigInteger d3 = r3.subtract(b3.multiply(c3)).mod(q);
         final Point g2 = this.message.g2a.multiply(b2);
         final Point g3 = this.message.g3a.multiply(b3);
         final Point pb = g3.multiply(r4);
         final Point qb = g.multiply(r4).add(g2.multiply(secret.mod(q)));
-        final BigInteger cp = hashToScalar(SMP_VALUE_0x05, concatenate(g3.multiply(r5).encode(),
+        final BigInteger cp = hashToScalar(SMP_VALUE_0X05, concatenate(g3.multiply(r5).encode(),
                 g.multiply(r5).add(g2.multiply(r6)).encode()));
         final BigInteger d5 = r5.subtract(r4.multiply(cp)).mod(q);
         final BigInteger d6 = r6.subtract(secret.mod(q).multiply(cp)).mod(q);
@@ -149,10 +149,10 @@ final class StateExpect1 implements SMPState {
             throw new SMPAbortException("g2a or g3a failed verification.");
         }
         final Point g = basePoint();
-        if (!smp1.c2.equals(hashToScalar(SMP_VALUE_0x01, g.multiply(smp1.d2).add(smp1.g2a.multiply(smp1.c2)).encode()))) {
+        if (!smp1.c2.equals(hashToScalar(SMP_VALUE_0X01, g.multiply(smp1.d2).add(smp1.g2a.multiply(smp1.c2)).encode()))) {
             throw new SMPAbortException("c2 failed verification.");
         }
-        if (!smp1.c3.equals(hashToScalar(SMP_VALUE_0x02, g.multiply(smp1.d3).add(smp1.g3a.multiply(smp1.c3)).encode()))) {
+        if (!smp1.c3.equals(hashToScalar(SMP_VALUE_0X02, g.multiply(smp1.d3).add(smp1.g3a.multiply(smp1.c3)).encode()))) {
             throw new SMPAbortException("c3 failed verification.");
         }
         context.requestSecret(smp1.question);

@@ -293,7 +293,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         this.senderTag = requireNonNull(senderTag);
         this.receiverTag = requireNonNull(receiverTag);
-        this.offerStatus = OfferStatus.idle;
+        this.offerStatus = OfferStatus.IDLE;
         // Master session uses the map to manage slave sessions. Slave sessions do not use the map.
         slaveSessions = this.masterSession == this
                 ? Collections.synchronizedMap(new HashMap<InstanceTag, SessionImpl>(0))
@@ -400,7 +400,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     public void setOfferStatusSent() {
-        this.offerStatus = OfferStatus.sent;
+        this.offerStatus = OfferStatus.SENT;
     }
 
     @Override
@@ -429,11 +429,11 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
 
         if (m instanceof PlainTextMessage) {
-            if (offerStatus == OfferStatus.sent) {
-                offerStatus = OfferStatus.rejected;
+            if (offerStatus == OfferStatus.SENT) {
+                offerStatus = OfferStatus.REJECTED;
             }
         } else {
-            offerStatus = OfferStatus.accepted;
+            offerStatus = OfferStatus.ACCEPTED;
         }
 
         final SessionID sessionID = this.sessionState.getSessionID();

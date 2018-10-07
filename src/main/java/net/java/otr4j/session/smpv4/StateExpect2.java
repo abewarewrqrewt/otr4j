@@ -12,11 +12,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x03;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x04;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x05;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x06;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0x07;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X03;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X04;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X05;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X06;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X07;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
@@ -81,15 +81,15 @@ final class StateExpect2 implements SMPState {
             throw new SMPAbortException("Message failed verification.");
         }
         final Point g = basePoint();
-        if (!smp2.c2.equals(hashToScalar(SMP_VALUE_0x03, g.multiply(smp2.d2).add(smp2.g2b.multiply(smp2.c2)).encode()))) {
+        if (!smp2.c2.equals(hashToScalar(SMP_VALUE_0X03, g.multiply(smp2.d2).add(smp2.g2b.multiply(smp2.c2)).encode()))) {
             throw new SMPAbortException("Message failed verification.");
         }
-        if (!smp2.c3.equals(hashToScalar(SMP_VALUE_0x04, g.multiply(smp2.d3).add(smp2.g3b.multiply(smp2.c3)).encode()))) {
+        if (!smp2.c3.equals(hashToScalar(SMP_VALUE_0X04, g.multiply(smp2.d3).add(smp2.g3b.multiply(smp2.c3)).encode()))) {
             throw new SMPAbortException("Message failed verification.");
         }
         final Point g2 = smp2.g2b.multiply(this.a2);
         final Point g3 = smp2.g3b.multiply(this.a3);
-        if (!smp2.cp.equals(hashToScalar(SMP_VALUE_0x05, concatenate(
+        if (!smp2.cp.equals(hashToScalar(SMP_VALUE_0X05, concatenate(
                 g3.multiply(smp2.d5).add(smp2.pb.multiply(smp2.cp)).encode(),
                 g.multiply(smp2.d5).add(g2.multiply(smp2.d6)).add(smp2.qb.multiply(smp2.cp)).encode())))) {
             throw new SMPAbortException("Message failed verification.");
@@ -102,12 +102,12 @@ final class StateExpect2 implements SMPState {
         final BigInteger q = primeOrder();
         final BigInteger secretModQ = this.secret.mod(q);
         final Point qa = g.multiply(r4).add(g2.multiply(secretModQ));
-        final BigInteger cp = hashToScalar(SMP_VALUE_0x06, concatenate(g3.multiply(r5).encode(),
+        final BigInteger cp = hashToScalar(SMP_VALUE_0X06, concatenate(g3.multiply(r5).encode(),
                 g.multiply(r5).add(g2.multiply(r6)).encode()));
         final BigInteger d5 = r5.subtract(r4.multiply(cp)).mod(q);
         final BigInteger d6 = r6.subtract(secretModQ.multiply(cp)).mod(q);
         final Point ra = qa.add(smp2.qb.negate()).multiply(a3);
-        final BigInteger cr = hashToScalar(SMP_VALUE_0x07, concatenate(g.multiply(r7).encode(),
+        final BigInteger cr = hashToScalar(SMP_VALUE_0X07, concatenate(g.multiply(r7).encode(),
                 qa.add(smp2.qb.negate()).multiply(r7).encode()));
         final BigInteger d7 = r7.subtract(a3.multiply(cr)).mod(q);
         context.setState(new StateExpect4(this.random, this.a3, smp2.g3b, pa, smp2.pb, qa, smp2.qb));

@@ -139,7 +139,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             case INSTANCE_TAG:
                 fields.add(new InstanceTagField(in.readInt()));
                 break;
-            case LONG_TERM_EdDSA_PUBLIC_KEY:
+            case LONG_TERM_EDDSA_PUBLIC_KEY:
                 final int publicKeyType = in.readShort();
                 switch (publicKeyType) {
                 case ED448PublicKeyField.ED448_PUBLIC_KEY_TYPE:
@@ -335,7 +335,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         /**
          * Ed448 public key (ED448-PUBKEY)
          */
-        LONG_TERM_EdDSA_PUBLIC_KEY(0x0002),
+        LONG_TERM_EDDSA_PUBLIC_KEY(0x0002),
         /**
          * Ed448 forger public key (ED448-FORGER-PUBKEY)
          */
@@ -421,7 +421,7 @@ public final class ClientProfilePayload implements OtrEncodable {
     private static final class ED448PublicKeyField implements Field {
 
         private static final int ED448_PUBLIC_KEY_TYPE = 0x0010;
-        private static final FieldType TYPE = FieldType.LONG_TERM_EdDSA_PUBLIC_KEY;
+        private static final FieldType TYPE = FieldType.LONG_TERM_EDDSA_PUBLIC_KEY;
 
         private final Point publicKey;
 

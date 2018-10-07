@@ -36,7 +36,7 @@ public class StatePlaintextTest {
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
-        when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
+        when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
         final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
@@ -50,7 +50,7 @@ public class StatePlaintextTest {
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
-        when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
+        when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
         final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
@@ -64,7 +64,7 @@ public class StatePlaintextTest {
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
-        when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
+        when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
         final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
@@ -82,7 +82,7 @@ public class StatePlaintextTest {
             final Context context = mock(Context.class);
             final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
             when(context.getSessionPolicy()).thenReturn(policy);
-            when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
+            when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
             final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
             assertEquals(expected, m);
             verify(context, never()).setOfferStatusSent();
@@ -99,7 +99,7 @@ public class StatePlaintextTest {
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3);
         when(context.getSessionPolicy()).thenReturn(policy);
-        when(context.getOfferStatus()).thenReturn(OfferStatus.idle);
+        when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
         final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
         assertEquals(expected, m);
         verify(context, never()).setOfferStatusSent();
@@ -112,7 +112,7 @@ public class StatePlaintextTest {
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
-        when(context.getOfferStatus()).thenReturn(OfferStatus.rejected);
+        when(context.getOfferStatus()).thenReturn(OfferStatus.REJECTED);
         final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList());
         assertEquals(expected, m);
         verify(context, never()).setOfferStatusSent();

@@ -162,35 +162,35 @@ public final class OtrCryptoEngine4 {
         /**
          * Usage ID for SMP value 0x01.
          */
-        SMP_VALUE_0x01((byte) 0x01),
+        SMP_VALUE_0X01((byte) 0x01),
         /**
          * Usage ID for SMP value 0x02.
          */
-        SMP_VALUE_0x02((byte) 0x02),
+        SMP_VALUE_0X02((byte) 0x02),
         /**
          * Usage ID for SMP value 0x03.
          */
-        SMP_VALUE_0x03((byte) 0x03),
+        SMP_VALUE_0X03((byte) 0x03),
         /**
          * Usage ID for SMP value 0x04.
          */
-        SMP_VALUE_0x04((byte) 0x04),
+        SMP_VALUE_0X04((byte) 0x04),
         /**
          * Usage ID for SMP value 0x05.
          */
-        SMP_VALUE_0x05((byte) 0x05),
+        SMP_VALUE_0X05((byte) 0x05),
         /**
          * Usage ID for SMP value 0x06.
          */
-        SMP_VALUE_0x06((byte) 0x06),
+        SMP_VALUE_0X06((byte) 0x06),
         /**
          * Usage ID for SMP value 0x07.
          */
-        SMP_VALUE_0x07((byte) 0x07),
+        SMP_VALUE_0X07((byte) 0x07),
         /**
          * Usage ID for SMP value 0x08.
          */
-        SMP_VALUE_0x08((byte) 0x08);
+        SMP_VALUE_0X08((byte) 0x08);
 
         private final byte value;
 

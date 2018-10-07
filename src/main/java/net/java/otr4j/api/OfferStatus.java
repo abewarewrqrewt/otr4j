@@ -18,18 +18,18 @@ public enum OfferStatus {
     /**
      * Idle indicates that no relevant actions was taken yet regarding an offer to establish OTR session.
      */
-    idle,
+    IDLE,
     /**
      * Sent indicates the whitespace-tag offer signal was sent.
      */
-    sent,
+    SENT,
     /**
      * Rejected indicates that an offer attempt was made, but reply was a plain text reply and hence the offer is
      * considered failed.
      */
-    rejected,
+    REJECTED,
     /**
      * Accepted indicates that the previously sent offer was accepted.
      */
-    accepted
+    ACCEPTED
 }
