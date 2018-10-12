@@ -7,8 +7,9 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
-import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
+import static org.bouncycastle.util.Arrays.reverse;
+import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
+import static org.bouncycastle.util.BigIntegers.fromUnsignedByteArray;
 
 /**
  * Scalar representation for Ed448 operations.
@@ -45,7 +46,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public static Scalar decodeScalar(@Nonnull final byte[] encoded) {
-        return new Scalar(decodeLittleEndian(encoded));
+        return new Scalar(fromUnsignedByteArray(reverse(encoded)));
     }
 
     /**
@@ -120,9 +121,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public byte[] encode() {
-        final byte[] encoded = new byte[SCALAR_LENGTH_BYTES];
-        encodeLittleEndianTo(encoded, 0, this.value);
-        return encoded;
+        return reverse(asUnsignedByteArray(SCALAR_LENGTH_BYTES, this.value));
     }
 
     /**
@@ -132,7 +131,8 @@ public final class Scalar implements Comparable<Scalar> {
      * @param offset the offset for the starting point to writing the encoded value
      */
     public void encodeTo(@Nonnull final byte[] dst, final int offset) {
-        encodeLittleEndianTo(dst, offset, this.value);
+        final byte[] encoded = this.encode();
+        System.arraycopy(encoded, 0, dst, offset, SCALAR_LENGTH_BYTES);
     }
 
     /**
@@ -143,7 +143,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     public void encodeTo(@Nonnull final OutputStream out) throws IOException {
         final byte[] encoded = this.encode();
-        out.write(encoded, 0, encoded.length);
+        out.write(encoded, 0, SCALAR_LENGTH_BYTES);
     }
 
     @Override

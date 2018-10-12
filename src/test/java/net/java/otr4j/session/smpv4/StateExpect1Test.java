@@ -110,12 +110,11 @@ public final class StateExpect1Test {
 
     @Test
     public void testInitiate() {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[4 * 54];
+        final byte[] fakeRandomData = new byte[4 * 56];
         a2.encodeTo(fakeRandomData, 0);
-        a3.encodeTo(fakeRandomData, 54);
-        r2_a.encodeTo(fakeRandomData, 108);
-        r3_a.encodeTo(fakeRandomData, 162);
+        a3.encodeTo(fakeRandomData, 56);
+        r2_a.encodeTo(fakeRandomData, 112);
+        r3_a.encodeTo(fakeRandomData, 168);
         final StateExpect1 state = new StateExpect1(new FixedSecureRandom(fakeRandomData), UNDECIDED);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage1 message = state.initiate(context, "Hello", secret);
@@ -131,15 +130,14 @@ public final class StateExpect1Test {
 
     @Test
     public void testRespondWithSecret() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[7 * 54];
+        final byte[] fakeRandomData = new byte[7 * 56];
         b2.encodeTo(fakeRandomData, 0);
-        b3.encodeTo(fakeRandomData, 54);
-        r2_b.encodeTo(fakeRandomData, 108);
-        r3_b.encodeTo(fakeRandomData, 162);
-        r4.encodeTo(fakeRandomData, 216);
-        r5.encodeTo(fakeRandomData, 270);
-        r6.encodeTo(fakeRandomData, 324);
+        b3.encodeTo(fakeRandomData, 56);
+        r2_b.encodeTo(fakeRandomData, 112);
+        r3_b.encodeTo(fakeRandomData, 168);
+        r4.encodeTo(fakeRandomData, 224);
+        r5.encodeTo(fakeRandomData, 280);
+        r6.encodeTo(fakeRandomData, 336);
         final StateExpect1 state = new StateExpect1(new FixedSecureRandom(fakeRandomData), UNDECIDED);
         final Context context = new Context();
         state.process(context, new SMPMessage1("Hello", g2a, c2_a, d2_a, g3a, c3_a, d3_a));

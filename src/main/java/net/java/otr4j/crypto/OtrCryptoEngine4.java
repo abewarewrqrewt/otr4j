@@ -15,6 +15,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 
@@ -27,9 +28,11 @@ import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.crypto.ed448.Scalar.ZERO;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static org.bouncycastle.util.Arrays.clear;
+import static org.bouncycastle.util.Arrays.reverse;
 
 /**
  * Crypto engine for OTRv4.
@@ -458,14 +461,14 @@ public final class OtrCryptoEngine4 {
         return generateRandomValue(random);
     }
 
-    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (54 bytes was arbitrarily chosen. We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?).
+    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
     private static Scalar generateRandomValue(@Nonnull final SecureRandom random) {
-        final byte[] data = new byte[54];
+        final byte[] data = new byte[56];
         random.nextBytes(data);
-        final Scalar value = decodeScalar(data);
-        assert ZERO.compareTo(value) <= 0 && primeOrder().compareTo(value) > 0
+        final Scalar scalar = fromBigInteger(new BigInteger(1, reverse(data))).mod(primeOrder());
+        assert ZERO.compareTo(scalar) <= 0 && primeOrder().compareTo(scalar) > 0
             : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
-        return value;
+        return scalar;
     }
 
     /**

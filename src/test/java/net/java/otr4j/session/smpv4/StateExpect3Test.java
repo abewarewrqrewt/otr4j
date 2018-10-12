@@ -144,8 +144,7 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageSMPSucceeded() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -159,8 +158,7 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageSMPFailed() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb.negate(), qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -175,8 +173,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqb() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb.negate(), b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -186,8 +183,7 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageBadb3() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, ONE, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -202,8 +198,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3a() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a.negate(), g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -213,8 +208,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg2() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2.negate(), g3);
         final SMPContext context = mock(SMPContext.class);
@@ -224,8 +218,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3.negate());
         final SMPContext context = mock(SMPContext.class);
@@ -235,8 +228,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadpa() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -246,8 +238,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqa() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -257,8 +248,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcp() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -268,8 +258,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd5() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -279,8 +268,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd6() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -290,8 +278,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadra() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -301,8 +288,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcr() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -312,8 +298,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd7() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -323,8 +308,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalpa() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -334,8 +318,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalqa() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -345,8 +328,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalra() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -356,8 +338,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadMessage() throws SMPAbortException {
-        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
-        final byte[] fakeRandomData = new byte[54];
+        final byte[] fakeRandomData = new byte[56];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
