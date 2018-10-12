@@ -14,7 +14,25 @@ import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
  */
 public final class Ed448 {
 
+    /**
+     * Identity (or neutral element) of the curve.
+     */
     private static final Point IDENTITY = Point.createPoint(ZERO, ONE);
+
+    /**
+     * Base Point of the curve.
+     */
+    private static final Point G = new Point(nl.dannyvanheumen.joldilocks.Ed448.basePoint());
+
+    /**
+     * Cofactor of the curve.
+     */
+    private static final Scalar C = fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.cofactor());
+
+    /**
+     * Prime order of the curve.
+     */
+    private static final Scalar Q = fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.primeOrder());
 
     private Ed448() {
         // No need to instantiate utility class.
@@ -25,10 +43,9 @@ public final class Ed448 {
      *
      * @return Returns base point.
      */
-    // FIXME extract constant
     @Nonnull
     public static Point basePoint() {
-        return new Point(nl.dannyvanheumen.joldilocks.Ed448.basePoint());
+        return G;
     }
 
     /**
@@ -36,10 +53,9 @@ public final class Ed448 {
      *
      * @return Returns prime order.
      */
-    // FIXME extract constant
     @Nonnull
     public static Scalar primeOrder() {
-        return fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.primeOrder());
+        return Q;
     }
 
     /**
@@ -47,10 +63,9 @@ public final class Ed448 {
      *
      * @return Returns cofactor.
      */
-    // FIXME extract constant
     @Nonnull
     public static Scalar cofactor() {
-        return fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.cofactor());
+        return C;
     }
 
     /**
