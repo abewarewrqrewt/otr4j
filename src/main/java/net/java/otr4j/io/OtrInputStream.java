@@ -25,6 +25,7 @@ import java.security.interfaces.DSAPublicKey;
 
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.POINT_LENGTH_BYTES;
@@ -38,7 +39,6 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
 import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
-import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**

@@ -3,7 +3,6 @@ package net.java.otr4j.crypto;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.ValidationException;
 import net.java.otr4j.session.ake.SecurityParameters4;
-import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 
@@ -23,6 +22,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SHARED_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SSID;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.THIRD_BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
@@ -237,7 +237,7 @@ public final class SharedSecret4 implements AutoCloseable {
         if (this.ecdhKeyPair == null || this.dhKeyPair == null) {
             throw new IllegalStateException("To rotate other party's public keys, it is required that our own keys are available.");
         }
-        if (!Ed448.contains(requireNonNull(theirECDHPublicKey))) {
+        if (!containsPoint(requireNonNull(theirECDHPublicKey))) {
             throw new OtrCryptoException("ECDH public key failed verification.");
         }
         if (Points.equals(this.ecdhKeyPair.getPublicKey(), theirECDHPublicKey)) {

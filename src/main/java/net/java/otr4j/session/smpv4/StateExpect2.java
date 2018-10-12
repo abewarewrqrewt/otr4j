@@ -1,7 +1,6 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.session.api.SMPStatus;
-import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
@@ -19,10 +18,11 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X06;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X07;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
+import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
+import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
-import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
-import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 final class StateExpect2 implements SMPState {
@@ -76,8 +76,7 @@ final class StateExpect2 implements SMPState {
             throw new SMPAbortException("Received unexpected SMP message in StateExpect2.");
         }
         final SMPMessage2 smp2 = (SMPMessage2) message;
-        if (!Ed448.contains(smp2.g2b) || !Ed448.contains(smp2.g3b) || !Ed448.contains(smp2.pb)
-                || !Ed448.contains(smp2.qb)) {
+        if (!containsPoint(smp2.g2b) || !containsPoint(smp2.g3b) || !containsPoint(smp2.pb) || !containsPoint(smp2.qb)) {
             throw new SMPAbortException("Message failed verification.");
         }
         final Point g = basePoint();

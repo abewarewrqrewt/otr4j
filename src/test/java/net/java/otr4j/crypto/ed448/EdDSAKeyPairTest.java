@@ -6,9 +6,9 @@ import org.junit.Test;
 import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
 import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.verify;
-import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

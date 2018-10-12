@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 
 @SuppressWarnings("ConstantConditions")
 public final class IdentityMessageTest {

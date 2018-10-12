@@ -1,7 +1,6 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.session.api.SMPStatus;
-import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 
@@ -15,11 +14,12 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X08;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
+import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
-import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 final class StateExpect4 implements SMPState {
@@ -79,7 +79,7 @@ final class StateExpect4 implements SMPState {
             throw new SMPAbortException("Received SMP message 1 in StateExpect4.");
         }
         final SMPMessage4 smp4 = (SMPMessage4) message;
-        if (!Ed448.contains(smp4.rb)) {
+        if (!containsPoint(smp4.rb)) {
             throw new SMPAbortException("Message validation failed.");
         }
         final Point g = basePoint();

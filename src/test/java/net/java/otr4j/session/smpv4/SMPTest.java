@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
+import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
@@ -29,7 +30,6 @@ import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static net.java.otr4j.util.SecureRandoms.random;
-import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

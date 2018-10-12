@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.ECDHKeyPair.generate;
-import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
+import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

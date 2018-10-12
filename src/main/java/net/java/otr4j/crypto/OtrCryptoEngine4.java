@@ -4,7 +4,6 @@ import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
-import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 import nl.dannyvanheumen.joldilocks.Points.InvalidDataException;
@@ -24,11 +23,12 @@ import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTH;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FINGERPRINT;
+import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
+import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
+import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
-import static nl.dannyvanheumen.joldilocks.Ed448.basePoint;
-import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
-import static nl.dannyvanheumen.joldilocks.Ed448.primeOrder;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.Arrays.clear;
@@ -282,7 +282,7 @@ public final class OtrCryptoEngine4 {
      */
     public static void verifyEdDSAPublicKey(@Nonnull final Point point) throws OtrCryptoException {
         // FIXME should we do more input verification here? Somehow it seems unlikely that identity is considered a EdDSA key pair.
-        if (!Ed448.contains(point)) {
+        if (!containsPoint(point)) {
             throw new OtrCryptoException("Illegal public key.");
         }
     }
@@ -376,7 +376,7 @@ public final class OtrCryptoEngine4 {
     @Nonnull
     public static Sigma ringSign(@Nonnull final SecureRandom random, @Nonnull final EdDSAKeyPair longTermKeyPair,
             @Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3, @Nonnull final byte[] m) {
-        if (!Ed448.contains(longTermKeyPair.getPublicKey()) || !Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
+        if (!containsPoint(longTermKeyPair.getPublicKey()) || !containsPoint(A1) || !containsPoint(A2) || !containsPoint(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Points need to be on curve Ed448.");
         }
         if (Points.equals(A1, A2) || Points.equals(A2, A3) || Points.equals(A1, A3)) {
@@ -484,7 +484,7 @@ public final class OtrCryptoEngine4 {
     @SuppressWarnings ({"PMD.FormalParameterNamingConventions", "PMD.LocalVariableNamingConventions"})
     public static void ringVerify(@Nonnull final Point A1, @Nonnull final Point A2, @Nonnull final Point A3,
             @Nonnull final Sigma sigma, @Nonnull final byte[] m) throws OtrCryptoException {
-        if (!Ed448.contains(A1) || !Ed448.contains(A2) || !Ed448.contains(A3)) {
+        if (!containsPoint(A1) || !containsPoint(A2) || !containsPoint(A3)) {
             throw new OtrCryptoException("One of the public keys is invalid.");
         }
         final BigInteger q = primeOrder();
