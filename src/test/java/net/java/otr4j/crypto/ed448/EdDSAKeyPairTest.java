@@ -1,6 +1,5 @@
 package net.java.otr4j.crypto.ed448;
 
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.security.SecureRandom;
@@ -33,8 +32,7 @@ public final class EdDSAKeyPairTest {
     public void testRegeneratePublicKey() {
         final Point expected = this.keypair.getPublicKey();
         final Point generated = multiplyByBase(this.keypair.getSecretKey());
-        assertEquals(expected.x(), generated.x());
-        assertEquals(expected.y(), generated.y());
+        assertEquals(expected, generated);
     }
 
     @Test(expected = NullPointerException.class)

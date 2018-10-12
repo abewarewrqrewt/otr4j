@@ -1,14 +1,14 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
 import net.java.otr4j.session.state.DoubleRatchet.RotationResult;
 import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;

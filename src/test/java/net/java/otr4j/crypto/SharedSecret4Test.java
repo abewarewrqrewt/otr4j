@@ -1,7 +1,7 @@
 package net.java.otr4j.crypto;
 
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;

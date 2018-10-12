@@ -2,8 +2,8 @@ package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrOutputStream;
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.net.ProtocolException;
@@ -13,13 +13,13 @@ import static java.math.BigInteger.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOf;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Point.createPoint;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP2;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP3;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
-import static nl.dannyvanheumen.joldilocks.Points.createPoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;

@@ -4,9 +4,9 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;

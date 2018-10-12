@@ -1,6 +1,6 @@
 package net.java.otr4j.session.smpv4;
 
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 import org.bouncycastle.util.test.FixedSecureRandom;
 import org.junit.Test;
 
@@ -10,8 +10,8 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.ed448.Point.createPoint;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
-import static nl.dannyvanheumen.joldilocks.Points.createPoint;
 import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

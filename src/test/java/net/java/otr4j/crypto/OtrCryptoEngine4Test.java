@@ -2,8 +2,7 @@ package net.java.otr4j.crypto;
 
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
-import nl.dannyvanheumen.joldilocks.Point;
-import nl.dannyvanheumen.joldilocks.Points;
+import net.java.otr4j.crypto.ed448.Point;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -25,14 +24,14 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.identity;
+import static net.java.otr4j.crypto.ed448.Point.createPoint;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static nl.dannyvanheumen.joldilocks.Points.createPoint;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public class OtrCryptoEngine4Test {
@@ -174,7 +173,7 @@ public class OtrCryptoEngine4Test {
     @Ignore("This test is most likely correct and verification is missing logic. Disabled for now for further research.")
     @Test(expected = OtrCryptoException.class)
     public void testVerifyEdDSAPublicKeyOne() throws OtrCryptoException {
-        verifyEdDSAPublicKey(Points.identity());
+        verifyEdDSAPublicKey(identity());
     }
 
     @Test
@@ -284,7 +283,7 @@ public class OtrCryptoEngine4Test {
     @Test
     public void testDecodePoint() throws OtrCryptoException {
         final Point point = decodePoint(ephemeralKeyPair.getPublicKey().encode());
-        assertTrue(Points.equals(ephemeralKeyPair.getPublicKey(), point));
+        assertEquals(ephemeralKeyPair.getPublicKey(), point);
     }
 
     @Test(expected = NullPointerException.class)

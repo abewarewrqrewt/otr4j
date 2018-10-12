@@ -1,7 +1,7 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrOutputStream;
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -11,6 +11,7 @@ import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("ConstantConditions")
 public final class SMPMessage4Test {
 
     @Test

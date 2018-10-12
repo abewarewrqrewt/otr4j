@@ -3,8 +3,8 @@ package net.java.otr4j.io.messages;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrOutputStream;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;

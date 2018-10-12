@@ -1,6 +1,6 @@
 package net.java.otr4j.session.smpv4;
 
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -8,8 +8,8 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.valueOf;
+import static net.java.otr4j.crypto.ed448.Point.createPoint;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
-import static nl.dannyvanheumen.joldilocks.Points.createPoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;

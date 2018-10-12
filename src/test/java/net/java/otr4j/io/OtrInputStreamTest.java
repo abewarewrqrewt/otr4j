@@ -9,11 +9,11 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -278,8 +278,7 @@ public class OtrInputStreamTest {
         final byte[] data = new OtrOutputStream().writePoint(keypair.getPublicKey()).toByteArray();
         final Point result = new OtrInputStream(data).readPoint();
         assertNotNull(result);
-        assertEquals(this.keypair.getPublicKey().x(), result.x());
-        assertEquals(this.keypair.getPublicKey().y(), result.y());
+        assertEquals(this.keypair.getPublicKey(), result);
     }
 
     @Test
@@ -288,8 +287,7 @@ public class OtrInputStreamTest {
             .toByteArray();
         final Point result = new OtrInputStream(data).readPoint();
         assertNotNull(result);
-        assertEquals(this.keypair.getPublicKey().x(), result.x());
-        assertEquals(this.keypair.getPublicKey().y(), result.y());
+        assertEquals(this.keypair.getPublicKey(), result);
     }
 
     @Test(expected = ProtocolException.class)

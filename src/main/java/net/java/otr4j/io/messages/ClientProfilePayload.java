@@ -6,12 +6,12 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.UnsupportedTypeException;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

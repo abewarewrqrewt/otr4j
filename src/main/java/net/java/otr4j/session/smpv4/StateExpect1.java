@@ -1,7 +1,7 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.session.api.SMPStatus;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

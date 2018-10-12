@@ -6,6 +6,7 @@ import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.AuthIMessage;
 import net.java.otr4j.io.messages.AuthRMessage;
@@ -14,7 +15,6 @@ import net.java.otr4j.io.messages.IdentityMessage;
 import net.java.otr4j.io.messages.IdentityMessages;
 import net.java.otr4j.io.messages.ValidationException;
 import net.java.otr4j.api.ClientProfile;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

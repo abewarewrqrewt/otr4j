@@ -1,7 +1,7 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrOutputStream;
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;

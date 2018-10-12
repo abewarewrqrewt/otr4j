@@ -2,7 +2,6 @@ package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Ed448KeyPair;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
@@ -51,7 +50,7 @@ public final class EdDSAKeyPair {
             throws ValidationException {
         assert !allZeroBytes(signature) : "Expected random data for signature instead of all zero-bytes.";
         try {
-            Ed448.verify(ED448_CONTEXT, publicKey, message, signature);
+            Ed448.verify(ED448_CONTEXT, publicKey.p, message, signature);
         } catch (final Ed448.SignatureVerificationFailedException e) {
             throw new ValidationException("Signature is not valid for provided message.", e);
         }
@@ -77,7 +76,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public Point getPublicKey() {
-        return this.keypair.getPublicKey();
+        return new Point(this.keypair.getPublicKey());
     }
 
     /**

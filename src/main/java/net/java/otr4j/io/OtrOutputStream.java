@@ -9,7 +9,7 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -23,6 +23,8 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.FINGERPRINT_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
+import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
 import static net.java.otr4j.io.EncodingConstants.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.SSID_LENGTH_BYTES;
@@ -32,8 +34,6 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_CTR;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_INT;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_LONG;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
-import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
-import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;

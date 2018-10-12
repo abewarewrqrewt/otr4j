@@ -1,7 +1,7 @@
 package net.java.otr4j.api;
 
 import net.java.otr4j.api.Session.OTRv;
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

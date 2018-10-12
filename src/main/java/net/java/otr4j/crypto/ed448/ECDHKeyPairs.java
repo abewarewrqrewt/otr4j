@@ -1,10 +1,9 @@
 package net.java.otr4j.crypto.ed448;
 
-import nl.dannyvanheumen.joldilocks.Ed448;
-import nl.dannyvanheumen.joldilocks.Point;
-import nl.dannyvanheumen.joldilocks.Points;
-
 import javax.annotation.Nonnull;
+
+import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
+import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 
 /**
  * Utility class for ECDH key pair instances.
@@ -23,11 +22,11 @@ public final class ECDHKeyPairs {
      */
     public static void verifyECDHPublicKey(@Nonnull final Point point) throws ValidationException {
         // TODO is there anything more to testing correct ECDH public key? (Check for identity?)
-        if (Points.checkIdentity(point)) {
+        if (checkIdentity(point)) {
             // FIXME identity-check may be redundant as will already be performed in 'Ed448.contains'.
             throw new ValidationException("Public key cannot be identity.");
         }
-        if (!Ed448.contains(point)) {
+        if (!containsPoint(point)) {
             throw new ValidationException("Public key is not on curve Ed448-Goldilocks.");
         }
     }

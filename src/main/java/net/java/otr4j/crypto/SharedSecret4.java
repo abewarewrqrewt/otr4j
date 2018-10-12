@@ -1,10 +1,9 @@
 package net.java.otr4j.crypto;
 
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.ValidationException;
 import net.java.otr4j.session.ake.SecurityParameters4;
-import nl.dannyvanheumen.joldilocks.Point;
-import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,7 +13,6 @@ import java.security.SecureRandom;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.DHKeyPair.checkPublicKey;
-import static net.java.otr4j.crypto.ed448.ECDHKeyPair.SECRET_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DH_FIRST_EPHEMERAL;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ECDH_FIRST_EPHEMERAL;
@@ -22,6 +20,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SHARED_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SSID;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.THIRD_BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.ed448.ECDHKeyPair.SECRET_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -240,7 +239,7 @@ public final class SharedSecret4 implements AutoCloseable {
         if (!containsPoint(requireNonNull(theirECDHPublicKey))) {
             throw new OtrCryptoException("ECDH public key failed verification.");
         }
-        if (Points.equals(this.ecdhKeyPair.getPublicKey(), theirECDHPublicKey)) {
+        if (this.ecdhKeyPair.getPublicKey().equals(theirECDHPublicKey)) {
             throw new OtrCryptoException("A new, different ECDH public key is expected for initializing the new ratchet.");
         }
         if (this.dhKeyPair.getPublicKey().equals(theirDHPublicKey)) {

@@ -2,8 +2,8 @@ package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrInputStream;
-import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;

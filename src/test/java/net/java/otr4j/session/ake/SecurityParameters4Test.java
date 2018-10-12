@@ -5,7 +5,7 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -19,6 +19,7 @@ import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.THEIRS;
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("ConstantConditions")
 public class SecurityParameters4Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();

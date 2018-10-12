@@ -12,7 +12,7 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
-import nl.dannyvanheumen.joldilocks.Point;
+import net.java.otr4j.crypto.ed448.Point;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;

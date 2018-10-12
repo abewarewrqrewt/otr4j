@@ -1,6 +1,5 @@
 package net.java.otr4j.crypto.ed448;
 
-import nl.dannyvanheumen.joldilocks.Point;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 
 import javax.annotation.Nonnull;
@@ -9,12 +8,12 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
+import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
-import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
-import static nl.dannyvanheumen.joldilocks.Points.checkIdentity;
 import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 import static org.bouncycastle.util.Arrays.clear;
 

@@ -4,10 +4,10 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SmpEngineHost;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.session.api.SMPStatus;
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 import org.mockito.Matchers;
 

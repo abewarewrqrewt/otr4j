@@ -1,6 +1,5 @@
 package net.java.otr4j.crypto.ed448;
 
-import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -20,9 +19,9 @@ public final class Ed448Test {
     public void testExpectedModulus() {
         final Point basePoint = basePoint();
         assertEquals(new BigInteger("224580040295924300187604334099896036246789641632564134246125461686950415467406032909029192869357953282578032075146446173674602635247710",
-                10), basePoint.x());
+                10), basePoint.p.x());
         assertEquals(new BigInteger("298819210078481492676017930443930673437544040154080242095928241372331506189835876003536878655418784733982303233503462500531545062832660",
-                10), basePoint.y());
+                10), basePoint.p.y());
     }
 
     @Test

@@ -1,12 +1,11 @@
 package net.java.otr4j.crypto;
 
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.ValidationException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
-import nl.dannyvanheumen.joldilocks.Point;
-import nl.dannyvanheumen.joldilocks.Points;
-import nl.dannyvanheumen.joldilocks.Points.InvalidDataException;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 import org.bouncycastle.crypto.engines.XSalsa20Engine;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -297,8 +296,8 @@ public final class OtrCryptoEngine4 {
     @Nonnull
     public static Point decodePoint(@Nonnull final byte[] pointBytes) throws OtrCryptoException {
         try {
-            return Points.decode(pointBytes);
-        } catch (final InvalidDataException ex) {
+            return Point.decodePoint(pointBytes);
+        } catch (final ValidationException ex) {
             throw new OtrCryptoException("Invalid Ed448 point data.", ex);
         }
     }
@@ -379,14 +378,14 @@ public final class OtrCryptoEngine4 {
         if (!containsPoint(longTermKeyPair.getPublicKey()) || !containsPoint(A1) || !containsPoint(A2) || !containsPoint(A3)) {
             throw new IllegalArgumentException("Illegal point provided. Points need to be on curve Ed448.");
         }
-        if (Points.equals(A1, A2) || Points.equals(A2, A3) || Points.equals(A1, A3)) {
+        if (A1.equals(A2) || A2.equals(A3) || A1.equals(A3)) {
             throw new IllegalArgumentException("Some of the points are equal. It defeats the purpose of the ring signature.");
         }
         final Point longTermPublicKey = longTermKeyPair.getPublicKey();
         // Calculate equality to each of the provided public keys.
-        final boolean eq1 = Points.equals(longTermPublicKey, A1);
-        final boolean eq2 = Points.equals(longTermPublicKey, A2);
-        final boolean eq3 = Points.equals(longTermPublicKey, A3);
+        final boolean eq1 = longTermPublicKey.equals(A1);
+        final boolean eq2 = longTermPublicKey.equals(A2);
+        final boolean eq3 = longTermPublicKey.equals(A3);
         // "Pick random values t1, c2, c3, r2, r3 in q."
         final BigInteger ti = generateRandomValue(random);
         final BigInteger cj = generateRandomValue(random);

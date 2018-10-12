@@ -1,8 +1,7 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.session.api.SMPStatus;
-import nl.dannyvanheumen.joldilocks.Point;
-import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,7 +98,7 @@ final class StateExpect3 implements SMPState {
         }
         // Verify if the zero-knowledge proof succeeds on our end.
         final Point rab = smp3.ra.multiply(this.b3);
-        if (Points.equals(rab, smp3.pa.add(this.pb.negate()))) {
+        if (rab.equals(smp3.pa.add(this.pb.negate()))) {
             context.setState(new StateExpect1(this.random, SUCCEEDED));
         } else {
             context.setState(new StateExpect1(this.random, FAILED));
