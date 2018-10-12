@@ -4,10 +4,10 @@ import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Ed448KeyPair;
 
 import javax.annotation.Nonnull;
-import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 
 /**
@@ -85,7 +85,7 @@ public final class EdDSAKeyPair {
      * @return Returns symmetric key.
      */
     @Nonnull
-    public BigInteger getSecretKey() {
-        return this.keypair.getSecretKey();
+    public Scalar getSecretKey() {
+        return fromBigInteger(this.keypair.getSecretKey());
     }
 }

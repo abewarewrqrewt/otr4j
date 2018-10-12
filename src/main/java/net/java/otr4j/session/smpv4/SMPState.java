@@ -1,10 +1,10 @@
 package net.java.otr4j.session.smpv4;
 
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigInteger;
 
 /**
  * The interface defining the state machine capabilities, as per the State pattern.
@@ -31,7 +31,7 @@ interface SMPState {
      * @throws SMPAbortException Indicates that a running SMP negotiation is aborted.
      */
     @Nonnull
-    SMPMessage1 initiate(@Nonnull SMPContext context, @Nonnull String question, @Nonnull BigInteger secret)
+    SMPMessage1 initiate(@Nonnull SMPContext context, @Nonnull String question, @Nonnull Scalar secret)
             throws SMPAbortException;
 
     /**
@@ -47,7 +47,7 @@ interface SMPState {
      * @return Returns SMP response message to be included as TLV payload in a data message.
      */
     @Nullable
-    SMPMessage2 respondWithSecret(@Nonnull SMPContext context, @Nonnull String question, @Nonnull BigInteger secret);
+    SMPMessage2 respondWithSecret(@Nonnull SMPContext context, @Nonnull String question, @Nonnull Scalar secret);
 
     /**
      * Process a (non-initial) SMP message.

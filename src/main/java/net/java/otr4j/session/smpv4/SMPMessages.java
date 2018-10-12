@@ -3,10 +3,10 @@ package net.java.otr4j.session.smpv4;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.io.OtrInputStream;
 
 import javax.annotation.Nonnull;
-import java.math.BigInteger;
 import java.net.ProtocolException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -34,42 +34,42 @@ final class SMPMessages {
                 throw new ProtocolException("The question for SMP negotiation is too large. The message may have been damaged/malformed.");
             }
             final Point g2a = in.readPoint();
-            final BigInteger c2 = in.readScalar();
-            final BigInteger d2 = in.readScalar();
+            final Scalar c2 = in.readScalar();
+            final Scalar d2 = in.readScalar();
             final Point g3a = in.readPoint();
-            final BigInteger c3 = in.readScalar();
-            final BigInteger d3 = in.readScalar();
+            final Scalar c3 = in.readScalar();
+            final Scalar d3 = in.readScalar();
             return new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
         }
         case SMP2: {
             final Point g2b = in.readPoint();
-            final BigInteger c2 = in.readScalar();
-            final BigInteger d2 = in.readScalar();
+            final Scalar c2 = in.readScalar();
+            final Scalar d2 = in.readScalar();
             final Point g3b = in.readPoint();
-            final BigInteger c3 = in.readScalar();
-            final BigInteger d3 = in.readScalar();
+            final Scalar c3 = in.readScalar();
+            final Scalar d3 = in.readScalar();
             final Point pb = in.readPoint();
             final Point qb = in.readPoint();
-            final BigInteger cp = in.readScalar();
-            final BigInteger d5 = in.readScalar();
-            final BigInteger d6 = in.readScalar();
+            final Scalar cp = in.readScalar();
+            final Scalar d5 = in.readScalar();
+            final Scalar d6 = in.readScalar();
             return new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
         }
         case SMP3: {
             final Point pa = in.readPoint();
             final Point qa = in.readPoint();
-            final BigInteger cp = in.readScalar();
-            final BigInteger d5 = in.readScalar();
-            final BigInteger d6 = in.readScalar();
+            final Scalar cp = in.readScalar();
+            final Scalar d5 = in.readScalar();
+            final Scalar d6 = in.readScalar();
             final Point ra = in.readPoint();
-            final BigInteger cr = in.readScalar();
-            final BigInteger d7 = in.readScalar();
+            final Scalar cr = in.readScalar();
+            final Scalar d7 = in.readScalar();
             return new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
         }
         case SMP4: {
             final Point rb = in.readPoint();
-            final BigInteger cr = in.readScalar();
-            final BigInteger d7 = in.readScalar();
+            final Scalar cr = in.readScalar();
+            final Scalar d7 = in.readScalar();
             return new SMPMessage4(rb, cr, d7);
         }
         case SMP_ABORT:

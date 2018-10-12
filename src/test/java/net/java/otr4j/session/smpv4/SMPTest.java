@@ -7,18 +7,20 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.session.api.SMPStatus;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
@@ -279,16 +281,15 @@ public final class SMPTest {
     @Test(expected = IllegalStateException.class)
     public void testSMPUnexpectedSMPMessageProcessingResult() throws OtrCryptoException, ProtocolException, SMPAbortException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
         final SMPState badSMPState = mock(SMPState.class);
-        final Point g2a = basePoint().multiply(BigInteger.valueOf(2L));
-        final BigInteger c2 = generateRandomValueInZq(RANDOM);
-        final BigInteger d2 = generateRandomValueInZq(RANDOM);
-        final BigInteger c3 = generateRandomValueInZq(RANDOM);
-        final BigInteger d3 = generateRandomValueInZq(RANDOM);
-        final Point g3a = basePoint().multiply(BigInteger.valueOf(3L));
+        final Point g2a = basePoint().multiply(fromBigInteger(valueOf(2L)));
+        final Scalar c2 = generateRandomValueInZq(RANDOM);
+        final Scalar d2 = generateRandomValueInZq(RANDOM);
+        final Scalar c3 = generateRandomValueInZq(RANDOM);
+        final Scalar d3 = generateRandomValueInZq(RANDOM);
+        final Point g3a = basePoint().multiply(fromBigInteger(valueOf(3L)));
         final SMPMessage1 illegalMessage = new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
         when(badSMPState.getStatus()).thenReturn(SMPStatus.INPROGRESS);
         when(badSMPState.process(Matchers.eq(smpAlice), any(SMPMessage.class))).thenReturn(illegalMessage);

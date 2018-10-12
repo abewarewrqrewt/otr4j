@@ -1,10 +1,10 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
-import java.math.BigInteger;
 
 import static java.util.Objects.requireNonNull;
 
@@ -14,21 +14,20 @@ final class SMPMessage3 implements SMPMessage {
 
     final Point qa;
 
-    final BigInteger cp;
+    final Scalar cp;
 
-    final BigInteger d5;
+    final Scalar d5;
 
-    final BigInteger d6;
+    final Scalar d6;
 
     final Point ra;
 
-    final BigInteger cr;
+    final Scalar cr;
 
-    final BigInteger d7;
+    final Scalar d7;
 
-    SMPMessage3(@Nonnull final Point pa, @Nonnull final Point qa, @Nonnull final BigInteger cp,
-            @Nonnull final BigInteger d5, @Nonnull final BigInteger d6, @Nonnull final Point ra,
-            @Nonnull final BigInteger cr, @Nonnull final BigInteger d7) {
+    SMPMessage3(@Nonnull final Point pa, @Nonnull final Point qa, @Nonnull final Scalar cp, @Nonnull final Scalar d5,
+            @Nonnull final Scalar d6, @Nonnull final Point ra, @Nonnull final Scalar cr, @Nonnull final Scalar d7) {
         this.pa = requireNonNull(pa);
         this.qa = requireNonNull(qa);
         this.cp = requireNonNull(cp);

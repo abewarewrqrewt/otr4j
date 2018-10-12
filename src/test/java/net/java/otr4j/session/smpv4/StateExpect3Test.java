@@ -1,17 +1,18 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.Point.createPoint;
+import static net.java.otr4j.crypto.ed448.Scalar.ONE;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
-import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
@@ -51,15 +52,15 @@ public final class StateExpect3Test {
     private static final Point rb = createPoint(
             new BigInteger("207262232174680451060776976413201759833926533152870268659156413710415430620278577554952401659472618835066253611213476907998866291547848", 10),
             new BigInteger("243919295076423503288241325716951068924347181567637759634078287663516781375902876181296806140094995694034332370011945034139749942390997", 10));
-    private static final BigInteger b3 = new BigInteger("6620572565451325478577935676729801683996665547132615779785633946993382844827938072605777950304437030465346847174123905281902647976", 10);
-    private static final BigInteger cp = new BigInteger("77816735911757946719447405301929329577374213233553378783621970734989972850028859935350835911100334011448998047272156287285184162475910", 10);
-    private static final BigInteger d5 = new BigInteger("168402301387910408888564889044656243554121209615331400658802104743919568546071693427503525480092417336791762973045156197916739168241313", 10);
-    private static final BigInteger d6 = new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10);
-    private static final BigInteger cr = new BigInteger("48212869955179756863375262751674186371416622227372458498814862703043948906876869678112891347756106998961858786630233240056114069543171", 10);
-    private static final BigInteger responseCr = new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10);
-    private static final BigInteger d7 = new BigInteger("92942743748171249034039202643159748376089330632273362315367772348633802592365130463925174120166078027659350437796406524022645144750795", 10);
-    private static final BigInteger responseD7 = new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10);
-    private static final BigInteger r7 = new BigInteger("7600950275105416617264243473722295903011889056977042647701408849843465351892940325962184631905666782846636443769119291050099400852", 10);
+    private static final Scalar b3 = fromBigInteger(new BigInteger("6620572565451325478577935676729801683996665547132615779785633946993382844827938072605777950304437030465346847174123905281902647976", 10));
+    private static final Scalar cp = fromBigInteger(new BigInteger("77816735911757946719447405301929329577374213233553378783621970734989972850028859935350835911100334011448998047272156287285184162475910", 10));
+    private static final Scalar d5 = fromBigInteger(new BigInteger("168402301387910408888564889044656243554121209615331400658802104743919568546071693427503525480092417336791762973045156197916739168241313", 10));
+    private static final Scalar d6 = fromBigInteger(new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10));
+    private static final Scalar cr = fromBigInteger(new BigInteger("48212869955179756863375262751674186371416622227372458498814862703043948906876869678112891347756106998961858786630233240056114069543171", 10));
+    private static final Scalar responseCr = fromBigInteger(new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10));
+    private static final Scalar d7 = fromBigInteger(new BigInteger("92942743748171249034039202643159748376089330632273362315367772348633802592365130463925174120166078027659350437796406524022645144750795", 10));
+    private static final Scalar responseD7 = fromBigInteger(new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10));
+    private static final Scalar r7 = fromBigInteger(new BigInteger("7600950275105416617264243473722295903011889056977042647701408849843465351892940325962184631905666782846636443769119291050099400852", 10));
 
     @Test
     public void testConstruct() {
@@ -105,7 +106,7 @@ public final class StateExpect3Test {
     @Test(expected = NullPointerException.class)
     public void testInitiateNullContext() throws SMPAbortException {
         final StateExpect3 state = new StateExpect3(RANDOM, pb, qb, b3, g3a, g2, g3);
-        state.initiate(null, "test", valueOf(1L));
+        state.initiate(null, "test", fromBigInteger(valueOf(1L)));
     }
 
     @Test(expected = SMPAbortException.class)
@@ -113,7 +114,7 @@ public final class StateExpect3Test {
         final StateExpect3 state = new StateExpect3(RANDOM, pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         try {
-            state.initiate(context, "test", valueOf(1L));
+            state.initiate(context, "test", fromBigInteger(valueOf(1L)));
             fail("Expected SMP initiation to fail.");
         } catch (final SMPAbortException e) {
             verify(context).setState(any(StateExpect1.class));
@@ -143,8 +144,9 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageSMPSucceeded() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -157,8 +159,9 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageSMPFailed() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb.negate(), qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -172,8 +175,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqb() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb.negate(), b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -182,8 +186,9 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageBadb3() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, ONE, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -197,8 +202,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3a() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a.negate(), g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -207,8 +213,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg2() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2.negate(), g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -217,8 +224,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3.negate());
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
@@ -227,8 +235,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadpa() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa.negate(), qa, cp, d5, d6, ra, cr, d7);
@@ -237,8 +246,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqa() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa.negate(), cp, d5, d6, ra, cr, d7);
@@ -247,8 +257,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcp() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, ONE, d5, d6, ra, cr, d7);
@@ -257,8 +268,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd5() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, ONE, d6, ra, cr, d7);
@@ -267,8 +279,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd6() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, ONE, ra, cr, d7);
@@ -277,8 +290,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadra() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra.negate(), cr, d7);
@@ -287,8 +301,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcr() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, ONE, d7);
@@ -297,8 +312,9 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd7() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, ONE);
@@ -307,38 +323,42 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalpa() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage3 message = new SMPMessage3(createPoint(ONE, ONE), qa, cp, d5, d6, ra, cr, ONE);
+        final SMPMessage3 message = new SMPMessage3(createPoint(BigInteger.ONE, BigInteger.ONE), qa, cp, d5, d6, ra, cr, ONE);
         state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalqa() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage3 message = new SMPMessage3(pa, createPoint(ONE, ONE), cp, d5, d6, ra, cr, ONE);
+        final SMPMessage3 message = new SMPMessage3(pa, createPoint(BigInteger.ONE, BigInteger.ONE), cp, d5, d6, ra, cr, ONE);
         state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalra() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, createPoint(ONE, ONE), cr, ONE);
+        final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, createPoint(BigInteger.ONE, BigInteger.ONE), cr, ONE);
         state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadMessage() throws SMPAbortException {
+        // FIXME investigate why this isn't 56 bytes per scalar! (I believe this is a mistake)
         final byte[] fakeRandomData = new byte[54];
-        encodeLittleEndianTo(fakeRandomData, 0, r7);
+        r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage4 message = new SMPMessage4(rb, cr, d7);

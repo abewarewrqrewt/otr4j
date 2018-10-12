@@ -13,6 +13,7 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -26,6 +27,7 @@ import java.security.interfaces.DSAPublicKey;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.POINT_LENGTH_BYTES;
@@ -39,7 +41,6 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_MAC;
 import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
-import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 
 /**
  * OTR input stream.
@@ -322,8 +323,8 @@ public final class OtrInputStream {
      * @throws ProtocolException In case of failure to read SCALAR from input stream.
      */
     @Nonnull
-    public BigInteger readScalar() throws ProtocolException {
-        return decodeLittleEndian(checkedRead(SCALAR_LENGTH_BYTES)).mod(primeOrder());
+    public Scalar readScalar() throws ProtocolException {
+        return decodeScalar(checkedRead(SCALAR_LENGTH_BYTES)).mod(primeOrder());
     }
 
     /**

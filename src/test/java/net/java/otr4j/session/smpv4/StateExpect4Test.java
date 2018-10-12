@@ -1,14 +1,16 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.Point.createPoint;
+import static net.java.otr4j.crypto.ed448.Scalar.ONE;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -21,7 +23,7 @@ import static org.mockito.Mockito.verify;
 public final class StateExpect4Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final BigInteger a3 = new BigInteger("10992407629513027537721921961288862111472222592979105676178912973948354718168450900717698573770450980134969731918121327601220662649", 10);
+    private static final Scalar a3 = fromBigInteger(new BigInteger("10992407629513027537721921961288862111472222592979105676178912973948354718168450900717698573770450980134969731918121327601220662649", 10));
     private static final Point g3b = createPoint(
             new BigInteger("25460154400798033061057906375464023188226226982418482149467593583623510947345044595566809932111935577651183265131423524693421017471242", 10),
             new BigInteger("553052674467468451498390089236097910339465676043764019155003492986686446924070189167293939278539676908850471424077516167161370570930870", 10));
@@ -40,14 +42,14 @@ public final class StateExpect4Test {
     private static final Point rb = createPoint(
             new BigInteger("207262232174680451060776976413201759833926533152870268659156413710415430620278577554952401659472618835066253611213476907998866291547848", 10),
             new BigInteger("243919295076423503288241325716951068924347181567637759634078287663516781375902876181296806140094995694034332370011945034139749942390997", 10));
-    private static final BigInteger cr = new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10);
-    private static final BigInteger d7 = new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10);
+    private static final Scalar cr = fromBigInteger(new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10));
+    private static final Scalar d7 = fromBigInteger(new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10));
     private static final Point ra = createPoint(
             new BigInteger("314477180835505334456514522697211639823564271172558398781788373480025093584267496798280363802109367409945899677297245744207604995798215", 10),
             new BigInteger("314029684065464803946366772814894787049170212355244776063157390940002824357662292553115470960421307470791608461875703125153400706900709", 10));
-    private static final BigInteger cp = new BigInteger("77816735911757946719447405301929329577374213233553378783621970734989972850028859935350835911100334011448998047272156287285184162475910", 10);
-    private static final BigInteger d5 = new BigInteger("168402301387910408888564889044656243554121209615331400658802104743919568546071693427503525480092417336791762973045156197916739168241313", 10);
-    private static final BigInteger d6 = new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10);
+    private static final Scalar cp = fromBigInteger(new BigInteger("77816735911757946719447405301929329577374213233553378783621970734989972850028859935350835911100334011448998047272156287285184162475910", 10));
+    private static final Scalar d5 = fromBigInteger(new BigInteger("168402301387910408888564889044656243554121209615331400658802104743919568546071693427503525480092417336791762973045156197916739168241313", 10));
+    private static final Scalar d6 = fromBigInteger(new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10));
 
     @Test(expected = NullPointerException.class)
     public void testConstructNullSecureRandom() {
@@ -93,7 +95,7 @@ public final class StateExpect4Test {
     @Test(expected = NullPointerException.class)
     public void testInitiateNullContext() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
-        state.initiate(null, "test", valueOf(1L));
+        state.initiate(null, "test", fromBigInteger(valueOf(1L)));
     }
 
     @Test(expected = SMPAbortException.class)
@@ -101,7 +103,7 @@ public final class StateExpect4Test {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
         try {
-            state.initiate(context, "test", valueOf(1L));
+            state.initiate(context, "test", fromBigInteger(valueOf(1L)));
             fail("Expected SMP initiation to fail.");
         } catch (final SMPAbortException e) {
             verify(context).setState(any(StateExpect1.class));
@@ -177,7 +179,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageIllegalrb() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(createPoint(ONE, ONE), cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(createPoint(BigInteger.ONE, BigInteger.ONE), cr, ONE);
         state.process(context, message);
     }
 

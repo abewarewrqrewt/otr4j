@@ -1,11 +1,11 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,13 +33,13 @@ final class StateExpect3 implements SMPState {
 
     private final Point pb;
     private final Point qb;
-    private final BigInteger b3;
+    private final Scalar b3;
     private final Point g3a;
     private final Point g2;
     private final Point g3;
 
     StateExpect3(@Nonnull final SecureRandom random, @Nonnull final Point pb, @Nonnull final Point qb,
-            @Nonnull final BigInteger b3, @Nonnull final Point g3a, @Nonnull final Point g2, @Nonnull final Point g3) {
+            @Nonnull final Scalar b3, @Nonnull final Point g3a, @Nonnull final Point g2, @Nonnull final Point g3) {
         this.random = requireNonNull(random);
         this.pb = requireNonNull(pb);
         this.qb = requireNonNull(qb);
@@ -58,14 +58,15 @@ final class StateExpect3 implements SMPState {
     @Nonnull
     @Override
     public SMPMessage1 initiate(@Nonnull final SMPContext context, @Nonnull final String question,
-            @Nonnull final BigInteger secret) throws SMPAbortException {
+            @Nonnull final Scalar secret) throws SMPAbortException {
         context.setState(new StateExpect1(this.random, UNDECIDED));
         throw new SMPAbortException("Not in initial state. Aborting running SMP negotiation.");
     }
 
     @Nullable
     @Override
-    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question, @Nonnull final BigInteger secret) {
+    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question,
+            @Nonnull final Scalar secret) {
         // Given that this is an action by the local user, we don't see this as a violation of the protocol. Therefore,
         // we don't abort.
         LOGGER.log(Level.WARNING, "Requested to respond with secret answer, but no request is pending. Ignoring request.");
@@ -105,10 +106,10 @@ final class StateExpect3 implements SMPState {
         }
         // Compose final message to other party.
         final Point rb = smp3.qa.add(this.qb.negate()).multiply(this.b3);
-        final BigInteger r7 = generateRandomValueInZq(this.random);
-        final BigInteger cr = hashToScalar(SMP_VALUE_0X08, concatenate(g.multiply(r7).encode(),
+        final Scalar r7 = generateRandomValueInZq(this.random);
+        final Scalar cr = hashToScalar(SMP_VALUE_0X08, concatenate(g.multiply(r7).encode(),
                 smp3.qa.add(this.qb.negate()).multiply(r7).encode()));
-        final BigInteger d7 = r7.subtract(this.b3.multiply(cr)).mod(primeOrder());
+        final Scalar d7 = r7.subtract(this.b3.multiply(cr)).mod(primeOrder());
         return new SMPMessage4(rb, cr, d7);
     }
 }

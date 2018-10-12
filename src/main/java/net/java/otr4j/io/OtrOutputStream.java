@@ -10,6 +10,7 @@ package net.java.otr4j.io;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -26,7 +27,6 @@ import static net.java.otr4j.io.EncodingConstants.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.NONCE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.PUBLIC_KEY_TYPE_DSA;
-import static net.java.otr4j.io.EncodingConstants.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.SSID_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.TLV_LEN;
 import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_BYTE;
@@ -38,7 +38,6 @@ import static net.java.otr4j.io.EncodingConstants.TYPE_LEN_SHORT;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
@@ -348,9 +347,8 @@ public final class OtrOutputStream {
      * @return Returns this instance of OtrOutputStream such that method calls can be chained.
      */
     @Nonnull
-    public OtrOutputStream writeScalar(@Nonnull final BigInteger s) {
-        final byte[] value = new byte[SCALAR_LENGTH_BYTES];
-        encodeLittleEndianTo(value, 0, s);
+    public OtrOutputStream writeScalar(@Nonnull final Scalar s) {
+        final byte[] value = s.encode();
         this.out.write(value, 0, value.length);
         return this;
     }

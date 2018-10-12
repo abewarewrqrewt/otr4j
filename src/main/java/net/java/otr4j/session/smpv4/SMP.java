@@ -6,13 +6,13 @@ import net.java.otr4j.api.SmpEngineHost;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.session.api.SMPHandler;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 import java.util.logging.Level;
@@ -27,6 +27,7 @@ import static net.java.otr4j.api.TLV.EMPTY_BODY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_SECRET;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
@@ -38,7 +39,6 @@ import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
 import static net.java.otr4j.util.ByteArrays.toHexString;
-import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
@@ -130,7 +130,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     @Override
     public TLV initiate(@Nonnull final String question, @Nonnull final byte[] answer) {
         try {
-            final BigInteger secret = generateSecret(answer, this.ourLongTermPublicKey, this.theirLongTermPublicKey);
+            final Scalar secret = generateSecret(answer, this.ourLongTermPublicKey, this.theirLongTermPublicKey);
             final SMPMessage1 response = this.state.initiate(this, question, secret);
             return new TLV(SMP1, encode(response));
         } catch (final SMPAbortException e) {
@@ -148,7 +148,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
     @Nullable
     @Override
     public TLV respond(@Nonnull final String question, @Nonnull final byte[] answer) {
-        final BigInteger secret = generateSecret(answer, this.theirLongTermPublicKey, this.ourLongTermPublicKey);
+        final Scalar secret = generateSecret(answer, this.theirLongTermPublicKey, this.ourLongTermPublicKey);
         final SMPMessage2 response = this.state.respondWithSecret(this, question, secret);
         if (response == null) {
             // TODO decide if we want to throw an exception or silently ignore bad (or badly timed) SMP init responses.
@@ -157,13 +157,13 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         return new TLV(SMP2, encode(response));
     }
 
-    private BigInteger generateSecret(@Nonnull final byte[] answer, @Nonnull final Point initiatorPublicKey,
+    private Scalar generateSecret(@Nonnull final byte[] answer, @Nonnull final Point initiatorPublicKey,
             @Nonnull final Point responderPublicKey) {
         final byte[] secretInputData = new OtrOutputStream().writeByte(VERSION)
                 .writeFingerprint(fingerprint(initiatorPublicKey))
                 .writeFingerprint(fingerprint(responderPublicKey))
                 .writeSSID(this.ssid).writeData(answer).toByteArray();
-        return decodeLittleEndian(kdf1(SMP_SECRET, secretInputData, SMP_SECRET_LENGTH_BYTES));
+        return decodeScalar(kdf1(SMP_SECRET, secretInputData, SMP_SECRET_LENGTH_BYTES));
     }
 
     @Nonnull

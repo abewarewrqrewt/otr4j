@@ -54,6 +54,7 @@ public final class Point {
 
     @Override
     public boolean equals(final Object o) {
+        // FIXME should we make exception to detect same-instance comparison?
         if (this == o) {
             return true;
         }
@@ -87,8 +88,8 @@ public final class Point {
      * @return Returns new point resulting from multiplication.
      */
     @Nonnull
-    public Point multiply(@Nonnull final BigInteger scalar) {
-        return new Point(this.p.multiply(scalar));
+    public Point multiply(@Nonnull final Scalar scalar) {
+        return new Point(this.p.multiply(scalar.value));
     }
 
     /**

@@ -1,11 +1,11 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,20 +77,20 @@ final class StateExpect1 implements SMPState {
     @Nonnull
     @Override
     public SMPMessage1 initiate(@Nonnull final SMPContext context, @Nonnull final String question,
-            @Nonnull final BigInteger secret) {
+            @Nonnull final Scalar secret) {
         requireNonNull(context);
-        final BigInteger a2 = generateRandomValueInZq(this.random);
-        final BigInteger a3 = generateRandomValueInZq(this.random);
-        final BigInteger r2 = generateRandomValueInZq(this.random);
-        final BigInteger r3 = generateRandomValueInZq(this.random);
+        final Scalar a2 = generateRandomValueInZq(this.random);
+        final Scalar a3 = generateRandomValueInZq(this.random);
+        final Scalar r2 = generateRandomValueInZq(this.random);
+        final Scalar r3 = generateRandomValueInZq(this.random);
         final Point g = basePoint();
         final Point g2a = g.multiply(a2);
         final Point g3a = g.multiply(a3);
-        final BigInteger q = primeOrder();
-        final BigInteger c2 = hashToScalar(SMP_VALUE_0X01, g.multiply(r2).encode());
-        final BigInteger d2 = r2.subtract(a2.multiply(c2)).mod(q);
-        final BigInteger c3 = hashToScalar(SMP_VALUE_0X02, g.multiply(r3).encode());
-        final BigInteger d3 = r3.subtract(a3.multiply(c3)).mod(q);
+        final Scalar q = primeOrder();
+        final Scalar c2 = hashToScalar(SMP_VALUE_0X01, g.multiply(r2).encode());
+        final Scalar d2 = r2.subtract(a2.multiply(c2)).mod(q);
+        final Scalar c3 = hashToScalar(SMP_VALUE_0X02, g.multiply(r3).encode());
+        final Scalar d3 = r3.subtract(a3.multiply(c3)).mod(q);
         context.setState(new StateExpect2(this.random, secret, a2, a3));
         return new SMPMessage1(question, g2a, c2, d2, g3a, c3, d3);
     }
@@ -98,7 +98,7 @@ final class StateExpect1 implements SMPState {
     @Nullable
     @Override
     public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question,
-            @Nonnull final BigInteger secret) {
+            @Nonnull final Scalar secret) {
         requireNonNull(context);
         if (this.message == null) {
             LOGGER.log(Level.WARNING, "The answer to the SMP question is provided, but no message is available. Ignoring answer.");
@@ -108,29 +108,29 @@ final class StateExpect1 implements SMPState {
             LOGGER.log(Level.INFO, "The question does not match the question in the remembered message. The request-for-secret is probably outdated. Ignoring answer.");
             return null;
         }
-        final BigInteger b2 = generateRandomValueInZq(this.random);
-        final BigInteger b3 = generateRandomValueInZq(this.random);
-        final BigInteger r2 = generateRandomValueInZq(this.random);
-        final BigInteger r3 = generateRandomValueInZq(this.random);
-        final BigInteger r4 = generateRandomValueInZq(this.random);
-        final BigInteger r5 = generateRandomValueInZq(this.random);
-        final BigInteger r6 = generateRandomValueInZq(this.random);
+        final Scalar b2 = generateRandomValueInZq(this.random);
+        final Scalar b3 = generateRandomValueInZq(this.random);
+        final Scalar r2 = generateRandomValueInZq(this.random);
+        final Scalar r3 = generateRandomValueInZq(this.random);
+        final Scalar r4 = generateRandomValueInZq(this.random);
+        final Scalar r5 = generateRandomValueInZq(this.random);
+        final Scalar r6 = generateRandomValueInZq(this.random);
         final Point g = basePoint();
         final Point g2b = g.multiply(b2);
         final Point g3b = g.multiply(b3);
-        final BigInteger q = primeOrder();
-        final BigInteger c2 = hashToScalar(SMP_VALUE_0X03, g.multiply(r2).encode());
-        final BigInteger d2 = r2.subtract(b2.multiply(c2)).mod(q);
-        final BigInteger c3 = hashToScalar(SMP_VALUE_0X04, g.multiply(r3).encode());
-        final BigInteger d3 = r3.subtract(b3.multiply(c3)).mod(q);
+        final Scalar q = primeOrder();
+        final Scalar c2 = hashToScalar(SMP_VALUE_0X03, g.multiply(r2).encode());
+        final Scalar d2 = r2.subtract(b2.multiply(c2)).mod(q);
+        final Scalar c3 = hashToScalar(SMP_VALUE_0X04, g.multiply(r3).encode());
+        final Scalar d3 = r3.subtract(b3.multiply(c3)).mod(q);
         final Point g2 = this.message.g2a.multiply(b2);
         final Point g3 = this.message.g3a.multiply(b3);
         final Point pb = g3.multiply(r4);
         final Point qb = g.multiply(r4).add(g2.multiply(secret.mod(q)));
-        final BigInteger cp = hashToScalar(SMP_VALUE_0X05, concatenate(g3.multiply(r5).encode(),
+        final Scalar cp = hashToScalar(SMP_VALUE_0X05, concatenate(g3.multiply(r5).encode(),
                 g.multiply(r5).add(g2.multiply(r6)).encode()));
-        final BigInteger d5 = r5.subtract(r4.multiply(cp)).mod(q);
-        final BigInteger d6 = r6.subtract(secret.mod(q).multiply(cp)).mod(q);
+        final Scalar d5 = r5.subtract(r4.multiply(cp)).mod(q);
+        final Scalar d6 = r6.subtract(secret.mod(q).multiply(cp)).mod(q);
         context.setState(new StateExpect3(this.random, pb, qb, b3, this.message.g3a, g2, g3));
         return new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
     }

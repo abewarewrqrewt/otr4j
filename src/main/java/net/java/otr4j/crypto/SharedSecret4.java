@@ -54,8 +54,7 @@ public final class SharedSecret4 implements AutoCloseable {
     private final byte[] k = new byte[K_LENGTH_BYTES];
 
     /**
-     * The serialized ECDH shared secret computed from an ECDH exchange, serialized as a
-     * {@link nl.dannyvanheumen.joldilocks.Point}.
+     * Our ECDH key pair.
      */
     private ECDHKeyPair ecdhKeyPair;
 

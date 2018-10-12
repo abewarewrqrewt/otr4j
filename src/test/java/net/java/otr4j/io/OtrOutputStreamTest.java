@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
@@ -28,6 +27,8 @@ import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
+import static net.java.otr4j.crypto.ed448.Scalar.ONE;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.SecureRandoms.random;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
@@ -360,7 +361,7 @@ public class OtrOutputStreamTest {
     @Test
     public void testWriteScalar2() {
         final byte[] expected = new byte[] {(byte) 0x8f, 0, (byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        assertArrayEquals(expected, new OtrOutputStream().writeScalar(valueOf(16711823L)).toByteArray());
+        assertArrayEquals(expected, new OtrOutputStream().writeScalar(fromBigInteger(valueOf(16711823L))).toByteArray());
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
@@ -368,7 +369,7 @@ public class OtrOutputStreamTest {
         final byte[] valueBytes = random(RANDOM, new byte[57]);
         valueBytes[56] |= 0b00000001;
         final BigInteger value = new BigInteger(1, valueBytes);
-        assertArrayEquals(valueBytes, new OtrOutputStream().writeScalar(value).toByteArray());
+        assertArrayEquals(valueBytes, new OtrOutputStream().writeScalar(fromBigInteger(value)).toByteArray());
     }
 
     @Test(expected = NullPointerException.class)

@@ -4,11 +4,12 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 
-import static java.math.BigInteger.ONE;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
+import static net.java.otr4j.crypto.ed448.Scalar.ONE;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,8 +27,8 @@ public final class Ed448Test {
 
     @Test
     public void testExpectedPrimeOrder() {
-        assertEquals(new BigInteger("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3",
-                16), primeOrder());
+        final Scalar expected = fromBigInteger(new BigInteger("3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3", 16));
+        assertEquals(expected, primeOrder());
     }
 
     @Test(expected = NullPointerException.class)

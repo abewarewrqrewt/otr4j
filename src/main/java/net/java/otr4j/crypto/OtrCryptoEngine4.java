@@ -2,6 +2,7 @@ package net.java.otr4j.crypto;
 
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.crypto.ed448.ValidationException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
@@ -14,11 +15,9 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 
-import static java.math.BigInteger.ZERO;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTH;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FINGERPRINT;
@@ -26,10 +25,10 @@ import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
+import static net.java.otr4j.crypto.ed448.Scalar.ZERO;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
-import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
-import static nl.dannyvanheumen.joldilocks.Scalars.encodeLittleEndianTo;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
@@ -263,11 +262,11 @@ public final class OtrCryptoEngine4 {
      * @return Returns derived scalar value.
      */
     @Nonnull
-    public static BigInteger hashToScalar(@Nonnull final KDFUsage usageID, @Nonnull final byte[] d) {
+    public static Scalar hashToScalar(@Nonnull final KDFUsage usageID, @Nonnull final byte[] d) {
         assert !allZeroBytes(d) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         // "Compute h = KDF_1(d, 64) as an unsigned value, little-endian."
         final byte[] hashedD = kdf1(usageID, d, HASH_TO_SCALAR_LENGTH_BYTES);
-        final BigInteger h = decodeLittleEndian(hashedD);
+        final Scalar h = decodeScalar(hashedD);
         clear(hashedD);
         // "Return h (mod q)"
         return h.mod(primeOrder());
@@ -387,11 +386,11 @@ public final class OtrCryptoEngine4 {
         final boolean eq2 = longTermPublicKey.equals(A2);
         final boolean eq3 = longTermPublicKey.equals(A3);
         // "Pick random values t1, c2, c3, r2, r3 in q."
-        final BigInteger ti = generateRandomValue(random);
-        final BigInteger cj = generateRandomValue(random);
-        final BigInteger rj = generateRandomValue(random);
-        final BigInteger ck = generateRandomValue(random);
-        final BigInteger rk = generateRandomValue(random);
+        final Scalar ti = generateRandomValue(random);
+        final Scalar cj = generateRandomValue(random);
+        final Scalar rj = generateRandomValue(random);
+        final Scalar ck = generateRandomValue(random);
+        final Scalar rk = generateRandomValue(random);
         final Point T1;
         final Point T2;
         final Point T3;
@@ -415,11 +414,11 @@ public final class OtrCryptoEngine4 {
             throw new IllegalArgumentException("Long-term key pair should match at least one of the public keys.");
         }
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
-        final BigInteger q = primeOrder();
-        final BigInteger c;
+        final Scalar q = primeOrder();
+        final Scalar c;
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             basePoint().encodeTo(buffer);
-            encodeLittleEndianTo(buffer, q);
+            q.encodeTo(buffer);
             A1.encodeTo(buffer);
             A2.encodeTo(buffer);
             A3.encodeTo(buffer);
@@ -432,9 +431,9 @@ public final class OtrCryptoEngine4 {
             throw new IllegalStateException("Failed to write point to buffer.", e);
         }
         // "Compute c1 = c - c2 - c3 (mod q)."
-        final BigInteger ci = c.subtract(cj).subtract(ck).mod(q);
+        final Scalar ci = c.subtract(cj).subtract(ck).mod(q);
         // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final BigInteger ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
+        final Scalar ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
         // TODO replace with constant-time selection
         if (eq1) {
             // "Send sigma = (c1, r1, c2, r2, c3, r3)."
@@ -455,15 +454,15 @@ public final class OtrCryptoEngine4 {
      * @return Returns a newly generated random value.
      */
     // FIXME SMP: not sure what this is exactly. Need to see how to reliably generate these values.
-    public static BigInteger generateRandomValueInZq(@Nonnull final SecureRandom random) {
+    public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
         return generateRandomValue(random);
     }
 
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (54 bytes was arbitrarily chosen. We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?).
-    private static BigInteger generateRandomValue(@Nonnull final SecureRandom random) {
+    private static Scalar generateRandomValue(@Nonnull final SecureRandom random) {
         final byte[] data = new byte[54];
         random.nextBytes(data);
-        final BigInteger value = decodeLittleEndian(data);
+        final Scalar value = decodeScalar(data);
         assert ZERO.compareTo(value) <= 0 && primeOrder().compareTo(value) > 0
             : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
         return value;
@@ -486,7 +485,7 @@ public final class OtrCryptoEngine4 {
         if (!containsPoint(A1) || !containsPoint(A2) || !containsPoint(A3)) {
             throw new OtrCryptoException("One of the public keys is invalid.");
         }
-        final BigInteger q = primeOrder();
+        final Scalar q = primeOrder();
         // "Parse sigma to retrieve components (c1, r1, c2, r2, c3, r3)."
         // Parsing happened outside of this method already. We expect a "sigma" instance to be provided.
         // "Compute T1 = G * r1 + A1 * c1"
@@ -496,10 +495,10 @@ public final class OtrCryptoEngine4 {
         // "Compute T3 = G * r3 + A3 * c3"
         final Point T3 = multiplyByBase(sigma.r3).add(A3.multiply(sigma.c3));
         // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
-        final BigInteger c;
+        final Scalar c;
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             basePoint().encodeTo(buffer);
-            encodeLittleEndianTo(buffer, q);
+            q.encodeTo(buffer);
             A1.encodeTo(buffer);
             A2.encodeTo(buffer);
             A3.encodeTo(buffer);
@@ -521,15 +520,15 @@ public final class OtrCryptoEngine4 {
      * Data structure that captures all related data for 'sigma' in the Ring Signature.
      */
     public static final class Sigma implements OtrEncodable {
-        private final BigInteger c1;
-        private final BigInteger r1;
-        private final BigInteger c2;
-        private final BigInteger r2;
-        private final BigInteger c3;
-        private final BigInteger r3;
+        private final Scalar c1;
+        private final Scalar r1;
+        private final Scalar c2;
+        private final Scalar r2;
+        private final Scalar c3;
+        private final Scalar r3;
 
-        private Sigma(@Nonnull final BigInteger c1, @Nonnull final BigInteger r1, @Nonnull final BigInteger c2,
-                @Nonnull final BigInteger r2, @Nonnull final BigInteger c3, @Nonnull final BigInteger r3) {
+        private Sigma(@Nonnull final Scalar c1, @Nonnull final Scalar r1, @Nonnull final Scalar c2,
+                @Nonnull final Scalar r2, @Nonnull final Scalar c3, @Nonnull final Scalar r3) {
             this.c1 = requireNonNull(c1);
             this.r1 = requireNonNull(r1);
             this.c2 = requireNonNull(c2);
@@ -546,12 +545,12 @@ public final class OtrCryptoEngine4 {
          * @throws ProtocolException In case of failure to read sigma from input.
          */
         public static Sigma readFrom(@Nonnull final OtrInputStream in) throws ProtocolException {
-            final BigInteger c1 = in.readScalar();
-            final BigInteger r1 = in.readScalar();
-            final BigInteger c2 = in.readScalar();
-            final BigInteger r2 = in.readScalar();
-            final BigInteger c3 = in.readScalar();
-            final BigInteger r3 = in.readScalar();
+            final Scalar c1 = in.readScalar();
+            final Scalar r1 = in.readScalar();
+            final Scalar c2 = in.readScalar();
+            final Scalar r2 = in.readScalar();
+            final Scalar c3 = in.readScalar();
+            final Scalar r3 = in.readScalar();
             return new Sigma(c1, r1, c2, r2, c3, r3);
         }
 

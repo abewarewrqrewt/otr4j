@@ -4,17 +4,17 @@ import org.bouncycastle.crypto.digests.SHAKEDigest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
-import static nl.dannyvanheumen.joldilocks.Scalars.decodeLittleEndian;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
@@ -32,11 +32,11 @@ public final class ECDHKeyPair implements AutoCloseable {
      */
     private static final int SHAKE_256_LENGTH_BITS = 256;
 
-    private BigInteger secretKey;
+    private Scalar secretKey;
 
     private final Point publicKey;
 
-    ECDHKeyPair(@Nonnull final BigInteger secretKey) {
+    ECDHKeyPair(@Nonnull final Scalar secretKey) {
         this.secretKey = requireNonNull(secretKey);
         this.publicKey = multiplyByBase(secretKey);
     }
@@ -87,7 +87,7 @@ public final class ECDHKeyPair implements AutoCloseable {
         h[SECRET_KEY_LENGTH_BYTES - 2] |= 0b10000000;
         //  - Interpret the buffer as the little-endian integer, forming the secret scalar
         //    's'.
-        final BigInteger s = decodeLittleEndian(h);
+        final Scalar s = decodeScalar(h);
         //  - Securely delete 'r' and 'h'.
         clear(r);
         clear(h);
@@ -115,7 +115,7 @@ public final class ECDHKeyPair implements AutoCloseable {
      */
     // TODO is this method really needed?
     @Nullable
-    BigInteger getSecretKey() {
+    Scalar getSecretKey() {
         return this.secretKey;
     }
 
@@ -131,7 +131,7 @@ public final class ECDHKeyPair implements AutoCloseable {
         if (this.secretKey == null) {
             throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
         }
-        final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
+        final Point sharedSecret = otherPublicKey.multiply(fromBigInteger(cofactor())).multiply(this.secretKey);
         // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.
         if (checkIdentity(sharedSecret)) {
             throw new ValidationException("Illegal ECDH public key.");

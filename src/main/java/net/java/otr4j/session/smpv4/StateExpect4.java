@@ -1,11 +1,11 @@
 package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,14 +27,14 @@ final class StateExpect4 implements SMPState {
 
     private final SecureRandom random;
 
-    private final BigInteger a3;
+    private final Scalar a3;
     private final Point g3b;
     private final Point pa;
     private final Point pb;
     private final Point qa;
     private final Point qb;
 
-    StateExpect4(@Nonnull final SecureRandom random, @Nonnull final BigInteger a3, @Nonnull final Point g3b,
+    StateExpect4(@Nonnull final SecureRandom random, @Nonnull final Scalar a3, @Nonnull final Point g3b,
             @Nonnull final Point pa, @Nonnull final Point pb, @Nonnull final Point qa, @Nonnull final Point qb) {
         this.random = requireNonNull(random);
         this.a3 = requireNonNull(a3);
@@ -54,14 +54,15 @@ final class StateExpect4 implements SMPState {
     @Nonnull
     @Override
     public SMPMessage1 initiate(@Nonnull final SMPContext context, @Nonnull final String question,
-            @Nonnull final BigInteger secret) throws SMPAbortException {
+            @Nonnull final Scalar secret) throws SMPAbortException {
         context.setState(new StateExpect1(this.random, UNDECIDED));
         throw new SMPAbortException("Not in initial state. Aborting running SMP negotiation.");
     }
 
     @Nullable
     @Override
-    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question, @Nonnull final BigInteger secret) {
+    public SMPMessage2 respondWithSecret(@Nonnull final SMPContext context, @Nonnull final String question,
+            @Nonnull final Scalar secret) {
         // Given that this is an action by the local user, we don't see this as a violation of the protocol. Therefore,
         // we don't abort.
         LOGGER.log(Level.WARNING, "Requested to respond with secret answer, but no request is pending. Ignoring request.");

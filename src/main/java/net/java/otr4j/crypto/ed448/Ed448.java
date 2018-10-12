@@ -4,10 +4,10 @@ import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import java.math.BigInteger;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
+import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 
 /**
  * Class that provides access to Ed448 constants.
@@ -25,6 +25,7 @@ public final class Ed448 {
      *
      * @return Returns base point.
      */
+    // FIXME extract constant
     @Nonnull
     public static Point basePoint() {
         return new Point(nl.dannyvanheumen.joldilocks.Ed448.basePoint());
@@ -35,9 +36,21 @@ public final class Ed448 {
      *
      * @return Returns prime order.
      */
+    // FIXME extract constant
     @Nonnull
-    public static BigInteger primeOrder() {
-        return nl.dannyvanheumen.joldilocks.Ed448.primeOrder();
+    public static Scalar primeOrder() {
+        return fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.primeOrder());
+    }
+
+    /**
+     * Access cofactor of Ed448-Goldilocks curve.
+     *
+     * @return Returns cofactor.
+     */
+    // FIXME extract constant
+    @Nonnull
+    public static Scalar cofactor() {
+        return fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.cofactor());
     }
 
     /**
@@ -57,8 +70,8 @@ public final class Ed448 {
      * @return Returns the point resulting from the multiplication.
      */
     @Nonnull
-    public static Point multiplyByBase(@Nonnull final BigInteger scalar) {
-        return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar));
+    public static Point multiplyByBase(@Nonnull final Scalar scalar) {
+        return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.value));
     }
 
     /**
