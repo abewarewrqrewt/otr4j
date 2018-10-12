@@ -7,7 +7,7 @@
 
 package net.java.otr4j.api;
 
-import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;

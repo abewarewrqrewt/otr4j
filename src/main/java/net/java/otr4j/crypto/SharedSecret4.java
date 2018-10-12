@@ -1,5 +1,7 @@
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.ValidationException;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Point;
@@ -13,7 +15,7 @@ import java.security.SecureRandom;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.DH_PRIVATE_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.DHKeyPair.checkPublicKey;
-import static net.java.otr4j.crypto.ECDHKeyPair.SECRET_KEY_LENGTH_BYTES;
+import static net.java.otr4j.crypto.ed448.ECDHKeyPair.SECRET_KEY_LENGTH_BYTES;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.BRACE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DH_FIRST_EPHEMERAL;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ECDH_FIRST_EPHEMERAL;
@@ -261,7 +263,7 @@ public final class SharedSecret4 implements AutoCloseable {
         final byte[] k_ecdh;
         try {
             k_ecdh = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encode();
-        } catch (final OtrCryptoException e) {
+        } catch (final ValidationException e) {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }
         if (performDHRatchet) {

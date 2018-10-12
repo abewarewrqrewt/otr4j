@@ -2,7 +2,7 @@ package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 
 import javax.annotation.Nonnull;

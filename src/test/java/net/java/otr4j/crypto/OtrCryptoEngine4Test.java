@@ -1,5 +1,7 @@
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
 import org.junit.Ignore;

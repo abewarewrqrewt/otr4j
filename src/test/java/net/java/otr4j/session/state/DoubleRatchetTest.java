@@ -1,7 +1,7 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;

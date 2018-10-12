@@ -1,5 +1,6 @@
 package net.java.otr4j.crypto;
 
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
@@ -249,23 +250,6 @@ public final class OtrCryptoEngine4 {
         final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(OTR4_PREFIX, 0, OTR4_PREFIX.length);
         digest.update(usageID.value);
-        digest.update(input, 0, input.length);
-        digest.doFinal(dst, offset, outputSize);
-    }
-
-    /**
-     * SHAKE-256 hash function.
-     *
-     * @param dst        The destination for the hash digest.
-     * @param offset     The offset on which to start writing the digest.
-     * @param input      The input data for the hash function.
-     * @param outputSize The output size of the digest.
-     */
-    static void shake256(@Nonnull final byte[] dst, final int offset, @Nonnull final byte[] input, final int outputSize) {
-        requireNonNull(dst);
-        requireAtLeast(0, outputSize);
-        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
-        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
         digest.update(input, 0, input.length);
         digest.doFinal(dst, offset, outputSize);
     }

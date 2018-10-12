@@ -9,7 +9,7 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;

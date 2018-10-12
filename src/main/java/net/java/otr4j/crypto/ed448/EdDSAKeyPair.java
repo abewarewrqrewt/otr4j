@@ -1,4 +1,4 @@
-package net.java.otr4j.crypto;
+package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Ed448;
 import nl.dannyvanheumen.joldilocks.Ed448KeyPair;
@@ -45,15 +45,15 @@ public final class EdDSAKeyPair {
      * @param publicKey The public key of the key pair that generated the signature.
      * @param message   The message that was signed.
      * @param signature The signature.
-     * @throws OtrCryptoException In case the signature does not match.
+     * @throws ValidationException In case we fail to validate the message against the provided signature.
      */
     public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature)
-            throws OtrCryptoException {
+            throws ValidationException {
         assert !allZeroBytes(signature) : "Expected random data for signature instead of all zero-bytes.";
         try {
             Ed448.verify(ED448_CONTEXT, publicKey, message, signature);
         } catch (final Ed448.SignatureVerificationFailedException e) {
-            throw new OtrCryptoException("Signature is not valid for provided message.", e);
+            throw new ValidationException("Signature is not valid for provided message.", e);
         }
     }
 
@@ -86,7 +86,7 @@ public final class EdDSAKeyPair {
      * @return Returns symmetric key.
      */
     @Nonnull
-    BigInteger getSecretKey() {
+    public BigInteger getSecretKey() {
         return this.keypair.getSecretKey();
     }
 }

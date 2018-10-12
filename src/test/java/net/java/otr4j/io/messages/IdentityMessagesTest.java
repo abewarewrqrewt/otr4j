@@ -2,8 +2,8 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ECDHKeyPair;
-import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import org.junit.Test;
 

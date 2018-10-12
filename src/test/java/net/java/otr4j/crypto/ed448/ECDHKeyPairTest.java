@@ -1,4 +1,4 @@
-package net.java.otr4j.crypto;
+package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Point;
 import nl.dannyvanheumen.joldilocks.Points;
@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static net.java.otr4j.crypto.ECDHKeyPair.generate;
+import static net.java.otr4j.crypto.ed448.ECDHKeyPair.generate;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,7 +52,7 @@ public class ECDHKeyPairTest {
     }
 
     @Test
-    public void testSharedSecretIsSymmetric() throws OtrCryptoException {
+    public void testSharedSecretIsSymmetric() throws ValidationException {
         final ECDHKeyPair keypair1 = ECDHKeyPair.generate(RANDOM);
         final ECDHKeyPair keypair2 = ECDHKeyPair.generate(RANDOM);
         final Point shared1 = keypair1.generateSharedSecret(keypair2.getPublicKey());
@@ -61,8 +61,8 @@ public class ECDHKeyPairTest {
         assertEquals(shared1.y(), shared2.y());
     }
 
-    @Test(expected = OtrCryptoException.class)
-    public void testSharedSecretDoesNotAcceptIdentity() throws OtrCryptoException {
+    @Test(expected = ValidationException.class)
+    public void testSharedSecretDoesNotAcceptIdentity() throws ValidationException {
         final ECDHKeyPair keypair1 = ECDHKeyPair.generate(RANDOM);
         keypair1.generateSharedSecret(Points.identity());
     }

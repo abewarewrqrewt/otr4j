@@ -1,6 +1,6 @@
 package net.java.otr4j.api;
 
-import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import org.junit.Test;
 
 import java.security.KeyPair;
@@ -10,7 +10,7 @@ import java.util.Collections;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.crypto.EdDSAKeyPair.generate;
+import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
 
 @SuppressWarnings("ConstantConditions")

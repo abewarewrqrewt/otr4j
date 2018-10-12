@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
 import static net.java.otr4j.crypto.DHKeyPairs.verifyDHPublicKey;
-import static net.java.otr4j.crypto.ECDHKeyPairs.verifyECDHPublicKey;
+import static net.java.otr4j.crypto.ed448.ECDHKeyPairs.verifyECDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringVerify;
 import static net.java.otr4j.io.messages.MysteriousT4.Purpose.AUTH_R;
 import static net.java.otr4j.io.messages.MysteriousT4.encode;
@@ -48,7 +48,11 @@ public final class AuthRMessages {
         if (message.protocolVersion != Session.OTRv.FOUR) {
             throw new IllegalStateException("Auth-R message should not have any other protocol version than 4.");
         }
-        verifyECDHPublicKey(message.getX());
+        try {
+            verifyECDHPublicKey(message.getX());
+        } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
+            throw new ValidationException("Illegal ECDH public key.", e);
+        }
         verifyDHPublicKey(message.getA());
         final ClientProfile theirProfile = message.getClientProfile().validate();
         if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {

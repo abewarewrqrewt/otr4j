@@ -3,7 +3,7 @@ package net.java.otr4j.io.messages;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
@@ -318,7 +318,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         }
         try {
             EdDSAKeyPair.verify(longTermPublicKey, m, signature);
-        } catch (final OtrCryptoException e) {
+        } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
             throw new ValidationException("Verification of EdDSA signature failed.", e);
         }
         // FIXME verify that we only add the DSA long-term public key *after* successful verification of the transitional signature.

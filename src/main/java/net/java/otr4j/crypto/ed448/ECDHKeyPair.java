@@ -1,6 +1,7 @@
-package net.java.otr4j.crypto;
+package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Point;
+import org.bouncycastle.crypto.digests.SHAKEDigest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -8,9 +9,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.shake256;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static nl.dannyvanheumen.joldilocks.Points.checkIdentity;
@@ -25,7 +26,12 @@ public final class ECDHKeyPair implements AutoCloseable {
     /**
      * Length of the secret key in bytes.
      */
-    static final int SECRET_KEY_LENGTH_BYTES = 57;
+    public static final int SECRET_KEY_LENGTH_BYTES = 57;
+
+    /**
+     * Bit-size for SHAKE-256.
+     */
+    private static final int SHAKE_256_LENGTH_BITS = 256;
 
     private BigInteger secretKey;
 
@@ -70,7 +76,7 @@ public final class ECDHKeyPair implements AutoCloseable {
         final byte[] h = new byte[SECRET_KEY_LENGTH_BYTES];
         {
             final byte[] buffer = new byte[114];
-            shake256(buffer, 0, r, buffer.length);
+            shake256(buffer, r, buffer.length);
             System.arraycopy(buffer, 0, h, 0, SECRET_KEY_LENGTH_BYTES);
         }
         //  - prune 'h': the two least significant bits of the first byte are cleared, all
@@ -119,17 +125,17 @@ public final class ECDHKeyPair implements AutoCloseable {
      *
      * @param otherPublicKey The other party's public key.
      * @return Returns the shared secret point.
-     * @throws OtrCryptoException In case of illegal ECDH public key.
+     * @throws ValidationException In case of illegal ECDH public key.
      */
     @Nonnull
-    public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws OtrCryptoException {
+    public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws ValidationException {
         if (this.secretKey == null) {
             throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
         }
         final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
         // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.
         if (checkIdentity(sharedSecret)) {
-            throw new OtrCryptoException("Illegal ECDH public key.");
+            throw new ValidationException("Illegal ECDH public key.");
         }
         return sharedSecret;
     }
@@ -141,5 +147,21 @@ public final class ECDHKeyPair implements AutoCloseable {
     @Override
     public void close() {
         this.secretKey = null;
+    }
+
+    /**
+     * SHAKE-256 hash function.
+     *
+     * @param dst        The destination for the hash digest.
+     * @param input      The input data for the hash function.
+     * @param outputSize The output size of the digest.
+     */
+    private static void shake256(@Nonnull final byte[] dst, @Nonnull final byte[] input, final int outputSize) {
+        requireNonNull(dst);
+        requireAtLeast(0, outputSize);
+        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
+        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
+        digest.update(input, 0, input.length);
+        digest.doFinal(dst, 0, outputSize);
     }
 }

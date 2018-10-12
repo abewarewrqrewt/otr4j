@@ -10,7 +10,7 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;

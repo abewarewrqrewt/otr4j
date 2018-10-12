@@ -9,8 +9,8 @@ package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ECDHKeyPair;
-import net.java.otr4j.crypto.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;

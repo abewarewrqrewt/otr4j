@@ -1,4 +1,4 @@
-package net.java.otr4j.crypto;
+package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Point;
 import org.junit.Test;
@@ -6,8 +6,8 @@ import org.junit.Test;
 import java.security.SecureRandom;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.java.otr4j.crypto.EdDSAKeyPair.generate;
-import static net.java.otr4j.crypto.EdDSAKeyPair.verify;
+import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
+import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.verify;
 import static nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -43,49 +43,49 @@ public final class EdDSAKeyPairTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testVerifyNullPublicKey() throws OtrCryptoException {
+    public void testVerifyNullPublicKey() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         final byte[] sig = this.keypair.sign(message);
         verify(null, message, sig);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testVerifyNullMessage() throws OtrCryptoException {
+    public void testVerifyNullMessage() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         final byte[] sig = this.keypair.sign(message);
         verify(this.keypair.getPublicKey(), null, sig);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testVerifyNullSignature() throws OtrCryptoException {
+    public void testVerifyNullSignature() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         verify(this.keypair.getPublicKey(), message, null);
     }
 
     @Test
-    public void testSignatureIsVerifiable() throws OtrCryptoException {
+    public void testSignatureIsVerifiable() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         final byte[] sig = this.keypair.sign(message);
         verify(this.keypair.getPublicKey(), message, sig);
     }
 
-    @Test(expected = OtrCryptoException.class)
-    public void testVerifyWrongPublicKey() throws OtrCryptoException {
+    @Test(expected = ValidationException.class)
+    public void testVerifyWrongPublicKey() throws ValidationException {
         final EdDSAKeyPair keypair2 = EdDSAKeyPair.generate(RANDOM);
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         final byte[] sig = this.keypair.sign(message);
         verify(keypair2.getPublicKey(), message, sig);
     }
 
-    @Test(expected = OtrCryptoException.class)
-    public void testVerifyWrongMessage() throws OtrCryptoException {
+    @Test(expected = ValidationException.class)
+    public void testVerifyWrongMessage() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         final byte[] sig = this.keypair.sign(message);
         verify(this.keypair.getPublicKey(), "bladkfjsaf".getBytes(UTF_8), sig);
     }
 
-    @Test(expected = OtrCryptoException.class)
-    public void testVerifyWrongSignature() throws OtrCryptoException {
+    @Test(expected = ValidationException.class)
+    public void testVerifyWrongSignature() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
         final byte[] sig = this.keypair.sign(message);
         sig[0] = 0;
