@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!DOCTYPE import-control PUBLIC "-//Checkstyle//DTD ImportControl Configuration 1.4//EN"
+        "https://checkstyle.org/dtds/import_control_1_4.dtd">
+<import-control pkg="net.java.otr4j" strategyOnMismatch="allowed">
+
+    <!-- Generally allow utilities -->
+    <allow pkg="net.java.otr4j.util"/>
+    <allow pkg="org.bouncycastle.util"/>
+
+    <!-- Prevent cryptographic logic from being littered all over the place. Ensure it concentrates in the 'crypto' package. -->
+    <disallow pkg="nl.dannyvanheumen.joldilocks"/>
+    <disallow pkg="org.bouncycastle"/>
+
+    <subpackage name="util">
+        <disallow pkg="net.java.otr4j"/>
+    </subpackage>
+    <subpackage name="crypto">
+        <allow pkg="org.bouncycastle"/>
+        <subpackage name="ed448">
+            <allow pkg="nl.dannyvanheumen.joldilocks"/>
+        </subpackage>
+    </subpackage>
+    <subpackage name="api">
+        <!-- TODO A violation that is accepted for now, but should be fixed some day. -->
+        <allow class="net.java.otr4j.io.messages.ClientProfilePayload"/>
+
+        <allow pkg="net.java.otr4j.util"/>
+        <allow pkg="net.java.otr4j.crypto"/>
+        <allow pkg="net.java.otr4j.api"/>
+        <disallow pkg="net.java.otr4j"/>
+    </subpackage>
+    <subpackage name="io">
+        <allow pkg="net.java.otr4j.util"/>
+        <allow pkg="net.java.otr4j.crypto"/>
+        <allow pkg="net.java.otr4j.api"/>
+        <allow pkg="net.java.otr4j.io"/>
+        <disallow pkg="net.java.otr4j"/>
+    </subpackage>
+    <subpackage name="session">
+        <allow pkg="net.java.otr4j.util"/>
+        <allow pkg="net.java.otr4j.crypto"/>
+        <allow pkg="net.java.otr4j.api"/>
+        <allow pkg="net.java.otr4j.io"/>
+        <allow pkg="net.java.otr4j.session"/>
+        <disallow pkg="net.java.otr4j"/>
+    </subpackage>
+</import-control>
