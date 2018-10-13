@@ -11,53 +11,67 @@
     <disallow pkg="nl.dannyvanheumen.joldilocks"/>
     <disallow pkg="org.bouncycastle"/>
 
-    <subpackage name="util">
-        <allow pkg="net.java.otr4j.util"/>
-        <disallow pkg="net.java.otr4j"/>
-    </subpackage>
+    <!-- Disallow imports from arbitrary parts of the library. -->
+    <disallow pkg="net.java.otr4j"/>
+
+    <subpackage name="util"/>
     <subpackage name="crypto">
         <allow pkg="org.bouncycastle"/>
-
         <!-- TODO a violation that is accepted for now, but should be fixed some day. (This issue seems to indicate that we shouldn't make 'messages' a subpackage of 'io'.) -->
-        <allow pkg="net.java.otr4j.io" exact-match="true"/>
+        <allow local-only="true" pkg="net.java.otr4j.io" exact-match="true"/>
         <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
-        <allow class="net.java.otr4j.session.ake.SecurityParameters4" exact-match="true"/>
+        <allow local-only="true" class="net.java.otr4j.session.ake.SecurityParameters4" exact-match="true"/>
 
-        <allow pkg="net.java.otr4j.util"/>
-        <allow pkg="net.java.otr4j.crypto"/>
         <allow pkg="net.java.otr4j.api"/>
-        <disallow pkg="net.java.otr4j"/>
+        <allow local-only="true" pkg="net.java.otr4j.crypto"/>
 
         <subpackage name="ed448">
             <allow pkg="nl.dannyvanheumen.joldilocks"/>
 
-            <allow pkg="net.java.otr4j.util"/>
-            <allow pkg="net.java.otr4j.crypto.ed448"/>
-            <disallow pkg="net.java.otr4j"/>
+            <allow local-only="true" pkg="net.java.otr4j.crypto.ed448"/>
         </subpackage>
     </subpackage>
     <subpackage name="api">
         <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
-        <allow class="net.java.otr4j.io.messages.ClientProfilePayload"/>
+        <allow local-only="true" class="net.java.otr4j.io.messages.ClientProfilePayload" exact-match="true"/>
 
-        <allow pkg="net.java.otr4j.util"/>
         <allow pkg="net.java.otr4j.crypto"/>
-        <allow pkg="net.java.otr4j.api"/>
-        <disallow pkg="net.java.otr4j"/>
+        <allow local-only="true" pkg="net.java.otr4j.api"/>
     </subpackage>
     <subpackage name="io">
-        <allow pkg="net.java.otr4j.util"/>
         <allow pkg="net.java.otr4j.crypto"/>
         <allow pkg="net.java.otr4j.api"/>
-        <allow pkg="net.java.otr4j.io"/>
-        <disallow pkg="net.java.otr4j"/>
+        <allow local-only="true" pkg="net.java.otr4j.io"/>
+
+        <subpackage name="messages">
+            <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
+            <allow local-only="true" pkg="net.java.otr4j.io"/>
+
+            <allow local-only="true" pkg="net.java.otr4j.io.messages"/>
+        </subpackage>
     </subpackage>
     <subpackage name="session">
-        <allow pkg="net.java.otr4j.util"/>
         <allow pkg="net.java.otr4j.crypto"/>
         <allow pkg="net.java.otr4j.api"/>
         <allow pkg="net.java.otr4j.io"/>
-        <allow pkg="net.java.otr4j.session"/>
-        <disallow pkg="net.java.otr4j"/>
+        <allow local-only="true" pkg="net.java.otr4j.session"/>
+        <allow pkg="net.java.otr4j.session.api"/>
+
+        <subpackage name="api"/>
+        <subpackage name="ake">
+            <allow local-only="true" pkg="net.java.otr4j.session.ake"/>
+        </subpackage>
+        <subpackage name="smp">
+            <allow local-only="true" pkg="net.java.otr4j.session.smp"/>
+        </subpackage>
+        <subpackage name="smpv4">
+            <allow local-only="true" pkg="net.java.otr4j.session.smpv4"/>
+        </subpackage>
+        <subpackage name="state">
+            <allow pkg="net.java.otr4j.session.ake"/>
+            <allow pkg="net.java.otr4j.session.smp"/>
+            <allow pkg="net.java.otr4j.session.smpv4"/>
+            <allow local-only="true" pkg="net.java.otr4j.session.state"/>
+        </subpackage>
     </subpackage>
 </import-control>
