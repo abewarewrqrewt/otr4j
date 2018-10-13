@@ -14,6 +14,8 @@ Development stages:
 * ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
 * ✔ Socialist Millionaire's Protocol for OTRv4.
 * ⌛ Migrate Ed448-Goldilocks implementation to Bouncy Castle.
+  * ✔ EdDSA long-term keypair
+  * ECDH keypair
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
 * Full implementation for "OTRv4 Interactive" use-case

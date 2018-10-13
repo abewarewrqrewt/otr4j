@@ -1,14 +1,21 @@
 package net.java.otr4j.crypto.ed448;
 
-import nl.dannyvanheumen.joldilocks.Ed448;
-import nl.dannyvanheumen.joldilocks.Ed448KeyPair;
+import org.bouncycastle.crypto.digests.SHAKEDigest;
+import org.bouncycastle.math.ec.rfc8032.Ed448;
 
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
 
-import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.Point.decodePoint;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static net.java.otr4j.util.SecureRandoms.random;
+import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
+import static org.bouncycastle.math.ec.rfc8032.Ed448.SECRET_KEY_SIZE;
+import static org.bouncycastle.math.ec.rfc8032.Ed448.generatePublicKey;
+import static org.bouncycastle.util.Arrays.clear;
+import static org.bouncycastle.util.Arrays.copyOfRange;
 
 /**
  * EdDSA key pair.
@@ -16,14 +23,23 @@ import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 public final class EdDSAKeyPair {
 
     /**
+     * Length in bits of SHAKE-256.
+     */
+    private static final int SHAKE_256_LENGTH_BITS = 256;
+
+    /**
      * Context value as applied in OTRv4.
      */
     private static final byte[] ED448_CONTEXT = new byte[0];
 
-    private final Ed448KeyPair keypair;
+    private final byte[] symmetricKey;
+    private final byte[] publicKey;
 
-    private EdDSAKeyPair(@Nonnull final Ed448KeyPair keypair) {
-        this.keypair = requireNonNull(keypair);
+    private EdDSAKeyPair(@Nonnull final byte[] symmetricKey, @Nonnull final byte[] publicKey) {
+        assert !allZeroBytes(symmetricKey);
+        this.symmetricKey = requireLengthExactly(SECRET_KEY_SIZE, symmetricKey);
+        assert !allZeroBytes(publicKey);
+        this.publicKey = requireLengthExactly(PUBLIC_KEY_SIZE, publicKey);
     }
 
     /**
@@ -35,7 +51,10 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public static EdDSAKeyPair generate(@Nonnull final SecureRandom random) {
-        return new EdDSAKeyPair(Ed448KeyPair.create(Ed448.generateSymmetricKey(random)));
+        final byte[] symmetricKey = random(random, new byte[SECRET_KEY_SIZE]);
+        final byte[] publicKey = new byte[PUBLIC_KEY_SIZE];
+        generatePublicKey(symmetricKey, 0, publicKey, 0);
+        return new EdDSAKeyPair(symmetricKey, publicKey);
     }
 
     /**
@@ -46,19 +65,18 @@ public final class EdDSAKeyPair {
      * @param signature The signature.
      * @throws ValidationException In case we fail to validate the message against the provided signature.
      */
+    // TODO in some cases, a non-static method may be desirable because the keypair is available.
     public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature)
             throws ValidationException {
         assert !allZeroBytes(signature) : "Expected random data for signature instead of all zero-bytes.";
-        try {
-            Ed448.verify(ED448_CONTEXT, publicKey.p, message, signature);
-        } catch (final Ed448.SignatureVerificationFailedException e) {
-            throw new ValidationException("Signature is not valid for provided message.", e);
+        if (!Ed448.verify(signature, 0, publicKey.p.encode(), 0, ED448_CONTEXT, message, 0, message.length)) {
+            throw new ValidationException("Signature is not valid for provided message.");
         }
     }
 
     /**
      * Sign message.
-     *
+     * <p>
      * Signs the message using the default context as used in OTRv4.
      *
      * @param message The message to be signed.
@@ -66,7 +84,9 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public byte[] sign(@Nonnull final byte[] message) {
-        return this.keypair.sign(ED448_CONTEXT, message);
+        final byte[] signature = new byte[Ed448.SIGNATURE_SIZE];
+        Ed448.sign(this.symmetricKey, 0, ED448_CONTEXT, message, 0, message.length, signature, 0);
+        return signature;
     }
 
     /**
@@ -76,16 +96,34 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public Point getPublicKey() {
-        return new Point(this.keypair.getPublicKey());
+        try {
+            return decodePoint(this.publicKey);
+        } catch (ValidationException e) {
+            throw new IllegalStateException("BUG: The public key is expected to always be correct as it is part of the EdDSA key pair.");
+        }
     }
 
     /**
-     * Symmetric key.
+     * Acquire secret key from the key pair.
      *
-     * @return Returns symmetric key.
+     * @return Returns secret key.
      */
     @Nonnull
     public Scalar getSecretKey() {
-        return fromBigInteger(this.keypair.getSecretKey());
+        // FIXME extract common code related to SHAKE256
+        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
+        digest.update(this.symmetricKey, 0, this.symmetricKey.length);
+        final byte[] h = new byte[2 * SECRET_KEY_SIZE];
+        digest.doFinal(h, 0, h.length);
+        final byte[] secretKey = copyOfRange(h, 0, SECRET_KEY_SIZE);
+        clear(h);
+        secretKey[0] &= 0b11111100;
+        secretKey[56] = 0;
+        secretKey[55] |= 0b10000000;
+        try {
+            return decodeScalar(secretKey);
+        } finally {
+            clear(secretKey);
+        }
     }
 }
