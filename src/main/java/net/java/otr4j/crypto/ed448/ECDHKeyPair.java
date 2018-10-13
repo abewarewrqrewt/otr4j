@@ -1,7 +1,5 @@
 package net.java.otr4j.crypto.ed448;
 
-import org.bouncycastle.crypto.digests.SHAKEDigest;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.SecureRandom;
@@ -11,11 +9,12 @@ import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.Shake256.shake256;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static net.java.otr4j.util.Integers.requireAtLeast;
 import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static org.bouncycastle.util.Arrays.clear;
+import static org.bouncycastle.util.Arrays.copyOfRange;
 
 /**
  * ECDH keypair based on Ed448-Goldilocks.
@@ -26,11 +25,6 @@ public final class ECDHKeyPair implements AutoCloseable {
      * Length of the secret key in bytes.
      */
     public static final int SECRET_KEY_LENGTH_BYTES = 57;
-
-    /**
-     * Bit-size for SHAKE-256.
-     */
-    private static final int SHAKE_256_LENGTH_BITS = 256;
 
     private Scalar secretKey;
 
@@ -72,11 +66,11 @@ public final class ECDHKeyPair implements AutoCloseable {
         //  - Hash the 'r' using 'SHAKE-256(r, 114)'. Store the digest in a
         //    114-byte buffer. Only the lower 57 bytes (denoted 'h') are used for
         //    generating the public key.
-        final byte[] h = new byte[SECRET_KEY_LENGTH_BYTES];
+        final byte[] h;
         {
-            final byte[] buffer = new byte[114];
-            shake256(buffer, r, buffer.length);
-            System.arraycopy(buffer, 0, h, 0, SECRET_KEY_LENGTH_BYTES);
+            final byte[] buffer = shake256(r, 114);
+            h = copyOfRange(buffer, 0, SECRET_KEY_LENGTH_BYTES);
+            clear(buffer);
         }
         //  - prune 'h': the two least significant bits of the first byte are cleared, all
         //    eight bits of the last byte are cleared, and the highest bit of the second
@@ -146,21 +140,5 @@ public final class ECDHKeyPair implements AutoCloseable {
     @Override
     public void close() {
         this.secretKey = null;
-    }
-
-    /**
-     * SHAKE-256 hash function.
-     *
-     * @param dst        The destination for the hash digest.
-     * @param input      The input data for the hash function.
-     * @param outputSize The output size of the digest.
-     */
-    private static void shake256(@Nonnull final byte[] dst, @Nonnull final byte[] input, final int outputSize) {
-        requireNonNull(dst);
-        requireAtLeast(0, outputSize);
-        assert !allZeroBytes(input) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
-        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
-        digest.update(input, 0, input.length);
-        digest.doFinal(dst, 0, outputSize);
     }
 }

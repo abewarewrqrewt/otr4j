@@ -1,6 +1,5 @@
 package net.java.otr4j.crypto.ed448;
 
-import org.bouncycastle.crypto.digests.SHAKEDigest;
 import org.bouncycastle.math.ec.rfc8032.Ed448;
 
 import javax.annotation.Nonnull;
@@ -8,6 +7,7 @@ import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
+import static net.java.otr4j.crypto.ed448.Shake256.shake256;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.SecureRandoms.random;
@@ -20,12 +20,8 @@ import static org.bouncycastle.util.Arrays.copyOfRange;
 /**
  * EdDSA key pair.
  */
+// FIXME implement AutoCloseable such that cryptographic material can be cleaned up appropriately.
 public final class EdDSAKeyPair {
-
-    /**
-     * Length in bits of SHAKE-256.
-     */
-    private static final int SHAKE_256_LENGTH_BITS = 256;
 
     /**
      * Context value as applied in OTRv4.
@@ -110,11 +106,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public Scalar getSecretKey() {
-        // FIXME extract common code related to SHAKE256
-        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
-        digest.update(this.symmetricKey, 0, this.symmetricKey.length);
-        final byte[] h = new byte[2 * SECRET_KEY_SIZE];
-        digest.doFinal(h, 0, h.length);
+        final byte[] h = shake256(this.symmetricKey, 2 * SECRET_KEY_SIZE);
         final byte[] secretKey = copyOfRange(h, 0, SECRET_KEY_SIZE);
         clear(h);
         secretKey[0] &= 0b11111100;
