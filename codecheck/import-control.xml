@@ -12,16 +12,32 @@
     <disallow pkg="org.bouncycastle"/>
 
     <subpackage name="util">
+        <allow pkg="net.java.otr4j.util"/>
         <disallow pkg="net.java.otr4j"/>
     </subpackage>
     <subpackage name="crypto">
         <allow pkg="org.bouncycastle"/>
+
+        <!-- TODO a violation that is accepted for now, but should be fixed some day. (This issue seems to indicate that we shouldn't make 'messages' a subpackage of 'io'.) -->
+        <allow pkg="net.java.otr4j.io" exact-match="true"/>
+        <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
+        <allow class="net.java.otr4j.session.ake.SecurityParameters4" exact-match="true"/>
+
+        <allow pkg="net.java.otr4j.util"/>
+        <allow pkg="net.java.otr4j.crypto"/>
+        <allow pkg="net.java.otr4j.api"/>
+        <disallow pkg="net.java.otr4j"/>
+
         <subpackage name="ed448">
             <allow pkg="nl.dannyvanheumen.joldilocks"/>
+
+            <allow pkg="net.java.otr4j.util"/>
+            <allow pkg="net.java.otr4j.crypto.ed448"/>
+            <disallow pkg="net.java.otr4j"/>
         </subpackage>
     </subpackage>
     <subpackage name="api">
-        <!-- TODO A violation that is accepted for now, but should be fixed some day. -->
+        <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
         <allow class="net.java.otr4j.io.messages.ClientProfilePayload"/>
 
         <allow pkg="net.java.otr4j.util"/>
