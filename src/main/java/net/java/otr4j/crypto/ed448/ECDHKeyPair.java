@@ -6,13 +6,12 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
+import static net.java.otr4j.crypto.ed448.Ed448.cofactor;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.crypto.ed448.Shake256.shake256;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static nl.dannyvanheumen.joldilocks.Ed448.cofactor;
 import static org.bouncycastle.util.Arrays.clear;
 import static org.bouncycastle.util.Arrays.copyOfRange;
 
@@ -125,7 +124,7 @@ public final class ECDHKeyPair implements AutoCloseable {
         if (this.secretKey == null) {
             throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
         }
-        final Point sharedSecret = otherPublicKey.multiply(fromBigInteger(cofactor())).multiply(this.secretKey);
+        final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
         // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.
         if (checkIdentity(sharedSecret)) {
             throw new ValidationException("Illegal ECDH public key.");

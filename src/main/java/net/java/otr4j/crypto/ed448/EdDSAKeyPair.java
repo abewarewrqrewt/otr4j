@@ -110,8 +110,8 @@ public final class EdDSAKeyPair {
         final byte[] secretKey = copyOfRange(h, 0, SECRET_KEY_SIZE);
         clear(h);
         secretKey[0] &= 0b11111100;
-        secretKey[56] = 0;
-        secretKey[55] |= 0b10000000;
+        secretKey[SECRET_KEY_SIZE - 1] = 0;
+        secretKey[SECRET_KEY_SIZE - 2] |= 0b10000000;
         try {
             return decodeScalar(secretKey);
         } finally {
