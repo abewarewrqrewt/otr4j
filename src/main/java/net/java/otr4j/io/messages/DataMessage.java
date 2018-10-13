@@ -72,7 +72,7 @@ public final class DataMessage extends AbstractEncodedMessage {
     public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,
             @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag) {
         this(t.protocolVersion, t.flags, t.senderKeyID, t.recipientKeyID, t.nextDH, t.ctr, t.encryptedMessage, mac,
-            oldMacKeys, senderInstanceTag, receiverInstanceTag);
+                oldMacKeys, senderInstanceTag, receiverInstanceTag);
     }
 
     /**
