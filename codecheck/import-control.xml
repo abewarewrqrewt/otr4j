@@ -10,6 +10,8 @@
     <!-- Prevent cryptographic logic from being littered all over the place. Ensure it concentrates in the 'crypto' package. -->
     <disallow pkg="nl.dannyvanheumen.joldilocks"/>
     <disallow pkg="org.bouncycastle"/>
+    <allow pkg="javax.crypto.interfaces"/>
+    <disallow pkg="javax.crypto"/>
 
     <!-- Disallow imports from arbitrary parts of the library. -->
     <disallow pkg="net.java.otr4j"/>
@@ -17,6 +19,8 @@
     <subpackage name="util"/>
     <subpackage name="crypto">
         <allow pkg="org.bouncycastle"/>
+        <allow pkg="javax.crypto"/>
+
         <!-- TODO a violation that is accepted for now, but should be fixed some day. (This issue seems to indicate that we shouldn't make 'messages' a subpackage of 'io'.) -->
         <allow local-only="true" pkg="net.java.otr4j.io" exact-match="true"/>
         <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
