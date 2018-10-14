@@ -94,7 +94,7 @@ public final class EdDSAKeyPair {
     public Point getPublicKey() {
         try {
             return decodePoint(this.publicKey);
-        } catch (ValidationException e) {
+        } catch (final ValidationException e) {
             throw new IllegalStateException("BUG: The public key is expected to always be correct as it is part of the EdDSA key pair.");
         }
     }

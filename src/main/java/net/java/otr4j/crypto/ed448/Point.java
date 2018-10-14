@@ -119,7 +119,6 @@ public final class Point {
      * @param out the destination output stream
      * @throws IOException In case of failure in the output stream during encoding.
      */
-    @Nonnull
     public void encodeTo(@Nonnull final OutputStream out) throws IOException {
         this.p.encodeTo(out);
     }
