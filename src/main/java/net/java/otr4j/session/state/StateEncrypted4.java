@@ -210,6 +210,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
+            // TODO (how to) handle corrupt TLVs appropriately, as being discussed in https://github.com/otrv4/otrv4/commit/dcd62e4f036830261c35f63ecc775d0ba628f8d8 (may not be final conclusion)
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
                 final TLV response = this.smp.process(tlv);

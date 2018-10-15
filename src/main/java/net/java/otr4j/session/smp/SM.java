@@ -27,8 +27,8 @@ import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.math.BigInteger;
+import java.net.ProtocolException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Objects;
@@ -122,7 +122,7 @@ final class SM {
                 ints[i] = in.readBigInt();
             }
             return ints;
-        } catch (final IOException ex) {
+        } catch (final ProtocolException ex) {
             throw new SMException("cannot deserialize bigints", ex);
         }
     }

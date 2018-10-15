@@ -467,7 +467,7 @@ public final class OtrCryptoEngine4 {
         random.nextBytes(data);
         final Scalar scalar = fromBigInteger(new BigInteger(1, reverse(data))).mod(primeOrder());
         assert ZERO.compareTo(scalar) <= 0 && primeOrder().compareTo(scalar) > 0
-            : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
+                : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
         return scalar;
     }
 
