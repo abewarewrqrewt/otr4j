@@ -120,7 +120,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      *
      * @param in The OTR-encoded input stream.
      * @return Returns ClientProfilePayload as read from input stream.
-     * @throws ProtocolException  Throws IOException in case of reading failure.
+     * @throws ProtocolException  In case of failure to read the expected data from the input stream.
      * @throws OtrCryptoException In case of failure to restore cryptographic components in the payload.
      */
     @Nonnull

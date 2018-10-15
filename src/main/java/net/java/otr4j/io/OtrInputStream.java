@@ -174,7 +174,7 @@ public final class OtrInputStream {
      * {@link UnsupportedLengthException} is thrown.
      *
      * @return Returns byte[] with data read.
-     * @throws ProtocolException          Throws IOException in case of read errors.
+     * @throws ProtocolException          In case of read errors.
      * @throws UnsupportedLengthException Throws UnsupportedLengthException in
      *                                    case of data with length &gt; {@link Integer#MAX_VALUE}, as this is
      *                                    currently unsupported by otr4j.
@@ -189,7 +189,7 @@ public final class OtrInputStream {
      * Read public key from OTR data stream.
      *
      * @return Returns public key components.
-     * @throws ProtocolException          Throws IOException in case of failing to read full public key from input data.
+     * @throws ProtocolException          In case of failing to read full public key from input data.
      * @throws OtrCryptoException         Throws OtrCryptoException if failed to reconstruct corresponding public key.
      * @throws UnsupportedTypeException   Thrown in case an unsupported public key type is encountered.
      */
