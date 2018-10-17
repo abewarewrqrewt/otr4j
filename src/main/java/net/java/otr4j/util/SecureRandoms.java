@@ -22,6 +22,7 @@ public final class SecureRandoms {
      *               data.
      * @return Returns 'dest' filled with random data.
      */
+    // FIXME rename 'random' to 'randomBytes' to distinguish the method from the common variable name 'random'.
     @Nonnull
     public static byte[] random(@Nonnull final SecureRandom random, @Nonnull final byte[] dest) {
         random.nextBytes(dest);

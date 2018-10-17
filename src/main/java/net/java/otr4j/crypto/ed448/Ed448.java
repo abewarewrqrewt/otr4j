@@ -4,7 +4,6 @@ import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
@@ -122,14 +121,8 @@ public final class Ed448 {
      * @param random SecureRandom instance
      * @return Returns a newly generated random value.
      */
-    // FIXME SMP: not sure what this is exactly. Need to see how to reliably generate these values.
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        final BigInteger q = nl.dannyvanheumen.joldilocks.Ed448.primeOrder();
-        final byte[] data = random(random, new byte[57]);
-        final BigInteger value = new BigInteger(1, data).mod(q);
-        assert ZERO.compareTo(value) <= 0 && q.compareTo(value) > 0
-                : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
-        return Scalar.fromBigInteger(value);
+        return Scalar.decodeScalar(random(random, new byte[57]));
     }
 }

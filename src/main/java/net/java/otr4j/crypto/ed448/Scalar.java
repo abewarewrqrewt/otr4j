@@ -54,6 +54,7 @@ public final class Scalar implements Comparable<Scalar> {
      * @return Returns scalar instance.
      */
     // FIXME verify that indeed all decoded scalars must be executed `mod q`. Most likely true.
+    // TODO NOTE: decodeScalar now also ensures `mod q`. Ensure that optimized implementation provide an alternative for this, even if implemented outside of `decodeScalar`.
     @Nonnull
     public static Scalar decodeScalar(@Nonnull final byte[] encoded) {
         return fromBigInteger(new BigInteger(1, reverse(encoded)));
@@ -176,12 +177,12 @@ public final class Scalar implements Comparable<Scalar> {
     public int compareTo(@Nonnull final Scalar scalar) {
         assert this.encoded.length == SCALAR_LENGTH_BYTES && scalar.encoded.length == SCALAR_LENGTH_BYTES;
         for (int i = SCALAR_LENGTH_BYTES; i >= 0; --i) {
-            final byte x_i = (byte) (this.encoded[i] ^ Byte.MIN_VALUE);
-            final byte y_i = (byte) (scalar.encoded[i] ^ Byte.MIN_VALUE);
-            if (x_i < y_i) {
+            final byte xi = (byte) (this.encoded[i] ^ Byte.MIN_VALUE);
+            final byte yi = (byte) (scalar.encoded[i] ^ Byte.MIN_VALUE);
+            if (xi < yi) {
                 return -1;
             }
-            if (x_i > y_i) {
+            if (xi > yi) {
                 return 1;
             }
         }
