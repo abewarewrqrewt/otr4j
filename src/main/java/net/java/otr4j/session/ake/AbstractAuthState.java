@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 
 /**
  * Abstract AuthState implementation that provides authentication initiation
@@ -72,7 +72,7 @@ abstract class AbstractAuthState implements AuthState {
         // OTR: "Encrypt gxmpi using AES128-CTR, with key r and initial counter value 0. The result will be the same length as gxmpi."
         final byte[] publicKeyEncrypted;
         // OTR: "Choose a random value r (128 bits)"
-        final byte[] r = random(context.secureRandom(), new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
+        final byte[] r = randomBytes(context.secureRandom(), new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
         try {
             publicKeyEncrypted = aesEncrypt(r, null, publicKeyBytes);
         } catch (final OtrCryptoException ex) {

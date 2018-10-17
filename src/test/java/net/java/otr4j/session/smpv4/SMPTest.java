@@ -31,7 +31,7 @@ import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.util.ByteArrays.toHexString;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,7 +48,7 @@ public final class SMPTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final byte[] ssid = random(RANDOM, new byte[8]);
+    private final byte[] ssid = randomBytes(RANDOM, new byte[8]);
 
     private final SessionID sessionIDAlice = new SessionID("alice@localhost", "bob@localhost", "xmpp");
     private final SessionID sessionIDBob = new SessionID("bob@localhost", "alice@localhost", "xmpp");
@@ -87,7 +87,7 @@ public final class SMPTest {
     @Test
     public void testSMPSuccessfulVeryLargeSecret() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = random(RANDOM, new byte[16384]);
+        final byte[] answer = randomBytes(RANDOM, new byte[16384]);
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SmpEngineHost hostBob = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
@@ -113,7 +113,7 @@ public final class SMPTest {
 
     @Test
     public void testSMPMissingQuestionSuccessful() throws OtrCryptoException, ProtocolException {
-        final byte[] answer = random(RANDOM, new byte[16384]);
+        final byte[] answer = randomBytes(RANDOM, new byte[16384]);
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SmpEngineHost hostBob = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
@@ -167,8 +167,8 @@ public final class SMPTest {
     public void testSMPFailsBadSSID() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
         final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
-        final byte[] ssid1 = random(RANDOM, new byte[8]);
-        final byte[] ssid2 = random(RANDOM, new byte[8]);
+        final byte[] ssid1 = randomBytes(RANDOM, new byte[8]);
+        final byte[] ssid2 = randomBytes(RANDOM, new byte[8]);
         assumeTrue("With all the luck in the world, the same ssid is generated randomly twice.",
                 !Arrays.equals(ssid1, ssid2));
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);

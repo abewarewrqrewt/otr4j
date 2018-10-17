@@ -11,7 +11,7 @@ import static net.java.otr4j.util.ByteArrays.fromHexString;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.ByteArrays.toHexString;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -96,8 +96,8 @@ public class ByteArraysTest {
 
     @Test
     public void testCompareUnequalSizeBytes() {
-        final byte[] data1 = random(RANDOM, new byte[200]);
-        final byte[] data2 = random(RANDOM, new byte[201]);
+        final byte[] data1 = randomBytes(RANDOM, new byte[200]);
+        final byte[] data2 = randomBytes(RANDOM, new byte[201]);
         assertFalse(constantTimeEquals(data1, data2));
     }
 

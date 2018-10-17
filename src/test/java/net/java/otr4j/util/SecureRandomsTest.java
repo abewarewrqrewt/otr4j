@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 
@@ -17,37 +17,37 @@ public final class SecureRandomsTest {
 
     @Test(expected = NullPointerException.class)
     public void testRandomNullSecureRandom() {
-        random(null, new byte[0]);
+        randomBytes(null, new byte[0]);
     }
 
     @Test(expected = NullPointerException.class)
     public void testRandomNullDestination() {
-        random(RANDOM, null);
+        randomBytes(RANDOM, null);
     }
 
     @Test
     public void testRandom() {
-        assertFalse(allZeroBytes(random(RANDOM, new byte[100])));
+        assertFalse(allZeroBytes(randomBytes(RANDOM, new byte[100])));
     }
 
     @Test
     public void testRandomReturnsSameInstance() {
         final byte[] data = new byte[1];
-        assertSame(data, random(RANDOM, data));
+        assertSame(data, randomBytes(RANDOM, data));
     }
 
     @Test
     public void testRandomAcceptsZeroLengthArray() {
         final byte[] data = new byte[0];
-        assertSame(data, random(RANDOM, data));
+        assertSame(data, randomBytes(RANDOM, data));
     }
 
     @Test
     public void testRandomBehavesExpectedly() {
-        final byte[] rand1 = random(RANDOM, new byte[24]);
-        final byte[] rand2 = random(RANDOM, new byte[24]);
-        final byte[] rand3 = random(RANDOM, new byte[24]);
-        final byte[] rand4 = random(RANDOM, new byte[24]);
+        final byte[] rand1 = randomBytes(RANDOM, new byte[24]);
+        final byte[] rand2 = randomBytes(RANDOM, new byte[24]);
+        final byte[] rand3 = randomBytes(RANDOM, new byte[24]);
+        final byte[] rand4 = randomBytes(RANDOM, new byte[24]);
         assertFalse(Arrays.equals(rand1, rand2));
         assertFalse(Arrays.equals(rand1, rand3));
         assertFalse(Arrays.equals(rand1, rand4));

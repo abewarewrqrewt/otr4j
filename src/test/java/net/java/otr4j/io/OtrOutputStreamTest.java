@@ -29,7 +29,7 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 import static org.junit.Assert.assertArrayEquals;
@@ -186,7 +186,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteMac() {
-        final byte[] mac = random(RANDOM, new byte[20]);
+        final byte[] mac = randomBytes(RANDOM, new byte[20]);
         assertArrayEquals(mac, new OtrOutputStream().writeMac(mac).toByteArray());
     }
 
@@ -197,19 +197,19 @@ public class OtrOutputStreamTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteMacTooSmall() {
-        final byte[] mac = random(RANDOM, new byte[19]);
+        final byte[] mac = randomBytes(RANDOM, new byte[19]);
         new OtrOutputStream().writeMac(mac);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteMacTooLarge() {
-        final byte[] mac = random(RANDOM, new byte[21]);
+        final byte[] mac = randomBytes(RANDOM, new byte[21]);
         new OtrOutputStream().writeMac(mac);
     }
 
     @Test
     public void testWriteMacOTR4() {
-        final byte[] mac = random(RANDOM, new byte[64]);
+        final byte[] mac = randomBytes(RANDOM, new byte[64]);
         assertArrayEquals(mac, new OtrOutputStream().writeMacOTR4(mac).toByteArray());
     }
 
@@ -220,19 +220,19 @@ public class OtrOutputStreamTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteMacOTR4TooSmall() {
-        final byte[] mac = random(RANDOM, new byte[63]);
+        final byte[] mac = randomBytes(RANDOM, new byte[63]);
         new OtrOutputStream().writeMacOTR4(mac);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteMacOTR4TooLarge() {
-        final byte[] mac = random(RANDOM, new byte[65]);
+        final byte[] mac = randomBytes(RANDOM, new byte[65]);
         new OtrOutputStream().writeMacOTR4(mac);
     }
 
     @Test
     public void testWriteSSIDOTR4() {
-        final byte[] ssid = random(RANDOM, new byte[8]);
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
         assertArrayEquals(ssid, new OtrOutputStream().writeSSID(ssid).toByteArray());
     }
 
@@ -243,19 +243,19 @@ public class OtrOutputStreamTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteSSIDOTR4TooSmall() {
-        final byte[] ssid = random(RANDOM, new byte[7]);
+        final byte[] ssid = randomBytes(RANDOM, new byte[7]);
         new OtrOutputStream().writeSSID(ssid);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteSSIDOTR4TooLarge() {
-        final byte[] ssid = random(RANDOM, new byte[9]);
+        final byte[] ssid = randomBytes(RANDOM, new byte[9]);
         new OtrOutputStream().writeSSID(ssid);
     }
 
     @Test
     public void testWriteFingerprint() {
-        final byte[] fingerprint = random(RANDOM, new byte[56]);
+        final byte[] fingerprint = randomBytes(RANDOM, new byte[56]);
         assertArrayEquals(fingerprint, new OtrOutputStream().writeFingerprint(fingerprint).toByteArray());
     }
 
@@ -266,13 +266,13 @@ public class OtrOutputStreamTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteFingerprintTooSmall() {
-        final byte[] fingerprint = random(RANDOM, new byte[57]);
+        final byte[] fingerprint = randomBytes(RANDOM, new byte[57]);
         new OtrOutputStream().writeFingerprint(fingerprint);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteFingerprintTooLarge() {
-        final byte[] fingerprint = random(RANDOM, new byte[55]);
+        final byte[] fingerprint = randomBytes(RANDOM, new byte[55]);
         new OtrOutputStream().writeFingerprint(fingerprint);
     }
 
@@ -283,19 +283,19 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteCtr() {
-        final byte[] ctr = random(RANDOM, new byte[8]);
+        final byte[] ctr = randomBytes(RANDOM, new byte[8]);
         assertArrayEquals(ctr, new OtrOutputStream().writeCtr(ctr).toByteArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteCtrTooSmall() {
-        final byte[] ctr = random(RANDOM, new byte[7]);
+        final byte[] ctr = randomBytes(RANDOM, new byte[7]);
         new OtrOutputStream().writeCtr(ctr);
     }
 
     @Test
     public void testWriteCtrAsInOTRv3() {
-        final byte[] ctr = random(RANDOM, new byte[16]);
+        final byte[] ctr = randomBytes(RANDOM, new byte[16]);
         fill(ctr, 8, 16, (byte) 0);
         final byte[] expected = copyOfRange(ctr, 0, 8);
         assertArrayEquals(expected, new OtrOutputStream().writeCtr(ctr).toByteArray());
@@ -308,19 +308,19 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteNonce() {
-        final byte[] nonce = random(RANDOM, new byte[24]);
+        final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         assertArrayEquals(nonce, new OtrOutputStream().writeNonce(nonce).toByteArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteNonceTooSmall() {
-        final byte[] nonce = random(RANDOM, new byte[23]);
+        final byte[] nonce = randomBytes(RANDOM, new byte[23]);
         new OtrOutputStream().writeNonce(nonce);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteNonceTooLarge() {
-        final byte[] nonce = random(RANDOM, new byte[25]);
+        final byte[] nonce = randomBytes(RANDOM, new byte[25]);
         new OtrOutputStream().writeNonce(nonce);
     }
 
@@ -331,19 +331,19 @@ public class OtrOutputStreamTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteEdDSASignatureTooSmall() {
-        final byte[] signature = random(RANDOM, new byte[113]);
+        final byte[] signature = randomBytes(RANDOM, new byte[113]);
         new OtrOutputStream().writeEdDSASignature(signature);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWriteEdDSASignatureTooLarge() {
-        final byte[] signature = random(RANDOM, new byte[115]);
+        final byte[] signature = randomBytes(RANDOM, new byte[115]);
         new OtrOutputStream().writeEdDSASignature(signature);
     }
 
     @Test
     public void testWriteEdDSASignature() {
-        final byte[] signature = random(RANDOM, new byte[114]);
+        final byte[] signature = randomBytes(RANDOM, new byte[114]);
         assertArrayEquals(signature, new OtrOutputStream().writeEdDSASignature(signature).toByteArray());
     }
 
@@ -390,7 +390,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteDSASignature() {
-        final byte[] signature = random(RANDOM, new byte[20]);
+        final byte[] signature = randomBytes(RANDOM, new byte[20]);
         assertArrayEquals(signature, new OtrOutputStream().writeDSASignature(signature).toByteArray());
     }
 

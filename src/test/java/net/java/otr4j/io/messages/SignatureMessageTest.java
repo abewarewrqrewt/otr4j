@@ -10,7 +10,7 @@ import java.security.SecureRandom;
 import static java.util.Arrays.fill;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -39,7 +39,7 @@ public class SignatureMessageTest {
         SignatureMessage current;
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
-            byte[] fakeEncrypted = random(RANDOM, new byte[i]);
+            byte[] fakeEncrypted = randomBytes(RANDOM, new byte[i]);
             RANDOM.nextBytes(fakeEncryptedMAC);
             current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
@@ -67,13 +67,13 @@ public class SignatureMessageTest {
         final byte[] fakeEncryptedMAC = new byte[MAC_LENGTH_BYTES];
         SignatureMessage previous = null;
         for (int i = 1; i <= 10000000; i *= 10) {
-            final byte[] fakeEncrypted = random(RANDOM, new byte[i]);
+            final byte[] fakeEncrypted = randomBytes(RANDOM, new byte[i]);
             RANDOM.nextBytes(fakeEncryptedMAC);
             SignatureMessage sm = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
             assertNotNull(sm);
             final byte[] fakeEncrypted2 = new byte[i];
             System.arraycopy(fakeEncrypted, 0, fakeEncrypted2, 0, fakeEncrypted.length);
-            final byte[] fakeEncryptedMAC2 = random(RANDOM, new byte[MAC_LENGTH_BYTES]);
+            final byte[] fakeEncryptedMAC2 = randomBytes(RANDOM, new byte[MAC_LENGTH_BYTES]);
             System.arraycopy(fakeEncryptedMAC, 0, fakeEncryptedMAC2, 0, fakeEncryptedMAC.length);
             SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted2, fakeEncryptedMAC2, ZERO_TAG, ZERO_TAG);
             assertNotNull(sm2);

@@ -10,7 +10,7 @@ import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.crypto.ed448.Shake256.shake256;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.SECRET_KEY_SIZE;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.generatePublicKey;
@@ -47,7 +47,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public static EdDSAKeyPair generate(@Nonnull final SecureRandom random) {
-        final byte[] symmetricKey = random(random, new byte[SECRET_KEY_SIZE]);
+        final byte[] symmetricKey = randomBytes(random, new byte[SECRET_KEY_SIZE]);
         final byte[] publicKey = new byte[PUBLIC_KEY_SIZE];
         generatePublicKey(symmetricKey, 0, publicKey, 0);
         return new EdDSAKeyPair(symmetricKey, publicKey);

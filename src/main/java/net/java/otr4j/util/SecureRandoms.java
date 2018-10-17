@@ -13,18 +13,16 @@ public final class SecureRandoms {
     }
 
     /**
-     * Fill provided byte-array with random data from provided
-     * {@link SecureRandom} instance. This is a convenience function that can be
-     * used in-line for field or variable instantiation.
+     * Fill provided byte-array with random data from provided {@link SecureRandom} instance. This is a convenience
+     * function that can be used in-line for field or variable instantiation.
      *
      * @param random a SecureRandom instance
      * @param dest   The destination byte-array to be fully filled with random
      *               data.
      * @return Returns 'dest' filled with random data.
      */
-    // FIXME rename 'random' to 'randomBytes' to distinguish the method from the common variable name 'random'.
     @Nonnull
-    public static byte[] random(@Nonnull final SecureRandom random, @Nonnull final byte[] dest) {
+    public static byte[] randomBytes(@Nonnull final SecureRandom random, @Nonnull final byte[] dest) {
         random.nextBytes(dest);
         return dest;
     }

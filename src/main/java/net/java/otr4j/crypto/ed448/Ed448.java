@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
-import static net.java.otr4j.util.SecureRandoms.random;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 
 /**
  * Class that provides access to Ed448 constants.
@@ -123,6 +123,6 @@ public final class Ed448 {
      */
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        return Scalar.decodeScalar(random(random, new byte[57]));
+        return Scalar.decodeScalar(randomBytes(random, new byte[57]));
     }
 }
