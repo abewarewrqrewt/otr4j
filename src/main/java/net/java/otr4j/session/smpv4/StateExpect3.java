@@ -14,10 +14,10 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X06;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X07;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X08;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
-import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
+import static net.java.otr4j.crypto.ed448.Ed448.generateRandomValueInZq;
+import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
@@ -86,14 +86,13 @@ final class StateExpect3 implements SMPState {
         if (!containsPoint(smp3.pa) || !containsPoint(smp3.qa) || !containsPoint(smp3.ra)) {
             throw new SMPAbortException("Message failed verification.");
         }
-        final Point g = basePoint();
         if (!smp3.cp.equals(hashToScalar(SMP_VALUE_0X06, concatenate(
                 this.g3.multiply(smp3.d5).add(smp3.pa.multiply(smp3.cp)).encode(),
-                g.multiply(smp3.d5).add(g2.multiply(smp3.d6)).add(smp3.qa.multiply(smp3.cp)).encode())))) {
+                multiplyByBase(smp3.d5).add(g2.multiply(smp3.d6)).add(smp3.qa.multiply(smp3.cp)).encode())))) {
             throw new SMPAbortException("Message failed verification.");
         }
         if (!smp3.cr.equals(hashToScalar(SMP_VALUE_0X07, concatenate(
-                g.multiply(smp3.d7).add(g3a.multiply(smp3.cr)).encode(),
+                multiplyByBase(smp3.d7).add(g3a.multiply(smp3.cr)).encode(),
                 smp3.qa.add(this.qb.negate()).multiply(smp3.d7).add(smp3.ra.multiply(smp3.cr)).encode())))) {
             throw new SMPAbortException("Message failed verification.");
         }
@@ -107,7 +106,7 @@ final class StateExpect3 implements SMPState {
         // Compose final message to other party.
         final Point rb = smp3.qa.add(this.qb.negate()).multiply(this.b3);
         final Scalar r7 = generateRandomValueInZq(this.random);
-        final Scalar cr = hashToScalar(SMP_VALUE_0X08, concatenate(g.multiply(r7).encode(),
+        final Scalar cr = hashToScalar(SMP_VALUE_0X08, concatenate(multiplyByBase(r7).encode(),
                 smp3.qa.add(this.qb.negate()).multiply(r7).encode()));
         final Scalar d7 = r7.subtract(this.b3.multiply(cr)).mod(primeOrder());
         return new SMPMessage4(rb, cr, d7);

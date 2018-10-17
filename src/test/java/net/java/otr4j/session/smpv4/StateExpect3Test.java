@@ -144,7 +144,7 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageSMPSucceeded() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -158,7 +158,7 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageSMPFailed() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb.negate(), qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -173,7 +173,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqb() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb.negate(), b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -183,7 +183,7 @@ public final class StateExpect3Test {
 
     @Test
     public void testProcessMessageBadb3() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, ONE, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -198,7 +198,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3a() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a.negate(), g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -208,7 +208,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg2() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2.negate(), g3);
         final SMPContext context = mock(SMPContext.class);
@@ -218,7 +218,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3.negate());
         final SMPContext context = mock(SMPContext.class);
@@ -228,7 +228,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadpa() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -238,7 +238,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqa() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -248,7 +248,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcp() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -258,7 +258,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd5() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -268,7 +268,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd6() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -278,7 +278,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadra() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -288,7 +288,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcr() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -298,7 +298,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd7() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -308,7 +308,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalpa() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -318,7 +318,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalqa() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -328,7 +328,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalra() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
@@ -338,7 +338,7 @@ public final class StateExpect3Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadMessage() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[56];
+        final byte[] fakeRandomData = new byte[57];
         r7.encodeTo(fakeRandomData, 0);
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);

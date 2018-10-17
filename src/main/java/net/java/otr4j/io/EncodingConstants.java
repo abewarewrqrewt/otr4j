@@ -51,8 +51,6 @@ final class EncodingConstants {
 
     static final int POINT_LENGTH_BYTES = 57;
 
-    static final int SCALAR_LENGTH_BYTES = 56;
-
     private EncodingConstants() {
         // No need to instantiate class.
     }

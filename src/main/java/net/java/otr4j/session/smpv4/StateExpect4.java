@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X08;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
-import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
+import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
@@ -82,9 +82,8 @@ final class StateExpect4 implements SMPState {
         if (!containsPoint(smp4.rb)) {
             throw new SMPAbortException("Message validation failed.");
         }
-        final Point g = basePoint();
         if (!smp4.cr.equals(hashToScalar(SMP_VALUE_0X08, concatenate(
-                g.multiply(smp4.d7).add(this.g3b.multiply(smp4.cr)).encode(),
+                multiplyByBase(smp4.d7).add(this.g3b.multiply(smp4.cr)).encode(),
                 this.qa.add(this.qb.negate()).multiply(smp4.d7).add(smp4.rb.multiply(smp4.cr)).encode())))) {
             throw new SMPAbortException("Message validation failed.");
         }

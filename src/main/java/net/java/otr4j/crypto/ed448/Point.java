@@ -89,7 +89,7 @@ public final class Point {
      */
     @Nonnull
     public Point multiply(@Nonnull final Scalar scalar) {
-        return new Point(this.p.multiply(scalar.value));
+        return new Point(this.p.multiply(scalar.toBigInteger()));
     }
 
     /**

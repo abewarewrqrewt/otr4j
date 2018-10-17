@@ -4,10 +4,12 @@ import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.util.SecureRandoms.random;
 
 /**
  * Class that provides access to Ed448 constants.
@@ -25,14 +27,14 @@ public final class Ed448 {
     private static final Point G = new Point(nl.dannyvanheumen.joldilocks.Ed448.basePoint());
 
     /**
-     * Cofactor of the curve.
+     * Scalar value representing one.
      */
-    private static final Scalar C = fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.cofactor());
+    private static final Scalar COFACTOR = new Scalar(new byte[] {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
     /**
-     * Prime order of the curve.
+     * Prime order.
      */
-    private static final Scalar Q = fromBigInteger(nl.dannyvanheumen.joldilocks.Ed448.primeOrder());
+    private static final Scalar Q = new Scalar(new byte[] {-13, 68, 88, -85, -110, -62, 120, 35, 85, -113, -59, -115, 114, -62, 108, 33, -112, 54, -42, -82, 73, -37, 78, -60, -23, 35, -54, 124, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 63, 0});
 
     private Ed448() {
         // No need to instantiate utility class.
@@ -64,8 +66,8 @@ public final class Ed448 {
      * @return Returns cofactor.
      */
     @Nonnull
-    public static Scalar cofactor() {
-        return C;
+    static Scalar cofactor() {
+        return COFACTOR;
     }
 
     /**
@@ -86,7 +88,7 @@ public final class Ed448 {
      */
     @Nonnull
     public static Point multiplyByBase(@Nonnull final Scalar scalar) {
-        return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.value));
+        return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.toBigInteger()));
     }
 
     /**
@@ -112,5 +114,22 @@ public final class Ed448 {
     @CheckReturnValue
     public static boolean containsPoint(@Nonnull final Point p) {
         return nl.dannyvanheumen.joldilocks.Ed448.contains(p.p);
+    }
+
+    /**
+     * Generate a new random value in Z_q.
+     *
+     * @param random SecureRandom instance
+     * @return Returns a newly generated random value.
+     */
+    // FIXME SMP: not sure what this is exactly. Need to see how to reliably generate these values.
+    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
+    public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
+        final BigInteger q = nl.dannyvanheumen.joldilocks.Ed448.primeOrder();
+        final byte[] data = random(random, new byte[57]);
+        final BigInteger value = new BigInteger(1, data).mod(q);
+        assert ZERO.compareTo(value) <= 0 && q.compareTo(value) > 0
+                : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
+        return Scalar.fromBigInteger(value);
     }
 }

@@ -31,7 +31,6 @@ import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.SecureRandoms.random;
 import static org.bouncycastle.util.Arrays.concatenate;
-import static org.bouncycastle.util.Arrays.reverse;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -355,22 +354,14 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteScalar() {
-        final byte[] expected = new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        final byte[] expected = new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         assertArrayEquals(expected, new OtrOutputStream().writeScalar(ONE).toByteArray());
     }
 
     @Test
     public void testWriteScalar2() {
-        final byte[] expected = new byte[] {(byte) 0x8f, 0, (byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        final byte[] expected = new byte[] {(byte) 0x8f, 0, (byte) 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         assertArrayEquals(expected, new OtrOutputStream().writeScalar(fromBigInteger(valueOf(16711823L))).toByteArray());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testWriteScalarTooBig() {
-        final byte[] valueBytes = random(RANDOM, new byte[57]);
-        valueBytes[56] |= 0b00000001;
-        final BigInteger value = new BigInteger(1, reverse(valueBytes));
-        assertArrayEquals(valueBytes, new OtrOutputStream().writeScalar(fromBigInteger(value)).toByteArray());
     }
 
     @Test(expected = NullPointerException.class)

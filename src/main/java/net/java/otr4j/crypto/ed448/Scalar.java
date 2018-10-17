@@ -1,41 +1,50 @@
 package net.java.otr4j.crypto.ed448;
 
+import nl.dannyvanheumen.joldilocks.Ed448;
+
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.util.Objects;
+import java.util.Arrays;
 
-import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.util.Arrays.reverse;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
-import static org.bouncycastle.util.BigIntegers.fromUnsignedByteArray;
 
 /**
  * Scalar representation for Ed448 operations.
+ *
+ * The scalar implementation is currently very inefficient as it converts to BigInteger and back in order to perform the
+ * arithmetic operations, but it does have the benefit that the current bad implementation is isolated to the innermost
+ * implementation details.
  */
+// FIXME implement arithmetic operations that operate directly on byte-arrays.
+// FIXME check if modulo-operations are necessary for scalar value operations.
+// FIXME write tests comparing to BigInteger to ensure that all operations are correct, even if performed on byte-arrays.
 public final class Scalar implements Comparable<Scalar> {
 
     /**
      * Length of scalar byte-representation in bytes.
      */
-    private static final int SCALAR_LENGTH_BYTES = 56;
+    public static final int SCALAR_LENGTH_BYTES = 57;
 
     /**
      * Scalar value representing zero.
      */
-    public static final Scalar ZERO = new Scalar(BigInteger.ZERO);
+    public static final Scalar ZERO = new Scalar(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
     /**
      * Scalar value representing one.
      */
-    public static final Scalar ONE = new Scalar(BigInteger.ONE);
+    public static final Scalar ONE = new Scalar(new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
-    final BigInteger value;
+    private final byte[] encoded;
 
     @Nonnull
-    private Scalar(@Nonnull final BigInteger value) {
-        this.value = requireNonNull(value);
+    Scalar(@Nonnull final byte[] encoded) {
+        this.encoded = requireLengthExactly(SCALAR_LENGTH_BYTES, encoded);
     }
 
     /**
@@ -44,9 +53,10 @@ public final class Scalar implements Comparable<Scalar> {
      * @param encoded encoded scalar value
      * @return Returns scalar instance.
      */
+    // FIXME verify that indeed all decoded scalars must be executed `mod q`. Most likely true.
     @Nonnull
     public static Scalar decodeScalar(@Nonnull final byte[] encoded) {
-        return new Scalar(fromUnsignedByteArray(reverse(encoded)));
+        return fromBigInteger(new BigInteger(1, reverse(encoded)));
     }
 
     /**
@@ -57,7 +67,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public static Scalar fromBigInteger(@Nonnull final BigInteger value) {
-        return new Scalar(value);
+        return new Scalar(reverse(asUnsignedByteArray(SCALAR_LENGTH_BYTES, value.mod(Ed448.primeOrder()))));
     }
 
     /**
@@ -67,7 +77,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public Scalar negate() {
-        return new Scalar(this.value.negate());
+        return fromBigInteger(toBigInteger().negate());
     }
 
     /**
@@ -78,7 +88,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public Scalar multiply(@Nonnull final Scalar scalar) {
-        return new Scalar(this.value.multiply(scalar.value));
+        return fromBigInteger(toBigInteger().multiply(scalar.toBigInteger()));
     }
 
     /**
@@ -89,7 +99,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public Scalar add(@Nonnull final Scalar scalar) {
-        return new Scalar(this.value.add(scalar.value));
+        return fromBigInteger(toBigInteger().add(scalar.toBigInteger()));
     }
 
     /**
@@ -100,7 +110,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public Scalar subtract(@Nonnull final Scalar scalar) {
-        return new Scalar(this.value.subtract(scalar.value));
+        return fromBigInteger(toBigInteger().subtract(scalar.toBigInteger()));
     }
 
     /**
@@ -111,7 +121,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public Scalar mod(@Nonnull final Scalar modulus) {
-        return new Scalar(this.value.mod(modulus.value));
+        return fromBigInteger(toBigInteger().mod(modulus.toBigInteger()));
     }
 
     /**
@@ -121,7 +131,7 @@ public final class Scalar implements Comparable<Scalar> {
      */
     @Nonnull
     public byte[] encode() {
-        return reverse(asUnsignedByteArray(SCALAR_LENGTH_BYTES, this.value));
+        return this.encoded.clone();
     }
 
     /**
@@ -131,8 +141,7 @@ public final class Scalar implements Comparable<Scalar> {
      * @param offset the offset for the starting point to writing the encoded value
      */
     public void encodeTo(@Nonnull final byte[] dst, final int offset) {
-        final byte[] encoded = this.encode();
-        System.arraycopy(encoded, 0, dst, offset, SCALAR_LENGTH_BYTES);
+        System.arraycopy(this.encoded, 0, dst, offset, SCALAR_LENGTH_BYTES);
     }
 
     /**
@@ -142,8 +151,7 @@ public final class Scalar implements Comparable<Scalar> {
      * @throws IOException In case of failure in OutputStream during writing.
      */
     public void encodeTo(@Nonnull final OutputStream out) throws IOException {
-        final byte[] encoded = this.encode();
-        out.write(encoded, 0, SCALAR_LENGTH_BYTES);
+        out.write(this.encoded, 0, SCALAR_LENGTH_BYTES);
     }
 
     @Override
@@ -156,17 +164,33 @@ public final class Scalar implements Comparable<Scalar> {
             return false;
         }
         final Scalar scalar = (Scalar) o;
-        // FIXME needs constant-time comparison!
-        return Objects.equals(value, scalar.value);
+        return constantTimeEquals(this.encoded, scalar.encoded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value);
+        return Arrays.hashCode(this.encoded);
     }
 
     @Override
-    public int compareTo(final Scalar scalar) {
-        return this.value.compareTo(scalar.value);
+    public int compareTo(@Nonnull final Scalar scalar) {
+        assert this.encoded.length == SCALAR_LENGTH_BYTES && scalar.encoded.length == SCALAR_LENGTH_BYTES;
+        for (int i = SCALAR_LENGTH_BYTES; i >= 0; --i) {
+            final byte x_i = (byte) (this.encoded[i] ^ Byte.MIN_VALUE);
+            final byte y_i = (byte) (scalar.encoded[i] ^ Byte.MIN_VALUE);
+            if (x_i < y_i) {
+                return -1;
+            }
+            if (x_i > y_i) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    // FIXME workaround that is necessary as long as Point cannot calculate with byte-arrays.
+    @Nonnull
+    BigInteger toBigInteger() {
+        return new BigInteger(1, reverse(this.encoded));
     }
 }

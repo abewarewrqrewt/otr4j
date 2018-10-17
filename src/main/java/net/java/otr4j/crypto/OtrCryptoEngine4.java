@@ -15,7 +15,6 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 
@@ -24,15 +23,13 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTH;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FINGERPRINT;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
+import static net.java.otr4j.crypto.ed448.Ed448.generateRandomValueInZq;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
-import static net.java.otr4j.crypto.ed448.Scalar.ZERO;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static org.bouncycastle.util.Arrays.clear;
-import static org.bouncycastle.util.Arrays.reverse;
 
 /**
  * Crypto engine for OTRv4.
@@ -268,11 +265,13 @@ public final class OtrCryptoEngine4 {
     public static Scalar hashToScalar(@Nonnull final KDFUsage usageID, @Nonnull final byte[] d) {
         assert !allZeroBytes(d) : "Expected non-zero bytes for input. This may indicate that a critical bug is present, or it may be a false warning.";
         // "Compute h = KDF_1(d, 64) as an unsigned value, little-endian."
-        final byte[] hashedD = kdf1(usageID, d, HASH_TO_SCALAR_LENGTH_BYTES);
-        final Scalar h = decodeScalar(hashedD);
-        clear(hashedD);
-        // "Return h (mod q)"
-        return h.mod(primeOrder());
+        final byte[] h = kdf1(usageID, d, HASH_TO_SCALAR_LENGTH_BYTES);
+        try {
+            // "Return h (mod q)"
+            return decodeScalar(h);
+        } finally {
+            clear(h);
+        }
     }
 
     /**
@@ -389,11 +388,11 @@ public final class OtrCryptoEngine4 {
         final boolean eq2 = longTermPublicKey.equals(A2);
         final boolean eq3 = longTermPublicKey.equals(A3);
         // "Pick random values t1, c2, c3, r2, r3 in q."
-        final Scalar ti = generateRandomValue(random);
-        final Scalar cj = generateRandomValue(random);
-        final Scalar rj = generateRandomValue(random);
-        final Scalar ck = generateRandomValue(random);
-        final Scalar rk = generateRandomValue(random);
+        final Scalar ti = generateRandomValueInZq(random);
+        final Scalar cj = generateRandomValueInZq(random);
+        final Scalar rj = generateRandomValueInZq(random);
+        final Scalar ck = generateRandomValueInZq(random);
+        final Scalar rk = generateRandomValueInZq(random);
         final Point T1;
         final Point T2;
         final Point T3;
@@ -448,27 +447,6 @@ public final class OtrCryptoEngine4 {
         } else {
             throw new IllegalStateException("BUG: eq1 or eq2 or e3 should always be true.");
         }
-    }
-
-    /**
-     * Generate a new random value in Z_q.
-     *
-     * @param random SecureRandom instance
-     * @return Returns a newly generated random value.
-     */
-    // FIXME SMP: not sure what this is exactly. Need to see how to reliably generate these values.
-    public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        return generateRandomValue(random);
-    }
-
-    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
-    private static Scalar generateRandomValue(@Nonnull final SecureRandom random) {
-        final byte[] data = new byte[56];
-        random.nextBytes(data);
-        final Scalar scalar = fromBigInteger(new BigInteger(1, reverse(data))).mod(primeOrder());
-        assert ZERO.compareTo(scalar) <= 0 && primeOrder().compareTo(scalar) > 0
-                : "Generated scalar value should always be less to be valid, i.e. greater or equal to zero and smaller than prime order.";
-        return scalar;
     }
 
     /**
