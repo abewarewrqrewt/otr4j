@@ -92,8 +92,8 @@ Development stages:
   * ☑ Points kept as byte-arrays.
   * ☑ Scalar values kept as byte-arrays.
 * Mathematical operations act on byte-array representations directly:
-  * Scalar arithmetic operations to directly operate on values in byte-array representation.
-  * Point arithmetic operations to directly operate on values in byte-array representation.
+  * ☐ Scalar arithmetic operations to directly operate on values in byte-array representation.
+  * ☐ Point arithmetic operations to directly operate on values in byte-array representation.
 * Robustness
   * ☑ otr4j does not handle Error-type exceptions.  
   _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
