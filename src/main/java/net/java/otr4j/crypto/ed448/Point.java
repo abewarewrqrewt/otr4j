@@ -6,9 +6,11 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.util.Objects;
+import java.util.Arrays;
 
-import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
 
 /**
  * Point wrapper classed used to abstract away from the actual cryptographic implementation.
@@ -16,11 +18,24 @@ import static java.util.Objects.requireNonNull;
 // FIXME write unit tests for Point wrapper
 public final class Point {
 
-    // FIXME investigate reducing access once more is clear about the logic in the ed448 wrapper package.
-    final nl.dannyvanheumen.joldilocks.Point p;
+    private final byte[] encoded;
 
-    Point(@Nonnull final nl.dannyvanheumen.joldilocks.Point p) {
-        this.p = requireNonNull(p);
+    private Point(@Nonnull final byte[] encoded) {
+        this.encoded = requireLengthExactly(PUBLIC_KEY_SIZE, encoded);
+    }
+
+    /**
+     * Decode a point and expect not to fail. Failure results to decode results in an {@link IllegalArgumentException}.
+     *
+     * @param encodedPoint the encoded point
+     * @return Returns the point instance.
+     */
+    static Point mustDecodePoint(@Nonnull final byte[] encodedPoint) {
+        try {
+            return decodePoint(encodedPoint);
+        } catch (ValidationException e) {
+            throw new IllegalArgumentException("Illegal encoded point provided.");
+        }
     }
 
     /**
@@ -33,7 +48,7 @@ public final class Point {
     @Nonnull
     public static Point decodePoint(@Nonnull final byte[] encodedPoint) throws ValidationException {
         try {
-            return new Point(Points.decode(encodedPoint));
+            return new Point(Points.decode(encodedPoint).encode());
         } catch (final Points.InvalidDataException e) {
             throw new ValidationException("Failed to read encoded point. Illegal point encountered.", e);
         }
@@ -49,7 +64,7 @@ public final class Point {
     // FIXME consider if this method is really needed. Should we use utility method for this purpose?
     @Nonnull
     public static Point createPoint(@Nonnull final BigInteger x, @Nonnull final BigInteger y) {
-        return new Point(Points.createPoint(x, y));
+        return new Point(Points.createPoint(x, y).encode());
     }
 
     @Override
@@ -61,14 +76,13 @@ public final class Point {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final Point point1 = (Point) o;
-        // FIXME needs constant-time comparison?
-        return Objects.equals(p, point1.p);
+        final Point other = (Point) o;
+        return constantTimeEquals(this.encoded, other.encoded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(p);
+        return Arrays.hashCode(this.encoded);
     }
 
     /**
@@ -78,7 +92,11 @@ public final class Point {
      */
     @Nonnull
     public Point negate() {
-        return new Point(this.p.negate());
+        try {
+            return new Point(Points.decode(this.encoded).negate().encode());
+        } catch (final Points.InvalidDataException e) {
+            throw new IllegalStateException("BUG: Point instance encountered with illegal point data.", e);
+        }
     }
 
     /**
@@ -89,7 +107,11 @@ public final class Point {
      */
     @Nonnull
     public Point multiply(@Nonnull final Scalar scalar) {
-        return new Point(this.p.multiply(scalar.toBigInteger()));
+        try {
+            return new Point(Points.decode(this.encoded).multiply(scalar.toBigInteger()).encode());
+        } catch (final Points.InvalidDataException e) {
+            throw new IllegalStateException("BUG: Point instance encountered with illegal point data.", e);
+        }
     }
 
     /**
@@ -100,7 +122,11 @@ public final class Point {
      */
     @Nonnull
     public Point add(@Nonnull final Point point) {
-        return new Point(this.p.add(point.p));
+        try {
+            return new Point(Points.decode(this.encoded).add(Points.decode(point.encoded)).encode());
+        } catch (final Points.InvalidDataException e) {
+            throw new IllegalStateException("BUG: Point instance encountered with illegal point data.", e);
+        }
     }
 
     /**
@@ -110,7 +136,7 @@ public final class Point {
      */
     @Nonnull
     public byte[] encode() {
-        return this.p.encode();
+        return this.encoded.clone();
     }
 
     /**
@@ -120,6 +146,6 @@ public final class Point {
      * @throws IOException In case of failure in the output stream during encoding.
      */
     public void encodeTo(@Nonnull final OutputStream out) throws IOException {
-        this.p.encodeTo(out);
+        out.write(this.encoded, 0, PUBLIC_KEY_SIZE);
     }
 }

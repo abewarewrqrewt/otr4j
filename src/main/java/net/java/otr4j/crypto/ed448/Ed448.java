@@ -8,6 +8,9 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
+import static net.java.otr4j.crypto.ed448.Point.createPoint;
+import static net.java.otr4j.crypto.ed448.Point.decodePoint;
+import static net.java.otr4j.crypto.ed448.Point.mustDecodePoint;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 
 /**
@@ -18,12 +21,13 @@ public final class Ed448 {
     /**
      * Identity (or neutral element) of the curve.
      */
-    private static final Point IDENTITY = Point.createPoint(ZERO, ONE);
+    private static final Point IDENTITY = createPoint(ZERO, ONE);
 
     /**
      * Base Point of the curve.
      */
-    private static final Point G = new Point(nl.dannyvanheumen.joldilocks.Ed448.basePoint());
+    // FIXME replace with constant expression for base point G
+    private static final Point G = mustDecodePoint(nl.dannyvanheumen.joldilocks.Ed448.basePoint().encode());
 
     /**
      * Scalar value representing one.
@@ -87,7 +91,11 @@ public final class Ed448 {
      */
     @Nonnull
     public static Point multiplyByBase(@Nonnull final Scalar scalar) {
-        return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.toBigInteger()));
+        try {
+            return decodePoint(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.toBigInteger()).encode());
+        } catch (final ValidationException e) {
+            throw new IllegalStateException("Illegal point data. Failed to decode.", e);
+        }
     }
 
     /**
@@ -99,7 +107,11 @@ public final class Ed448 {
     // FIXME write unit tests for checkIdentity
     @CheckReturnValue
     public static boolean checkIdentity(@Nonnull final Point point) {
-        return Points.checkIdentity(point.p);
+        try {
+            return Points.checkIdentity(Points.decode(point.encode()));
+        } catch (final Points.InvalidDataException e) {
+            throw new IllegalStateException("Illegal point data. Failed to decode.", e);
+        }
     }
 
     /**
@@ -112,7 +124,12 @@ public final class Ed448 {
     // (https://github.com/otrv4/otrv4/blob/master/otrv4.md#verifying-that-a-point-is-on-the-curve)
     @CheckReturnValue
     public static boolean containsPoint(@Nonnull final Point p) {
-        return nl.dannyvanheumen.joldilocks.Ed448.contains(p.p);
+        try {
+            // FIXME does it even make sense to call 'contains'? I suspect that 'Points.decode' already does a point validity check, but maybe not identity check.
+            return nl.dannyvanheumen.joldilocks.Ed448.contains(Points.decode(p.encode()));
+        } catch (final Points.InvalidDataException e) {
+            return false;
+        }
     }
 
     /**

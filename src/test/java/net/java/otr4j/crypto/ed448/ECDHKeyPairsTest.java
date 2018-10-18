@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.ECDHKeyPairs.verifyECDHPublicKey;
-import static nl.dannyvanheumen.joldilocks.Points.identity;
+import static net.java.otr4j.crypto.ed448.Ed448.identity;
 
 @SuppressWarnings("ConstantConditions")
 public class ECDHKeyPairsTest {
@@ -19,7 +19,7 @@ public class ECDHKeyPairsTest {
 
     @Test(expected = ValidationException.class)
     public void testVerifyECDHPublicKeyIdentity() throws ValidationException {
-        verifyECDHPublicKey(new Point(identity()));
+        verifyECDHPublicKey(identity());
     }
 
     @Test

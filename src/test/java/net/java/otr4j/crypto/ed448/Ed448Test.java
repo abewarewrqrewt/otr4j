@@ -1,5 +1,7 @@
 package net.java.otr4j.crypto.ed448;
 
+import nl.dannyvanheumen.joldilocks.Points;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -16,12 +18,12 @@ import static org.junit.Assert.assertNotNull;
 public final class Ed448Test {
 
     @Test
-    public void testExpectedModulus() {
-        final Point basePoint = basePoint();
+    public void testExpectedModulus() throws Points.InvalidDataException {
+        final nl.dannyvanheumen.joldilocks.Point basePoint = Points.decode(basePoint().encode());
         assertEquals(new BigInteger("224580040295924300187604334099896036246789641632564134246125461686950415467406032909029192869357953282578032075146446173674602635247710",
-                10), basePoint.p.x());
+                10), basePoint.x());
         assertEquals(new BigInteger("298819210078481492676017930443930673437544040154080242095928241372331506189835876003536878655418784733982303233503462500531545062832660",
-                10), basePoint.p.y());
+                10), basePoint.y());
     }
 
     @Test
