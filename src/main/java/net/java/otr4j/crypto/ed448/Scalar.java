@@ -21,7 +21,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * implementation details.
  */
 // FIXME implement arithmetic operations that operate directly on byte-arrays.
-// FIXME check if modulo-operations are necessary for scalar value operations.
 // FIXME write tests comparing to BigInteger to ensure that all operations are correct, even if performed on byte-arrays.
 public final class Scalar implements Comparable<Scalar> {
 
@@ -176,7 +175,7 @@ public final class Scalar implements Comparable<Scalar> {
     @Override
     public int compareTo(@Nonnull final Scalar scalar) {
         assert this.encoded.length == SCALAR_LENGTH_BYTES && scalar.encoded.length == SCALAR_LENGTH_BYTES;
-        for (int i = SCALAR_LENGTH_BYTES; i >= 0; --i) {
+        for (int i = SCALAR_LENGTH_BYTES - 1; i >= 0; --i) {
             final byte xi = (byte) (this.encoded[i] ^ Byte.MIN_VALUE);
             final byte yi = (byte) (scalar.encoded[i] ^ Byte.MIN_VALUE);
             if (xi < yi) {
