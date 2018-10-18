@@ -16,6 +16,7 @@ Development stages:
 * ⌛ Migrate Ed448-Goldilocks implementation to Bouncy Castle.
   * ✔ EdDSA long-term keypair
   * ECDH keypair
+  * Verify if implementation is still concise and simple, given recent modifications to Point and Scalar internals.
 * Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
 * Full implementation for "OTRv4 Interactive" use-case
@@ -86,11 +87,13 @@ Development stages:
   * ☐ Investigate effectiveness of clearing byte-arrays right before potential GC. (Maybe they are optimized away by JVM?)
 * Verify OTR-protocol obligations of other party:
   * ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
-* In-memory representation of data:
-  * ☐ Points kept as byte-arrays.  
-    _Consider the trade-offs. Investigate if/how BouncyCastle does this._
-  * ☐ Scalar values kept as byte-arrays.  
-    _Consider the trade-offs. Investigate if/how BouncyCastle does this._
+* In-memory representation of points and scalar values as byte-arrays:
+  _Note that we specifically refer to how the data is represented in memory. Operations require temporary conversion back and forth into an intermediate type._
+  * ☑ Points kept as byte-arrays.
+  * ☑ Scalar values kept as byte-arrays.
+* Mathematical operations act on byte-array representations directly:
+  * Scalar arithmetic operations to directly operate on values in byte-array representation.
+  * Point arithmetic operations to directly operate on values in byte-array representation.
 * Robustness
   * ☑ otr4j does not handle Error-type exceptions.  
   _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
