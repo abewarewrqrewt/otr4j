@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Point.mustDecodePoint;
-import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.constantTimeEqualsOrSame;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
@@ -107,7 +107,7 @@ public final class Ed448 {
     @CheckReturnValue
     public static boolean checkIdentity(@Nonnull final Point point) {
         requireLengthExactly(PUBLIC_KEY_SIZE, point.encoded);
-        return constantTimeEquals(IDENTITY.encoded, point.encoded);
+        return constantTimeEqualsOrSame(IDENTITY.encoded, point.encoded);
     }
 
     /**

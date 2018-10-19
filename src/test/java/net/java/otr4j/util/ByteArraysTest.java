@@ -3,10 +3,12 @@ package net.java.otr4j.util;
 import org.junit.Test;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.constantTimeEqualsOrSame;
 import static net.java.otr4j.util.ByteArrays.fromHexString;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
@@ -17,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public class ByteArraysTest {
@@ -89,8 +92,7 @@ public class ByteArraysTest {
     public void testCompareEqualSizeBytes() {
         final byte[] data1 = new byte[200];
         RANDOM.nextBytes(data1);
-        final byte[] data2 = new byte[200];
-        System.arraycopy(data1, 0, data2, 0, data1.length);
+        final byte[] data2 = data1.clone();
         assertTrue(constantTimeEquals(data1, data2));
     }
 
@@ -116,6 +118,56 @@ public class ByteArraysTest {
     @Test(expected = NullPointerException.class)
     public void testCompareNullWithNull() {
         constantTimeEquals(null, null);
+    }
+
+    @Test
+    public void testCompareSameStringConstantTimeOrSame() {
+        final byte[] data = new byte[200];
+        RANDOM.nextBytes(data);
+        assertTrue(constantTimeEqualsOrSame(data, data));
+    }
+
+    @Test
+    public void testCompareEqualSizeBytesUnequalConstantTimeEqualsOrSame() {
+        final byte[] data1 = new byte[200];
+        final byte[] data2 = new byte[200];
+        RANDOM.nextBytes(data1);
+        RANDOM.nextBytes(data2);
+        data2[0] = (byte) (data1[0] ^ 0x1);
+        assertFalse(constantTimeEqualsOrSame(data1, data2));
+    }
+
+    @Test
+    public void testCompareEqualSizeBytesConstantTimeEqualsOrSame() {
+        final byte[] data1 = new byte[200];
+        RANDOM.nextBytes(data1);
+        final byte[] data2 = data1.clone();
+        assertTrue(constantTimeEqualsOrSame(data1, data2));
+    }
+
+    @Test
+    public void testCompareUnequalSizeBytesconstantTimeEqualsOrSame() {
+        final byte[] data1 = randomBytes(RANDOM, new byte[200]);
+        final byte[] data2 = randomBytes(RANDOM, new byte[201]);
+        assumeFalse(Arrays.equals(data1, data2));
+        assertFalse(constantTimeEqualsOrSame(data1, data2));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCompareNullData1constantTimeEqualsOrSame() {
+        final byte[] data2 = new byte[200];
+        constantTimeEqualsOrSame(null, data2);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCompareNullData2constantTimeEqualsOrSame() {
+        final byte[] data1 = new byte[200];
+        constantTimeEqualsOrSame(data1, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCompareNullWithNullconstantTimeEqualsOrSame() {
+        constantTimeEqualsOrSame(null, null);
     }
 
     @Test(expected = NullPointerException.class)

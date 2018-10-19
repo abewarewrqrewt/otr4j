@@ -78,7 +78,7 @@ public final class ByteArrays {
 
     /**
      * Test equality of two byte arrays using constant-time method. Throws an IllegalArgumentException in case both
-     * arrays are same instance. Inputs cannot be null.
+     * arrays are same instance. Inputs cannot be null and must be equal length.
      *
      * @param data1 The first byte array.
      * @param data2 The second byte array.
@@ -87,10 +87,23 @@ public final class ByteArrays {
     // TODO constantTimeEquals is applied in all reasonable cases. We need to ensure 'equals' methods are also considerate of same instances. Do we really want to accept same instances everywhere?
     @CheckReturnValue
     public static boolean constantTimeEquals(@Nonnull final byte[] data1, @Nonnull final byte[] data2) {
-        // TODO consider if it really makes sense to sound alarm on encountering same instance. It may be more common than previously thought due to IDENTITY and other constants.
         if (requireNonNull(data1) == requireNonNull(data2)) {
             throw new IllegalArgumentException("BUG: Same instance is compared.");
         }
+        return constantTimeEqualsOrSame(data1, data2);
+    }
+
+    /**
+     * Test equality of two byte arrays using constant-time method. Inputs cannot be null and must be equal length.
+     *
+     * @param data1 The first byte array.
+     * @param data2 The second byte array.
+     * @return Returns true iff both byte arrays have same contents (and same length).
+     */
+    @CheckReturnValue
+    public static boolean constantTimeEqualsOrSame(@Nonnull final byte[] data1, @Nonnull final byte[] data2) {
+        requireNonNull(data1);
+        requireNonNull(data2);
         assert !allZeroBytes(data1) : "Expected non-zero bytes for data1. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(data2) : "Expected non-zero bytes for data1. This may indicate that a critical bug is present, or it may be a false warning.";
         return constantTimeAreEqual(data1, data2);
