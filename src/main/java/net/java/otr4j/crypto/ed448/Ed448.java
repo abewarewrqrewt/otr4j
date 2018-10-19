@@ -6,12 +6,12 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
 
-import static java.math.BigInteger.ONE;
-import static java.math.BigInteger.ZERO;
-import static net.java.otr4j.crypto.ed448.Point.createPoint;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Point.mustDecodePoint;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
+import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
 
 /**
  * Class that provides access to Ed448 constants.
@@ -21,7 +21,7 @@ public final class Ed448 {
     /**
      * Identity (or neutral element) of the curve.
      */
-    private static final Point IDENTITY = createPoint(ZERO, ONE);
+    private static final Point IDENTITY = new Point(new byte[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
     /**
      * Base Point of the curve.
@@ -104,14 +104,10 @@ public final class Ed448 {
      * @param point point
      * @return Returns true if p is identity, or false otherwise.
      */
-    // FIXME write unit tests for checkIdentity
     @CheckReturnValue
     public static boolean checkIdentity(@Nonnull final Point point) {
-        try {
-            return Points.checkIdentity(Points.decode(point.encoded));
-        } catch (final Points.InvalidDataException e) {
-            throw new IllegalStateException("Illegal point data. Failed to decode.", e);
-        }
+        requireLengthExactly(PUBLIC_KEY_SIZE, point.encoded);
+        return constantTimeEquals(IDENTITY.encoded, point.encoded);
     }
 
     /**

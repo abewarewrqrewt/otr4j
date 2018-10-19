@@ -21,7 +21,8 @@ public final class Point {
 
     final byte[] encoded;
 
-    private Point(@Nonnull final byte[] encoded) {
+    // FIXME check where else we can use the constructor directly
+    Point(@Nonnull final byte[] encoded) {
         this.encoded = requireLengthExactly(PUBLIC_KEY_SIZE, encoded);
     }
 

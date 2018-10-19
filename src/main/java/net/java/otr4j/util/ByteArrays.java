@@ -87,6 +87,7 @@ public final class ByteArrays {
     // TODO constantTimeEquals is applied in all reasonable cases. We need to ensure 'equals' methods are also considerate of same instances. Do we really want to accept same instances everywhere?
     @CheckReturnValue
     public static boolean constantTimeEquals(@Nonnull final byte[] data1, @Nonnull final byte[] data2) {
+        // TODO consider if it really makes sense to sound alarm on encountering same instance. It may be more common than previously thought due to IDENTITY and other constants.
         if (requireNonNull(data1) == requireNonNull(data2)) {
             throw new IllegalArgumentException("BUG: Same instance is compared.");
         }

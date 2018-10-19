@@ -1,21 +1,29 @@
 package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Points;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
+import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.crypto.ed448.Scalar.ONE;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 @SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
 public final class Ed448Test {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test
     public void testExpectedModulus() throws Points.InvalidDataException {
@@ -40,6 +48,38 @@ public final class Ed448Test {
     @Test
     public void testContainsPoint() {
         containsPoint(basePoint());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCheckIdentityNull() {
+        checkIdentity(null);
+    }
+
+    @Test
+    public void testCheckIdentityIdentityPoint() throws ValidationException {
+        final byte[] identity = new byte[57];
+        identity[0] = 1;
+        assertTrue(checkIdentity(Point.decodePoint(identity)));
+    }
+
+    @Test
+    public void testCheckIdentityRandomPoint() {
+        final byte[] data = new byte[57];
+        final Point randomPoint = new Point(randomBytes(RANDOM, data));
+        assumeFalse(Arrays.equals(data, new byte[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+        assertFalse(checkIdentity(randomPoint));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCheckIdentityPointTooSmall() {
+        final byte[] data = new byte[56];
+        checkIdentity(new Point(data));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCheckIdentityPointTooLarge() {
+        final byte[] data = new byte[58];
+        checkIdentity(new Point(data));
     }
 
     @Test(expected = NullPointerException.class)
