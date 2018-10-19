@@ -23,7 +23,6 @@ public final class ECDHKeyPairs {
     public static void verifyECDHPublicKey(@Nonnull final Point point) throws ValidationException {
         // TODO is there anything more to testing correct ECDH public key? (Check for identity?)
         if (checkIdentity(point)) {
-            // FIXME identity-check may be redundant as will already be performed in 'Ed448.contains'.
             throw new ValidationException("Public key cannot be identity.");
         }
         if (!containsPoint(point)) {

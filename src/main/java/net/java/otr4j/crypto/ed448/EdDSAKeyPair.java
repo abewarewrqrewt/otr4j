@@ -61,7 +61,6 @@ public final class EdDSAKeyPair {
      * @param signature The signature.
      * @throws ValidationException In case we fail to validate the message against the provided signature.
      */
-    // TODO in some cases, a non-static method may be desirable because the keypair is available.
     public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature)
             throws ValidationException {
         assert !allZeroBytes(signature) : "Expected random data for signature instead of all zero-bytes.";

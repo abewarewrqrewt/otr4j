@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
-import static net.java.otr4j.crypto.ed448.Point.mustDecodePoint;
 import static net.java.otr4j.util.ByteArrays.constantTimeEqualsOrSame;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
@@ -21,13 +20,12 @@ public final class Ed448 {
     /**
      * Identity (or neutral element) of the curve.
      */
-    private static final Point IDENTITY = new Point(new byte[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+    private static final Point IDENTITY = new Point(new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
     /**
      * Base Point of the curve.
      */
-    // FIXME replace with constant expression for base point G
-    private static final Point G = mustDecodePoint(nl.dannyvanheumen.joldilocks.Ed448.basePoint().encode());
+    private static final Point G = new Point(new byte[] {20, -6, 48, -14, 91, 121, 8, -104, -83, -56, -41, 78, 44, 19, -67, -3, -60, 57, 124, -26, 28, -1, -45, 58, -41, -62, -96, 5, 30, -100, 120, -121, 64, -104, -93, 108, 115, 115, -22, 75, 98, -57, -55, 86, 55, 32, 118, -120, 36, -68, -74, 110, 113, 70, 63, 105, 0});
 
     /**
      * Scalar value representing one.
