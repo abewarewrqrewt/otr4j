@@ -16,9 +16,10 @@ import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
  * Point wrapper classed used to abstract away from the actual cryptographic implementation.
  */
 // FIXME write unit tests for Point wrapper
+// FIXME implement Closeable and ensure proper clearing of internal point representation as byte-array.
 public final class Point {
 
-    private final byte[] encoded;
+    final byte[] encoded;
 
     private Point(@Nonnull final byte[] encoded) {
         this.encoded = requireLengthExactly(PUBLIC_KEY_SIZE, encoded);
@@ -134,6 +135,7 @@ public final class Point {
      *
      * @return Returns the byte-array representing the point.
      */
+    // FIXME duplicating memory but should it be cleaned?
     @Nonnull
     public byte[] encode() {
         return this.encoded.clone();

@@ -21,7 +21,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * implementation details.
  */
 // FIXME implement arithmetic operations that operate directly on byte-arrays.
-// FIXME write tests comparing to BigInteger to ensure that all operations are correct, even if performed on byte-arrays.
+// FIXME implement Closeable interface and ensure correct cleaning of internal byte-array representing scalar value.
 public final class Scalar implements Comparable<Scalar> {
 
     /**
@@ -129,6 +129,7 @@ public final class Scalar implements Comparable<Scalar> {
      *
      * @return Byte-representation of scalar value.
      */
+    // FIXME duplicating memory but should it be cleaned?
     @Nonnull
     public byte[] encode() {
         return this.encoded.clone();

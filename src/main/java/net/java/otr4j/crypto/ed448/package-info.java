@@ -11,8 +11,7 @@ package net.java.otr4j.crypto.ed448;
 // * multiply-by-(arbitrary)-point operation.
 // * addition-operation
 // * negation-operation
-// * point-comparison (greater-than, at the very least)
-// * OPTIONAL: access to modulus constant
-// * OPTIONAL: access to prime-order constant
-// FIXME transition to byte-arrays for internal (persistent) representations of Scalars and Points
+// * point-comparison (greater-than-or-equal, at the very least)
+// * OPTIONAL: access to base point, modulus, prime-order?
 // FIXME update package-import-constraint to new packages.
+// FIXME verify that new ed448 crypto implementations do not litter memory space with temporary data. Check cloned arrays, appropriate memory cleaning, etc.

@@ -65,7 +65,7 @@ public final class EdDSAKeyPair {
     public static void verify(@Nonnull final Point publicKey, @Nonnull final byte[] message, @Nonnull final byte[] signature)
             throws ValidationException {
         assert !allZeroBytes(signature) : "Expected random data for signature instead of all zero-bytes.";
-        if (!Ed448.verify(signature, 0, publicKey.encode(), 0, ED448_CONTEXT, message, 0, message.length)) {
+        if (!Ed448.verify(signature, 0, publicKey.encoded, 0, ED448_CONTEXT, message, 0, message.length)) {
             throw new ValidationException("Signature is not valid for provided message.");
         }
     }

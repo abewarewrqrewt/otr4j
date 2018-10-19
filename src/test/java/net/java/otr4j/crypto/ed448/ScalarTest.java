@@ -19,6 +19,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+// FIXME write tests to evaluate that equals does correct equality (given constantTimeEquals)
 @SuppressWarnings( {"ConstantConditions", "EqualsWithItself"})
 public final class ScalarTest {
 
