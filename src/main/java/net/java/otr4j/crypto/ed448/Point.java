@@ -21,23 +21,8 @@ public final class Point {
 
     final byte[] encoded;
 
-    // FIXME check where else we can use the constructor directly
     Point(@Nonnull final byte[] encoded) {
         this.encoded = requireLengthExactly(PUBLIC_KEY_SIZE, encoded);
-    }
-
-    /**
-     * Decode a point and expect not to fail. Failure results to decode results in an {@link IllegalArgumentException}.
-     *
-     * @param encodedPoint the encoded point
-     * @return Returns the point instance.
-     */
-    static Point mustDecodePoint(@Nonnull final byte[] encodedPoint) {
-        try {
-            return decodePoint(encodedPoint);
-        } catch (ValidationException e) {
-            throw new IllegalArgumentException("Illegal encoded point provided.");
-        }
     }
 
     /**
@@ -71,7 +56,6 @@ public final class Point {
 
     @Override
     public boolean equals(final Object o) {
-        // FIXME should we make exception to detect same-instance comparison?
         if (this == o) {
             return true;
         }

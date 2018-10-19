@@ -6,7 +6,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
 
-import static net.java.otr4j.crypto.ed448.Point.decodePoint;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.constantTimeEqualsOrSame;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
@@ -89,11 +89,7 @@ public final class Ed448 {
      */
     @Nonnull
     public static Point multiplyByBase(@Nonnull final Scalar scalar) {
-        try {
-            return decodePoint(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.toBigInteger()).encode());
-        } catch (final ValidationException e) {
-            throw new IllegalStateException("Illegal point data. Failed to decode.", e);
-        }
+        return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.toBigInteger()).encode());
     }
 
     /**
@@ -134,6 +130,6 @@ public final class Ed448 {
      */
     // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        return Scalar.decodeScalar(randomBytes(random, new byte[57]));
+        return decodeScalar(randomBytes(random, new byte[57]));
     }
 }

@@ -157,7 +157,6 @@ public final class Scalar implements Comparable<Scalar> {
 
     @Override
     public boolean equals(final Object o) {
-        // FIXME should we make exception to detect same-instance comparison?
         if (this == o) {
             return true;
         }

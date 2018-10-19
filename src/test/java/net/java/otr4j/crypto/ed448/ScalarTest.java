@@ -18,8 +18,9 @@ import static org.bouncycastle.util.Arrays.reverse;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
-// FIXME write tests to evaluate that equals does correct equality (given constantTimeEquals)
 @SuppressWarnings( {"ConstantConditions", "EqualsWithItself"})
 public final class ScalarTest {
 
@@ -222,5 +223,46 @@ public final class ScalarTest {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         scalar.encodeTo(out);
         assertArrayEquals(bytes, out.toByteArray());
+    }
+
+    @Test
+    public void testSameScalarEquals() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        assertEquals(scalar, scalar);
+    }
+
+    @SuppressWarnings("SimplifiableJUnitAssertion")
+    @Test
+    public void testScalarNotEqualsNull() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        assertFalse(scalar.equals(null));
+    }
+
+    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
+    @Test
+    public void testScalarNotEqualsDifferentType() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        assertFalse(scalar.equals(Scalar.class));
+    }
+
+    @Test
+    public void testScalarTwoEqualScalars() {
+        final Scalar scalar1 = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        final Scalar scalar2 = new Scalar(scalar1.encode());
+        assertEquals(scalar1, scalar2);
+    }
+
+    @Test
+    public void testScalarTwoInequalScalars() {
+        final Scalar scalar1 = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        final Scalar scalar2 = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        assertNotEquals(scalar1, scalar2);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    public void testScalarHashCode() {
+        // not sure what thing we can test for this, for now just call the method and see that it does not fail
+        Scalar.ZERO.hashCode();
     }
 }
