@@ -172,6 +172,7 @@ public final class Scalar implements Comparable<Scalar> {
         return Arrays.hashCode(this.encoded);
     }
 
+    // TODO make Scalar.compareTo perform constant-time comparison
     @Override
     public int compareTo(@Nonnull final Scalar scalar) {
         assert this.encoded.length == SCALAR_LENGTH_BYTES && scalar.encoded.length == SCALAR_LENGTH_BYTES;

@@ -82,6 +82,8 @@ Development stages:
 
 * Constant-time implementations:
   * ☑ MAC key comparison
+  * ☑ Point and Scalar equality
+  * ☐ Scalar value comparison
   * ☐ Ring signatures implemented fully constant-time.
 * Cleaning up data:
   * ☑ Clearing byte-arrays containing sensitive material after use.
@@ -102,7 +104,7 @@ Development stages:
   _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
   * ☑ otr4j protects itself against `RuntimeException`s caused by callbacks into the host application.
   _Any occurrence of a `RuntimeException` is considered a bug on the host application side, and is caught and logged by otr4j._
-* OTRv3 catching up:
+* OTRv3 - catching up:
   * ☐ In-memory representation for OTRv3.
   * ☐ Arithmetical operations on byte-arrays for OTRv2 and/or OTRv3 logic.
 
