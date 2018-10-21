@@ -7,7 +7,6 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ErrorMessage;
 import net.java.otr4j.io.messages.Message;
 import net.java.otr4j.io.messages.PlainTextMessage;
@@ -84,9 +83,9 @@ public final class SerializationUtils {
                 writer.write(encodeVersionString(versions));
                 writer.write(HEAD_QUERY_Q);
             }
-        } else if (m instanceof AbstractEncodedMessage) {
+        } else if (m instanceof OtrEncodable) {
             writer.write(HEAD_ENCODED);
-            final byte[] otrEncodedMessage = new OtrOutputStream().write((AbstractEncodedMessage) m).toByteArray();
+            final byte[] otrEncodedMessage = new OtrOutputStream().write((OtrEncodable) m).toByteArray();
             writer.write(toBase64String(otrEncodedMessage));
             writer.write(".");
         } else {
