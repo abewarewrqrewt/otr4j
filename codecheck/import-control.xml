@@ -45,6 +45,8 @@
     <subpackage name="io">
         <allow pkg="net.java.otr4j.crypto"/>
         <allow pkg="net.java.otr4j.api"/>
+
+        <disallow local-only="true" pkg="net.java.otr4j.io.messages"/>
         <allow local-only="true" pkg="net.java.otr4j.io"/>
 
         <!--

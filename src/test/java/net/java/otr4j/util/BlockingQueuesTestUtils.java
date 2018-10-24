@@ -4,8 +4,8 @@ import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.MessageParser;
 import net.java.otr4j.io.OtrInputStream;
-import net.java.otr4j.io.messages.Fragment;
-import net.java.otr4j.io.messages.Message;
+import net.java.otr4j.io.Fragment;
+import net.java.otr4j.io.Message;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;

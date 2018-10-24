@@ -2,7 +2,9 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
+import net.java.otr4j.io.messages.EncodedMessageParser;
 import net.java.otr4j.io.messages.RevealSignatureMessage;
 import org.junit.Test;
 
@@ -81,7 +83,9 @@ public class IOTest {
 		KeyPair pair = OtrCryptoEngine.generateDHKeyPair(this.secureRandom);
 		DHKeyMessage source = new DHKeyMessage(OTRv.THREE, (DHPublicKey) pair.getPublic(), ZERO_TAG, ZERO_TAG);
 		String base64 = SerializationUtils.toString(source);
-		DHKeyMessage result = (DHKeyMessage) MessageParser.parse(base64);
+		EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
+		final AbstractEncodedMessage result = EncodedMessageParser.parse(message.getVersion(), message.getType(),
+				message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());
         assertEquals(source, result);
 	}
 
@@ -96,7 +100,9 @@ public class IOTest {
 		RevealSignatureMessage source = new RevealSignatureMessage(
 				protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, ZERO_TAG, ZERO_TAG);
 		String base64 = SerializationUtils.toString(source);
-		RevealSignatureMessage result = (RevealSignatureMessage) MessageParser.parse(base64);
+        EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
+        final AbstractEncodedMessage result = EncodedMessageParser.parse(message.getVersion(), message.getType(),
+                message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());
         assertEquals(source, result);
 	}
 }

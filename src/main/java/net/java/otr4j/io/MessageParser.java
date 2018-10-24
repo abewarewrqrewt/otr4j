@@ -1,14 +1,7 @@
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
-import net.java.otr4j.io.messages.EncodedMessageParser;
-import net.java.otr4j.io.messages.ErrorMessage;
-import net.java.otr4j.io.messages.Fragment;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -21,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static net.java.otr4j.api.Session.OTRv.SUPPORTED;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
@@ -59,6 +53,7 @@ public final class MessageParser {
      * Group 4: OTRv4 whitespace tag.
      */
     // TODO whitespace detection is lacking, there is no guarantee that whitespace tags for OTR versions will be found in this predefined order.
+    @SuppressWarnings("RegExpRepeatedSpace")
     private static final Pattern PATTERN_WHITESPACE = Pattern
             .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?(  \\t\\t \\t  )?");
 
@@ -72,11 +67,9 @@ public final class MessageParser {
      * @param text the content represented as plain text
      * @return Returns the message instance of the message that the text represented.
      * @throws ProtocolException          In case of protocol violations.
-     * @throws OtrCryptoException         In case of cryptographic violations, such as illegal values.
-     * @throws UnsupportedLengthException In case we run into the limitations of the otr4j implementation.
      */
     @Nonnull
-    public static Message parse(@Nonnull final String text) throws ProtocolException, OtrCryptoException, UnsupportedLengthException {
+    public static Message parse(@Nonnull final String text) throws ProtocolException {
         final int idxHead = text.indexOf(HEAD);
         if (idxHead > -1) {
             // Message **contains** the string "?OTR". Check to see if it is an error message, a query message or a data
@@ -120,7 +113,22 @@ public final class MessageParser {
                  * So in order to decode the content string we have to get rid of the '.' first.
                  */
                 final byte[] contentBytes = decode(content.substring(0, content.length() - 1).getBytes(US_ASCII));
-                return EncodedMessageParser.parse(new OtrInputStream(contentBytes));
+                final OtrInputStream input = new OtrInputStream(contentBytes);
+                final int protocolVersion = input.readShort();
+                if (!SUPPORTED.contains(protocolVersion)) {
+                    throw new ProtocolException("Unsupported protocol version " + protocolVersion);
+                }
+                final byte messageType = input.readByte();
+                final InstanceTag senderInstanceTag;
+                final InstanceTag receiverInstanceTag;
+                if (protocolVersion == OTRv.THREE || protocolVersion == OTRv.FOUR) {
+                    senderInstanceTag = input.readInstanceTag();
+                    receiverInstanceTag = input.readInstanceTag();
+                } else {
+                    senderInstanceTag = InstanceTag.ZERO_TAG;
+                    receiverInstanceTag = InstanceTag.ZERO_TAG;
+                }
+                return new EncodedMessage(protocolVersion, messageType, senderInstanceTag, receiverInstanceTag, input);
             }
         }
 

@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.io.messages.Message;
+import net.java.otr4j.io.Message;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.SessionID;

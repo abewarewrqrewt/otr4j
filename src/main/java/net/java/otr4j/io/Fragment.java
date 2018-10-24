@@ -1,4 +1,4 @@
-package net.java.otr4j.io.messages;
+package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;

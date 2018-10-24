@@ -20,8 +20,14 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
+import net.java.otr4j.io.EncodedMessage;
+import net.java.otr4j.io.ErrorMessage;
+import net.java.otr4j.io.Fragment;
+import net.java.otr4j.io.Message;
+import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.io.QueryMessage;
 import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.io.messages.AbstractEncodedMessage;
 import net.java.otr4j.io.messages.ClientProfilePayload;
@@ -29,12 +35,7 @@ import net.java.otr4j.io.messages.DHCommitMessage;
 import net.java.otr4j.io.messages.DHKeyMessage;
 import net.java.otr4j.io.messages.DataMessage;
 import net.java.otr4j.io.messages.DataMessage4;
-import net.java.otr4j.io.messages.ErrorMessage;
-import net.java.otr4j.io.messages.Fragment;
 import net.java.otr4j.io.messages.IdentityMessage;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
@@ -72,8 +73,11 @@ import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
+import static net.java.otr4j.api.Session.OTRv.FOUR;
+import static net.java.otr4j.api.Session.OTRv.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
+import static net.java.otr4j.io.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 
 /**
@@ -425,6 +429,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             m = parse(msgText);
         } catch (final ProtocolException e) {
+            // TODO we probably want to just drop the message, i.s.o. throwing exception.
             throw new OtrException("Invalid message.", e);
         }
 
@@ -462,20 +467,27 @@ final class SessionImpl implements Session, Context, AuthContext {
                 this.slaveSessions.put(fragment.getSendertag(), slave);
             }
             return slave.handleFragment(fragment);
-        } else if (masterSession == this && m instanceof AbstractEncodedMessage
-                && (((AbstractEncodedMessage) m).protocolVersion == OTRv.THREE
-                || ((AbstractEncodedMessage) m).protocolVersion == OTRv.FOUR)) {
-            // In case of OTRv3 delegate message processing to dedicated slave
-            // session.
-            final AbstractEncodedMessage encodedM = (AbstractEncodedMessage) m;
+        } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).getVersion() == THREE
+                || ((EncodedMessage) m).getVersion() == FOUR)) {
 
-            if (ZERO_TAG.equals(encodedM.senderInstanceTag)) {
+            if (ZERO_TAG.equals(((EncodedMessage) m).getSenderInstanceTag())) {
                 // An encoded message without a sender instance tag is always bad.
-                logger.warning("Encoded message is missing sender instance tag or sender instance tag is bad. Ignoring message.");
+                logger.warning("Encoded message is missing sender instance tag. Ignoring message.");
                 return null;
             }
 
-            if (!encodedM.receiverInstanceTag.equals(this.senderTag)
+            // In case of OTRv3 delegate message processing to dedicated slave session.
+            final AbstractEncodedMessage encodedM;
+            try {
+                encodedM = parse(((EncodedMessage) m).getVersion(), ((EncodedMessage) m).getType(),
+                        ((EncodedMessage) m).getSenderInstanceTag(), ((EncodedMessage) m).getReceiverInstanceTag(),
+                        ((EncodedMessage) m).getPayload());
+            } catch (final ProtocolException e) {
+                // TODO we probably want to just drop the message, i.s.o. throwing exception.
+                throw new OtrException("Invalid encoded message content.", e);
+            }
+
+            if (!((EncodedMessage) m).getReceiverInstanceTag().equals(this.senderTag)
                     && !(encodedM instanceof DHCommitMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))
                     && !(encodedM instanceof IdentityMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))) {
                 // The message is not intended for us. Discarding...
@@ -584,27 +596,28 @@ final class SessionImpl implements Session, Context, AuthContext {
                     + fragment.getSendertag().getValue(), e);
             return null;
         }
-        final Message encoded;
         try {
-            encoded = parse(reassembledText);
+            final Message message = parse(reassembledText);
+            // TODO should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
+            if (message instanceof EncodedMessage) {
+                // There is no good reason why the reassembled message should have any other protocol version, sender
+                // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
+                // inconsistencies to ensure that the inconsistencies cannot be exploited.
+                // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
+                if (((EncodedMessage) message).getVersion() != fragment.getVersion()
+                        || !((EncodedMessage) message).getSenderInstanceTag().equals(fragment.getSendertag())
+                        || !((EncodedMessage) message).getReceiverInstanceTag().equals(fragment.getReceivertag())) {
+                    logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
+                    return null;
+                }
+                return handleEncodedMessage(parse(((EncodedMessage) message).getVersion(),
+                        ((EncodedMessage) message).getType(), ((EncodedMessage) message).getSenderInstanceTag(),
+                        ((EncodedMessage) message).getReceiverInstanceTag(), ((EncodedMessage) message).getPayload()));
+            }
+            throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
         } catch (final ProtocolException e) {
             throw new OtrException("Protocol violation encountered while processing reassembled OTR-encoded message.", e);
         }
-        // TODO should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
-        if (encoded instanceof AbstractEncodedMessage) {
-            // There is no good reason why the reassembled message should have any other protocol version, sender
-            // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
-            // inconsistencies to ensure that the inconsistencies cannot be exploited.
-            // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
-            if (((AbstractEncodedMessage) encoded).protocolVersion != fragment.getVersion()
-                    || !((AbstractEncodedMessage) encoded).senderInstanceTag.equals(fragment.getSendertag())
-                    || !((AbstractEncodedMessage) encoded).receiverInstanceTag.equals(fragment.getReceivertag())) {
-                logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
-                return null;
-            }
-            return handleEncodedMessage((AbstractEncodedMessage) encoded);
-        }
-        throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
     }
 
     /**
@@ -638,12 +651,12 @@ final class SessionImpl implements Session, Context, AuthContext {
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
 
         final OtrPolicy policy = getSessionPolicy();
-        if (queryMessage.getVersions().contains(OTRv.FOUR) && policy.isAllowV4()) {
+        if (queryMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("Query message with V4 support found. Sending Identity Message.");
-            injectMessage(respondAuth(OTRv.FOUR, ZERO_TAG, queryMessage.getTag()));
-        } else if (queryMessage.getVersions().contains(OTRv.THREE) && policy.isAllowV3()) {
+            injectMessage(respondAuth(FOUR, ZERO_TAG, queryMessage.getTag()));
+        } else if (queryMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(OTRv.THREE, ZERO_TAG, queryMessage.getTag()));
+            injectMessage(respondAuth(THREE, ZERO_TAG, queryMessage.getTag()));
         } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.isAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, queryMessage.getTag()));
@@ -748,17 +761,17 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         setState(new StateInitial(plainTextMessage.getTag()));
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
-        if (plainTextMessage.getVersions().contains(OTRv.FOUR) && policy.isAllowV4()) {
+        if (plainTextMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
             try {
-                injectMessage(respondAuth(OTRv.FOUR, ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(FOUR, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(OTRv.THREE) && policy.isAllowV3()) {
+        } else if (plainTextMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(OTRv.THREE, ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(THREE, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
@@ -786,11 +799,11 @@ final class SessionImpl implements Session, Context, AuthContext {
             logger.finest("ALLOW_V2 is not set, ignore this message.");
             return null;
         }
-        if (m.protocolVersion == OTRv.THREE && !policy.isAllowV3()) {
+        if (m.protocolVersion == THREE && !policy.isAllowV3()) {
             logger.finest("ALLOW_V3 is not set, ignore this message.");
             return null;
         }
-        if (m.protocolVersion == OTRv.FOUR && !policy.isAllowV4()) {
+        if (m.protocolVersion == FOUR && !policy.isAllowV4()) {
             logger.finest("ALLOW_V4 is not set, ignore this message.");
             return null;
         }

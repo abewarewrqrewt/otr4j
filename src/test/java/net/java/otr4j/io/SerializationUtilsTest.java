@@ -1,8 +1,6 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
 import org.junit.Test;
 
 import java.io.IOException;

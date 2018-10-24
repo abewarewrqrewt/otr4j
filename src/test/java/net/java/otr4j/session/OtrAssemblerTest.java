@@ -9,7 +9,7 @@ package net.java.otr4j.session;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrInputStream;
-import net.java.otr4j.io.messages.Fragment;
+import net.java.otr4j.io.Fragment;
 import org.junit.Test;
 
 import java.net.ProtocolException;

@@ -7,10 +7,6 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.messages.ErrorMessage;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
 
 import javax.annotation.Nonnull;
 import java.io.StringWriter;

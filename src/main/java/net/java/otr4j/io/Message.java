@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package net.java.otr4j.io.messages;
+package net.java.otr4j.io;
 
 /**
  * Interface representing any message recognized by Off-the-record.

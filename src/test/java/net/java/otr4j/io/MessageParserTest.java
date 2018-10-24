@@ -1,12 +1,7 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.Fragment;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
-import net.java.otr4j.io.messages.QueryMessage;
+import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
 
 import java.net.ProtocolException;
@@ -14,17 +9,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
+import static java.util.Arrays.copyOfRange;
 import static net.java.otr4j.io.MessageParser.encodeVersionString;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageParser.parseVersionString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @SuppressWarnings("ConstantConditions")
 public final class MessageParserTest {
 
     @Test
-    public void testNoFailureOnPlainMessage() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testNoFailureOnPlainMessage() throws ProtocolException {
         final Message msg = parse("Hello world");
         assertTrue(msg instanceof PlainTextMessage);
         final PlainTextMessage plainMsg = (PlainTextMessage) msg;
@@ -34,14 +32,14 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV1() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t ");
         assertTrue(msg.getVersions().isEmpty());
         assertEquals("", msg.getCleanText());
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV2() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV2() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t ");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -49,7 +47,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV3() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV3() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -57,7 +55,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV4() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t \t  ");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
@@ -65,7 +63,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV2V3V4() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV2V3V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(3, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -75,7 +73,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -84,7 +82,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1V2V4() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV1V2V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t \t  ");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -93,7 +91,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1AndV2() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV1AndV2() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t ");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -101,7 +99,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1V3V4() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV1V3V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(2, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -110,7 +108,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -118,7 +116,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectIdentificationOfWhitespaceTagV1V2V3V4() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectIdentificationOfWhitespaceTagV1V2V3V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(3, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
@@ -128,7 +126,7 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectWhitespaceErasure() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectWhitespaceErasure() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse("Hello \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t world!");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
@@ -136,52 +134,58 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testCorrectDeduplicationOfVersionsWhileParsingQueryMessage() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testCorrectDeduplicationOfVersionsWhileParsingQueryMessage() throws ProtocolException {
         final QueryMessage msg = (QueryMessage) parse("?OTRv2222222?");
         assertEquals(1, msg.getVersions().size());
         assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
     }
 
     @Test
-    public void testEnsureEmptyVersionStringIsCorrectlyParsed() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testEnsureEmptyVersionStringIsCorrectlyParsed() throws ProtocolException {
         final QueryMessage msg = (QueryMessage) parse("?OTRv?");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureOTRv1VersionStringIsIgnored() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testParseOTRError() throws ProtocolException {
+        final ErrorMessage msg = (ErrorMessage) parse("?OTR Error:Hello world of errors!");
+        assertEquals("Hello world of errors!", msg.error);
+    }
+
+    @Test
+    public void testEnsureOTRv1VersionStringIsIgnored() throws ProtocolException {
         final QueryMessage msg = (QueryMessage) parse("?OTR?");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored1() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored1() throws ProtocolException {
         final PlainTextMessage msg = (PlainTextMessage) parse("?");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored2() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored2() throws ProtocolException {
         final PlainTextMessage msg = (PlainTextMessage) parse("?O");
         assertTrue(msg.getVersions().isEmpty());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored3() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored3() throws ProtocolException {
         final PlainTextMessage msg = (PlainTextMessage) parse("?OTRa");
         assertTrue(msg.getVersions().isEmpty());
         assertEquals("?OTRa", msg.getCleanText());
     }
 
     @Test
-    public void testEnsureFakeOTRHeadersCorrectlyIgnored4() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testEnsureFakeOTRHeadersCorrectlyIgnored4() throws ProtocolException {
         final PlainTextMessage msg = (PlainTextMessage) parse("?OTR ");
         assertTrue(msg.getVersions().isEmpty());
         assertEquals("?OTR ", msg.getCleanText());
     }
 
     @Test
-    public void testIncompleteMessageMissingEnding() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testIncompleteMessageMissingEnding() throws ProtocolException {
         final String message = "?OTR:BADBASE64CODEMISSINGDOT";
         final PlainTextMessage msg = (PlainTextMessage) parse(message);
         assertTrue(msg.getVersions().isEmpty());
@@ -189,22 +193,22 @@ public final class MessageParserTest {
     }
 
     @Test
-    public void testOTRQueryMessageV1NotOTREncoded() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testOTRQueryMessageV1NotOTREncoded() throws ProtocolException {
         assertTrue(parse("?OTR? some other content ...") instanceof QueryMessage);
     }
 
     @Test
-    public void testCorrectOTREncodingDetection() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
-        assertTrue(parse("?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8vjPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2ipkTtquknfx6HodLvk3RAAAAAA==.") instanceof AbstractEncodedMessage);
+    public void testCorrectOTREncodingDetection() throws ProtocolException {
+        assertTrue(parse("?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8vjPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2ipkTtquknfx6HodLvk3RAAAAAA==.") instanceof EncodedMessage);
     }
 
     @Test
-    public void testOTRv2FragmentNotOTREncoded() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testOTRv2FragmentNotOTREncoded() throws ProtocolException {
         assertTrue(parse("?OTR,1,3,?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8v,") instanceof Fragment);
     }
 
     @Test
-    public void testOTRv3FragmentNotOTREncoded() throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public void testOTRv3FragmentNotOTREncoded() throws ProtocolException {
         assertTrue(parse("?OTR|5a73a599|27e31597,00001,00003,?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8v,") instanceof Fragment);
     }
 
@@ -274,5 +278,62 @@ public final class MessageParserTest {
         expected.add(3);
         expected.add(1);
         assertEquals(expected, parseVersionString("131113"));
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testParseMessageWithUnsupportedVersion() throws ProtocolException {
+        parse("?OTR:" + Base64.toBase64String(new byte[] {0x00, 0x01}) + ".");
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testParseMessageEmpty() throws ProtocolException {
+        parse("?OTR:.");
+    }
+
+    @Test
+    public void testParsePartialHeaders() throws ProtocolException {
+        final byte[] header = new byte[] {0x00, 0x04, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1};
+        for (int i = 0; i < header.length - 1; i++) {
+            try {
+                parse("?OTR:" + Base64.toBase64String(copyOfRange(header, 0, i)) + ".");
+                fail("Expected parsing to fail with ProtocolException but this did not happen.");
+            } catch (final ProtocolException expected) {
+                // expected failure, no need to respond
+            }
+        }
+        assertNotNull(parse("?OTR:" + Base64.toBase64String(header) + "."));
+    }
+
+    @Test
+    public void testParseCorrectOTRv4Header() throws ProtocolException {
+        final EncodedMessage encoded = (EncodedMessage) parse("?OTR:" + Base64.toBase64String(
+                new byte[] {0x00, 0x04, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1}) + ".");
+        assertEquals(4, encoded.getVersion());
+        assertEquals((byte) 0xff, encoded.getType());
+        assertEquals(0x01020304, encoded.getSenderInstanceTag().getValue());
+        assertEquals(0x04030201, encoded.getReceiverInstanceTag().getValue());
+    }
+
+    @Test
+    public void testParseCorrectOTRv3Header() throws ProtocolException {
+        final EncodedMessage encoded = (EncodedMessage) parse("?OTR:" + Base64.toBase64String(
+                new byte[] {0x00, 0x03, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1}) + ".");
+        assertEquals(3, encoded.getVersion());
+        assertEquals((byte) 0xff, encoded.getType());
+        assertEquals(0x01020304, encoded.getSenderInstanceTag().getValue());
+        assertEquals(0x04030201, encoded.getReceiverInstanceTag().getValue());
+    }
+
+    @Test
+    public void testParseCorrectOTRv2Header() throws ProtocolException {
+        final EncodedMessage encoded = (EncodedMessage) parse("?OTR:" + Base64.toBase64String(
+                new byte[] {0x00, 0x02, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1}) + ".");
+        assertEquals(2, encoded.getVersion());
+        assertEquals((byte) 0xff, encoded.getType());
+        assertEquals(0, encoded.getSenderInstanceTag().getValue());
+        assertEquals(0, encoded.getReceiverInstanceTag().getValue());
+        // Ensure that what would be the instance tags in OTRv3+ are considered part of the content payload in OTRv2.
+        assertEquals(0x01020304, encoded.getPayload().readInt());
+        assertEquals(0x04030201, encoded.getPayload().readInt());
     }
 }

@@ -11,7 +11,7 @@ import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.ErrorMessage;
+import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 

@@ -6,8 +6,8 @@ import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.messages.Message;
-import net.java.otr4j.io.messages.PlainTextMessage;
+import net.java.otr4j.io.Message;
+import net.java.otr4j.io.PlainTextMessage;
 import org.junit.Test;
 
 import java.util.Arrays;

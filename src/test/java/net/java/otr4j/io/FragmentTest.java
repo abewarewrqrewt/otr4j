@@ -1,4 +1,4 @@
-package net.java.otr4j.io.messages;
+package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
@@ -8,7 +8,7 @@ import java.net.ProtocolException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.io.messages.Fragment.parse;
+import static net.java.otr4j.io.Fragment.parse;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

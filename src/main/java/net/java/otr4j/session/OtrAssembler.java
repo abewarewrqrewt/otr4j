@@ -7,7 +7,7 @@
 package net.java.otr4j.session;
 
 import net.java.otr4j.api.Session;
-import net.java.otr4j.io.messages.Fragment;
+import net.java.otr4j.io.Fragment;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -9,6 +9,7 @@ package net.java.otr4j.io.messages;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.io.Message;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 
