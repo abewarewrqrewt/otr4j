@@ -11,7 +11,7 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.io.messages.ClientProfilePayload;
+import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.session.OtrSessionManager;
 
 import javax.annotation.Nonnull;

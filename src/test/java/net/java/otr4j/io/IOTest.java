@@ -2,10 +2,10 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.DHKeyMessage;
-import net.java.otr4j.io.messages.EncodedMessageParser;
-import net.java.otr4j.io.messages.RevealSignatureMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.DHKeyMessage;
+import net.java.otr4j.messages.EncodedMessageParser;
+import net.java.otr4j.messages.RevealSignatureMessage;
 import org.junit.Test;
 
 import javax.crypto.interfaces.DHPublicKey;

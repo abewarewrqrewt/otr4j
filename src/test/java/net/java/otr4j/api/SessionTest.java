@@ -3,7 +3,7 @@ package net.java.otr4j.api;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.io.messages.ClientProfilePayload;
+import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;

@@ -14,10 +14,10 @@ import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrOutputStream;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.ClientProfilePayload;
-import net.java.otr4j.io.messages.DHCommitMessage;
-import net.java.otr4j.io.messages.IdentityMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.ClientProfilePayload;
+import net.java.otr4j.messages.DHCommitMessage;
+import net.java.otr4j.messages.IdentityMessage;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;

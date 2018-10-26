@@ -7,13 +7,13 @@ import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.AuthIMessage;
-import net.java.otr4j.io.messages.AuthRMessage;
-import net.java.otr4j.io.messages.ClientProfilePayload;
-import net.java.otr4j.io.messages.IdentityMessage;
-import net.java.otr4j.io.messages.IdentityMessages;
-import net.java.otr4j.io.messages.ValidationException;
+import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AuthIMessage;
+import net.java.otr4j.messages.AuthRMessage;
+import net.java.otr4j.messages.ClientProfilePayload;
+import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.IdentityMessages;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.api.ClientProfile;
 
 import javax.annotation.Nonnull;
@@ -23,9 +23,9 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
-import static net.java.otr4j.io.messages.AuthRMessages.validate;
-import static net.java.otr4j.io.messages.MysteriousT4.Purpose.AUTH_I;
-import static net.java.otr4j.io.messages.MysteriousT4.encode;
+import static net.java.otr4j.messages.AuthRMessages.validate;
+import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_I;
+import static net.java.otr4j.messages.MysteriousT4.encode;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 
 /**

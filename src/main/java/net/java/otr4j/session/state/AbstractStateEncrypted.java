@@ -4,7 +4,7 @@ import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
 import java.util.List;

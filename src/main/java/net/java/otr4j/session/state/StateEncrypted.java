@@ -2,7 +2,7 @@ package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;

@@ -13,13 +13,13 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.UnsupportedTypeException;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
-import net.java.otr4j.io.messages.DHCommitMessage;
-import net.java.otr4j.io.messages.DHKeyMessage;
-import net.java.otr4j.io.messages.RevealSignatureMessage;
-import net.java.otr4j.io.messages.SignatureM;
-import net.java.otr4j.io.messages.SignatureMessage;
-import net.java.otr4j.io.messages.SignatureX;
+import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.DHCommitMessage;
+import net.java.otr4j.messages.DHKeyMessage;
+import net.java.otr4j.messages.RevealSignatureMessage;
+import net.java.otr4j.messages.SignatureM;
+import net.java.otr4j.messages.SignatureMessage;
+import net.java.otr4j.messages.SignatureX;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.io.OtrEncodables.encode;
-import static net.java.otr4j.io.messages.SignatureXs.readSignatureX;
+import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 
 /**
  * AKE state Awaiting Signature message, a.k.a. AUTHSTATE_AWAITING_SIG.

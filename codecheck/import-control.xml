@@ -37,7 +37,7 @@
     </subpackage>
     <subpackage name="api">
         <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
-        <allow local-only="true" class="net.java.otr4j.io.messages.ClientProfilePayload" exact-match="true"/>
+        <allow local-only="true" class="net.java.otr4j.messages.ClientProfilePayload" exact-match="true"/>
 
         <allow pkg="net.java.otr4j.crypto"/>
         <allow local-only="true" pkg="net.java.otr4j.api"/>
@@ -45,8 +45,6 @@
     <subpackage name="io">
         <allow pkg="net.java.otr4j.crypto"/>
         <allow pkg="net.java.otr4j.api"/>
-
-        <disallow local-only="true" pkg="net.java.otr4j.io.messages"/>
         <allow local-only="true" pkg="net.java.otr4j.io"/>
 
         <!--
@@ -55,18 +53,25 @@
         ProtocolException in case of violations of the OTR protocol.
         -->
         <disallow class="java.io.IOException"/>
+    </subpackage>
+    <subpackage name="messages">
+        <allow pkg="net.java.otr4j.crypto"/>
+        <allow pkg="net.java.otr4j.api"/>
+        <allow pkg="net.java.otr4j.io"/>
+        <allow local-only="true" pkg="net.java.otr4j.messages"/>
 
-        <subpackage name="messages">
-            <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
-            <allow local-only="true" pkg="net.java.otr4j.io"/>
-
-            <allow local-only="true" pkg="net.java.otr4j.io.messages"/>
-        </subpackage>
+        <!--
+        OTR, the protocol, makes it easy to acquire the total payload. otr4j mainly focuses on parsing of the
+        binary-encoded-as-base64 payload. Therefore we do not expect to throw IOException. We do expect to throw
+        ProtocolException in case of violations of the OTR protocol.
+        -->
+        <disallow class="java.io.IOException"/>
     </subpackage>
     <subpackage name="session">
         <allow pkg="net.java.otr4j.crypto"/>
         <allow pkg="net.java.otr4j.api"/>
         <allow pkg="net.java.otr4j.io"/>
+        <allow pkg="net.java.otr4j.messages"/>
         <allow local-only="true" pkg="net.java.otr4j.session"/>
         <allow pkg="net.java.otr4j.session.api"/>
 

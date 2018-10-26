@@ -9,7 +9,7 @@ package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.io.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
