@@ -6,6 +6,7 @@ import net.java.otr4j.crypto.ed448.Point;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
+import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -129,5 +130,25 @@ public final class ClientProfile {
     @Nullable
     public DSAPublicKey getDsaPublicKey() {
         return this.dsaPublicKey;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final ClientProfile that = (ClientProfile) o;
+        return expirationUnixTime == that.expirationUnixTime && Objects.equals(instanceTag, that.instanceTag)
+                && Objects.equals(longTermPublicKey, that.longTermPublicKey)
+                && Objects.equals(forgingKey, that.forgingKey) && Objects.equals(versions, that.versions)
+                && Objects.equals(dsaPublicKey, that.dsaPublicKey);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(instanceTag, longTermPublicKey, forgingKey, versions, expirationUnixTime, dsaPublicKey);
     }
 }

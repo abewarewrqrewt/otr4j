@@ -105,6 +105,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             m = partialM;
         } else {
             if (dsaPublicKey == null) {
+                // FIXME do we allow DSA signature without including corresponding public key?
                 throw new IllegalArgumentException("DSA private key provided for transitional signature, but DSA public key is not present in the client profile.");
             }
             final DSASignature transitionalSignature = signRS(partialM, dsaPrivateKey);
@@ -267,7 +268,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             } else if (field instanceof TransitionalSignatureField) {
                 transitionalSignatureFields.add((TransitionalSignatureField) field);
             } else {
-                throw new UnsupportedOperationException("Incomplete implementation: support for field type " + field.getClass() + " is not implemented yet.");
+                throw new UnsupportedOperationException("BUG incomplete implementation: support for field type " + field.getClass() + " is not implemented yet.");
             }
         }
         if (instanceTagFields.size() != 1) {
