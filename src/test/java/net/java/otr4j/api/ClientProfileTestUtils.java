@@ -2,6 +2,7 @@ package net.java.otr4j.api;
 
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.messages.ClientProfilePayload;
 
 import java.security.KeyPair;
@@ -19,6 +20,8 @@ public final class ClientProfileTestUtils {
 
     private final EdDSAKeyPair eddsaLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
 
+    private final Point forgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+
     private final KeyPair dsaKeyPair = OtrCryptoEngine.generateDSAKeyPair();
 
     private final long expirationTime = System.currentTimeMillis() / 1000 + 86400;
@@ -31,7 +34,7 @@ public final class ClientProfileTestUtils {
 
     public ClientProfilePayload createUserProfile() {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
-            singleton(Session.OTRv.FOUR), this.expirationTime, null);
+                this.forgingKey, singleton(Session.OTRv.FOUR), this.expirationTime, null);
         return ClientProfilePayload.sign(profile, null, this.eddsaLongTermKeyPair);
     }
 
@@ -40,7 +43,7 @@ public final class ClientProfileTestUtils {
         versions.add(Session.OTRv.THREE);
         versions.add(Session.OTRv.FOUR);
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
-            versions, this.expirationTime, (DSAPublicKey) this.dsaKeyPair.getPublic());
+                this.forgingKey, versions, this.expirationTime, (DSAPublicKey) this.dsaKeyPair.getPublic());
         return ClientProfilePayload.sign(profile, (DSAPrivateKey) this.dsaKeyPair.getPrivate(), this.eddsaLongTermKeyPair);
     }
 }

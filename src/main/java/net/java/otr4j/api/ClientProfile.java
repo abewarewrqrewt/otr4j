@@ -31,6 +31,11 @@ public final class ClientProfile {
     private final Point longTermPublicKey;
 
     /**
+     * Public key of the Ed448 Forging key.
+     */
+    private final Point forgingKey;
+
+    /**
      * List of supported versions.
      */
     private final Set<Integer> versions;
@@ -50,17 +55,19 @@ public final class ClientProfile {
      *
      * @param instanceTag        the instance tag
      * @param longTermPublicKey  the long-term Ed448 public key
+     * @param forgingKey         the Ed448 Forging public key
      * @param versions           supported protocol versions
      * @param expirationUnixTime the expiration date in unix timestamp (in seconds)
      * @param dsaPublicKey       the DSA public key
      */
     public ClientProfile(@Nonnull final InstanceTag instanceTag, @Nonnull final Point longTermPublicKey,
-            @Nonnull final Set<Integer> versions, final long expirationUnixTime,
+            @Nonnull final Point forgingKey, @Nonnull final Set<Integer> versions, final long expirationUnixTime,
             @Nullable final DSAPublicKey dsaPublicKey) {
         this.instanceTag = requireNonNull(instanceTag);
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
+        this.forgingKey = requireNonNull(forgingKey);
         this.versions = requireMinElements(1, requireElements(singletonList(OTRv.FOUR),
-            requireNoIllegalValues(asList(OTRv.ONE, OTRv.TWO), versions)));
+                requireNoIllegalValues(asList(OTRv.ONE, OTRv.TWO), versions)));
         this.expirationUnixTime = expirationUnixTime;
         this.dsaPublicKey = dsaPublicKey;
     }
@@ -72,7 +79,7 @@ public final class ClientProfile {
      */
     @Nonnull
     public InstanceTag getInstanceTag() {
-        return instanceTag;
+        return this.instanceTag;
     }
 
     /**
@@ -82,7 +89,17 @@ public final class ClientProfile {
      */
     @Nonnull
     public Point getLongTermPublicKey() {
-        return longTermPublicKey;
+        return this.longTermPublicKey;
+    }
+
+    /**
+     * Get the Forging public key.
+     *
+     * @return Returns the public key.
+     */
+    @Nonnull
+    public Point getForgingKey() {
+        return this.forgingKey;
     }
 
     /**
@@ -92,7 +109,7 @@ public final class ClientProfile {
      */
     @Nonnull
     public Set<Integer> getVersions() {
-        return versions;
+        return this.versions;
     }
 
     /**
@@ -101,7 +118,7 @@ public final class ClientProfile {
      * @return Returns the unix timestamp in seconds.
      */
     public long getExpirationUnixTime() {
-        return expirationUnixTime;
+        return this.expirationUnixTime;
     }
 
     /**
@@ -111,6 +128,6 @@ public final class ClientProfile {
      */
     @Nullable
     public DSAPublicKey getDsaPublicKey() {
-        return dsaPublicKey;
+        return this.dsaPublicKey;
     }
 }

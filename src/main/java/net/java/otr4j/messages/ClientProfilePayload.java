@@ -88,6 +88,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
+        fields.add(new ED448ForgingKeyField(profile.getForgingKey()));
         fields.add(new VersionsField(profile.getVersions()));
         fields.add(new ExpirationDateField(profile.getExpirationUnixTime()));
         final DSAPublicKey dsaPublicKey = profile.getDsaPublicKey();
@@ -148,6 +149,17 @@ public final class ClientProfilePayload implements OtrEncodable {
                     break;
                 default:
                     throw new ProtocolException("Unsupported Ed448 public key type: " + publicKeyType);
+                }
+                break;
+            case ED448_FORGING_PUBLIC_KEY:
+                final int forgingKeyType = in.readShort();
+                switch (forgingKeyType) {
+                case ED448ForgingKeyField.ED448_FORGING_KEY_TYPE:
+                    final Point publicKey = in.readPoint();
+                    fields.add(new ED448ForgingKeyField(publicKey));
+                    break;
+                default:
+                    throw new ProtocolException("Unsupported Ed448 forging key type: " + forgingKeyType);
                 }
                 break;
             case VERSIONS:
@@ -214,10 +226,11 @@ public final class ClientProfilePayload implements OtrEncodable {
     private ClientProfile reconstructClientProfile() {
         final InstanceTag instanceTag = new InstanceTag(findByType(this.fields, InstanceTagField.class).instanceTag);
         final Point longTermPublicKey = findByType(this.fields, ED448PublicKeyField.class).publicKey;
+        final Point forgingKey = findByType(this.fields, ED448ForgingKeyField.class).publicKey;
         final Set<Integer> versions = findByType(this.fields, VersionsField.class).versions;
         final long expirationUnixTime = findByType(this.fields, ExpirationDateField.class).timestamp;
         final DSAPublicKeyField dsaPublicKeyField = findByType(this.fields, DSAPublicKeyField.class, null);
-        return new ClientProfile(instanceTag, longTermPublicKey, versions, expirationUnixTime,
+        return new ClientProfile(instanceTag, longTermPublicKey, forgingKey, versions, expirationUnixTime,
             dsaPublicKeyField == null ? null : dsaPublicKeyField.publicKey);
     }
 
@@ -232,6 +245,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         // TODO not very elegant way of implementing. This can probably be done much nicer.
         final ArrayList<InstanceTagField> instanceTagFields = new ArrayList<>();
         final ArrayList<ED448PublicKeyField> publicKeyFields = new ArrayList<>();
+        final ArrayList<ED448ForgingKeyField> forgingKeyFields = new ArrayList<>();
         final ArrayList<VersionsField> versionsFields = new ArrayList<>();
         final ArrayList<ExpirationDateField> expirationDateFields = new ArrayList<>();
         final ArrayList<DSAPublicKeyField> dsaPublicKeyFields = new ArrayList<>();
@@ -242,6 +256,8 @@ public final class ClientProfilePayload implements OtrEncodable {
                 instanceTagFields.add((InstanceTagField) field);
             } else if (field instanceof ED448PublicKeyField) {
                 publicKeyFields.add((ED448PublicKeyField) field);
+            } else if (field instanceof ED448ForgingKeyField) {
+                forgingKeyFields.add((ED448ForgingKeyField) field);
             } else if (field instanceof VersionsField) {
                 versionsFields.add((VersionsField) field);
             } else if (field instanceof ExpirationDateField) {
@@ -270,6 +286,15 @@ public final class ClientProfilePayload implements OtrEncodable {
         } catch (final OtrCryptoException e) {
             throw new ValidationException("Illegal EdDSA long-term public key.", e);
         }
+        if (forgingKeyFields.size() != 1) {
+            throw new ValidationException("Incorrect number of forging key fields: " + forgingKeyFields.size());
+        }
+        try {
+            // FIXME how should we exactly verify the forging key?
+            verifyEdDSAPublicKey(forgingKeyFields.get(0).publicKey);
+        } catch (OtrCryptoException e) {
+            throw new ValidationException("Illegal Ed448 forging key.", e);
+        }
         if (versionsFields.size() != 1) {
             throw new ValidationException("Incorrect number of versions fields: " + versionsFields.size());
         }
@@ -292,6 +317,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         final OtrOutputStream out = new OtrOutputStream()
                 .write(instanceTagFields.get(0))
                 .write(publicKeyFields.get(0))
+                .write(forgingKeyFields.get(0))
                 .write(versionsFields.get(0))
                 .write(expirationDateFields.get(0));
         if (dsaPublicKeyFields.size() == 1) {
@@ -339,8 +365,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         /**
          * Ed448 forger public key (ED448-FORGER-PUBKEY)
          */
-        // FIXME implement forger public key support
-        ED448_FORGER_PUBLIC_KEY(0x0003),
+        ED448_FORGING_PUBLIC_KEY(0x0003),
         /**
          * Versions (DATA)
          *
@@ -433,6 +458,28 @@ public final class ClientProfilePayload implements OtrEncodable {
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeShort(TYPE.type);
             out.writeShort(ED448_PUBLIC_KEY_TYPE);
+            out.writePoint(this.publicKey);
+        }
+    }
+
+    /**
+     * Field for Ed448 forging keys.
+     */
+    private static final class ED448ForgingKeyField implements Field {
+
+        private static final int ED448_FORGING_KEY_TYPE = 0x0012;
+        private static final FieldType TYPE = FieldType.ED448_FORGING_PUBLIC_KEY;
+
+        private final Point publicKey;
+
+        private ED448ForgingKeyField(@Nonnull final Point publicKey) {
+            this.publicKey = requireNonNull(publicKey);
+        }
+
+        @Override
+        public void writeTo(@Nonnull final OtrOutputStream out) {
+            out.writeShort(TYPE.type);
+            out.writeShort(ED448_FORGING_KEY_TYPE);
             out.writePoint(this.publicKey);
         }
     }

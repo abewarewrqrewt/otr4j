@@ -85,6 +85,7 @@ public class SecurityParameters4Test {
 
     private static ClientProfile generateProfile() {
         return new ClientProfile(InstanceTag.random(RANDOM), EdDSAKeyPair.generate(RANDOM).getPublicKey(),
-                singleton(FOUR), Long.MAX_VALUE, (DSAPublicKey) generateDSAKeyPair().getPublic());
+                EdDSAKeyPair.generate(RANDOM).getPublicKey(), singleton(FOUR), Long.MAX_VALUE,
+                (DSAPublicKey) generateDSAKeyPair().getPublic());
     }
 }
