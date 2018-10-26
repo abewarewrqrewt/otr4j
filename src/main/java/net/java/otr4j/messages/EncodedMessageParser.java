@@ -52,6 +52,8 @@ public final class EncodedMessageParser {
      *                                    message. (For example, a bad public key.)
      * @throws UnsupportedLengthException In case of exceptionally long message, which surpasses the limitation of
      *                                    otr4j.
+     * @throws ValidationException        In case a message was successfully read and parsed but the contents of the
+     *                                    message do not result in a valid composition.
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
     // TODO consider making a hard split between OTRv2, OTRv3 and OTRv4 parsing based on protocol version to prevent unsupported message types from being parsed.
@@ -59,8 +61,8 @@ public final class EncodedMessageParser {
     @Nonnull
     public static AbstractEncodedMessage parse(final int version, final int type,
             @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag,
-            @Nonnull final OtrInputStream payload) throws OtrCryptoException,
-            ProtocolException, UnsupportedLengthException, ValidationException {
+            @Nonnull final OtrInputStream payload) throws OtrCryptoException, ProtocolException,
+            UnsupportedLengthException, ValidationException {
         requireNonNull(senderInstanceTag);
         requireNonNull(receiverInstanceTag);
         requireNonNull(payload);

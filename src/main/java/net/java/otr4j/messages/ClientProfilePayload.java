@@ -49,7 +49,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * will validate on success convert the type to the actual {@link ClientProfile} data-type. This split ensures that
  * client profiles are validated before trusted use.
  */
-// FIXME write unit tests
 @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public final class ClientProfilePayload implements OtrEncodable {
 
@@ -126,10 +125,11 @@ public final class ClientProfilePayload implements OtrEncodable {
      *
      * @param in The OTR-encoded input stream.
      * @return Returns ClientProfilePayload as read from input stream.
-     * @throws ProtocolException  In case of failure to read the expected data from the input stream.
-     * @throws OtrCryptoException In case of failure to restore cryptographic components in the payload.
+     * @throws ProtocolException   In case of failure to read the expected data from the input stream.
+     * @throws OtrCryptoException  In case of failure to restore cryptographic components in the payload.
+     * @throws ValidationException In case of failure to validate the client profile after reading. This indicates that
+     *                             the various fields were valid but the composition of the profile is illegal.
      */
-    // FIXME perform validation as part of 'readFrom' such that errors are signaled as checked exception.
     @Nonnull
     static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws OtrCryptoException, ProtocolException,
             ValidationException {

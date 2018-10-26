@@ -121,7 +121,7 @@ Development stages:
   * ☑ Introduce checkstyle at build-time to guard formatting/style
   * ☑ Introduce checkstyle _ImportControl_ module to guard the design structure
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
-* ☐ Significant amount of unit tests to accompany the library. (Currently: 1000+)
+* ☐ Significant amount of unit tests to accompany the library. (Currently: 1100+)
 
 ## Architectural considerations
 
