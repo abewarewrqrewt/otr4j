@@ -128,6 +128,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @throws ProtocolException  In case of failure to read the expected data from the input stream.
      * @throws OtrCryptoException In case of failure to restore cryptographic components in the payload.
      */
+    // FIXME perform validation as part of 'readFrom' such that errors are signaled as checked exception.
     @Nonnull
     static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws OtrCryptoException, ProtocolException {
         final int numFields = in.readInt();
@@ -240,7 +241,7 @@ public final class ClientProfilePayload implements OtrEncodable {
     /**
      * Reconstruct client profile from fields and signatures stored in the payload.
      * <p>
-     * This method is expected to succeed always. Validation should be performed prior to calling this method to ensure
+     * This method is expected to succeed always. Validation MUST be performed prior to calling this method to ensure
      * that a valid composition of fields is available.
      *
      * @return Returns reconstructed client profile from fields and signatures stored inside the payload.
@@ -370,7 +371,6 @@ public final class ClientProfilePayload implements OtrEncodable {
         } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
             throw new ValidationException("Verification of EdDSA signature failed.", e);
         }
-        // FIXME verify that we only add the DSA long-term public key *after* successful verification of the transitional signature.
     }
 
     /**
