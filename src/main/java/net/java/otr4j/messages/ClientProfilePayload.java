@@ -68,6 +68,7 @@ public final class ClientProfilePayload implements OtrEncodable {
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     private ClientProfilePayload(@Nonnull final List<Field> fields, @Nonnull final byte[] signature) {
         try {
+            // FIXME consider removing validation here in favor of at the caller sites - if even needed.
             validate(fields, signature, new Date());
         } catch (final ValidationException e) {
             throw new IllegalArgumentException("Invalid client profile fields.", e);
@@ -130,7 +131,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     // FIXME perform validation as part of 'readFrom' such that errors are signaled as checked exception.
     @Nonnull
-    static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws OtrCryptoException, ProtocolException {
+    static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws OtrCryptoException, ProtocolException,
+            ValidationException {
         final int numFields = in.readInt();
         if (numFields <= 0) {
             throw new ProtocolException("Invalid number of fields: " + numFields);
@@ -195,6 +197,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             }
         }
         final byte[] signature = in.readEdDSASignature();
+        validate(fields, signature, new Date());
         return new ClientProfilePayload(fields, signature);
     }
 

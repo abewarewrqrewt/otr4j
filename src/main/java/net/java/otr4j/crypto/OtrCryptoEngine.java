@@ -575,7 +575,12 @@ public final class OtrCryptoEngine {
         final DSAParams dsaParams = pubKey.getParams();
         final BigInteger q = dsaParams.getQ();
         final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q, dsaParams.getG());
-        final DSAPublicKeyParameters dsaPubParams = new DSAPublicKeyParameters(pubKey.getY(), bcDSAParams);
+        final DSAPublicKeyParameters dsaPubParams;
+        try {
+            dsaPubParams = new DSAPublicKeyParameters(pubKey.getY(), bcDSAParams);
+        } catch (final IllegalArgumentException e) {
+            throw new OtrCryptoException("Illegal parameters provided for DSA public key parameters.", e);
+        }
 
         // Ian: Note that if you can get the standard DSA implementation you're
         // using to not hash its input, you should be able to pass it ((256-bit

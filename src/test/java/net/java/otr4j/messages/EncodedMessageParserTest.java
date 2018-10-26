@@ -34,52 +34,52 @@ public class EncodedMessageParserTest {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test(expected = NullPointerException.class)
-    public void testParsingNullSenderTag() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingNullSenderTag() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(4, 0x35, null, ZERO_TAG, new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = NullPointerException.class)
-    public void testParsingNullReceiverTag() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingNullReceiverTag() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(4, 0x35, ZERO_TAG, null, new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = NullPointerException.class)
-    public void testParsingNullInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingNullInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(4, 0x35, ZERO_TAG, ZERO_TAG, null);
     }
 
     @Test(expected = ProtocolException.class)
-    public void testParsingEmptyInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingEmptyInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(4, 0x35, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = ProtocolException.class)
-    public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(3, 0x35, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[] {0x10, 0x20}));
     }
 
     @Test(expected = ProtocolException.class)
-    public void testParsingUnsupportedMessageType() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingUnsupportedMessageType() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(3, 0xff, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testParsingUnsupportedVersion0() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingUnsupportedVersion0() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(0, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testParsingUnsupportedFutureVersion() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingUnsupportedFutureVersion() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(99, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testParsingUnsupportedOTRv1() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testParsingUnsupportedOTRv1() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         parse(1, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
     }
 
     @Test
-    public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(),
@@ -96,7 +96,7 @@ public class EncodedMessageParserTest {
     }
 
     @Test(expected = ProtocolException.class)
-    public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException, UnsupportedLengthException {
+    public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         final String input = "?OTR:AAQKAAAwOQCWtD8AAADA7Z2lLvD52pq9eBg1YtUPKRzDhiJbugQjqWOGKCGy9n1nV7M9+4Xoev7wgEtsUMvY9UcbaXpNLXQMlcqSpZfwRNTogXk1lOir9h8NwaURj+/ruB2jq55STMfc11E4tBmyhATStwu5VPG+5iupUjagkhsdI6I1a3ZkGXp8gAr/Utx9IB2GeXDh7HRvqRacg96X1w69IQc1lH/dVFam/OpdxCMmME1QM6N6vRRh2y34oElNhlOMGwIO9tjKr2F9m9mC.";
         // Parse produced message bytes.
         final EncodedMessage message = (EncodedMessage) MessageParser.parse(input);
@@ -105,7 +105,7 @@ public class EncodedMessageParserTest {
     }
 
     @Test
-    public void testConstructAndParsePartialDHKeyMessage() throws UnsupportedLengthException, ProtocolException, OtrCryptoException {
+    public void testConstructAndParsePartialDHKeyMessage() throws UnsupportedLengthException, ProtocolException, OtrCryptoException, ValidationException {
         final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(Session.OTRv.THREE, (DHPublicKey) keypair.getPublic(),

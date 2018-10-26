@@ -60,7 +60,7 @@ public final class EncodedMessageParser {
     public static AbstractEncodedMessage parse(final int version, final int type,
             @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag,
             @Nonnull final OtrInputStream payload) throws OtrCryptoException,
-            ProtocolException, UnsupportedLengthException {
+            ProtocolException, UnsupportedLengthException, ValidationException {
         requireNonNull(senderInstanceTag);
         requireNonNull(receiverInstanceTag);
         requireNonNull(payload);
