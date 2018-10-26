@@ -51,6 +51,7 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
@@ -508,6 +509,24 @@ public final class OtrCryptoEngine {
         public DSASignature(@Nonnull final BigInteger r, @Nonnull final BigInteger s) {
             this.r = requireNonNull(r);
             this.s = requireNonNull(s);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final DSASignature that = (DSASignature) o;
+            // TODO should this be constant-time?
+            return Objects.equals(r, that.r) && Objects.equals(s, that.s);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(r, s);
         }
     }
 

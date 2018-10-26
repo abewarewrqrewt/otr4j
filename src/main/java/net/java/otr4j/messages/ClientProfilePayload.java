@@ -20,8 +20,10 @@ import java.net.ProtocolException;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -33,6 +35,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.io.MessageParser.encodeVersionString;
 import static net.java.otr4j.io.MessageParser.parseVersionString;
 import static net.java.otr4j.io.OtrEncodables.encode;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.Iterables.findByType;
 import static org.bouncycastle.util.Arrays.concatenate;
 
@@ -192,6 +195,25 @@ public final class ClientProfilePayload implements OtrEncodable {
         }
         final byte[] signature = in.readEdDSASignature();
         return new ClientProfilePayload(fields, signature);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final ClientProfilePayload that = (ClientProfilePayload) o;
+        return Objects.equals(fields, that.fields) && constantTimeEquals(signature, that.signature);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(fields);
+        result = 31 * result + Arrays.hashCode(signature);
+        return result;
     }
 
     @Override
@@ -439,6 +461,23 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.writeShort(TYPE.type);
             out.writeInt(this.instanceTag);
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final InstanceTagField that = (InstanceTagField) o;
+            return instanceTag == that.instanceTag;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(instanceTag);
+        }
     }
 
     /**
@@ -460,6 +499,23 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.writeShort(TYPE.type);
             out.writeShort(ED448_PUBLIC_KEY_TYPE);
             out.writePoint(this.publicKey);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final ED448PublicKeyField that = (ED448PublicKeyField) o;
+            return Objects.equals(publicKey, that.publicKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(publicKey);
         }
     }
 
@@ -483,6 +539,23 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.writeShort(ED448_FORGING_KEY_TYPE);
             out.writePoint(this.publicKey);
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final ED448ForgingKeyField that = (ED448ForgingKeyField) o;
+            return Objects.equals(publicKey, that.publicKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(publicKey);
+        }
     }
 
     /**
@@ -502,6 +575,23 @@ public final class ClientProfilePayload implements OtrEncodable {
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeShort(TYPE.type);
             out.writeData(encodeVersionString(versions).getBytes(US_ASCII));
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final VersionsField that = (VersionsField) o;
+            return Objects.equals(versions, that.versions);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(versions);
         }
     }
 
@@ -523,6 +613,23 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.writeShort(TYPE.type);
             out.writeLong(this.timestamp);
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final ExpirationDateField that = (ExpirationDateField) o;
+            return timestamp == that.timestamp;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(timestamp);
+        }
     }
 
     /**
@@ -542,6 +649,23 @@ public final class ClientProfilePayload implements OtrEncodable {
         public void writeTo(@Nonnull final OtrOutputStream out) {
             out.writeShort(TYPE.type);
             out.writePublicKey(this.publicKey);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final DSAPublicKeyField that = (DSAPublicKeyField) o;
+            return Objects.equals(publicKey, that.publicKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(publicKey);
         }
     }
 
@@ -563,6 +687,23 @@ public final class ClientProfilePayload implements OtrEncodable {
             out.writeShort(TYPE.type);
             out.writeBigInt(this.signature.r);
             out.writeBigInt(this.signature.s);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final TransitionalSignatureField that = (TransitionalSignatureField) o;
+            return Objects.equals(signature, that.signature);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(signature);
         }
     }
 }
