@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
@@ -51,6 +53,8 @@ import static org.bouncycastle.util.Arrays.concatenate;
  */
 @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public final class ClientProfilePayload implements OtrEncodable {
+
+    private static final Logger LOGGER = Logger.getLogger(ClientProfilePayload.class.getName());
 
     private final List<Field> fields;
 
@@ -111,7 +115,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         final byte[] signature = eddsaKeyPair.sign(m);
         // We assume that the internally generated client profiles are correct, however it is tested when assertions are
         // enabled.
-        assert testValidate(fields, signature, new Date()) : "BUG: Internally constructed client profile payload fails validation. This should be prevented and is considered a bug in otr4j.";
+        assert testValidate(fields, signature, new Date()) : "BUG: Internally constructed client profile payload fails validation. This should not happen.";
         return new ClientProfilePayload(fields, signature);
     }
 
@@ -266,7 +270,8 @@ public final class ClientProfilePayload implements OtrEncodable {
         try {
             validate(fields, signature, now);
             return true;
-        } catch (ValidationException e) {
+        } catch (final ValidationException e) {
+            LOGGER.log(Level.SEVERE, "Failed validation.", e);
             return false;
         }
     }
@@ -288,7 +293,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         final ArrayList<ExpirationDateField> expirationDateFields = new ArrayList<>();
         final ArrayList<DSAPublicKeyField> dsaPublicKeyFields = new ArrayList<>();
         final ArrayList<TransitionalSignatureField> transitionalSignatureFields = new ArrayList<>();
-        // FIXME should we enforce strict order? Not in currently.
+        final OtrOutputStream out = new OtrOutputStream();
         for (final Field field : fields) {
             if (field instanceof InstanceTagField) {
                 instanceTagFields.add((InstanceTagField) field);
@@ -304,9 +309,14 @@ public final class ClientProfilePayload implements OtrEncodable {
                 dsaPublicKeyFields.add((DSAPublicKeyField) field);
             } else if (field instanceof TransitionalSignatureField) {
                 transitionalSignatureFields.add((TransitionalSignatureField) field);
+                // Note: we need to skip the step of writing the transitional signature to the output stream, because
+                // the transitional signature needs to be verified first, which means excluding the transitional
+                // signature itself.
+                continue;
             } else {
                 throw new UnsupportedOperationException("BUG incomplete implementation: support for field type " + field.getClass() + " is not implemented yet.");
             }
+            out.write(field);
         }
         if (instanceTagFields.size() != 1) {
             throw new ValidationException("Incorrect number of instance tag fields: " + instanceTagFields.size());
@@ -350,15 +360,6 @@ public final class ClientProfilePayload implements OtrEncodable {
         }
         if (!now.before(new Date(expirationDateFields.get(0).timestamp * 1000))) {
             throw new ValidationException("Client Profile has expired.");
-        }
-        final OtrOutputStream out = new OtrOutputStream()
-                .write(instanceTagFields.get(0))
-                .write(publicKeyFields.get(0))
-                .write(forgingKeyFields.get(0))
-                .write(versionsFields.get(0))
-                .write(expirationDateFields.get(0));
-        if (dsaPublicKeyFields.size() == 1) {
-            out.write(dsaPublicKeyFields.get(0));
         }
         final byte[] partialM = out.toByteArray();
         final byte[] m;
