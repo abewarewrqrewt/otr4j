@@ -52,7 +52,7 @@ public final class ClientProfilePayloadTest {
                 keypair).validate());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void testConstructedPayloadWithDSAWithoutDSASignature() throws ValidationException {
         final ClientProfile profile = new ClientProfile(tag, keypair.getPublicKey(), forgingKey, singleton(OTRv.FOUR),
                 System.currentTimeMillis() / 1000 + 86400, (DSAPublicKey) this.dsaKeyPair.getPublic());
@@ -194,6 +194,12 @@ public final class ClientProfilePayloadTest {
         final byte prev = input[index];
         input[index] = (byte) RANDOM.nextInt(255);
         assumeFalse("Random mutation made no actual change, so final result will be correct.", input[index] == prev);
+        readFrom(new OtrInputStream(input)).validate();
+    }
+
+    @Test(expected = ValidationException.class)
+    public void testReadInstanceTagFieldsWithZeroValue() throws OtrCryptoException, ProtocolException, ValidationException {
+        final byte[] input = new byte[] {0, 0, 0, 6, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 2, 0, 16, -28, -31, -63, -70, 45, -123, 81, 112, 23, -89, 119, -28, 44, -53, 62, 41, 51, -101, -23, 19, -18, 8, 23, 94, -78, 113, 82, -71, 62, 6, 57, -103, -128, 65, -35, -53, -68, -9, -86, -29, 108, -48, 101, -83, 101, 27, -84, -56, -6, -65, -70, -68, 6, 20, 40, -43, 0, 0, 3, 0, 18, -110, -88, 20, -50, 24, 14, 36, -38, -79, -13, -100, 109, -83, -73, 33, -51, -7, 53, -116, 50, -78, -92, 63, 75, 42, 87, 69, 84, 56, -94, -9, 29, 27, 125, 43, 40, 21, 119, 88, -29, 79, -36, 17, 26, -63, -126, 75, -32, 52, -59, -114, -52, -23, 87, -23, -39, -128, 0, 4, 0, 0, 0, 1, 52, 0, 5, 0, 0, 0, 0, 91, -44, -79, -88, -90, -36, 70, 39, -87, 51, 26, 125, -37, -112, 122, -95, 119, 29, 35, 126, 67, -84, 41, 125, -6, 48, -112, 12, 35, -21, -128, -86, -3, -38, 63, -35, -10, -48, -57, -53, 78, 41, -61, -48, -15, 39, -123, -112, 122, 7, 109, -13, 11, -47, 28, -107, -31, 39, 66, 125, 0, -62, -80, 31, -73, 29, -54, 10, 29, -108, -128, 27, 55, -128, 90, -49, 117, 65, 99, 23, 37, 88, 10, -82, -36, 30, 121, -100, -108, -13, -13, 114, 125, -47, -122, 56, 89, 86, 58, 4, -114, 76, 98, -7, 99, -71, 27, -63, -5, 89, -86, -126, 121, 73, 104, -4, 16, 0};
         readFrom(new OtrInputStream(input)).validate();
     }
 

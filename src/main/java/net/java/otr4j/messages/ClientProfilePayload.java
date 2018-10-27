@@ -267,7 +267,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @param signature The OTRv4 signature for the fields contained in the client profile.
      * @throws ValidationException In case ClientProfilePayload contents are not inconsistent or signature is invalid.
      */
-    private static void validate(@Nonnull final List<Field> fields, @Nonnull final byte[] signature, @Nonnull final Date now) throws ValidationException {
+    private static void validate(@Nonnull final List<Field> fields, @Nonnull final byte[] signature,
+            @Nonnull final Date now) throws ValidationException {
         // TODO not very elegant way of implementing. This can probably be done much nicer.
         final ArrayList<InstanceTagField> instanceTagFields = new ArrayList<>();
         final ArrayList<ED448PublicKeyField> publicKeyFields = new ArrayList<>();
