@@ -3,9 +3,9 @@ package net.java.otr4j.messages;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
@@ -66,14 +66,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     private ClientProfilePayload(@Nonnull final List<Field> fields, @Nonnull final byte[] signature) {
-        try {
-            // FIXME consider removing validation here in favor of at the caller sites - if even needed.
-            validate(fields, signature, new Date());
-        } catch (final ValidationException e) {
-            throw new IllegalArgumentException("Invalid client profile fields.", e);
-        }
-        this.fields = fields;
-        this.signature = signature;
+        this.fields = requireNonNull(fields);
+        this.signature = requireNonNull(signature);
     }
 
     /**
@@ -86,8 +80,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     @Nonnull
     public static ClientProfilePayload sign(@Nonnull final ClientProfile profile,
-            @Nullable final DSAPrivateKey dsaPrivateKey,
-            @Nonnull final EdDSAKeyPair eddsaKeyPair) {
+            @Nullable final DSAPrivateKey dsaPrivateKey, @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
@@ -117,6 +110,12 @@ public final class ClientProfilePayload implements OtrEncodable {
             m = concatenate(partialM, encode(sigField));
         }
         final byte[] signature = eddsaKeyPair.sign(m);
+        try {
+            // TODO consider if validation is really needed for locally signing client profiles.
+            validate(fields, signature, new Date());
+        } catch (final ValidationException e) {
+            throw new IllegalStateException("Validation failed for signed client profile.");
+        }
         return new ClientProfilePayload(fields, signature);
     }
 
