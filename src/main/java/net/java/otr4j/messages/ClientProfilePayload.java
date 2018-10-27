@@ -361,8 +361,6 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (!now.before(new Date(expirationDateFields.get(0).timestamp * 1000))) {
             throw new ValidationException("Client Profile has expired.");
         }
-        final byte[] partialM = out.toByteArray();
-        final byte[] m;
         if (transitionalSignatureFields.size() > 1) {
             throw new ValidationException("Expected at most one transitional signature, got: " + transitionalSignatureFields.size());
         } else if (transitionalSignatureFields.size() == 1) {
@@ -371,17 +369,15 @@ public final class ClientProfilePayload implements OtrEncodable {
                 try {
                     final DSAPublicKey dsaPublicKey = dsaPublicKeyFields.get(0).publicKey;
                     final DSASignature transitionalSignature = transitionalSignatureFields.get(0).signature;
-                    verify(partialM, dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
+                    verify(out.toByteArray(), dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
                 } catch (final OtrCryptoException e) {
                     throw new ValidationException("Failed transitional signature validation.", e);
                 }
             }
-            m = concatenate(partialM, encode(transitionalSignatureFields.get(0)));
-        } else {
-            m = partialM;
+            out.write(transitionalSignatureFields.get(0));
         }
         try {
-            EdDSAKeyPair.verify(longTermPublicKey, m, signature);
+            EdDSAKeyPair.verify(longTermPublicKey, out.toByteArray(), signature);
         } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
             throw new ValidationException("Verification of EdDSA signature failed.", e);
         }

@@ -57,7 +57,6 @@ public final class EncodedMessageParser {
      */
     // FIXME unit test deserialization of OTRv4 (data) messages.
     // TODO consider making a hard split between OTRv2, OTRv3 and OTRv4 parsing based on protocol version to prevent unsupported message types from being parsed.
-    // FIXME add verification for (non-)ZERO instance tags?
     @Nonnull
     public static AbstractEncodedMessage parse(final int version, final int type,
             @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag,

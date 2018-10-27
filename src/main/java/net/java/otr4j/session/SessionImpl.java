@@ -292,10 +292,10 @@ final class SessionImpl implements Session, Context, AuthContext {
         this.sessionState = new StatePlaintext(sessionID);
         this.authState = requireNonNull(authState);
         this.host = requireNonNull(host);
-        if (senderTag == ZERO_TAG) {
+        if (senderTag.equals(ZERO_TAG)) {
             throw new IllegalArgumentException("Only actual instance tags are allowed.");
         }
-        this.senderTag = requireNonNull(senderTag);
+        this.senderTag = senderTag;
         this.receiverTag = requireNonNull(receiverTag);
         this.offerStatus = OfferStatus.IDLE;
         // Master session uses the map to manage slave sessions. Slave sessions do not use the map.
