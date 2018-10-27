@@ -89,6 +89,9 @@ public final class ClientProfilePayload implements OtrEncodable {
         fields.add(new ExpirationDateField(profile.getExpirationUnixTime()));
         final DSAPublicKey dsaPublicKey = profile.getDsaPublicKey();
         if (dsaPublicKey != null) {
+            if (dsaPrivateKey == null) {
+                throw new IllegalArgumentException("DSA public key provided, but private key is not provided.");
+            }
             fields.add(new DSAPublicKeyField(dsaPublicKey));
         }
         final OtrOutputStream out = new OtrOutputStream();
@@ -100,22 +103,15 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (dsaPrivateKey == null) {
             m = partialM;
         } else {
-            if (dsaPublicKey == null) {
-                // FIXME do we allow DSA signature without including corresponding public key?
-                throw new IllegalArgumentException("DSA private key provided for transitional signature, but DSA public key is not present in the client profile.");
-            }
             final DSASignature transitionalSignature = signRS(partialM, dsaPrivateKey);
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
             fields.add(sigField);
             m = concatenate(partialM, encode(sigField));
         }
         final byte[] signature = eddsaKeyPair.sign(m);
-        try {
-            // TODO consider if validation is really needed for locally signing client profiles.
-            validate(fields, signature, new Date());
-        } catch (final ValidationException e) {
-            throw new IllegalStateException("Validation failed for signed client profile.");
-        }
+        // We assume that the internally generated client profiles are correct, however it is tested when assertions are
+        // enabled.
+        assert testValidate(fields, signature, new Date()) : "BUG: Internally constructed client profile payload fails validation. This should be prevented and is considered a bug in otr4j.";
         return new ClientProfilePayload(fields, signature);
     }
 
@@ -261,6 +257,21 @@ public final class ClientProfilePayload implements OtrEncodable {
     }
 
     /**
+     * Custom method to make {@link #validate()} suitable for assertions.
+     *
+     * @return true iff validated successfully
+     */
+    private static boolean testValidate(@Nonnull final List<Field> fields, @Nonnull final byte[] signature,
+            @Nonnull final Date now) {
+        try {
+            validate(fields, signature, now);
+            return true;
+        } catch (ValidationException e) {
+            return false;
+        }
+    }
+
+    /**
      * Verify consistency of fields list.
      *
      * @param fields    List of fields.
@@ -334,7 +345,6 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (dsaPublicKeyFields.size() > 1) {
             throw new ValidationException("Expect either no or single DSA public key field. Found more than one.");
         }
-        // TODO should we fail validation or drop DSA public key in case DSA public key comes without transitional signature?
         if (dsaPublicKeyFields.size() == 1 && transitionalSignatureFields.isEmpty()) {
             throw new ValidationException("DSA public key encountered without corresponding transitional signature.");
         }
@@ -355,15 +365,15 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (transitionalSignatureFields.size() > 1) {
             throw new ValidationException("Expected at most one transitional signature, got: " + transitionalSignatureFields.size());
         } else if (transitionalSignatureFields.size() == 1) {
-            try {
-                if (dsaPublicKeyFields.size() != 1) {
-                    throw new ValidationException("DSA public key is missing. It is impossible to verify the transitional signature.");
+            if (dsaPublicKeyFields.size() == 1) {
+                // a DSA public key is available, hence we will validate the content with the transitional signature
+                try {
+                    final DSAPublicKey dsaPublicKey = dsaPublicKeyFields.get(0).publicKey;
+                    final DSASignature transitionalSignature = transitionalSignatureFields.get(0).signature;
+                    verify(partialM, dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
+                } catch (final OtrCryptoException e) {
+                    throw new ValidationException("Failed transitional signature validation.", e);
                 }
-                final DSAPublicKey dsaPublicKey = dsaPublicKeyFields.get(0).publicKey;
-                final DSASignature transitionalSignature = transitionalSignatureFields.get(0).signature;
-                verify(partialM, dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
-            } catch (final OtrCryptoException e) {
-                throw new ValidationException("Failed transitional signature validation.", e);
             }
             m = concatenate(partialM, encode(transitionalSignatureFields.get(0)));
         } else {
