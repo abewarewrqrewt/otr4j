@@ -299,7 +299,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (instanceTagFields.size() != 1) {
             throw new ValidationException("Incorrect number of instance tag fields: " + instanceTagFields.size());
         }
-        if (!isValidInstanceTag(instanceTagFields.get(0).instanceTag)) {
+        if (!isValidInstanceTag(instanceTagFields.get(0).instanceTag) || instanceTagFields.get(0).instanceTag == 0) {
             throw new ValidationException("Illegal instance tag.");
         }
         if (publicKeyFields.size() != 1) {
