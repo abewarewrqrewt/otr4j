@@ -13,6 +13,7 @@ import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 import org.junit.Test;
 
@@ -30,7 +31,9 @@ import java.util.Arrays;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -348,5 +351,18 @@ public class OtrInputStreamTest {
     @Test(expected = ProtocolException.class)
     public void testReadInstanceTagIllegal() throws ProtocolException {
         new OtrInputStream(new byte[] {0, 0, 0, 1}).readInstanceTag();
+    }
+
+    @Test(expected = ProtocolException.class)
+    public void testReadUnsupportedlyLargeBigInt() throws ProtocolException {
+        new OtrInputStream(new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff}).readBigInt();
+    }
+
+    @Test
+    public void testReadScalar() throws ProtocolException {
+        final byte[] input = randomBytes(RANDOM, new byte[57]);
+        final Scalar expected = decodeScalar(input);
+        final Scalar scalar = new OtrInputStream(input).readScalar();
+        assertEquals(expected, scalar);
     }
 }
