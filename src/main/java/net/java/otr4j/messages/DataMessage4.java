@@ -8,8 +8,11 @@ import net.java.otr4j.io.OtrOutputStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.Integers.requireInRange;
 
@@ -20,7 +23,8 @@ import static net.java.otr4j.util.Integers.requireInRange;
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 
-    private static final int MESSAGE_DATA = 0x03;
+    static final int MESSAGE_DATA = 0x03;
+
     private static final int XSALSA20_IV_LENGTH_BYTES = 24;
     private static final int MAC_LENGTH_BYTES = 64;
 
@@ -168,6 +172,36 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     @Nonnull
     public byte[] getRevealedMacs() {
         return revealedMacs;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final DataMessage4 that = (DataMessage4) o;
+        return flags == that.flags && pn == that.pn && i == that.i && j == that.j
+                && Objects.equals(ecdhPublicKey, that.ecdhPublicKey) && Objects.equals(dhPublicKey, that.dhPublicKey)
+                && constantTimeEquals(nonce, that.nonce) && constantTimeEquals(ciphertext, that.ciphertext)
+                && constantTimeEquals(authenticator, that.authenticator)
+                // Note: revealed MACs are not sensitive, so there is no sense in comparing constant-time
+                && Arrays.equals(revealedMacs, that.revealedMacs);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(super.hashCode(), flags, pn, i, j, ecdhPublicKey, dhPublicKey);
+        result = 31 * result + Arrays.hashCode(nonce);
+        result = 31 * result + Arrays.hashCode(ciphertext);
+        result = 31 * result + Arrays.hashCode(authenticator);
+        result = 31 * result + Arrays.hashCode(revealedMacs);
+        return result;
     }
 
     @Override
