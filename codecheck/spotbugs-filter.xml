@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <FindBugsFilter>
-  <And>
-    <Bug pattern="EI_EXPOSE_REP"/>
-    <Class name="net.java.otr4j.messages.DataMessage4"/>
-  </And>
-  <And>
-    <Class name="net.java.otr4j.api.TLV"/>
-    <Bug pattern="EI_EXPOSE_REP"/>
-  </And>
-  <And>
-    <Bug category="BAD_PRACTICE"/>
-    <Bug code="Nm"/>
-    <Bug pattern="NM_CONFUSING"/>
-  </And>
+    <And>
+        <Class name="net.java.otr4j.api.TLV"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </And>
+    <And>
+        <Class name="net.java.otr4j.api.TLV"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </And>
+    <And>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Class name="net.java.otr4j.messages.DataMessage4"/>
+    </And>
+    <And>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Class name="net.java.otr4j.messages.DataMessage4"/>
+    </And>
+    <And>
+        <Class name="net.java.otr4j.messages.SignatureX"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </And>
+    <And>
+        <Class name="net.java.otr4j.session.smpv4.SMP"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </And>
+    <And>
+        <Bug category="BAD_PRACTICE"/>
+        <Bug code="Nm"/>
+        <Bug pattern="NM_CONFUSING"/>
+    </And>
 </FindBugsFilter>
