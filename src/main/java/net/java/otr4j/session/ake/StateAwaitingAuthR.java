@@ -1,12 +1,13 @@
 package net.java.otr4j.session.ake;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ed448.ECDHKeyPair;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthIMessage;
 import net.java.otr4j.messages.AuthRMessage;
@@ -14,7 +15,6 @@ import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.IdentityMessage;
 import net.java.otr4j.messages.IdentityMessages;
 import net.java.otr4j.messages.ValidationException;
-import net.java.otr4j.api.ClientProfile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,6 +42,11 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private final IdentityMessage previousMessage;
 
     /**
+     * Our user's client profile payload.
+     */
+    private final ClientProfilePayload ourClientProfile;
+
+    /**
      * The query tag that triggered this AKE. The query tag is part of the shared session state common knowledge that is
      * verified.
      */
@@ -62,10 +67,12 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
-            @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
+            @Nonnull final ClientProfilePayload ourClientProfile, @Nonnull final String queryTag,
+            @Nonnull final IdentityMessage previousMessage) {
         super();
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
+        this.ourClientProfile = requireNonNull(ourClientProfile);
         this.queryTag = requireNonNull(queryTag);
         this.previousMessage = requireNonNull(previousMessage);
     }
@@ -103,21 +110,20 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
             throws OtrCryptoException, ValidationException {
-        final ClientProfilePayload ourClientProfile = context.getClientProfile();
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
-        validate(message, ourClientProfile, context.getRemoteAccountID(), context.getLocalAccountID(),
+        validate(message, this.ourClientProfile, context.getRemoteAccountID(), context.getLocalAccountID(),
                 this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         try {
             context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA(),
-                    ourClientProfile.validate(), theirClientProfile));
+                    this.ourClientProfile.validate(), theirClientProfile));
         } finally {
             // TODO should we preserve the most recent query tag or start with empty initial state?
             context.setState(StateInitial.empty());
         }
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
-        final byte[] t = encode(AUTH_I, message.getClientProfile(), ourClientProfile, message.getX(),
+        final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourClientProfile, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,

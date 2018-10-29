@@ -124,7 +124,7 @@ public final class StateInitial extends AbstractAuthState {
             throws OtrCryptoException, ValidationException {
         validate(message);
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
-        final ClientProfilePayload profile = context.getClientProfile();
+        final ClientProfilePayload profile = context.getClientProfilePayload();
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
@@ -139,7 +139,7 @@ public final class StateInitial extends AbstractAuthState {
                 theirClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), context.getClientProfile(), x.getPublicKey(), a.getPublicKey(), sigma);
+                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
                 message.getClientProfile()));
         return authRMessage;

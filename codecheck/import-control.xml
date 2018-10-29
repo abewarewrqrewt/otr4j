@@ -36,9 +36,6 @@
         </subpackage>
     </subpackage>
     <subpackage name="api">
-        <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
-        <allow local-only="true" class="net.java.otr4j.messages.ClientProfilePayload" exact-match="true"/>
-
         <allow pkg="net.java.otr4j.crypto"/>
         <allow local-only="true" pkg="net.java.otr4j.api"/>
     </subpackage>

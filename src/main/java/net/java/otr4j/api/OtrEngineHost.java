@@ -8,7 +8,6 @@
 package net.java.otr4j.api;
 
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
-import net.java.otr4j.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;
 import java.security.KeyPair;
@@ -135,7 +134,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @return Returns the Client Profile for this client.
      */
     @Nonnull
-    ClientProfilePayload getClientProfile(@Nonnull SessionID sessionID);
+    ClientProfile getClientProfile(@Nonnull SessionID sessionID);
 
     /**
      * The persistent instance tag required for an OTRv4 client to operate.

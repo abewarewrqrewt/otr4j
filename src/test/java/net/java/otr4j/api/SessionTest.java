@@ -1,10 +1,9 @@
 package net.java.otr4j.api;
 
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
-import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;
@@ -902,7 +901,7 @@ public class SessionTest {
 
         private final BlockingQueue<String> receiptChannel;
 
-        private final ClientProfilePayload profilePayload;
+        private final ClientProfile profile;
 
         private final Session session;
 
@@ -922,10 +921,9 @@ public class SessionTest {
             this.policy = requireNonNull(policy);
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
-            final ClientProfile profile = new ClientProfile(this.instanceTag, this.ed448KeyPair.getPublicKey(),
-                this.forgingPublicKey, Collections.singleton(OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000,
+            this.profile = new ClientProfile(this.instanceTag, this.ed448KeyPair.getPublicKey(), this.forgingPublicKey,
+                    Collections.singleton(OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000,
                     null);
-            this.profilePayload = ClientProfilePayload.sign(profile, null, this.ed448KeyPair);
             this.session = createSession(sessionID, this);
         }
 
@@ -1014,8 +1012,8 @@ public class SessionTest {
 
         @Nonnull
         @Override
-        public ClientProfilePayload getClientProfile(@Nonnull final SessionID sessionID) {
-            return this.profilePayload;
+        public ClientProfile getClientProfile(@Nonnull final SessionID sessionID) {
+            return this.profile;
         }
 
         @Nonnull

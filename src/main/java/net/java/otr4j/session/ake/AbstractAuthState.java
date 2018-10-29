@@ -93,11 +93,10 @@ abstract class AbstractAuthState implements AuthState {
             @Nonnull final String queryTag) {
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
-        // TODO Currently we "reuse" the sender instance tag from the context. Should we do this or is it better to generate a new sender tag for each conversation? (Probably not)
-        final ClientProfilePayload profilePayload = context.getClientProfile();
+        final ClientProfilePayload profilePayload = context.getClientProfilePayload();
         final IdentityMessage message = new IdentityMessage(OTRv.FOUR, context.getSenderInstanceTag(),
                 receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, queryTag, message));
+        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
         return message;
     }
 }

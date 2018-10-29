@@ -1,6 +1,7 @@
 
 package net.java.otr4j.test.dummyclient;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
@@ -9,9 +10,8 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.messages.ClientProfilePayload;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.session.OtrSessionManager;
 
 import javax.annotation.Nonnull;
@@ -370,7 +370,7 @@ public class DummyClient {
 
         @Nonnull
         @Override
-        public ClientProfilePayload getClientProfile(@Nonnull final SessionID sessionID) {
+        public ClientProfile getClientProfile(@Nonnull final SessionID sessionID) {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
 

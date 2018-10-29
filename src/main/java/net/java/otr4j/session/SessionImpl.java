@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
@@ -53,6 +54,7 @@ import java.net.ProtocolException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.interfaces.DSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +79,7 @@ import static net.java.otr4j.api.Session.OTRv.FOUR;
 import static net.java.otr4j.api.Session.OTRv.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
+import static net.java.otr4j.messages.ClientProfilePayload.sign;
 import static net.java.otr4j.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 
@@ -1014,8 +1017,16 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nonnull
     @Override
-    public ClientProfilePayload getClientProfile() {
-        return this.host.getClientProfile(this.sessionState.getSessionID());
+    public ClientProfilePayload getClientProfilePayload() {
+        // FIXME keep client profile payload (and profile itself?) as session instance field
+        // FIXME verify that instance tag in payload is same as instance tag of session
+        // FIXME initialize client profile payload at session construction, as one-time operation
+        // TODO figure out how to refresh client profile payload after it being expired. (Maybe leave until after initial use, as expiration date is recommended for 2+ weeks.)
+        // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
+        final SessionID sessionID = this.sessionState.getSessionID();
+        final ClientProfile profile = this.host.getClientProfile(sessionID);
+        return sign(profile, (DSAPrivateKey) this.host.getLocalKeyPair(sessionID).getPrivate(),
+                this.host.getLongTermKeyPair(sessionID));
     }
 
     @Override

@@ -109,12 +109,12 @@ public interface AuthContext {
     InstanceTag getReceiverInstanceTag();
 
     /**
-     * Client profile.
+     * Client profile payload, i.e. signed encode-ready instance of client profile.
      *
      * @return Returns the client profile for this client.
      */
     @Nonnull
-    ClientProfilePayload getClientProfile();
+    ClientProfilePayload getClientProfilePayload();
 
     /**
      * InteractionFailedException indicates an error happened while interacting

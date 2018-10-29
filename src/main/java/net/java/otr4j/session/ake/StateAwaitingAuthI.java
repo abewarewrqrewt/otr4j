@@ -90,11 +90,25 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         return null;
     }
 
+    /**
+     * Handle Identity message.
+     * <p>
+     * This implementation deviates from the implementation in StateInitial as we reuse previously generated variables.
+     *
+     * @param context the authentication context
+     * @param message the identity message
+     * @return Returns the Auth-R message to send
+     * @throws OtrCryptoException  In case of failure to validate cryptographic components in other party's identity
+     *                             message.
+     * @throws ValidationException In case of failure to validate other party's identity message or client profile.
+     */
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
             throws OtrCryptoException, ValidationException {
         IdentityMessages.validate(message);
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
-        final ClientProfilePayload profilePayload = context.getClientProfile();
+        // Note: we query the context for a new client profile, because we're responding to a new Identity message.
+        // This ensures a "fresh" profile. (May be unnecessary, but seems smart right now ... I may regret it later)
+        final ClientProfilePayload profilePayload = context.getClientProfilePayload();
         final EdDSAKeyPair longTermKeyPair = context.getLongTermKeyPair();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
@@ -106,7 +120,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
                 theirNewClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), context.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
+                context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
                 message.getB(), ourProfile, message.getClientProfile()));
