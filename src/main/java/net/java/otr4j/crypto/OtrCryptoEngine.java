@@ -129,6 +129,7 @@ public final class OtrCryptoEngine {
      *
      * @return Returns the DSA key pair.
      */
+    // FIXME move 'generateDSAKeyPair' into DSAKeyPair class similar to how it is implemented in EdDSAKeyPair.
     @Nonnull
     public static DSAKeyPair generateDSAKeyPair() {
         try {
@@ -146,6 +147,7 @@ public final class OtrCryptoEngine {
      * @param secureRandom the SecureRandom instance
      * @return Returns the DH key pair.
      */
+    // FIXME move 'generateDHKeyPair' into DHKeyPairJ class similar to how it is implemented in DHKeyPair.
     @Nonnull
     public static DHKeyPairJ generateDHKeyPair(@Nonnull final SecureRandom secureRandom) {
 
@@ -413,6 +415,7 @@ public final class OtrCryptoEngine {
      * @return Returns the generated shared secret.
      * @throws OtrCryptoException In case of illegal key.
      */
+    // FIXME move 'generateSecret' into DHKeyPairJ class similar to how it is implemented in DHKeyPair.
     @Nonnull
     public static SharedSecret generateSecret(@Nonnull final DHPrivateKey privKey, @Nonnull final DHPublicKey pubKey)
             throws OtrCryptoException {

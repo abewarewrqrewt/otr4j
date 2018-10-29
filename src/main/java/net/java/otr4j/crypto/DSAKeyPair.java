@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
  * Key pair to keep DSA private and corresponding public key.
  */
 // TODO consider checking if public key corresponds to private key
+// FIXME implement method for signing on DSAKeyPair such that private key does not have to be exposed.
 public final class DSAKeyPair {
 
     private final DSAPrivateKey privateKey;

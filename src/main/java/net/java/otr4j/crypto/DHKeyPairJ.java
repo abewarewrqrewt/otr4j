@@ -30,6 +30,7 @@ public final class DHKeyPairJ {
      *
      * @return the private key
      */
+    // FIXME consider reducing visibility of 'getPrivate' after generate keypair and shared secret methods are moved into this class.
     @Nonnull
     public DHPrivateKey getPrivate() {
         return privateKey;
