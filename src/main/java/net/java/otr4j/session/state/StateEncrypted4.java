@@ -23,7 +23,7 @@ import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +86,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     @Nonnull
     @Override
-    public PublicKey getRemotePublicKey() {
+    public DSAPublicKey getRemotePublicKey() {
         // TODO to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }

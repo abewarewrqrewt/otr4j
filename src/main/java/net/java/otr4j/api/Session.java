@@ -6,7 +6,7 @@
  */
 package net.java.otr4j.api;
 
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -131,7 +131,7 @@ public interface Session {
      * no long-term public key is known.
      */
     @Nonnull
-    PublicKey getRemotePublicKey() throws OtrException;
+    DSAPublicKey getRemotePublicKey() throws OtrException;
 
     /**
      * Get remote's long-term public key.
@@ -142,7 +142,7 @@ public interface Session {
      * no long-term public key is known.
      */
     @Nonnull
-    PublicKey getRemotePublicKey(@Nonnull InstanceTag tag) throws OtrException;
+    DSAPublicKey getRemotePublicKey(@Nonnull InstanceTag tag) throws OtrException;
 
     /**
      * Get list of session instances.

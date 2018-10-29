@@ -11,6 +11,9 @@
     <disallow pkg="nl.dannyvanheumen.joldilocks"/>
     <disallow pkg="org.bouncycastle"/>
     <allow pkg="javax.crypto.interfaces"/>
+    <allow pkg="java.security.interfaces"/>
+    <allow class="java.security.SecureRandom"/>
+    <disallow pkg="java.security"/>
     <disallow pkg="javax.crypto"/>
 
     <!-- Disallow imports from arbitrary parts of the library. -->
@@ -20,6 +23,7 @@
     <subpackage name="crypto">
         <allow pkg="org.bouncycastle"/>
         <allow pkg="javax.crypto"/>
+        <allow pkg="java.security"/>
 
         <!-- TODO a violation that is accepted for now, but should be fixed some day. (This issue seems to indicate that we shouldn't make 'messages' a subpackage of 'io'.) -->
         <allow local-only="true" pkg="net.java.otr4j.io" exact-match="true"/>

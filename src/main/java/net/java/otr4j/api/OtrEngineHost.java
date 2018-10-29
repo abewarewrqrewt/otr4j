@@ -7,10 +7,10 @@
 
 package net.java.otr4j.api;
 
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 
 import javax.annotation.Nonnull;
-import java.security.KeyPair;
 
 /**
  * This interface should be implemented by the host application. It is required
@@ -110,7 +110,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @return Returns the local key pair.
      */
     @Nonnull
-    KeyPair getLocalKeyPair(@Nonnull SessionID sessionID);
+    DSAKeyPair getLocalKeyPair(@Nonnull SessionID sessionID);
 
     /**
      * Request local long-term key pair from Engine Host. (OTRv4)

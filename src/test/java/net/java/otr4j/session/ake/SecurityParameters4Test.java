@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.Session.OTRv.FOUR;
@@ -86,6 +85,6 @@ public class SecurityParameters4Test {
     private static ClientProfile generateProfile() {
         return new ClientProfile(InstanceTag.random(RANDOM), EdDSAKeyPair.generate(RANDOM).getPublicKey(),
                 EdDSAKeyPair.generate(RANDOM).getPublicKey(), singleton(FOUR), Long.MAX_VALUE,
-                (DSAPublicKey) generateDSAKeyPair().getPublic());
+                generateDSAKeyPair().getPublic());
     }
 }

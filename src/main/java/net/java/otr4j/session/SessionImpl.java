@@ -21,6 +21,7 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
@@ -51,10 +52,8 @@ import net.java.otr4j.session.state.StatePlaintext;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
-import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -962,7 +961,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     @Nonnull
-    public PublicKey getRemotePublicKey() throws IncorrectStateException {
+    public DSAPublicKey getRemotePublicKey() throws IncorrectStateException {
         if (this != outgoingSession) {
             return outgoingSession.getRemotePublicKey();
         }
@@ -1005,7 +1004,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Override
     @Nonnull
-    public KeyPair getLocalKeyPair() {
+    public DSAKeyPair getLocalKeyPair() {
         return this.host.getLocalKeyPair(this.sessionState.getSessionID());
     }
 
@@ -1025,7 +1024,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
         final SessionID sessionID = this.sessionState.getSessionID();
         final ClientProfile profile = this.host.getClientProfile(sessionID);
-        return sign(profile, (DSAPrivateKey) this.host.getLocalKeyPair(sessionID).getPrivate(),
+        return sign(profile, this.host.getLocalKeyPair(sessionID).getPrivate(),
                 this.host.getLongTermKeyPair(sessionID));
     }
 
@@ -1130,7 +1129,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Override
     @Nonnull
-    public PublicKey getRemotePublicKey(@Nonnull final InstanceTag tag) throws IncorrectStateException {
+    public DSAPublicKey getRemotePublicKey(@Nonnull final InstanceTag tag) throws IncorrectStateException {
         if (tag.equals(this.receiverTag)) {
             return this.sessionState.getRemotePublicKey();
         }

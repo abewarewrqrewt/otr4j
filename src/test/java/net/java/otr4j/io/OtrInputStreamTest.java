@@ -26,6 +26,7 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -183,13 +184,6 @@ public class OtrInputStreamTest {
         assertArrayEquals(new byte[]{0x1, 0x2}, tlv.getValue());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testReadSignatureBadPublicKey() throws ProtocolException {
-        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(RANDOM);
-        final OtrInputStream ois = new OtrInputStream(new byte[0]);
-        ois.readSignature(keypair.getPublic());
-    }
-
     @Test
     public void testReadSignature() throws NoSuchAlgorithmException, NoSuchProviderException, ProtocolException {
         final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA", "BC");
@@ -202,7 +196,7 @@ public class OtrInputStreamTest {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         };
         final OtrInputStream ois = new OtrInputStream(data);
-        assertArrayEquals(data, ois.readSignature(keypair.getPublic()));
+        assertArrayEquals(data, ois.readSignature((DSAPublicKey) keypair.getPublic()));
     }
 
     @Test

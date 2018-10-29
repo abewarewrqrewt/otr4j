@@ -10,16 +10,17 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.session.OtrSessionManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.logging.Logger;
  * Created by gp on 2/5/14.
  */
 // FIXME Further eradicate use of DummyClient then remove completely in favor of new dummy client implementation in SessionTest.
+@SuppressWarnings("WeakerAccess")
 public class DummyClient {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -123,7 +125,6 @@ public class DummyClient {
 
     public void init(String recipient, String message) throws OtrException {
 		if (session == null) {
-            final InstanceTag senderInstanceTag = InstanceTag.random(RANDOM);
 			final SessionID sessionID = new SessionID(account, recipient, "DummyProtocol");
 			session = OtrSessionManager.createSession(sessionID, new DummyOtrEngineHostImpl());
 		}
@@ -294,7 +295,7 @@ public class DummyClient {
 	public class DummyOtrEngineHostImpl implements OtrEngineHost {
 
     	private final InstanceTag instanceTag = InstanceTag.random(RANDOM);
-	    private final HashMap<SessionID, KeyPair> keypairs = new HashMap<>();
+	    private final HashMap<SessionID, DSAKeyPair> keypairs = new HashMap<>();
 
         @Override
 		public void injectMessage(@Nonnull SessionID sessionID, @Nonnull String msg) {
@@ -348,12 +349,13 @@ public class DummyClient {
 
         @Override
         @Nonnull
-		public KeyPair getLocalKeyPair(@Nonnull SessionID paramSessionID) {
-            KeyPair keypair = this.keypairs.get(paramSessionID);
+		public DSAKeyPair getLocalKeyPair(@Nonnull SessionID paramSessionID) {
+            DSAKeyPair keypair = this.keypairs.get(paramSessionID);
             if (keypair == null) {
                 try {
-                    KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
-                    keypair = kg.genKeyPair();
+                    final KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
+                    final java.security.KeyPair generated = kg.genKeyPair();
+                    keypair = new DSAKeyPair((DSAPrivateKey) generated.getPrivate(), (DSAPublicKey) generated.getPublic());
                     this.keypairs.put(paramSessionID, keypair);
                 } catch (final NoSuchAlgorithmException ex) {
                     throw new IllegalStateException("DSA algorithm unavailable.", ex);
@@ -388,7 +390,7 @@ public class DummyClient {
         @Override
         @Nonnull
         public byte[] getLocalFingerprintRaw(@Nonnull SessionID sessionID) {
-            return OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) getLocalKeyPair(sessionID).getPublic());
+            return OtrCryptoEngine.getFingerprintRaw(getLocalKeyPair(sessionID).getPublic());
         }
 
         @Override

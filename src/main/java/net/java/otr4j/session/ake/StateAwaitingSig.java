@@ -8,6 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.crypto.DHKeyPairJ;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -25,11 +26,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.net.ProtocolException;
-import java.security.KeyPair;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 
@@ -43,7 +44,7 @@ final class StateAwaitingSig extends AbstractAuthState {
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingSig.class.getName());
 
     private final int version;
-    private final KeyPair localDHKeyPair;
+    private final DHKeyPairJ localDHKeyPair;
     private final DHPublicKey remoteDHPublicKey;
     private final SharedSecret s;
 
@@ -53,24 +54,22 @@ final class StateAwaitingSig extends AbstractAuthState {
      */
     private final RevealSignatureMessage previousRevealSigMessage;
 
-    StateAwaitingSig(final int version,
-            @Nonnull final KeyPair localDHKeyPair,
-            @Nonnull final DHPublicKey remoteDHPublicKey,
-            @Nonnull final SharedSecret s,
+    StateAwaitingSig(final int version, @Nonnull final DHKeyPairJ localDHKeyPair,
+            @Nonnull final DHPublicKey remoteDHPublicKey, @Nonnull final SharedSecret s,
             @Nonnull final RevealSignatureMessage previousRevealSigMessage) {
         super();
         if (version < 2 || version > 3) {
             throw new IllegalArgumentException("unsupported version specified");
         }
         this.version = version;
-        this.localDHKeyPair = Objects.requireNonNull(localDHKeyPair);
+        this.localDHKeyPair = requireNonNull(localDHKeyPair);
         try {
             this.remoteDHPublicKey = OtrCryptoEngine.verify(remoteDHPublicKey);
         } catch (final OtrCryptoException ex) {
             throw new IllegalArgumentException("Illegal D-H Public Key provided.", ex);
         }
-        this.s = Objects.requireNonNull(s);
-        this.previousRevealSigMessage = Objects.requireNonNull(previousRevealSigMessage);
+        this.s = requireNonNull(s);
+        this.previousRevealSigMessage = requireNonNull(previousRevealSigMessage);
     }
 
     @Nullable
@@ -108,18 +107,19 @@ final class StateAwaitingSig extends AbstractAuthState {
         // OTR: "Reply with a new D-H Key message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
         LOGGER.finest("Generating local D-H key pair.");
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
-        final KeyPair newKeypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
+        final DHKeyPairJ newKeypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Ignoring AWAITING_SIG state and sending a new DH key message.");
-        context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
-        return new DHKeyMessage(message.protocolVersion, (DHPublicKey) newKeypair.getPublic(),
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag());
+        context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash,
+                message.dhPublicKeyEncrypted));
+        return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag());
     }
 
     @Nullable
     private RevealSignatureMessage handleDHKeyMessage(@Nonnull final DHKeyMessage message) {
         // OTR: "If this D-H Key message is the same the one you received earlier (when you entered AUTHSTATE_AWAITING_SIG):
         // Retransmit your Reveal Signature Message. Otherwise: Ignore the message."
-        if (!((DHPublicKey) this.localDHKeyPair.getPublic()).getY().equals(message.dhPublicKey.getY())) {
+        if (!this.localDHKeyPair.getPublic().getY().equals(message.dhPublicKey.getY())) {
             // DH keypair is not the same as local pair, this message is either
             // fake or not intended for this session.
             LOGGER.info("DHKeyMessage contains different DH public key. Ignoring message.");
@@ -143,8 +143,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             final byte[] remoteXBytes = OtrCryptoEngine.aesDecrypt(s.cp(), null, message.xEncrypted);
             final SignatureX remoteX = readSignatureX(remoteXBytes);
             // OTR: "Computes MA = MACm1'(gy, gx, pubA, keyidA)"
-            final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey,
-                    (DHPublicKey) this.localDHKeyPair.getPublic(),
+            final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey, this.localDHKeyPair.getPublic(),
                     remoteX.getLongTermPublicKey(), remoteX.getDhKeyID());
             final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(remoteM), s.m1p());
             // OTR: "Uses pubA to verify sigA(MA)"

@@ -39,12 +39,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPrivateKey;
@@ -133,10 +130,11 @@ public final class OtrCryptoEngine {
      * @return Returns the DSA key pair.
      */
     @Nonnull
-    public static KeyPair generateDSAKeyPair() {
+    public static DSAKeyPair generateDSAKeyPair() {
         try {
             final KeyPairGenerator kg = KeyPairGenerator.getInstance(ALGORITHM_DSA);
-            return kg.genKeyPair();
+            final java.security.KeyPair keypair = kg.genKeyPair();
+            return new DSAKeyPair((DSAPrivateKey) keypair.getPrivate(), (DSAPublicKey) keypair.getPublic());
         } catch (final NoSuchAlgorithmException e) {
             throw new IllegalStateException("Failed to generate DSA key pair.", e);
         }
@@ -149,7 +147,7 @@ public final class OtrCryptoEngine {
      * @return Returns the DH key pair.
      */
     @Nonnull
-    public static KeyPair generateDHKeyPair(@Nonnull final SecureRandom secureRandom) {
+    public static DHKeyPairJ generateDHKeyPair(@Nonnull final SecureRandom secureRandom) {
 
         // Generate a AsymmetricCipherKeyPair using BC.
         final DHParameters dhParams = new DHParameters(MODULUS, GENERATOR, null,
@@ -186,7 +184,7 @@ public final class OtrCryptoEngine {
             throw new IllegalStateException("Failed to generate DH private key.", ex);
         }
 
-        return new KeyPair(pubKey, privKey);
+        return new DHKeyPairJ(privKey, pubKey);
     }
 
     /**
@@ -416,9 +414,9 @@ public final class OtrCryptoEngine {
      * @throws OtrCryptoException In case of illegal key.
      */
     @Nonnull
-    public static SharedSecret generateSecret(@Nonnull final PrivateKey privKey,
-            @Nonnull final PublicKey pubKey) throws OtrCryptoException {
-        verify((DHPublicKey) pubKey);
+    public static SharedSecret generateSecret(@Nonnull final DHPrivateKey privKey, @Nonnull final DHPublicKey pubKey)
+            throws OtrCryptoException {
+        verify(pubKey);
         try {
             final KeyAgreement ka = KeyAgreement.getInstance(KA_DH);
             ka.init(privKey);
@@ -675,20 +673,6 @@ public final class OtrCryptoEngine {
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         if (!constantTimeEquals(a, b)) {
             throw new OtrCryptoException(message);
-        }
-    }
-
-    /**
-     * Create SHA-256 based message digest instance.
-     *
-     * @return Returns instance of SHA-256 message digest.
-     */
-    @Nonnull
-    public static MessageDigest createSHA256MessageDigest() {
-        try {
-            return MessageDigest.getInstance(MD_SHA256);
-        } catch (final NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("Failed to acquire SHA-256 message digest.", ex);
         }
     }
 

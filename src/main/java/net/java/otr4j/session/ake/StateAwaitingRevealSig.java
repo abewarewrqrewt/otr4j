@@ -8,6 +8,8 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -27,9 +29,6 @@ import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.math.BigInteger;
 import java.net.ProtocolException;
-import java.security.KeyPair;
-import java.security.interfaces.DSAPrivateKey;
-import java.security.interfaces.DSAPublicKey;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,11 +52,11 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     private static final int LOCAL_DH_PRIVATE_KEY_ID = 1;
 
     private final int version;
-    private final KeyPair keypair;
+    private final DHKeyPairJ keypair;
     private final byte[] remotePublicKeyHash;
     private final byte[] remotePublicKeyEncrypted;
 
-    StateAwaitingRevealSig(final int version, @Nonnull final KeyPair keypair,
+    StateAwaitingRevealSig(final int version, @Nonnull final DHKeyPairJ keypair,
             @Nonnull final byte[] remotePublicKeyHash, @Nonnull final byte[] remotePublicKeyEncrypted) {
         super();
         if (version < 2 || version > 3) {
@@ -108,8 +107,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // Forget the old D-H Commit message, and use this new one instead."
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
-        return new DHKeyMessage(message.protocolVersion, (DHPublicKey) this.keypair.getPublic(),
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag());
+        return new DHKeyMessage(message.protocolVersion, this.keypair.getPublic(), context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag());
     }
 
     /**
@@ -154,7 +153,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             final byte[] remoteMysteriousXBytes = OtrCryptoEngine.aesDecrypt(s.c(), null, message.xEncrypted);
             remoteMysteriousX = readSignatureX(remoteMysteriousXBytes);
             // OTR: "Computes MB = MACm1(gx, gy, pubB, keyidB)"
-            final SignatureM expectedM = new SignatureM(remoteDHPublicKey, (DHPublicKey) this.keypair.getPublic(),
+            final SignatureM expectedM = new SignatureM(remoteDHPublicKey, this.keypair.getPublic(),
                     remoteMysteriousX.getLongTermPublicKey(), remoteMysteriousX.getDhKeyID());
             // OTR: "Uses pubB to verify sigB(MB)"
             final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(expectedM), s.m1());
@@ -173,17 +172,17 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         context.secure(params);
         // OTR: "Reply with a Signature Message."
         // Start construction of Signature message.
-        final KeyPair localLongTermKeyPair = context.getLocalKeyPair();
+        final DSAKeyPair localLongTermKeyPair = context.getLocalKeyPair();
         // OTR: "Select keyidA, a serial number for the D-H key computed earlier. It is an INT, and must be greater than 0."
         // OTR: "Compute the 32-byte value MA to be the SHA256-HMAC of the following data, using the key m1':
         // gy (MPI), gx (MPI), pubA (PUBKEY), keyidA (INT)"
-        final SignatureM signatureM = new SignatureM((DHPublicKey) this.keypair.getPublic(), remoteDHPublicKey,
-                (DSAPublicKey) localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
+        final SignatureM signatureM = new SignatureM(this.keypair.getPublic(), remoteDHPublicKey,
+                localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
-        final byte[] signature = OtrCryptoEngine.sign(mhash, (DSAPrivateKey) localLongTermKeyPair.getPrivate());
-        final SignatureX mysteriousX = new SignatureX((DSAPublicKey) localLongTermKeyPair.getPublic(),
-                LOCAL_DH_PRIVATE_KEY_ID, signature);
+        final byte[] signature = OtrCryptoEngine.sign(mhash, localLongTermKeyPair.getPrivate());
+        final SignatureX mysteriousX = new SignatureX(localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID,
+                signature);
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."
         final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null, encode(mysteriousX));
         // OTR: "Encode this encrypted value as the DATA field."

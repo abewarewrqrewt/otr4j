@@ -1,19 +1,19 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import org.junit.Test;
 
 import javax.crypto.interfaces.DHPublicKey;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
 
 public final class DHKeyMessageTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final DHPublicKey publicKey = (DHPublicKey) OtrCryptoEngine.generateDHKeyPair(RANDOM).getPublic();
+    private final DHPublicKey publicKey = generateDHKeyPair(RANDOM).getPublic();
 
     @Test
     public void testDHKeyMessageProtocolVersionValid() {

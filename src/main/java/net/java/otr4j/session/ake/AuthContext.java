@@ -8,11 +8,11 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;
-import java.security.KeyPair;
 import java.security.SecureRandom;
 
 /**
@@ -81,7 +81,7 @@ public interface AuthContext {
      * @return Returns the long-term key pair.
      */
     @Nonnull
-    KeyPair getLocalKeyPair();
+    DSAKeyPair getLocalKeyPair();
 
     /**
      * Access to the long-term Ed448-Goldilocks key pair. (OTRv4)

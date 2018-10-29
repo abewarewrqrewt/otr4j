@@ -1,19 +1,18 @@
 package net.java.otr4j.api;
 
 import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
 import org.junit.Test;
 
-import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
 
 @SuppressWarnings("ConstantConditions")
 public final class ClientProfileTest {
@@ -24,25 +23,25 @@ public final class ClientProfileTest {
 
     private final Point forgingPublicKey = generate(RANDOM).getPublicKey();
 
-    private final KeyPair dsaKeyPair = generateDSAKeyPair();
+    private final DSAKeyPair dsaKeyPair = generateDSAKeyPair();
 
     @Test
     public void testConstructWithoutDSAPublicKey() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey,
-                singleton(OTRv.FOUR), System.currentTimeMillis() / 1000 + 86400, null);
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
+                System.currentTimeMillis() / 1000 + 86400, null);
     }
 
     @Test
     public void testConstructWithDSAPublicKey() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey,
-                singleton(OTRv.FOUR), System.currentTimeMillis() / 1000 + 86400,
-                (DSAPublicKey) dsaKeyPair.getPublic());
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
+                System.currentTimeMillis() / 1000 + 86400,
+                dsaKeyPair.getPublic());
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullInstanceTag() {
-        new ClientProfile(null, this.longTermKeyPair.getPublicKey(), forgingPublicKey,
-                singleton(OTRv.FOUR), System.currentTimeMillis() / 1000 + 86400, null);
+        new ClientProfile(null, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
+                System.currentTimeMillis() / 1000 + 86400, null);
     }
 
     @Test(expected = NullPointerException.class)

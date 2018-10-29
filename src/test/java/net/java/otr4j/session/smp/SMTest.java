@@ -7,6 +7,8 @@
 
 package net.java.otr4j.session.smp;
 
+import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.session.api.SMPStatus;
@@ -15,15 +17,14 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.security.interfaces.DSAPublicKey;
 
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateSecret;
+import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -209,19 +210,19 @@ public class SMTest {
 
         // Alice
         final SM alice = new SM(sr);
-        final KeyPair aliceKeyPair = generateKeyPair();
-        final KeyPair aliceDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] alicePublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) aliceKeyPair.getPublic());
+        final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
 
         // Bob
         final SM bob = new SM(sr);
-        final KeyPair bobKeyPair = generateKeyPair();
-        final KeyPair bobDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] bobPublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) bobKeyPair.getPublic());
+        final DSAKeyPair bobKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Shared secret
         final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final SharedSecret s = OtrCryptoEngine.generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
 
         // SMP session execution
@@ -259,20 +260,20 @@ public class SMTest {
 
         // Alice
         final SM alice = new SM(sr);
-        final KeyPair aliceKeyPair = generateKeyPair();
-        final KeyPair aliceDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] alicePublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) aliceKeyPair.getPublic());
+        final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
 
         // Bob
         final SM bob = new SM(sr);
-        final KeyPair bobKeyPair = generateKeyPair();
-        final KeyPair bobDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] bobPublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) bobKeyPair.getPublic());
+        final DSAKeyPair bobKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Shared secret
         final byte[] aliceSecret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
         final byte[] bobSecret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 't' };
-        final SharedSecret s = OtrCryptoEngine.generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytesAlice = combinedSecret(alicePublic, bobPublic, s, aliceSecret);
         final byte[] combinedSecretBytesBob = combinedSecret(alicePublic, bobPublic, s, bobSecret);
 
@@ -734,18 +735,18 @@ public class SMTest {
     private SM prepareStateExpect4() throws Exception {
         // Alice
         final SM alice = new SM(sr);
-        final KeyPair aliceKeyPair = generateKeyPair();
-        final KeyPair aliceDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] alicePublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) aliceKeyPair.getPublic());
+        final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
         // Bob
         final SM bob = new SM(sr);
-        final KeyPair bobKeyPair = generateKeyPair();
-        final KeyPair bobDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] bobPublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) bobKeyPair.getPublic());
+        final DSAKeyPair bobKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Prepare sm instance for StateExpect3.
         final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final SharedSecret s = OtrCryptoEngine.generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
         final byte[] msg1 = alice.step1(combinedSecretBytes);
         bob.step2a(msg1);
@@ -757,18 +758,18 @@ public class SMTest {
     private SM prepareStateExpect3() throws Exception {
         // Alice
         final SM alice = new SM(sr);
-        final KeyPair aliceKeyPair = generateKeyPair();
-        final KeyPair aliceDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] alicePublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) aliceKeyPair.getPublic());
+        final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
         // Bob
         final SM bob = new SM(sr);
-        final KeyPair bobKeyPair = generateKeyPair();
-        final KeyPair bobDHKeyPair = OtrCryptoEngine.generateDHKeyPair(sr);
-        final byte[] bobPublic = OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) bobKeyPair.getPublic());
+        final DSAKeyPair bobKeyPair = generateDSAKeyPair();
+        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Prepare sm instance for StateExpect3.
         final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final SharedSecret s = OtrCryptoEngine.generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
         final byte[] msg1 = alice.step1(combinedSecretBytes);
         bob.step2a(msg1);
@@ -785,10 +786,5 @@ public class SMTest {
         System.arraycopy(sessionBytes, 0, combinedSecret, 1+alicePublic.length+bobPublic.length, sessionBytes.length);
         System.arraycopy(secret, 0, combinedSecret, 1+alicePublic.length+bobPublic.length+sessionBytes.length, secret.length);
         return MessageDigest.getInstance("SHA-256").digest(combinedSecret);
-    }
-
-    private static KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
-        final KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA", "BC");
-        return kg.genKeyPair();
     }
 }

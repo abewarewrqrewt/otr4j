@@ -19,6 +19,7 @@ import static net.java.otr4j.util.Collections.requireNoIllegalValues;
 /**
  * The validated representation of the ClientProfile.
  */
+// TODO provide utility methods to simplify generating a new client profile as much as possible. The code for using OTRv4 should become as simple and as straight-forward as possible.
 public final class ClientProfile {
 
     /**

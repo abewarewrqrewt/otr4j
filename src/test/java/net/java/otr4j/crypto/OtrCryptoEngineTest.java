@@ -10,14 +10,15 @@ package net.java.otr4j.crypto;
 import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import org.junit.Test;
 
-import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateSecret;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
 import static org.junit.Assert.assertEquals;
@@ -36,15 +37,15 @@ public class OtrCryptoEngineTest {
 
     private static final SecureRandom RAND = new SecureRandom();
 
-    private static final KeyPair DSA_KEYPAIR = OtrCryptoEngine.generateDSAKeyPair();
+    private static final DSAKeyPair DSA_KEYPAIR = generateDSAKeyPair();
 
     @Test
     public void testGeneratedSharedSecretEqual() throws OtrCryptoException {
-        final KeyPair aliceDHKeyPair = OtrCryptoEngine.generateDHKeyPair(RAND);
-        final KeyPair bobDHKeyPair = OtrCryptoEngine.generateDHKeyPair(RAND);
+        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(RAND);
+        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(RAND);
 
-        assertEquals(OtrCryptoEngine.generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic()),
-                OtrCryptoEngine.generateSecret(bobDHKeyPair.getPrivate(), aliceDHKeyPair.getPublic()));
+        assertEquals(generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic()),
+                generateSecret(bobDHKeyPair.getPrivate(), aliceDHKeyPair.getPublic()));
     }
 
     @Test
@@ -93,14 +94,9 @@ public class OtrCryptoEngineTest {
         checkEquals(null, b, "Expected array to be equal.");
     }
 
-    @Test
-    public void testCreateSHA256MessageDigest() {
-        assertNotNull(OtrCryptoEngine.createSHA256MessageDigest());
-    }
-
     @Test(expected = NullPointerException.class)
     public void testSignRSNullMessage() {
-        signRS(null, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
+        signRS(null, DSA_KEYPAIR.getPrivate());
     }
 
     @Test(expected = NullPointerException.class)
@@ -111,8 +107,8 @@ public class OtrCryptoEngineTest {
     @Test
     public void testSignRS() throws OtrCryptoException {
         final byte[] m = "hello".getBytes(UTF_8);
-        final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
-        verify(m, (DSAPublicKey) DSA_KEYPAIR.getPublic(), sig.r, sig.s);
+        final DSASignature sig = signRS(m, DSA_KEYPAIR.getPrivate());
+        verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
     }
 
     @Test
@@ -120,13 +116,13 @@ public class OtrCryptoEngineTest {
         assumeTrue("This test can only be successful without assertions, due to safety checks.",
             !OtrCryptoEngine.class.desiredAssertionStatus());
         final byte[] m = new byte[0];
-        final DSASignature sig = signRS(m, (DSAPrivateKey) DSA_KEYPAIR.getPrivate());
-        verify(m, (DSAPublicKey) DSA_KEYPAIR.getPublic(), sig.r, sig.s);
+        final DSASignature sig = signRS(m, DSA_KEYPAIR.getPrivate());
+        verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
     }
 
     @Test
     public void testGenerateDSAKeyPair() {
-        final KeyPair keypair = generateDSAKeyPair();
+        final DSAKeyPair keypair = generateDSAKeyPair();
         assertNotNull(keypair);
         assertTrue(keypair.getPublic() instanceof DSAPublicKey);
         assertTrue(keypair.getPrivate() instanceof DSAPrivateKey);
@@ -134,14 +130,14 @@ public class OtrCryptoEngineTest {
 
     @Test
     public void testGenerateDSAKeyPairDifferentKeyPairs() {
-        final KeyPair keypair1 = generateDSAKeyPair();
-        final KeyPair keypair2 = generateDSAKeyPair();
-        final KeyPair keypair3 = generateDSAKeyPair();
-        assertNotEquals(((DSAPublicKey)keypair1.getPublic()).getY(), ((DSAPublicKey)keypair2.getPublic()).getY());
-        assertNotEquals(((DSAPublicKey)keypair1.getPublic()).getY(), ((DSAPublicKey)keypair3.getPublic()).getY());
-        assertNotEquals(((DSAPublicKey)keypair2.getPublic()).getY(), ((DSAPublicKey)keypair3.getPublic()).getY());
-        assertNotEquals(((DSAPrivateKey)keypair1.getPrivate()).getX(), ((DSAPrivateKey)keypair2.getPrivate()).getX());
-        assertNotEquals(((DSAPrivateKey)keypair1.getPrivate()).getX(), ((DSAPrivateKey)keypair3.getPrivate()).getX());
-        assertNotEquals(((DSAPrivateKey)keypair2.getPrivate()).getX(), ((DSAPrivateKey)keypair3.getPrivate()).getX());
+        final DSAKeyPair keypair1 = generateDSAKeyPair();
+        final DSAKeyPair keypair2 = generateDSAKeyPair();
+        final DSAKeyPair keypair3 = generateDSAKeyPair();
+        assertNotEquals(keypair1.getPublic().getY(), keypair2.getPublic().getY());
+        assertNotEquals(keypair1.getPublic().getY(), keypair3.getPublic().getY());
+        assertNotEquals(keypair2.getPublic().getY(), keypair3.getPublic().getY());
+        assertNotEquals(keypair1.getPrivate().getX(), keypair2.getPrivate().getX());
+        assertNotEquals(keypair1.getPrivate().getX(), keypair3.getPrivate().getX());
+        assertNotEquals(keypair2.getPrivate().getX(), keypair3.getPrivate().getX());
     }
 }

@@ -12,11 +12,11 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.messages.DataMessage;
-import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.messages.DataMessage;
+import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.api.SMPHandler;
@@ -24,7 +24,7 @@ import net.java.otr4j.session.api.SMPHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 
 /**
@@ -64,7 +64,7 @@ public interface State {
      * non-encrypted state, since no public key is available there.
      */
     @Nonnull
-    PublicKey getRemotePublicKey() throws IncorrectStateException;
+    DSAPublicKey getRemotePublicKey() throws IncorrectStateException;
 
     /**
      * Acquire the extra symmetric key for this session.

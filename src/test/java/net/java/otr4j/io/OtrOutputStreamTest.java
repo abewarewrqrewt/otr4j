@@ -26,6 +26,7 @@ import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
@@ -401,7 +402,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteDSAPublicKey() throws ProtocolException {
-        final DSAPublicKey publicKey = (DSAPublicKey) OtrCryptoEngine.generateDSAKeyPair().getPublic();
+        final DSAPublicKey publicKey = OtrCryptoEngine.generateDSAKeyPair().getPublic();
         final byte[] result = new OtrOutputStream().writePublicKey(publicKey).toByteArray();
         final OtrInputStream in = new OtrInputStream(result);
         assertEquals(0, in.readShort());
@@ -418,7 +419,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteDHPublicKey() throws OtrInputStream.UnsupportedLengthException, ProtocolException {
-        final DHPublicKey publicKey = (DHPublicKey) OtrCryptoEngine.generateDHKeyPair(RANDOM).getPublic();
+        final DHPublicKey publicKey = generateDHKeyPair(RANDOM).getPublic();
         final byte[] result = new OtrOutputStream().writeDHPublicKey(publicKey).toByteArray();
         final byte[] publicKeyBytes = asUnsignedByteArray(publicKey.getY());
         assertArrayEquals(publicKeyBytes, new OtrInputStream(result).readData());

@@ -1,6 +1,7 @@
 package net.java.otr4j.api;
 
 import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -15,9 +16,7 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
-import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -38,6 +37,7 @@ import static net.java.otr4j.api.OtrPolicy.OTRL_POLICY_MANUAL;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.FINISHED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static net.java.otr4j.util.Arrays.contains;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.drop;
@@ -891,7 +891,7 @@ public class SessionTest {
 
         private final InstanceTag instanceTag = InstanceTag.random(RANDOM);
 
-        private final KeyPair dsaKeyPair;
+        private final DSAKeyPair dsaKeyPair;
 
         private final EdDSAKeyPair ed448KeyPair;
 
@@ -914,7 +914,7 @@ public class SessionTest {
                        @Nonnull final BlockingQueue<String> receiptChannel) {
             this.logger = Logger.getLogger(Client.class.getName() + ":" + id);
             this.ed448KeyPair = EdDSAKeyPair.generate(random);
-            this.dsaKeyPair = OtrCryptoEngine.generateDSAKeyPair();
+            this.dsaKeyPair = generateDSAKeyPair();
             this.forgingPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
             this.receiptChannel = requireNonNull(receiptChannel);
             this.sendChannel = requireNonNull(sendChannel);
@@ -1000,7 +1000,7 @@ public class SessionTest {
 
         @Nonnull
         @Override
-        public KeyPair getLocalKeyPair(@Nonnull final SessionID sessionID) {
+        public DSAKeyPair getLocalKeyPair(@Nonnull final SessionID sessionID) {
             return this.dsaKeyPair;
         }
 
@@ -1030,7 +1030,7 @@ public class SessionTest {
         @Nonnull
         @Override
         public byte[] getLocalFingerprintRaw(@Nonnull final SessionID sessionID) {
-            return OtrCryptoEngine.getFingerprintRaw((DSAPublicKey) this.dsaKeyPair.getPublic());
+            return OtrCryptoEngine.getFingerprintRaw(this.dsaKeyPair.getPublic());
         }
 
         @Override

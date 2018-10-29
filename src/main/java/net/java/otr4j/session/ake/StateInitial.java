@@ -7,13 +7,14 @@
 
 package net.java.otr4j.session.ake;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ed448.ECDHKeyPair;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
-import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.DHKeyPairJ;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
@@ -21,17 +22,15 @@ import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.IdentityMessage;
 import net.java.otr4j.messages.ValidationException;
-import net.java.otr4j.api.ClientProfile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.crypto.interfaces.DHPublicKey;
-import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.IdentityMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
@@ -108,14 +107,14 @@ public final class StateInitial extends AbstractAuthState {
     private DHKeyMessage handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "Reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
-        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
+        final DHKeyPairJ keypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
         LOGGER.finest("Sending D-H key message.");
         // OTR: "Sends Bob gy"
-        return new DHKeyMessage(message.protocolVersion, (DHPublicKey) keypair.getPublic(),
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag());
+        return new DHKeyMessage(message.protocolVersion, keypair.getPublic(), context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag());
     }
 
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.

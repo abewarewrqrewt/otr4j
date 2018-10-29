@@ -20,7 +20,6 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.net.ProtocolException;
-import java.security.PublicKey;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
@@ -252,17 +251,13 @@ public final class OtrInputStream {
     /**
      * Read signature from message stream.
      *
-     * @param pubKey The public key.
+     * @param pubKey The DSA public key.
      * @return Returns the read signature.
      * @throws ProtocolException In case of unexpected content in the message stream.
      */
     @Nonnull
-    public byte[] readSignature(@Nonnull final PublicKey pubKey) throws ProtocolException {
-        if (!pubKey.getAlgorithm().equals("DSA")) {
-            throw new UnsupportedOperationException("Unsupported public key instance type encountered. Cannot read signature.");
-        }
-        final DSAPublicKey dsaPubKey = (DSAPublicKey) pubKey;
-        final DSAParams dsaParams = dsaPubKey.getParams();
+    public byte[] readSignature(@Nonnull final DSAPublicKey pubKey) throws ProtocolException {
+        final DSAParams dsaParams = pubKey.getParams();
         return checkedRead(dsaParams.getQ().bitLength() / 4);
     }
 

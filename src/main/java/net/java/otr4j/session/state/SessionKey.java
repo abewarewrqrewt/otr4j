@@ -7,21 +7,21 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.SharedSecret;
+
+import javax.annotation.Nonnull;
+import javax.crypto.interfaces.DHPublicKey;
 import java.nio.ByteBuffer;
-import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Nonnull;
-import javax.crypto.interfaces.DHPublicKey;
-
-import net.java.otr4j.crypto.OtrCryptoEngine;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.SharedSecret;
-
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateSecret;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hash;
 
 // TODO consider doing lazy evaluation of generating 's', 'receivingCtr' and 'sendingCtr'. (Would save some memory/computation in case this session key combination is not actually used.)
@@ -48,7 +48,7 @@ final class SessionKey implements AutoCloseable {
 
     private final int localKeyID;
     private final int remoteKeyID;
-    private final KeyPair localKeyPair;
+    private final DHKeyPairJ localKeyPair;
     private final DHPublicKey remotePublicKey;
     private final SharedSecret s;
 
@@ -65,15 +65,14 @@ final class SessionKey implements AutoCloseable {
      */
     private boolean used;
 
-    SessionKey(final int localKeyID, @Nonnull final KeyPair localKeyPair,
-            final int remoteKeyID, @Nonnull final DHPublicKey remotePublicKey)
-            throws OtrCryptoException {
+    SessionKey(final int localKeyID, @Nonnull final DHKeyPairJ localKeyPair, final int remoteKeyID,
+            @Nonnull final DHPublicKey remotePublicKey) throws OtrCryptoException {
         this.localKeyID = localKeyID;
         this.remoteKeyID = remoteKeyID;
         this.localKeyPair = requireNonNull(localKeyPair);
         this.remotePublicKey = requireNonNull(remotePublicKey);
-        this.s = OtrCryptoEngine.generateSecret(localKeyPair.getPrivate(), requireNonNull(remotePublicKey));
-        this.high = ((DHPublicKey) this.localKeyPair.getPublic()).getY().compareTo(remotePublicKey.getY()) > 0;
+        this.s = generateSecret(localKeyPair.getPrivate(), requireNonNull(remotePublicKey));
+        this.high = this.localKeyPair.getPublic().getY().compareTo(remotePublicKey.getY()) > 0;
         this.used = false;
     }
 
@@ -86,7 +85,7 @@ final class SessionKey implements AutoCloseable {
     }
 
     @Nonnull
-    public KeyPair getLocalKeyPair() {
+    public DHKeyPairJ getLocalKeyPair() {
         return localKeyPair;
     }
 

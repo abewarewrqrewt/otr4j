@@ -3,7 +3,7 @@ package net.java.otr4j.messages;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -12,12 +12,10 @@ import net.java.otr4j.io.OtrOutputStream;
 import org.junit.Test;
 
 import java.net.ProtocolException;
-import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.security.interfaces.DSAPrivateKey;
-import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Collections.singleton;
+import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
 import static net.java.otr4j.messages.ClientProfilePayload.readFrom;
 import static net.java.otr4j.messages.ClientProfilePayload.sign;
 import static org.junit.Assert.assertArrayEquals;
@@ -43,7 +41,7 @@ public final class ClientProfilePayloadTest {
 
     private final Point forgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
 
-    private final KeyPair dsaKeyPair = OtrCryptoEngine.generateDSAKeyPair();
+    private final DSAKeyPair dsaKeyPair = generateDSAKeyPair();
 
     @Test
     public void testConstructedPayloadIsReversible() throws ValidationException {
@@ -55,15 +53,14 @@ public final class ClientProfilePayloadTest {
     @Test
     public void testConstructedPayloadWithDSAIsReversible() throws ValidationException {
         final ClientProfile profile = new ClientProfile(tag, keypair.getPublicKey(), forgingKey, singleton(OTRv.FOUR),
-                Long.MAX_VALUE / 1000, (DSAPublicKey) this.dsaKeyPair.getPublic());
-        assertEquals(profile, sign(profile, (DSAPrivateKey) dsaKeyPair.getPrivate(),
-                keypair).validate());
+                Long.MAX_VALUE / 1000, this.dsaKeyPair.getPublic());
+        assertEquals(profile, sign(profile, dsaKeyPair.getPrivate(), keypair).validate());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructedPayloadWithDSAPublicKeyWithoutDSASignature() throws ValidationException {
         final ClientProfile profile = new ClientProfile(tag, keypair.getPublicKey(), forgingKey, singleton(OTRv.FOUR),
-                Long.MAX_VALUE / 1000, (DSAPublicKey) this.dsaKeyPair.getPublic());
+                Long.MAX_VALUE / 1000, this.dsaKeyPair.getPublic());
         assertEquals(profile, sign(profile, null, keypair).validate());
     }
 
@@ -71,7 +68,7 @@ public final class ClientProfilePayloadTest {
     public void testConstructedPayloadWithoutDSAPublicKeyWithDSASignature() throws ValidationException {
         final ClientProfile profile = new ClientProfile(tag, keypair.getPublicKey(), forgingKey, singleton(OTRv.FOUR),
                 Long.MAX_VALUE / 1000, null);
-        assertEquals(profile, sign(profile, (DSAPrivateKey) this.dsaKeyPair.getPrivate(), keypair).validate());
+        assertEquals(profile, sign(profile, this.dsaKeyPair.getPrivate(), keypair).validate());
     }
 
     @Test(expected = NullPointerException.class)
@@ -100,8 +97,8 @@ public final class ClientProfilePayloadTest {
     @Test
     public void testReadingWrittenClientProfilePayloadWithDSA() throws OtrCryptoException, ProtocolException, ValidationException {
         final ClientProfile profile = new ClientProfile(tag, keypair.getPublicKey(), forgingKey, singleton(OTRv.FOUR),
-                Long.MAX_VALUE / 1000, (DSAPublicKey) this.dsaKeyPair.getPublic());
-        final ClientProfilePayload payload = sign(profile, (DSAPrivateKey) this.dsaKeyPair.getPrivate(), keypair);
+                Long.MAX_VALUE / 1000, this.dsaKeyPair.getPublic());
+        final ClientProfilePayload payload = sign(profile, this.dsaKeyPair.getPrivate(), keypair);
         final OtrOutputStream out = new OtrOutputStream();
         payload.writeTo(out);
         final ClientProfilePayload parsedPayload = readFrom(new OtrInputStream(out.toByteArray()));

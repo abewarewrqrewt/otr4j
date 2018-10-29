@@ -284,7 +284,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
         // Get most recent keys to get the next D-H public key.
         final SessionKey mostRecentKeys = this.sessionKeyManager.getMostRecentSessionKeys();
-        final DHPublicKey nextDH = (DHPublicKey) mostRecentKeys.getLocalKeyPair().getPublic();
+        final DHPublicKey nextDH = mostRecentKeys.getLocalKeyPair().getPublic();
 
         // Calculate T.
         final MysteriousT t = new MysteriousT(this.protocolVersion, context.getSenderInstanceTag(),

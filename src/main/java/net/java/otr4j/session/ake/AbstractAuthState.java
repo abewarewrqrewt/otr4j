@@ -10,9 +10,10 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.DHKeyPairJ;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
@@ -21,7 +22,6 @@ import net.java.otr4j.messages.IdentityMessage;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
-import java.security.KeyPair;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
@@ -57,9 +57,9 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     private DHCommitMessage initiateVersion3(@Nonnull final AuthContext context, final int version, @Nonnull final InstanceTag receiverTag) {
         // OTR: "Choose a random value x (at least 320 bits)"
-        final KeyPair keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
+        final DHKeyPairJ keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
-        final DHPublicKey localDHPublicKey = (DHPublicKey) keypair.getPublic();
+        final DHPublicKey localDHPublicKey = keypair.getPublic();
         try {
             OtrCryptoEngine.verify(localDHPublicKey);
         } catch (final OtrCryptoException ex) {

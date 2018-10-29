@@ -21,7 +21,6 @@
 
 package net.java.otr4j.session.smp;
 
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.session.api.SMPStatus;
@@ -29,11 +28,12 @@ import net.java.otr4j.session.api.SMPStatus;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.net.ProtocolException;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
 
 /**
  * Socialist Millionaire protocol implementation.
@@ -72,18 +72,16 @@ final class SM {
 
     @Nonnull
     static BigInteger hash(final int version, @Nonnull final BigInteger a) {
-        final MessageDigest sha256 = OtrCryptoEngine.createSHA256MessageDigest();
-        sha256.update((byte) version);
-        sha256.update(new OtrOutputStream().writeBigInt(a).toByteArray());
-        return new BigInteger(1, sha256.digest());
+        final byte[] digest = sha256Hash(new byte[] {(byte) version},
+                new OtrOutputStream().writeBigInt(a).toByteArray());
+        return new BigInteger(1, digest);
     }
 
     @Nonnull
     static BigInteger hash(final int version, @Nonnull final BigInteger a, @Nonnull final BigInteger b) {
-        final MessageDigest sha256 = OtrCryptoEngine.createSHA256MessageDigest();
-        sha256.update((byte) version);
-        sha256.update(new OtrOutputStream().writeBigInt(a).writeBigInt(b).toByteArray());
-        return new BigInteger(1, sha256.digest());
+        final byte[] digest = sha256Hash(new byte[] {(byte) version},
+                new OtrOutputStream().writeBigInt(a).writeBigInt(b).toByteArray());
+        return new BigInteger(1, digest);
     }
 
     @Nonnull

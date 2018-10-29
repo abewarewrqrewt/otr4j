@@ -14,16 +14,16 @@ import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.messages.DataMessage;
-import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.messages.DataMessage;
+import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -81,7 +81,7 @@ public final class StatePlaintext extends AbstractState {
 
     @Override
     @Nonnull
-    public PublicKey getRemotePublicKey() throws IncorrectStateException {
+    public DSAPublicKey getRemotePublicKey() throws IncorrectStateException {
         throw new IncorrectStateException("Remote public key is not available in plaintext state.");
     }
 
