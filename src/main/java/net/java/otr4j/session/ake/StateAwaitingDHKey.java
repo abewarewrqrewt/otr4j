@@ -27,7 +27,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
 import static net.java.otr4j.io.OtrEncodables.encode;
 
 /**
@@ -120,11 +121,11 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             @Nonnull final DHKeyMessage message) throws OtrCryptoException {
         // OTR: "Reply with a Reveal Signature Message and transition authstate to AUTHSTATE_AWAITING_SIG."
         // OTR: "Verifies that Alice's gy is a legal value (2 <= gy <= modulus-2)"
-        OtrCryptoEngine.verify(message.dhPublicKey);
+        verifyDHPublicKey(message.dhPublicKey);
         final DSAKeyPair longTermKeyPair = context.getLocalKeyPair();
         // OTR: "Compute the Diffie-Hellman shared secret s"
         // OTR: "Use s to compute an AES key c and two MAC keys m1 and m2, as specified below."
-        final SharedSecret s = OtrCryptoEngine.generateSecret(this.keypair.getPrivate(), message.dhPublicKey);
+        final SharedSecret s = this.keypair.generateSharedSecret(message.dhPublicKey);
         // OTR: "Select keyidB, a serial number for the D-H key computed earlier. It is an INT, and must be greater than 0."
         // OTR: "Compute the 32-byte value MB to be the SHA256-HMAC of the following data, using the key m1: gx (MPI), gy (MPI), pubB (PUBKEY), keyidB (INT)"
         final SignatureM sigM = new SignatureM(this.keypair.getPublic(), message.dhPublicKey,

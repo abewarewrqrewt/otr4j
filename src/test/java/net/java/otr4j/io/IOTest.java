@@ -13,7 +13,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 

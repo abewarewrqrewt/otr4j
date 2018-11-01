@@ -26,7 +26,7 @@ import static java.util.Arrays.copyOfRange;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
 import static net.java.otr4j.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;

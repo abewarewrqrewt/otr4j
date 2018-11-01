@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;

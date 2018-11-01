@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.IdentityMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;

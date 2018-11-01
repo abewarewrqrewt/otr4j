@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine.SHA256_DIGEST_LENGTH_BYTES;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
@@ -141,10 +142,10 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             OtrCryptoEngine.checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
             // OTR: "Verifies that Bob's gx is a legal value (2 <= gx <= modulus-2)"
             final BigInteger dhPublicKeyMpi = new OtrInputStream(remotePublicKeyBytes).readBigInt();
-            remoteDHPublicKey = OtrCryptoEngine.verify(OtrCryptoEngine.getDHPublicKey(dhPublicKeyMpi));
+            remoteDHPublicKey = verifyDHPublicKey(DHKeyPairJ.fromBigInteger(dhPublicKeyMpi));
             // OTR: "Compute the Diffie-Hellman shared secret s."
             // OTR: "Use s to compute an AES key c' and two MAC keys m1' and m2', as specified below."
-            s = OtrCryptoEngine.generateSecret(this.keypair.getPrivate(), remoteDHPublicKey);
+            s = this.keypair.generateSharedSecret(remoteDHPublicKey);
             // OTR: "Uses m2 to verify MACm2(AESc(XB))"
             final OtrOutputStream xEncryptedEncoded = new OtrOutputStream().writeData(message.xEncrypted);
             final byte[] expectedXEncryptedMAC = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());

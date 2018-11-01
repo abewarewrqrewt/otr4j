@@ -9,7 +9,6 @@ package net.java.otr4j.session.smp;
 
 import net.java.otr4j.crypto.DHKeyPairJ;
 import net.java.otr4j.crypto.DSAKeyPair;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.session.api.SMPStatus;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -21,9 +20,8 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateSecret;
 import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -99,12 +97,12 @@ public class SMTest {
 
     @Test
     public void testCheckGroupElemJustValidUpperBound() throws SMException {
-        AbstractSMPState.checkGroupElem(OtrCryptoEngine.MODULUS_MINUS_TWO);
+        AbstractSMPState.checkGroupElem(DHKeyPairJ.MODULUS_MINUS_TWO);
     }
 
     @Test(expected = SMException.class)
     public void testCheckGroupElemTooLarge() throws SMException {
-        AbstractSMPState.checkGroupElem(OtrCryptoEngine.MODULUS_MINUS_TWO.add(BigInteger.ONE));
+        AbstractSMPState.checkGroupElem(DHKeyPairJ.MODULUS_MINUS_TWO.add(BigInteger.ONE));
     }
 
     @Test
@@ -222,7 +220,7 @@ public class SMTest {
 
         // Shared secret
         final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
 
         // SMP session execution
@@ -273,7 +271,7 @@ public class SMTest {
         // Shared secret
         final byte[] aliceSecret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
         final byte[] bobSecret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 't' };
-        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytesAlice = combinedSecret(alicePublic, bobPublic, s, aliceSecret);
         final byte[] combinedSecretBytesBob = combinedSecret(alicePublic, bobPublic, s, bobSecret);
 
@@ -746,7 +744,7 @@ public class SMTest {
 
         // Prepare sm instance for StateExpect3.
         final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
         final byte[] msg1 = alice.step1(combinedSecretBytes);
         bob.step2a(msg1);
@@ -769,7 +767,7 @@ public class SMTest {
 
         // Prepare sm instance for StateExpect3.
         final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final SharedSecret s = generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic());
+        final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
         final byte[] msg1 = alice.step1(combinedSecretBytes);
         bob.step2a(msg1);

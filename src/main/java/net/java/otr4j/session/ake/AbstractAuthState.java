@@ -24,6 +24,8 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
@@ -57,11 +59,11 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     private DHCommitMessage initiateVersion3(@Nonnull final AuthContext context, final int version, @Nonnull final InstanceTag receiverTag) {
         // OTR: "Choose a random value x (at least 320 bits)"
-        final DHKeyPairJ keypair = OtrCryptoEngine.generateDHKeyPair(context.secureRandom());
+        final DHKeyPairJ keypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
         final DHPublicKey localDHPublicKey = keypair.getPublic();
         try {
-            OtrCryptoEngine.verify(localDHPublicKey);
+            verifyDHPublicKey(localDHPublicKey);
         } catch (final OtrCryptoException ex) {
             // Caught and handled here as all components are constructed here
             // and failure should thus be considered a programming error.

@@ -8,17 +8,10 @@
 package net.java.otr4j.crypto;
 
 import net.java.otr4j.io.OtrOutputStream;
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.generators.DHKeyPairGenerator;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.DHKeyGenerationParameters;
-import org.bouncycastle.crypto.params.DHParameters;
-import org.bouncycastle.crypto.params.DHPrivateKeyParameters;
-import org.bouncycastle.crypto.params.DHPublicKeyParameters;
 import org.bouncycastle.crypto.params.DSAParameters;
 import org.bouncycastle.crypto.params.DSAPrivateKeyParameters;
 import org.bouncycastle.crypto.params.DSAPublicKeyParameters;
@@ -28,12 +21,7 @@ import org.bouncycastle.crypto.signers.DSASigner;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
-import javax.crypto.interfaces.DHPrivateKey;
-import javax.crypto.interfaces.DHPublicKey;
-import javax.crypto.spec.DHPrivateKeySpec;
-import javax.crypto.spec.DHPublicKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -42,7 +30,6 @@ import java.security.KeyFactory;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
@@ -66,8 +53,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 public final class OtrCryptoEngine {
 
     private static final String ALGORITHM_DSA = "DSA";
-    private static final String KA_DH = "DH";
-    private static final String KF_DH = "DH";
     private static final String MD_SHA1 = "SHA-1";
     private static final String MD_SHA256 = "SHA-256";
     private static final String HMAC_SHA1 = "HmacSHA1";
@@ -78,9 +63,7 @@ public final class OtrCryptoEngine {
         // be created through their respective factories. This test can function
         // as an early indicator in case support for required types is missing.
         try {
-            KeyAgreement.getInstance(KA_DH);
             KeyPairGenerator.getInstance(ALGORITHM_DSA);
-            KeyFactory.getInstance(KF_DH);
             Mac.getInstance(HMAC_SHA256);
             Mac.getInstance(HMAC_SHA1);
             MessageDigest.getInstance(MD_SHA256);
@@ -89,21 +72,6 @@ public final class OtrCryptoEngine {
             throw new IllegalStateException("Failed initialization test of required cryptographic types. otr4j will not function properly.", ex);
         }
     }
-
-    private static final String MODULUS_TEXT = "00FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF";
-    /**
-     * Modulus for DH computations.
-     */
-    public static final BigInteger MODULUS = new BigInteger(MODULUS_TEXT, 16);
-    private static final BigInteger BIGINTEGER_TWO = BigInteger.valueOf(2);
-    /**
-     * Modulus - 2
-     */
-    public static final BigInteger MODULUS_MINUS_TWO = MODULUS.subtract(BIGINTEGER_TWO);
-    /**
-     * The generator used in DH.
-     */
-    public static final BigInteger GENERATOR = new BigInteger("2", 10);
     /**
      * The SHA-256 digest length in bytes.
      */
@@ -117,7 +85,6 @@ public final class OtrCryptoEngine {
      * The AES key length in bytes.
      */
     public static final int AES_KEY_BYTE_LENGTH = 16;
-    private static final int DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH = 320;
     private static final int CTR_LENGTH_BYTES = 16;
 
     private OtrCryptoEngine() {
@@ -138,74 +105,6 @@ public final class OtrCryptoEngine {
             return new DSAKeyPair((DSAPrivateKey) keypair.getPrivate(), (DSAPublicKey) keypair.getPublic());
         } catch (final NoSuchAlgorithmException e) {
             throw new IllegalStateException("Failed to generate DSA key pair.", e);
-        }
-    }
-
-    /**
-     * Generate a DH key pair.
-     *
-     * @param secureRandom the SecureRandom instance
-     * @return Returns the DH key pair.
-     */
-    // FIXME move 'generateDHKeyPair' into DHKeyPairJ class similar to how it is implemented in DHKeyPair.
-    @Nonnull
-    public static DHKeyPairJ generateDHKeyPair(@Nonnull final SecureRandom secureRandom) {
-
-        // Generate a AsymmetricCipherKeyPair using BC.
-        final DHParameters dhParams = new DHParameters(MODULUS, GENERATOR, null,
-                DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH);
-        final DHKeyGenerationParameters params = new DHKeyGenerationParameters(
-                secureRandom, dhParams);
-        final DHKeyPairGenerator kpGen = new DHKeyPairGenerator();
-        kpGen.init(params);
-        final KeyFactory keyFac;
-        try {
-            keyFac = KeyFactory.getInstance(KF_DH);
-        } catch (final NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("DH key factory unavailable.", ex);
-        }
-
-        final AsymmetricCipherKeyPair pair = kpGen.generateKeyPair();
-        final DHPublicKeyParameters pub = convertToPublicKeyParams(pair.getPublic());
-        final DHPublicKeySpec pubKeySpecs = new DHPublicKeySpec(pub.getY(), MODULUS, GENERATOR);
-        final DHPublicKey pubKey;
-        try {
-            pubKey = (DHPublicKey) keyFac.generatePublic(pubKeySpecs);
-        } catch (final InvalidKeySpecException ex) {
-            throw new IllegalStateException("Failed to generate DH public key.", ex);
-        }
-
-        final DHPrivateKeyParameters priv = convertToPrivateKeyParams(pair.getPrivate());
-        final DHParameters dhParameters = priv.getParameters();
-        final DHPrivateKeySpec privKeySpecs = new DHPrivateKeySpec(priv.getX(),
-                dhParameters.getP(), dhParameters.getG());
-        final DHPrivateKey privKey;
-        try {
-            privKey = (DHPrivateKey) keyFac.generatePrivate(privKeySpecs);
-        } catch (final InvalidKeySpecException ex) {
-            throw new IllegalStateException("Failed to generate DH private key.", ex);
-        }
-
-        return new DHKeyPairJ(privKey, pubKey);
-    }
-
-    /**
-     * Convert DH public key from MPI (Big Integer).
-     *
-     * @param mpi the MPI value that represents the DH public key
-     * @return Returns the DH public key.
-     * @throws OtrCryptoException In case of illegal MPI value.
-     */
-    @Nonnull
-    public static DHPublicKey getDHPublicKey(@Nonnull final BigInteger mpi) throws OtrCryptoException {
-        final DHPublicKeySpec pubKeySpecs = new DHPublicKeySpec(mpi, MODULUS, GENERATOR);
-        try {
-            final KeyFactory keyFac = KeyFactory.getInstance(KF_DH);
-            return (DHPublicKey) keyFac.generatePublic(pubKeySpecs);
-        } catch (final NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("Failed to instantiate D-H key factory.", ex);
-        } catch (final InvalidKeySpecException ex) {
-            throw new OtrCryptoException("Invalid D-H public key spec.", ex);
         }
     }
 
@@ -408,31 +307,6 @@ public final class OtrCryptoEngine {
     }
 
     /**
-     * Generate shared secret based on DH key exchange data.
-     *
-     * @param privKey the DH private key
-     * @param pubKey  the DH public key (of the other DH key pair)
-     * @return Returns the generated shared secret.
-     * @throws OtrCryptoException In case of illegal key.
-     */
-    // FIXME move 'generateSecret' into DHKeyPairJ class similar to how it is implemented in DHKeyPair.
-    @Nonnull
-    public static SharedSecret generateSecret(@Nonnull final DHPrivateKey privKey, @Nonnull final DHPublicKey pubKey)
-            throws OtrCryptoException {
-        verify(pubKey);
-        try {
-            final KeyAgreement ka = KeyAgreement.getInstance(KA_DH);
-            ka.init(privKey);
-            ka.doPhase(pubKey, true);
-            return new SharedSecret(ka.generateSecret());
-        } catch (final NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("DH key factory not supported.", ex);
-        } catch (final InvalidKeyException ex) {
-            throw new OtrCryptoException("Failed to generate shared secret.", ex);
-        }
-    }
-
-    /**
      * Sign bytes with provided private key.
      *
      * @param b          the source content
@@ -621,42 +495,6 @@ public final class OtrCryptoEngine {
         final byte[] trimmed = new byte[bRemotePubKey.length - 2];
         System.arraycopy(bRemotePubKey, 2, trimmed, 0, trimmed.length);
         return sha1Hash(trimmed);
-    }
-
-    @Nonnull
-    private static DHPublicKeyParameters convertToPublicKeyParams(@Nonnull final AsymmetricKeyParameter params) {
-        if (!(params instanceof DHPublicKeyParameters)) {
-            throw new IllegalArgumentException("Expected to acquire DHPublicKeyParameters instance, but it isn't. (" + params.getClass().getCanonicalName() + ")");
-        }
-        return (DHPublicKeyParameters) params;
-    }
-
-    @Nonnull
-    private static DHPrivateKeyParameters convertToPrivateKeyParams(@Nonnull final AsymmetricKeyParameter params) {
-        if (!(params instanceof DHPrivateKeyParameters)) {
-            throw new IllegalArgumentException("Expected to acquire DHPrivateKeyParameters instance, but it isn't. (" + params.getClass().getCanonicalName() + ")");
-        }
-        return (DHPrivateKeyParameters) params;
-    }
-
-    /**
-     * Verify that provided DH public key is a valid key.
-     *
-     * @param dhPublicKey DH public key
-     * @return Returns DH public key instance if DH public key is valid.
-     * @throws OtrCryptoException Throws exception in case of illegal D-H key
-     * value.
-     */
-    @Nonnull
-    public static DHPublicKey verify(@Nonnull final DHPublicKey dhPublicKey) throws OtrCryptoException {
-        // Verifies that Alice's gy is a legal value (2 <= gy <= modulus-2)
-        if (dhPublicKey.getY().compareTo(OtrCryptoEngine.MODULUS_MINUS_TWO) > 0) {
-            throw new OtrCryptoException("Illegal D-H Public Key value.");
-        }
-        if (dhPublicKey.getY().compareTo(OtrCryptoEngine.BIGINTEGER_TWO) < 0) {
-            throw new OtrCryptoException("Illegal D-H Public Key value.");
-        }
-        return dhPublicKey;
     }
 
     /**

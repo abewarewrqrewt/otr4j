@@ -1,6 +1,6 @@
 package net.java.otr4j.session.smp;
 
-import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.DHKeyPairJ;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
@@ -17,7 +17,7 @@ import java.util.Objects;
  */
 abstract class AbstractSMPState {
 
-    static final BigInteger G1 = OtrCryptoEngine.GENERATOR;
+    static final BigInteger G1 = DHKeyPairJ.GENERATOR;
 
     static final BigInteger ORDER_S = new BigInteger("7FFFFFFFFFFFFFFFE487ED5110B4611A62633145C06E0E68948127044533E63A0105DF531D89CD9128A5043CC71A026EF7CA8CD9E69D218D98158536F92F8A1BA7F09AB6B6A8E122F242DABB312F3F637A262174D31BF6B585FFAE5B7A035BF6F71C35FDAD44CFD2D74F9208BE258FF324943328F6722D9EE1003E5C50B1DF82CC6D241B0E2AE9CD348B1FD47E9267AFC1B2AE91EE51D6CB0E3179AB1042A95DCF6A9483B84B4B36B3861AA7255E4C0278BA36046511B993FFFFFFFFFFFFFFFF",
             16);
@@ -191,7 +191,7 @@ abstract class AbstractSMPState {
     @Nonnull
     final BigInteger[] proofKnowLog(@Nonnull final BigInteger x, final int version) {
         final BigInteger r = randomExponent();
-        BigInteger temp = G1.modPow(r, OtrCryptoEngine.MODULUS);
+        BigInteger temp = G1.modPow(r, DHKeyPairJ.MODULUS);
         final BigInteger c = SM.hash(version, temp);
         temp = x.multiply(c).mod(ORDER_S);
         final BigInteger d = r.subtract(temp).mod(ORDER_S);
@@ -209,9 +209,9 @@ abstract class AbstractSMPState {
      */
     final void checkKnowLog(@Nonnull final BigInteger c, @Nonnull final BigInteger d, @Nonnull final BigInteger x,
             final int version) throws SMException {
-        final BigInteger gd = G1.modPow(d, OtrCryptoEngine.MODULUS);
-        final BigInteger xc = x.modPow(c, OtrCryptoEngine.MODULUS);
-        final BigInteger gdxc = gd.multiply(xc).mod(OtrCryptoEngine.MODULUS);
+        final BigInteger gd = G1.modPow(d, DHKeyPairJ.MODULUS);
+        final BigInteger xc = x.modPow(c, DHKeyPairJ.MODULUS);
+        final BigInteger gdxc = gd.multiply(xc).mod(DHKeyPairJ.MODULUS);
         final BigInteger hgdxc = SM.hash(version, gdxc);
 
         if (hgdxc.compareTo(c) != 0) {
@@ -229,10 +229,10 @@ abstract class AbstractSMPState {
         final BigInteger r2 = randomExponent();
 
         /* Compute the value of c, as c = h(g3^r1, g1^r1 g2^r2) */
-        BigInteger temp1 = G1.modPow(r1, OtrCryptoEngine.MODULUS);
-        BigInteger temp2 = g2.modPow(r2, OtrCryptoEngine.MODULUS);
-        temp2 = temp1.multiply(temp2).mod(OtrCryptoEngine.MODULUS);
-        temp1 = g3.modPow(r1, OtrCryptoEngine.MODULUS);
+        BigInteger temp1 = G1.modPow(r1, DHKeyPairJ.MODULUS);
+        BigInteger temp2 = g2.modPow(r2, DHKeyPairJ.MODULUS);
+        temp2 = temp1.multiply(temp2).mod(DHKeyPairJ.MODULUS);
+        temp1 = g3.modPow(r1, DHKeyPairJ.MODULUS);
         final BigInteger c = SM.hash(version, temp1, temp2);
 
         /* Compute the d values, as d1 = r1 - r c, d2 = r2 - secret c */
@@ -261,15 +261,15 @@ abstract class AbstractSMPState {
          * = hash(g3^r1, g1^r1 g2^r2)
          * = c
          */
-        BigInteger temp2 = g3.modPow(d1, OtrCryptoEngine.MODULUS);
-        BigInteger temp3 = p.modPow(c, OtrCryptoEngine.MODULUS);
-        final BigInteger temp1 = temp2.multiply(temp3).mod(OtrCryptoEngine.MODULUS);
+        BigInteger temp2 = g3.modPow(d1, DHKeyPairJ.MODULUS);
+        BigInteger temp3 = p.modPow(c, DHKeyPairJ.MODULUS);
+        final BigInteger temp1 = temp2.multiply(temp3).mod(DHKeyPairJ.MODULUS);
 
-        temp2 = G1.modPow(d1, OtrCryptoEngine.MODULUS);
-        temp3 = g2.modPow(d2, OtrCryptoEngine.MODULUS);
-        temp2 = temp2.multiply(temp3).mod(OtrCryptoEngine.MODULUS);
-        temp3 = q.modPow(c, OtrCryptoEngine.MODULUS);
-        temp2 = temp3.multiply(temp2).mod(OtrCryptoEngine.MODULUS);
+        temp2 = G1.modPow(d1, DHKeyPairJ.MODULUS);
+        temp3 = g2.modPow(d2, DHKeyPairJ.MODULUS);
+        temp2 = temp2.multiply(temp3).mod(DHKeyPairJ.MODULUS);
+        temp3 = q.modPow(c, DHKeyPairJ.MODULUS);
+        temp2 = temp3.multiply(temp2).mod(DHKeyPairJ.MODULUS);
 
         final BigInteger cprime = SM.hash(version, temp1, temp2);
 
@@ -286,8 +286,8 @@ abstract class AbstractSMPState {
         final BigInteger r = randomExponent();
 
         /* Compute the value of c, as c = h(g1^r, (Qa/Qb)^r) */
-        BigInteger temp1 = G1.modPow(r, OtrCryptoEngine.MODULUS);
-        final BigInteger temp2 = qab.modPow(r, OtrCryptoEngine.MODULUS);
+        BigInteger temp1 = G1.modPow(r, DHKeyPairJ.MODULUS);
+        final BigInteger temp2 = qab.modPow(r, DHKeyPairJ.MODULUS);
         final BigInteger c = SM.hash(version, temp1, temp2);
 
         /* Compute the d values, as d = r - x3 c */
@@ -316,13 +316,13 @@ abstract class AbstractSMPState {
          * = c
          */
 
-        BigInteger temp2 = G1.modPow(d, OtrCryptoEngine.MODULUS);
-        BigInteger temp3 = g3o.modPow(c, OtrCryptoEngine.MODULUS);
-        final BigInteger temp1 = temp2.multiply(temp3).mod(OtrCryptoEngine.MODULUS);
+        BigInteger temp2 = G1.modPow(d, DHKeyPairJ.MODULUS);
+        BigInteger temp3 = g3o.modPow(c, DHKeyPairJ.MODULUS);
+        final BigInteger temp1 = temp2.multiply(temp3).mod(DHKeyPairJ.MODULUS);
 
-        temp3 = qab.modPow(d, OtrCryptoEngine.MODULUS);
-        temp2 = r.modPow(c, OtrCryptoEngine.MODULUS);
-        temp2 = temp3.multiply(temp2).mod(OtrCryptoEngine.MODULUS);
+        temp3 = qab.modPow(d, DHKeyPairJ.MODULUS);
+        temp2 = r.modPow(c, DHKeyPairJ.MODULUS);
+        temp2 = temp3.multiply(temp2).mod(DHKeyPairJ.MODULUS);
 
         final BigInteger cprime = SM.hash(version, temp1, temp2);
 
@@ -339,7 +339,7 @@ abstract class AbstractSMPState {
      * @throws SMException Throws SMException if check fails.
      */
     static void checkGroupElem(@Nonnull final BigInteger g) throws SMException {
-        if (g.compareTo(BigInteger.valueOf(2)) < 0 || g.compareTo(OtrCryptoEngine.MODULUS_MINUS_TWO) > 0) {
+        if (g.compareTo(BigInteger.valueOf(2)) < 0 || g.compareTo(DHKeyPairJ.MODULUS_MINUS_TWO) > 0) {
             throw new SMException("Invalid parameter");
         }
     }

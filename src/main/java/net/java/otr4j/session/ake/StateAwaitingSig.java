@@ -30,7 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 
@@ -64,7 +65,7 @@ final class StateAwaitingSig extends AbstractAuthState {
         this.version = version;
         this.localDHKeyPair = requireNonNull(localDHKeyPair);
         try {
-            this.remoteDHPublicKey = OtrCryptoEngine.verify(remoteDHPublicKey);
+            this.remoteDHPublicKey = verifyDHPublicKey(remoteDHPublicKey);
         } catch (final OtrCryptoException ex) {
             throw new IllegalArgumentException("Illegal D-H Public Key provided.", ex);
         }

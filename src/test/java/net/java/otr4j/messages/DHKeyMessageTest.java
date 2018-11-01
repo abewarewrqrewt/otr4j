@@ -7,7 +7,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
 
 public final class DHKeyMessageTest {
 

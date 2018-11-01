@@ -9,7 +9,7 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.DHKeyPairJ;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -165,7 +165,7 @@ public class OtrInputStreamTest {
     public void testReadDHPublicKeyType() throws OtrCryptoException, ProtocolException {
         final byte[] data = new byte[] { 0x0, 0x0, 0x0, 0x1, 0x55 };
         final OtrInputStream ois = new OtrInputStream(data);
-        assertEquals(OtrCryptoEngine.getDHPublicKey(BigInteger.valueOf(0x55)), ois.readDHPublicKey());
+        assertEquals(DHKeyPairJ.fromBigInteger(BigInteger.valueOf(0x55)), ois.readDHPublicKey());
     }
 
     @Test(expected = ProtocolException.class)

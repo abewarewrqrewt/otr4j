@@ -8,7 +8,6 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.crypto.DHKeyPairJ;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
 
@@ -17,6 +16,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
 
 /**
  * Container that stores all the security parameters that were negotiated during
@@ -42,7 +42,7 @@ public final class SecurityParameters {
         this.localDHKeyPair = requireNonNull(localDHKeyPair);
         this.remoteLongTermPublicKey = requireNonNull(remoteLongTermPublicKey);
         try {
-            this.remoteDHPublicKey = OtrCryptoEngine.verify(remoteDHPublicKey);
+            this.remoteDHPublicKey = verifyDHPublicKey(remoteDHPublicKey);
         } catch (final OtrCryptoException ex) {
             throw new IllegalArgumentException("Illegal D-H Public Key provided.", ex);
         }

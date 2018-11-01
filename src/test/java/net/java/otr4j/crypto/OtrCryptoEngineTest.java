@@ -16,12 +16,9 @@ import java.security.interfaces.DSAPublicKey;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDHKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateSecret;
 import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
 import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,15 +35,6 @@ public class OtrCryptoEngineTest {
     private static final SecureRandom RAND = new SecureRandom();
 
     private static final DSAKeyPair DSA_KEYPAIR = generateDSAKeyPair();
-
-    @Test
-    public void testGeneratedSharedSecretEqual() throws OtrCryptoException {
-        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(RAND);
-        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(RAND);
-
-        assertEquals(generateSecret(aliceDHKeyPair.getPrivate(), bobDHKeyPair.getPublic()),
-                generateSecret(bobDHKeyPair.getPrivate(), aliceDHKeyPair.getPublic()));
-    }
 
     @Test
     public void testCheckEqualsEqualArrays() throws OtrCryptoException {

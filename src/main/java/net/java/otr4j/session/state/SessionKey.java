@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateSecret;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hash;
 
 // TODO consider doing lazy evaluation of generating 's', 'receivingCtr' and 'sendingCtr'. (Would save some memory/computation in case this session key combination is not actually used.)
@@ -71,7 +70,7 @@ final class SessionKey implements AutoCloseable {
         this.remoteKeyID = remoteKeyID;
         this.localKeyPair = requireNonNull(localKeyPair);
         this.remotePublicKey = requireNonNull(remotePublicKey);
-        this.s = generateSecret(localKeyPair.getPrivate(), requireNonNull(remotePublicKey));
+        this.s = localKeyPair.generateSharedSecret(remotePublicKey);
         this.high = this.localKeyPair.getPublic().getY().compareTo(remotePublicKey.getY()) > 0;
         this.used = false;
     }
