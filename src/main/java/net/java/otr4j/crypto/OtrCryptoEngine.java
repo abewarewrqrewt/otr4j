@@ -12,12 +12,8 @@ import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.params.DSAParameters;
-import org.bouncycastle.crypto.params.DSAPrivateKeyParameters;
-import org.bouncycastle.crypto.params.DSAPublicKeyParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.crypto.signers.DSASigner;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,22 +23,15 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.DSAParams;
-import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Objects;
 
-import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
-import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.ByteArrays.toHexString;
-import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
  * Utility for cryptographic functions.
@@ -52,7 +41,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  */
 public final class OtrCryptoEngine {
 
-    private static final String ALGORITHM_DSA = "DSA";
     private static final String MD_SHA1 = "SHA-1";
     private static final String MD_SHA256 = "SHA-256";
     private static final String HMAC_SHA1 = "HmacSHA1";
@@ -63,7 +51,6 @@ public final class OtrCryptoEngine {
         // be created through their respective factories. This test can function
         // as an early indicator in case support for required types is missing.
         try {
-            KeyPairGenerator.getInstance(ALGORITHM_DSA);
             Mac.getInstance(HMAC_SHA256);
             Mac.getInstance(HMAC_SHA1);
             MessageDigest.getInstance(MD_SHA256);
@@ -89,23 +76,6 @@ public final class OtrCryptoEngine {
 
     private OtrCryptoEngine() {
         // this class is never instantiated, it only has static methods
-    }
-
-    /**
-     * Generate a DSA key pair.
-     *
-     * @return Returns the DSA key pair.
-     */
-    // FIXME move 'generateDSAKeyPair' into DSAKeyPair class similar to how it is implemented in EdDSAKeyPair.
-    @Nonnull
-    public static DSAKeyPair generateDSAKeyPair() {
-        try {
-            final KeyPairGenerator kg = KeyPairGenerator.getInstance(ALGORITHM_DSA);
-            final java.security.KeyPair keypair = kg.genKeyPair();
-            return new DSAKeyPair((DSAPrivateKey) keypair.getPrivate(), (DSAPublicKey) keypair.getPublic());
-        } catch (final NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Failed to generate DSA key pair.", e);
-        }
     }
 
     /**
@@ -304,171 +274,6 @@ public final class OtrCryptoEngine {
             throw new OtrCryptoException("Failed to encrypt content.", ex);
         }
         return aesOutLwEnc;
-    }
-
-    /**
-     * Sign bytes with provided private key.
-     *
-     * @param b          the source content
-     * @param privatekey the DSA private key
-     * @return Returns signature in bytes.
-     */
-    @Nonnull
-    public static byte[] sign(@Nonnull final byte[] b, @Nonnull final DSAPrivateKey privatekey) {
-        final BigInteger q = privatekey.getParams().getQ();
-        final DSASignature signature = signRS(b, privatekey);
-
-        final int siglen = q.bitLength() / 4;
-        final int rslen = siglen / 2;
-        final byte[] rb = asUnsignedByteArray(signature.r);
-        final byte[] sb = asUnsignedByteArray(signature.s);
-
-        // Create the final signature array, padded with zeros if necessary.
-        final byte[] sig = new byte[siglen];
-        System.arraycopy(rb, 0, sig, rslen - rb.length, rb.length);
-        System.arraycopy(sb, 0, sig, sig.length - sb.length, sb.length);
-        return sig;
-    }
-
-    /**
-     * Sign data 'b' using DSA private key 'privateKey' and return signature components 'r' and 's'.
-     *
-     * @param b          The data to be signed.
-     * @param privateKey The private key.
-     * @return Signature components 'r' and 's'.
-     */
-    @Nonnull
-    public static DSASignature signRS(@Nonnull final byte[] b, @Nonnull final DSAPrivateKey privateKey) {
-        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
-        final DSAParams dsaParams = privateKey.getParams();
-        final DSAParameters bcDSAParameters = new DSAParameters(dsaParams.getP(), dsaParams.getQ(), dsaParams.getG());
-        final DSAPrivateKeyParameters bcDSAPrivateKeyParms = new DSAPrivateKeyParameters(privateKey.getX(),
-                bcDSAParameters);
-
-        final DSASigner dsaSigner = new DSASigner();
-        dsaSigner.init(true, bcDSAPrivateKeyParms);
-
-        final BigInteger q = dsaParams.getQ();
-
-        // Ian: Note that if you can get the standard DSA implementation you're
-        // using to not hash its input, you should be able to pass it ((256-bit
-        // value) mod q), (rather than truncating the 256-bit value) and all
-        // should be well.
-        // ref: Interop problems with libotr - DSA signature
-        final BigInteger bmpi = new BigInteger(1, b);
-        final BigInteger[] signature = dsaSigner.generateSignature(asUnsignedByteArray(bmpi.mod(q)));
-        assert signature.length == 2 : "signRS result does not contain the expected 2 components: r and s";
-        return new DSASignature(signature[0], signature[1]);
-    }
-
-    /**
-     * A type representing the DSA signature in its two individual components.
-     */
-    public static final class DSASignature {
-
-        /**
-         * The 'r' component.
-         */
-        public final BigInteger r;
-        /**
-         * The 's' component.
-         */
-        public final BigInteger s;
-
-        /**
-         * The DSA signature constructor.
-         *
-         * @param r the 'r' component
-         * @param s the 's' component
-         */
-        public DSASignature(@Nonnull final BigInteger r, @Nonnull final BigInteger s) {
-            this.r = requireNonNull(r);
-            this.s = requireNonNull(s);
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final DSASignature that = (DSASignature) o;
-            // TODO should this be constant-time?
-            return Objects.equals(r, that.r) && Objects.equals(s, that.s);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(r, s);
-        }
-    }
-
-    /**
-     * Verify DSA signature against expectation using provided DSA public key
-     * instance..
-     *
-     * @param b data expected to be signed.
-     * @param pubKey Public key. Provided public key must be an instance of
-     * DSAPublicKey.
-     * @param rs Components R and S.
-     * @throws OtrCryptoException Thrown in case of failed verification.
-     */
-    public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] rs)
-            throws OtrCryptoException {
-        final int qlen = pubKey.getParams().getQ().bitLength() / 8;
-        requireLengthExactly(2 * qlen, rs);
-        final ByteBuffer buff = ByteBuffer.wrap(rs);
-        final byte[] r = new byte[qlen];
-        buff.get(r);
-        final byte[] s = new byte[qlen];
-        buff.get(s);
-        verify(b, pubKey, r, s);
-    }
-
-    private static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final byte[] r,
-            @Nonnull final byte[] s) throws OtrCryptoException {
-        assert !allZeroBytes(r) : "Expected non-zero bytes for r. This may indicate that a critical bug is present, or it may be a false warning.";
-        assert !allZeroBytes(s) : "Expected non-zero bytes for s. This may indicate that a critical bug is present, or it may be a false warning.";
-        verify(b, pubKey, new BigInteger(1, r), new BigInteger(1, s));
-    }
-
-    /**
-     * Verify a message using a signature represented as two MPI components: 'r' and 's'.
-     *
-     * @param b      the message in bytes
-     * @param pubKey the DSA public key
-     * @param r      the signature component 'r'
-     * @param s      the signature component 's'
-     * @throws OtrCryptoException In case of illegal signature.
-     */
-    public static void verify(@Nonnull final byte[] b, @Nonnull final DSAPublicKey pubKey, @Nonnull final BigInteger r,
-            @Nonnull final BigInteger s) throws OtrCryptoException {
-        requireNonNull(b);
-        assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
-        final DSAParams dsaParams = pubKey.getParams();
-        final BigInteger q = dsaParams.getQ();
-        final DSAParameters bcDSAParams = new DSAParameters(dsaParams.getP(), q, dsaParams.getG());
-        final DSAPublicKeyParameters dsaPubParams;
-        try {
-            dsaPubParams = new DSAPublicKeyParameters(pubKey.getY(), bcDSAParams);
-        } catch (final IllegalArgumentException e) {
-            throw new OtrCryptoException("Illegal parameters provided for DSA public key parameters.", e);
-        }
-
-        // Ian: Note that if you can get the standard DSA implementation you're
-        // using to not hash its input, you should be able to pass it ((256-bit
-        // value) mod q), (rather than truncating the 256-bit value) and all
-        // should be well.
-        // ref: Interop problems with libotr - DSA signature
-        final DSASigner dsaSigner = new DSASigner();
-        dsaSigner.init(false, dsaPubParams);
-
-        final BigInteger bmpi = new BigInteger(1, b);
-        if (!dsaSigner.verifySignature(asUnsignedByteArray(bmpi.mod(q)), r, s)) {
-            throw new OtrCryptoException("DSA signature verification failed.");
-        }
     }
 
     /**

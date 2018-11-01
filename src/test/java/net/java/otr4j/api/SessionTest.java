@@ -37,7 +37,7 @@ import static net.java.otr4j.api.OtrPolicy.OTRL_POLICY_MANUAL;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.FINISHED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.session.OtrSessionManager.createSession;
 import static net.java.otr4j.util.Arrays.contains;
 import static net.java.otr4j.util.BlockingQueuesTestUtils.drop;

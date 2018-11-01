@@ -7,22 +7,9 @@
 
 package net.java.otr4j.crypto;
 
-import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
 import org.junit.Test;
 
-import java.security.SecureRandom;
-import java.security.interfaces.DSAPrivateKey;
-import java.security.interfaces.DSAPublicKey;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
-import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
-import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests for OtrCryptoEngine.
@@ -31,10 +18,6 @@ import static org.junit.Assume.assumeTrue;
  */
 @SuppressWarnings("ConstantConditions")
 public class OtrCryptoEngineTest {
-
-    private static final SecureRandom RAND = new SecureRandom();
-
-    private static final DSAKeyPair DSA_KEYPAIR = generateDSAKeyPair();
 
     @Test
     public void testCheckEqualsEqualArrays() throws OtrCryptoException {
@@ -80,52 +63,5 @@ public class OtrCryptoEngineTest {
     public void testCheckEqualsOneNull2() throws OtrCryptoException {
         final byte[] b = new byte[]{'a', 'a', 'a', 'a'};
         checkEquals(null, b, "Expected array to be equal.");
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testSignRSNullMessage() {
-        signRS(null, DSA_KEYPAIR.getPrivate());
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testSignRSNullPrivateKey() {
-        signRS(new byte[]{'m'}, null);
-    }
-
-    @Test
-    public void testSignRS() throws OtrCryptoException {
-        final byte[] m = "hello".getBytes(UTF_8);
-        final DSASignature sig = signRS(m, DSA_KEYPAIR.getPrivate());
-        verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
-    }
-
-    @Test
-    public void testSignRSEmptyMessage() throws OtrCryptoException {
-        assumeTrue("This test can only be successful without assertions, due to safety checks.",
-            !OtrCryptoEngine.class.desiredAssertionStatus());
-        final byte[] m = new byte[0];
-        final DSASignature sig = signRS(m, DSA_KEYPAIR.getPrivate());
-        verify(m, DSA_KEYPAIR.getPublic(), sig.r, sig.s);
-    }
-
-    @Test
-    public void testGenerateDSAKeyPair() {
-        final DSAKeyPair keypair = generateDSAKeyPair();
-        assertNotNull(keypair);
-        assertTrue(keypair.getPublic() instanceof DSAPublicKey);
-        assertTrue(keypair.getPrivate() instanceof DSAPrivateKey);
-    }
-
-    @Test
-    public void testGenerateDSAKeyPairDifferentKeyPairs() {
-        final DSAKeyPair keypair1 = generateDSAKeyPair();
-        final DSAKeyPair keypair2 = generateDSAKeyPair();
-        final DSAKeyPair keypair3 = generateDSAKeyPair();
-        assertNotEquals(keypair1.getPublic().getY(), keypair2.getPublic().getY());
-        assertNotEquals(keypair1.getPublic().getY(), keypair3.getPublic().getY());
-        assertNotEquals(keypair2.getPublic().getY(), keypair3.getPublic().getY());
-        assertNotEquals(keypair1.getPrivate().getX(), keypair2.getPrivate().getX());
-        assertNotEquals(keypair1.getPrivate().getX(), keypair3.getPrivate().getX());
-        assertNotEquals(keypair2.getPrivate().getX(), keypair3.getPrivate().getX());
     }
 }

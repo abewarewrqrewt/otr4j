@@ -21,7 +21,7 @@ import java.security.SecureRandom;
 import java.security.Security;
 
 import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;

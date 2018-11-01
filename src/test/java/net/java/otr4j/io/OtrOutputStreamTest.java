@@ -2,7 +2,6 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.ValidationException;
 import org.junit.Test;
@@ -27,6 +26,7 @@ import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
@@ -402,7 +402,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteDSAPublicKey() throws ProtocolException {
-        final DSAPublicKey publicKey = OtrCryptoEngine.generateDSAKeyPair().getPublic();
+        final DSAPublicKey publicKey = generateDSAKeyPair().getPublic();
         final byte[] result = new OtrOutputStream().writePublicKey(publicKey).toByteArray();
         final OtrInputStream in = new OtrInputStream(result);
         assertEquals(0, in.readShort());

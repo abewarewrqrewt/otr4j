@@ -3,7 +3,8 @@ package net.java.otr4j.messages;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.OtrCryptoEngine.DSASignature;
+import net.java.otr4j.crypto.DSAKeyPair;
+import net.java.otr4j.crypto.DSAKeyPair.DSASignature;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -17,7 +18,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.net.ProtocolException;
-import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +31,7 @@ import java.util.logging.Logger;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
-import static net.java.otr4j.crypto.OtrCryptoEngine.signRS;
-import static net.java.otr4j.crypto.OtrCryptoEngine.verify;
+import static net.java.otr4j.crypto.DSAKeyPair.verifySignature;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.io.MessageParser.encodeVersionString;
 import static net.java.otr4j.io.MessageParser.parseVersionString;
@@ -84,7 +83,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     @Nonnull
     public static ClientProfilePayload sign(@Nonnull final ClientProfile profile,
-            @Nullable final DSAPrivateKey dsaPrivateKey, @Nonnull final EdDSAKeyPair eddsaKeyPair) {
+            @Nullable final DSAKeyPair dsaPrivateKey, @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
@@ -107,7 +106,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (dsaPrivateKey == null) {
             m = partialM;
         } else {
-            final DSASignature transitionalSignature = signRS(partialM, dsaPrivateKey);
+            final DSASignature transitionalSignature = dsaPrivateKey.signRS(partialM);
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
             fields.add(sigField);
             m = concatenate(partialM, encode(sigField));
@@ -369,7 +368,7 @@ public final class ClientProfilePayload implements OtrEncodable {
                 try {
                     final DSAPublicKey dsaPublicKey = dsaPublicKeyFields.get(0).publicKey;
                     final DSASignature transitionalSignature = transitionalSignatureFields.get(0).signature;
-                    verify(out.toByteArray(), dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
+                    verifySignature(out.toByteArray(), dsaPublicKey, transitionalSignature.r, transitionalSignature.s);
                 } catch (final OtrCryptoException e) {
                     throw new ValidationException("Failed transitional signature validation.", e);
                 }

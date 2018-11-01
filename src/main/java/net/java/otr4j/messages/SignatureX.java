@@ -6,7 +6,7 @@
  */
 package net.java.otr4j.messages;
 
-import net.java.otr4j.crypto.OtrCryptoEngine;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
@@ -110,7 +110,7 @@ public final class SignatureX implements OtrEncodable {
      * @throws OtrCryptoException In case of failures of a cryptographic nature.
      */
     public void verify(@Nonnull final byte[] expectedSignature) throws OtrCryptoException {
-        OtrCryptoEngine.verify(expectedSignature, this.longTermPublicKey, this.signature);
+        DSAKeyPair.verifySignature(expectedSignature, this.longTermPublicKey, this.signature);
     }
 
     @Override

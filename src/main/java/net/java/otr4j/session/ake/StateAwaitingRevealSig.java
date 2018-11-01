@@ -181,7 +181,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
                 localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
-        final byte[] signature = OtrCryptoEngine.sign(mhash, localLongTermKeyPair.getPrivate());
+        final byte[] signature = localLongTermKeyPair.sign(mhash);
         final SignatureX mysteriousX = new SignatureX(localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID,
                 signature);
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."

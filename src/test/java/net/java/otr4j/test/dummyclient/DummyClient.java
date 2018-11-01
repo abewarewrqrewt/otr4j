@@ -17,17 +17,15 @@ import net.java.otr4j.session.OtrSessionManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.interfaces.DSAPrivateKey;
-import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
+
+import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 
 /**
  * Created by gp on 2/5/14.
@@ -347,22 +345,16 @@ public class DummyClient {
 			logger.severe("IM shows error to user: " + error);
 		}
 
-        @Override
-        @Nonnull
+		@Override
+		@Nonnull
 		public DSAKeyPair getLocalKeyPair(@Nonnull SessionID paramSessionID) {
-            DSAKeyPair keypair = this.keypairs.get(paramSessionID);
-            if (keypair == null) {
-                try {
-                    final KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
-                    final java.security.KeyPair generated = kg.genKeyPair();
-                    keypair = new DSAKeyPair((DSAPrivateKey) generated.getPrivate(), (DSAPublicKey) generated.getPublic());
-                    this.keypairs.put(paramSessionID, keypair);
-                } catch (final NoSuchAlgorithmException ex) {
-                    throw new IllegalStateException("DSA algorithm unavailable.", ex);
-                }
-            }
-            return keypair;
-        }
+			DSAKeyPair keypair = this.keypairs.get(paramSessionID);
+			if (keypair == null) {
+				keypair = generateDSAKeyPair();
+				this.keypairs.put(paramSessionID, keypair);
+			}
+			return keypair;
+		}
 
         @Nonnull
         @Override

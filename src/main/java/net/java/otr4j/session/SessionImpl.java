@@ -1024,8 +1024,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
         final SessionID sessionID = this.sessionState.getSessionID();
         final ClientProfile profile = this.host.getClientProfile(sessionID);
-        return sign(profile, this.host.getLocalKeyPair(sessionID).getPrivate(),
-                this.host.getLongTermKeyPair(sessionID));
+        return sign(profile, this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
     }
 
     @Override

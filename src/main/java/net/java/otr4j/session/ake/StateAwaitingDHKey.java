@@ -132,7 +132,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
                 longTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
         final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(sigM), s.m1());
         // OTR: "Let XB be the following structure: pubB (PUBKEY), keyidB (INT), sigB(MB) (SIG)"
-        final byte[] signature = OtrCryptoEngine.sign(mhash, longTermKeyPair.getPrivate());
+        final byte[] signature = longTermKeyPair.sign(mhash);
         final SignatureX mysteriousX = new SignatureX(longTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID,
                 signature);
         // OTR: "Encrypt XB using AES128-CTR with key c and initial counter value 0."

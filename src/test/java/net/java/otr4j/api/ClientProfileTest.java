@@ -11,7 +11,7 @@ import java.util.Collections;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
 
 @SuppressWarnings("ConstantConditions")

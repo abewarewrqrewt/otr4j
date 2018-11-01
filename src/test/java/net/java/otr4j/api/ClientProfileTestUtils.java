@@ -10,7 +10,7 @@ import java.util.TreeSet;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.crypto.OtrCryptoEngine.generateDSAKeyPair;
+import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 
 public final class ClientProfileTestUtils {
 
@@ -42,6 +42,6 @@ public final class ClientProfileTestUtils {
         versions.add(Session.OTRv.FOUR);
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
                 this.forgingKey, versions, this.expirationTime, this.dsaKeyPair.getPublic());
-        return ClientProfilePayload.sign(profile, this.dsaKeyPair.getPrivate(), this.eddsaLongTermKeyPair);
+        return ClientProfilePayload.sign(profile, this.dsaKeyPair, this.eddsaLongTermKeyPair);
     }
 }
