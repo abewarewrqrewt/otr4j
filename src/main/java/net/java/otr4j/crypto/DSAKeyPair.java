@@ -8,11 +8,14 @@ import org.bouncycastle.crypto.signers.DSASigner;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.security.KeyFactory;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
+import java.security.spec.DSAPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
@@ -62,6 +65,30 @@ public final class DSAKeyPair {
             return new DSAKeyPair((DSAPrivateKey) keypair.getPrivate(), (DSAPublicKey) keypair.getPublic());
         } catch (final NoSuchAlgorithmException e) {
             throw new UnsupportedOperationException("Failed to generate DSA key pair: DSA algorithm is unavailable.", e);
+        }
+    }
+
+    /**
+     * (Re)Create DSA public key based on provided input parameters.
+     *
+     * @param y y
+     * @param p p
+     * @param q q
+     * @param g g
+     * @return Returns DSA public key.
+     * @throws OtrCryptoException Throws OtrCryptoException in case of failure to create DSA public key.
+     */
+    @Nonnull
+    public static DSAPublicKey createDSAPublicKey(@Nonnull final BigInteger y, @Nonnull final BigInteger p,
+            @Nonnull final BigInteger q, @Nonnull final BigInteger g) throws OtrCryptoException {
+        try {
+            final KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_DSA);
+            final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
+            return (DSAPublicKey) keyFactory.generatePublic(keySpec);
+        } catch (final NoSuchAlgorithmException e) {
+            throw new UnsupportedOperationException("Failed to initialize DSA key factory: DSA algorithm is not supported.", e);
+        } catch (final InvalidKeySpecException e) {
+            throw new OtrCryptoException("Read invalid public key from input stream.", e);
         }
     }
 

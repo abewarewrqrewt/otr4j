@@ -4,11 +4,15 @@ import net.java.otr4j.crypto.DSAKeyPair.DSASignature;
 import org.junit.Test;
 
 import java.security.SecureRandom;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPublicKey;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.java.otr4j.crypto.DSAKeyPair.createDSAPublicKey;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.DSAKeyPair.verifySignature;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
@@ -73,5 +77,45 @@ public final class DSAKeyPairTest {
         assertNotEquals(keypair1, keypair2);
         assertNotEquals(keypair1, keypair3);
         assertNotEquals(keypair2, keypair3);
+    }
+
+    @Test
+    public void testRecreateDSAPublicKey() throws OtrCryptoException {
+        final DSAKeyPair keypair = generateDSAKeyPair();
+        final DSAParams params = keypair.getPublic().getParams();
+        final DSAPublicKey recreated = createDSAPublicKey(keypair.getPublic().getY(), params.getP(), params.getQ(), params.getG());
+        assertEquals(keypair.getPublic(), recreated);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testRecreateDSAPublicKeyNullY() throws OtrCryptoException {
+        final DSAKeyPair keypair = generateDSAKeyPair();
+        final DSAParams params = keypair.getPublic().getParams();
+        final DSAPublicKey recreated = createDSAPublicKey(null, params.getP(), params.getQ(), params.getG());
+        assertEquals(keypair.getPublic(), recreated);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testRecreateDSAPublicKeyNullP() throws OtrCryptoException {
+        final DSAKeyPair keypair = generateDSAKeyPair();
+        final DSAParams params = keypair.getPublic().getParams();
+        final DSAPublicKey recreated = createDSAPublicKey(keypair.getPublic().getY(), null, params.getQ(), params.getG());
+        assertEquals(keypair.getPublic(), recreated);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testRecreateDSAPublicKeyNullQ() throws OtrCryptoException {
+        final DSAKeyPair keypair = generateDSAKeyPair();
+        final DSAParams params = keypair.getPublic().getParams();
+        final DSAPublicKey recreated = createDSAPublicKey(keypair.getPublic().getY(), params.getP(), null, params.getG());
+        assertEquals(keypair.getPublic(), recreated);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testRecreateDSAPublicKeyNullG() throws OtrCryptoException {
+        final DSAKeyPair keypair = generateDSAKeyPair();
+        final DSAParams params = keypair.getPublic().getParams();
+        final DSAPublicKey recreated = createDSAPublicKey(keypair.getPublic().getY(), params.getP(), params.getQ(), null);
+        assertEquals(keypair.getPublic(), recreated);
     }
 }

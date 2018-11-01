@@ -19,15 +19,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAPublicKey;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
 
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
@@ -59,6 +55,7 @@ public final class OtrCryptoEngine {
             throw new IllegalStateException("Failed initialization test of required cryptographic types. otr4j will not function properly.", ex);
         }
     }
+
     /**
      * The SHA-256 digest length in bytes.
      */
@@ -319,34 +316,6 @@ public final class OtrCryptoEngine {
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         if (!constantTimeEquals(a, b)) {
             throw new OtrCryptoException(message);
-        }
-    }
-
-    /**
-     * (Re)Create DSA public key based on provided input parameters.
-     *
-     * @param y y
-     * @param p p
-     * @param q q
-     * @param g g
-     * @return Returns DSA public key.
-     * @throws OtrCryptoException Throws OtrCryptoException in case of failure to create DSA public key.
-     */
-    @Nonnull
-    public static DSAPublicKey createDSAPublicKey(@Nonnull final BigInteger y, @Nonnull final BigInteger p,
-            @Nonnull final BigInteger q, @Nonnull final BigInteger g)
-            throws OtrCryptoException {
-        final KeyFactory keyFactory;
-        try {
-            keyFactory = KeyFactory.getInstance("DSA");
-        } catch (final NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Failed to initialize DSA key factory.", e);
-        }
-        try {
-            final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
-            return (DSAPublicKey) keyFactory.generatePublic(keySpec);
-        } catch (final InvalidKeySpecException e) {
-            throw new OtrCryptoException("Read invalid public key from input stream.", e);
         }
     }
 }
