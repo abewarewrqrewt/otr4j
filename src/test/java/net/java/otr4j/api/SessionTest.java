@@ -849,6 +849,10 @@ public class SessionTest {
     @Test
     public void testOTR4SessionWithSMPGoodPassword() throws OtrException {
         final Conversation c = new Conversation(1);
+
+        assertTrue(c.clientAlice.verified.isEmpty());
+        assertTrue(c.clientBob.verified.isEmpty());
+
         // Initiate OTR by sending query message.
         c.clientAlice.session.startSession();
         assertNull(c.clientBob.receiveMessage());
@@ -887,12 +891,17 @@ public class SessionTest {
         assertFalse(c.clientBob.session.isSmpInProgress());
         assertFalse(c.clientAlice.session.isSmpInProgress());
 
-        // FIXME need to extend with check that verifies that expected fingerprint is added to list of verified fingerprints.
+        assertEquals(1, c.clientAlice.verified.size());
+        assertEquals(1, c.clientBob.verified.size());
     }
 
     @Test
     public void testOTR4SessionWithSMPBadPassword() throws OtrException {
         final Conversation c = new Conversation(1);
+
+        assertTrue(c.clientAlice.verified.isEmpty());
+        assertTrue(c.clientBob.verified.isEmpty());
+
         // Initiate OTR by sending query message.
         c.clientAlice.session.startSession();
         assertNull(c.clientBob.receiveMessage());
@@ -920,7 +929,9 @@ public class SessionTest {
         assertTrue(c.clientBob.session.isSmpInProgress());
         assertNull(c.clientBob.receiveMessage());
         assertFalse(c.clientBob.session.isSmpInProgress());
-        // FIXME need to extend with check that verifies that expected fingerprint is added to list of verified fingerprints.
+
+        assertTrue(c.clientAlice.verified.isEmpty());
+        assertTrue(c.clientBob.verified.isEmpty());
     }
 
     @Test
@@ -941,6 +952,9 @@ public class SessionTest {
         assertNull(c.clientBob.receiveMessage());
 
         for (int i = 0; i < UNICODE_LINES.length; ++i) {
+            c.clientBob.verified.clear();
+            c.clientAlice.verified.clear();
+
             // Initiate SMP negotiation
             c.clientBob.session.initSmp(UNICODE_LINES[i], UNICODE_LINES[UNICODE_LINES.length - 1 - i]);
             assertTrue(c.clientBob.session.isSmpInProgress());
@@ -954,7 +968,9 @@ public class SessionTest {
             assertTrue(c.clientBob.session.isSmpInProgress());
             assertNull(c.clientBob.receiveMessage());
             assertFalse(c.clientBob.session.isSmpInProgress());
-            // FIXME need to extend with check that verifies that expected fingerprint is added to list of verified fingerprints.
+
+            assertEquals(1, c.clientBob.verified.size());
+            assertEquals(1, c.clientAlice.verified.size());
         }
     }
 
@@ -1167,6 +1183,8 @@ public class SessionTest {
 
         private final Logger logger;
 
+        private final HashSet<String> verified = new HashSet<>();
+
         private final InstanceTag instanceTag = InstanceTag.random(RANDOM);
 
         private final DSAKeyPair dsaKeyPair;
@@ -1323,12 +1341,14 @@ public class SessionTest {
 
         @Override
         public void verify(@Nonnull final SessionID sessionID, @Nonnull final String fingerprint) {
-            logger.finest("Verifying fingerprint " + fingerprint + " (Session: " + sessionID + ") [NOT IMPLEMENTED, LOGGING ONLY]");
+            logger.finest("Verifying fingerprint " + fingerprint + " (Session: " + sessionID + ")");
+            this.verified.add(fingerprint);
         }
 
         @Override
         public void unverify(@Nonnull final SessionID sessionID, @Nonnull final String fingerprint) {
-            logger.finest("Invalidating fingerprint " + fingerprint + " (Session: " + sessionID + ") [NOT IMPLEMENTED, LOGGING ONLY]");
+            logger.finest("Invalidating fingerprint " + fingerprint + " (Session: " + sessionID + ")");
+            this.verified.remove(fingerprint);
         }
 
         @Override
