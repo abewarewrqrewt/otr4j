@@ -124,8 +124,10 @@ public final class ECDHKeyPair implements AutoCloseable {
         if (this.secretKey == null) {
             throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
         }
+        // FIXME multiplication not necessary anymore as of 4d1dac3beaf2dbc709c2143892b40513e57ae980 (I don't completely understand tho, because 'otherPublicKey' is originating from other party.)
         final Point sharedSecret = otherPublicKey.multiply(cofactor()).multiply(this.secretKey);
         // TODO is 'checkIdentity' method sufficient to discover all illegal public keys? (This problem solves itself once we switch to byte-arrays as representation of public keys.
+        // FIXME the identity check below is wrong, section 'generating shared secrets' talks about checking against all zero-bytes!
         if (checkIdentity(sharedSecret)) {
             throw new ValidationException("Illegal ECDH public key.");
         }
