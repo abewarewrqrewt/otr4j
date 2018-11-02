@@ -45,6 +45,7 @@ public final class ClientProfile {
     /**
      * Profile expiration date in 64-bit Unix timestamp (ignoring leap seconds).
      */
+    // FIXME consider removing expiration date from the unsigned client profile. Its function is only for the signed payload.
     private final long expirationUnixTime;
 
     /**

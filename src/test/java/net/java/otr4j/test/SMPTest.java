@@ -65,7 +65,6 @@ public class SMPTest {
         int getBobResult() {
             return this.bobResult;
         }
-
     }
 
     SMPTestResult runSMPTest(final String question, final String alicePassword,

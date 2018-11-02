@@ -56,6 +56,10 @@ public class SessionTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    private static final String OTRv23QueryMessage = "<p>?OTRv23?\n"
+            + "<span style=\"font-weight: bold;\">Bob@Wonderland/</span> has requested an <a href=\"http://otr.cypherpunks.ca/\">Off-the-Record private conversation</a>. However, you do not have a plugin to support that.\n"
+            + "See <a href=\"http://otr.cypherpunks.ca/\">http://otr.cypherpunks.ca/</a> for more information.</p>";
+
     @Before
     public void setUp() {
         Logger.getLogger("").setLevel(Level.INFO);
@@ -198,7 +202,7 @@ public class SessionTest {
         c.submitterBob.addQueue(bob2Channel);
 
         // Start setting up an encrypted session.
-        c.clientBob.sendMessage(TestStrings.otrQuery);
+        c.clientBob.sendMessage(OTRv23QueryMessage);
         assertNull(c.clientAlice.receiveMessage());
         // Expecting DH-Commit message from Alice.
         assertNull(c.clientBob.receiveMessage());
@@ -246,7 +250,7 @@ public class SessionTest {
         c.submitterBob.addQueue(bob3Channel);
 
         // Start setting up an encrypted session.
-        c.clientBob.sendMessage(TestStrings.otrQuery);
+        c.clientBob.sendMessage(OTRv23QueryMessage);
         assertNull(c.clientAlice.receiveMessage());
         // Expecting DH-Commit message from Alice.
         assertNull(c.clientBob.receiveMessage());
@@ -338,7 +342,7 @@ public class SessionTest {
         final Conversation c = new Conversation(1);
         c.clientAlice.setPolicy(new OtrPolicy(OPPORTUNISTIC & ~ALLOW_V4));
         c.clientBob.setPolicy(new OtrPolicy(OPPORTUNISTIC & ~ALLOW_V4));
-        c.clientBob.sendMessage(TestStrings.otrQuery);
+        c.clientBob.sendMessage(OTRv23QueryMessage);
         assertNull(c.clientAlice.receiveMessage());
         // Expecting DH-Commit message from Alice.
         assertNull(c.clientBob.receiveMessage());
@@ -473,6 +477,62 @@ public class SessionTest {
         assertEquals("hello world", c.clientAlice.receiveMessage());
         c.clientAlice.sendMessage("hello bob");
         assertEquals("hello bob", c.clientBob.receiveMessage());
+    }
+
+    @Test
+    public void testUnicodeMessagesInPlainTextSession() throws OtrException {
+        final Conversation c = new Conversation(2);
+        for (final String message : TestStrings.unicodes) {
+            assertEquals(SessionStatus.PLAINTEXT, c.clientAlice.session.getSessionStatus());
+            c.clientAlice.sendMessage(message);
+            assertEquals(message, c.clientBob.receiptChannel.peek());
+            final String receivedBob = c.clientBob.receiveMessage();
+            assertEquals(SessionStatus.PLAINTEXT, c.clientBob.session.getSessionStatus());
+            assertEquals(message, receivedBob);
+
+            assertEquals(SessionStatus.PLAINTEXT, c.clientBob.session.getSessionStatus());
+            c.clientBob.sendMessage(message);
+            assertEquals(message, c.clientAlice.receiptChannel.peek());
+            final String receivedAlice = c.clientAlice.receiveMessage();
+            assertEquals(SessionStatus.PLAINTEXT, c.clientAlice.session.getSessionStatus());
+            assertEquals(message, receivedAlice);
+        }
+    }
+
+    @Test
+    public void testUnicodeMessagesInEncryptedSession() throws OtrException {
+        final Conversation c = new Conversation(2);
+        c.clientAlice.setPolicy(new OtrPolicy(OtrPolicy.ALLOW_V4));
+        c.clientBob.setPolicy(new OtrPolicy(OtrPolicy.ALLOW_V4));
+        c.clientAlice.session.startSession();
+        c.clientBob.receiveMessage();
+        c.clientAlice.receiveMessage();
+        c.clientBob.receiveMessage();
+        c.clientAlice.receiveMessage();
+        assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        c.clientBob.receiveMessage();
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
+        for (final String message : TestStrings.unicodes) {
+            assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
+            c.clientAlice.sendMessage(message);
+            assertNotEquals(message, c.clientBob.receiptChannel.peek());
+            final String receivedBob = c.clientBob.receiveMessage();
+            assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
+            assertEquals(message, receivedBob);
+
+            assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
+            c.clientBob.sendMessage(message);
+            assertNotEquals(message, c.clientAlice.receiptChannel.peek());
+            final String receivedAlice = c.clientAlice.receiveMessage();
+            assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
+            assertEquals(message, receivedAlice);
+        }
+        c.clientBob.session.endSession();
+        assertEquals(SessionStatus.PLAINTEXT, c.clientBob.session.getSessionStatus());
+        c.clientAlice.receiveMessage();
+        assertEquals(SessionStatus.FINISHED, c.clientAlice.session.getSessionStatus());
+        c.clientAlice.session.endSession();
+        assertEquals(SessionStatus.PLAINTEXT, c.clientAlice.session.getSessionStatus());
     }
 
     @Test
@@ -634,7 +694,7 @@ public class SessionTest {
         assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
     }
 
-    @Ignore("Test demonstrates support for out-of-order messages and specifically messages that arrive later than expected. This is not yet supported in the library.")
+    @Ignore("Test demonstrates support for out-of-order messages and specifically messages that arrive later than expected. This is not yet supported in the library. We need to store message keys for later look-back to make this test work.")
     @Test
     public void testOTR4ExtensiveMessagingManyConsecutiveMessagesShuffled() throws OtrException {
         final Conversation c = new Conversation(25);

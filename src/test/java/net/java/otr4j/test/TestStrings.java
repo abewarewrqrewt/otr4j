@@ -3,9 +3,9 @@ package net.java.otr4j.test;
 
 public class TestStrings {
 
+    // FIXME move to some test class one day when other SMPTest logic is consolidated
     public static final String[] unicodes = {
             "plainAscii",
-            "",
             "བོད་རིགས་ཀྱི་བོད་སྐད་བརྗོད་པ་དང་ བོད་རིགས་མང་ཆེ་བ་ནི་ནང་ཆོས་བྱེད་པ་དང་",
             "تبتی قوم (Tibetan people)",
             "Учените твърдят, че тибетците нямат",
@@ -29,10 +29,4 @@ public class TestStrings {
             "backslashR\r",
             "NEWLINE\n",
     };
-
-    public static final String otrQuery = "<p>?OTRv23?\n"
-            + "<span style=\"font-weight: bold;\">Bob@Wonderland/</span> has requested an <a href=\"http://otr.cypherpunks.ca/\">Off-the-Record private conversation</a>. However, you do not have a plugin to support that.\n"
-            + "See <a href=\"http://otr.cypherpunks.ca/\">http://otr.cypherpunks.ca/</a> for more information.</p>";
-    public static final String anotherOtrQuery = "?OTRv23? Message from another client !";
-    public static final String yetAnotherOtrQuery = "?OTRv23? Another message from another client !!";
 }
