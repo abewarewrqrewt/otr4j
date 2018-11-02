@@ -90,8 +90,10 @@ final class StateExpect4 implements SMPState {
         // Verify if the zero-knowledge proof succeeds on our end.
         final Point rab = smp4.rb.multiply(this.a3);
         if (rab.equals(this.pa.add(this.pb.negate()))) {
+            LOGGER.log(Level.FINE, "Successful SMP verification.");
             context.setState(new StateExpect1(this.random, SUCCEEDED));
         } else {
+            LOGGER.log(Level.FINE, "Failed SMP verification.");
             context.setState(new StateExpect1(this.random, FAILED));
         }
         return null;

@@ -5,7 +5,6 @@ import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
-import net.java.otr4j.test.TestStrings;
 import net.java.otr4j.util.BlockingSubmitter;
 import net.java.otr4j.util.ConditionalBlockingQueue;
 import net.java.otr4j.util.ConditionalBlockingQueue.Predicate;
@@ -46,8 +45,10 @@ import static net.java.otr4j.util.BlockingQueuesTestUtils.shuffle;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 // TODO handle case where we store skipped message keys such that we can decrypt message that is received out-of-order, i.e. later than it was supposed to arrive.
@@ -60,9 +61,35 @@ public class SessionTest {
             + "<span style=\"font-weight: bold;\">Bob@Wonderland/</span> has requested an <a href=\"http://otr.cypherpunks.ca/\">Off-the-Record private conversation</a>. However, you do not have a plugin to support that.\n"
             + "See <a href=\"http://otr.cypherpunks.ca/\">http://otr.cypherpunks.ca/</a> for more information.</p>";
 
+    private static final String[] UNICODE_LINES = {
+            "plainAscii",
+            "བོད་རིགས་ཀྱི་བོད་སྐད་བརྗོད་པ་དང་ བོད་རིགས་མང་ཆེ་བ་ནི་ནང་ཆོས་བྱེད་པ་དང་",
+            "تبتی قوم (Tibetan people)",
+            "Учените твърдят, че тибетците нямат",
+            "Câung-cŭk (藏族, Câung-ngṳ̄: བོད་པ་)",
+            "チベット系民族（チベットけいみんぞく）",
+            "原始汉人与原始藏缅人约在公元前4000年左右分开。",
+            "Տիբեթացիներ (ինքնանվանումը՝ պյոբա),",
+            "... Gezginci olarak",
+            "شْتَن Xotan",
+            "Tibeťané jsou",
+            "ئاچاڭ- تىبەت مىللىتى",
+            "Miscellaneous Symbols and Pictographs[1][2] Official Unicode Consortium code chart (PDF)",
+            "Royal Thai (ราชาศัพท์)",
+            "טיילאנדיש123 (ภาษาไทย)",
+            "ជើងអក្សរ cheung âksâr",
+            "중화인민공화국에서는 기본적으로 한족은 ",
+            "पाठ्यांशः अत्र उपलभ्यतेसर्जनसामान्यलक्षणम्/Share-",
+            "திபெத்துக்கு வெகள்",
+            "អក្សរសាស្រ្តខែ្មរមានប្រវ៌ត្តជាងពីរពាន់ឆ្នាំមកហើយ ",
+            "tabbackslashT\t",
+            "backslashR\r",
+            "NEWLINE\n",
+    };
+
     @Before
     public void setUp() {
-        Logger.getLogger("").setLevel(Level.INFO);
+        Logger.getLogger("").setLevel(Level.FINEST);
     }
 
     @Test
@@ -482,7 +509,7 @@ public class SessionTest {
     @Test
     public void testUnicodeMessagesInPlainTextSession() throws OtrException {
         final Conversation c = new Conversation(2);
-        for (final String message : TestStrings.unicodes) {
+        for (final String message : UNICODE_LINES) {
             assertEquals(SessionStatus.PLAINTEXT, c.clientAlice.session.getSessionStatus());
             c.clientAlice.sendMessage(message);
             assertEquals(message, c.clientBob.receiptChannel.peek());
@@ -512,7 +539,7 @@ public class SessionTest {
         assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
         c.clientBob.receiveMessage();
         assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
-        for (final String message : TestStrings.unicodes) {
+        for (final String message : UNICODE_LINES) {
             assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
             c.clientAlice.sendMessage(message);
             assertNotEquals(message, c.clientBob.receiptChannel.peek());
@@ -738,6 +765,118 @@ public class SessionTest {
         assertMessage("Message Alice: " + messageAlice, messageAlice, c.clientBob.receiveMessage());
         c.clientAlice.session.endSession();
         c.clientBob.session.endSession();
+    }
+
+    @Test
+    public void testOTR4SessionWithSMPGoodPassword() throws OtrException {
+        final Conversation c = new Conversation(1);
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.clientBob.receiveMessage());
+
+        // Initiate SMP negotiation
+        assertFalse(c.clientBob.session.isSmpInProgress());
+        assertFalse(c.clientAlice.session.isSmpInProgress());
+        c.clientBob.session.initSmp("What's the secret?", "Nobody knows!");
+        assertTrue(c.clientBob.session.isSmpInProgress());
+        assertFalse(c.clientAlice.session.isSmpInProgress());
+
+        assertNull(c.clientAlice.receiveMessage());
+        c.clientAlice.session.respondSmp("What's the secret?", "Nobody knows!");
+        assertTrue(c.clientBob.session.isSmpInProgress());
+        assertTrue(c.clientAlice.session.isSmpInProgress());
+
+        assertNull(c.clientBob.receiveMessage());
+        assertTrue(c.clientBob.session.isSmpInProgress());
+        assertTrue(c.clientAlice.session.isSmpInProgress());
+
+        assertNull(c.clientAlice.receiveMessage());
+        assertTrue(c.clientBob.session.isSmpInProgress());
+        assertFalse(c.clientAlice.session.isSmpInProgress());
+
+        assertNull(c.clientBob.receiveMessage());
+        assertFalse(c.clientBob.session.isSmpInProgress());
+        assertFalse(c.clientAlice.session.isSmpInProgress());
+
+        // FIXME need to extend with check that verifies that expected fingerprint is added to list of verified fingerprints.
+    }
+
+    @Test
+    public void testOTR4SessionWithSMPBadPassword() throws OtrException {
+        final Conversation c = new Conversation(1);
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.clientBob.receiveMessage());
+
+        // Initiate SMP negotiation
+        c.clientBob.session.initSmp("What's the secret?", "Nobody knows!");
+        assertTrue(c.clientBob.session.isSmpInProgress());
+        assertNull(c.clientAlice.receiveMessage());
+        c.clientAlice.session.respondSmp("What's the secret?", "Everybody knows!");
+        assertTrue(c.clientAlice.session.isSmpInProgress());
+        assertNull(c.clientBob.receiveMessage());
+        assertTrue(c.clientAlice.session.isSmpInProgress());
+        assertNull(c.clientAlice.receiveMessage());
+        assertFalse(c.clientAlice.session.isSmpInProgress());
+        assertTrue(c.clientBob.session.isSmpInProgress());
+        assertNull(c.clientBob.receiveMessage());
+        assertFalse(c.clientBob.session.isSmpInProgress());
+        // FIXME need to extend with check that verifies that expected fingerprint is added to list of verified fingerprints.
+    }
+
+    @Test
+    public void testOTR4SessionWithSMPUnicodeTests() throws OtrException {
+        final Conversation c = new Conversation(1);
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.clientBob.receiveMessage());
+
+        for (int i = 0; i < UNICODE_LINES.length; ++i) {
+            // Initiate SMP negotiation
+            c.clientBob.session.initSmp(UNICODE_LINES[i], UNICODE_LINES[UNICODE_LINES.length - 1 - i]);
+            assertTrue(c.clientBob.session.isSmpInProgress());
+            assertNull(c.clientAlice.receiveMessage());
+            c.clientAlice.session.respondSmp(UNICODE_LINES[i], UNICODE_LINES[UNICODE_LINES.length - 1 - i]);
+            assertTrue(c.clientAlice.session.isSmpInProgress());
+            assertNull(c.clientBob.receiveMessage());
+            assertTrue(c.clientAlice.session.isSmpInProgress());
+            assertNull(c.clientAlice.receiveMessage());
+            assertFalse(c.clientAlice.session.isSmpInProgress());
+            assertTrue(c.clientBob.session.isSmpInProgress());
+            assertNull(c.clientBob.receiveMessage());
+            assertFalse(c.clientBob.session.isSmpInProgress());
+            // FIXME need to extend with check that verifies that expected fingerprint is added to list of verified fingerprints.
+        }
     }
 
     @Test
@@ -1084,7 +1223,7 @@ public class SessionTest {
 
         @Override
         public void askForSecret(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiverTag, @Nullable final String question) {
-            throw new UnsupportedOperationException("To be implemented");
+            logger.finest("A request for the secret was received. (Question: " + question + ") [NOT IMPLEMENTED, LOGGING ONLY]");
         }
 
         @Nonnull
