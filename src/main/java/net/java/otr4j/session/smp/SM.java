@@ -1,4 +1,10 @@
 /*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+/*
  *  Java OTR library
  *  Copyright (C) 2008-2009  Ian Goldberg, Muhaimeen Ashraf, Andrew Chung,
  *                           Can Tang
@@ -16,7 +22,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 /* Ported to otr4j by devrandom */
 
 package net.java.otr4j.session.smp;

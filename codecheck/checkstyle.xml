@@ -6,13 +6,11 @@
 
     <module name="FileTabCharacter"/>
 
-    <!-- Checks for Headers                                -->
-    <!-- TODO consider introducing check if LGPL license header is present. -->
-    <!-- See http://checkstyle.sf.net/config_header.html   -->
-    <!-- <module name="Header"> -->
-    <!--   <property name="headerFile" value="${checkstyle.header.file}"/> -->
-    <!--   <property name="fileExtensions" value="java"/> -->
-    <!-- </module> -->
+    <!-- Checks for Headers -->
+    <module name="Header">
+        <property name="headerFile" value="codecheck/header.txt"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
 
     <module name="TreeWalker">
         <!-- Checks for imports -->

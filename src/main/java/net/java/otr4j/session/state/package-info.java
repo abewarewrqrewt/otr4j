@@ -1,3 +1,9 @@
+/*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
 /**
  * Package containing the Messaging states defined by OTR.
  */
