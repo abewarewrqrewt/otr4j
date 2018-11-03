@@ -137,23 +137,6 @@ public interface OtrEngineHost extends SmpEngineHost {
     ClientProfile getClientProfile(@Nonnull SessionID sessionID);
 
     /**
-     * The persistent instance tag required for an OTRv4 client to operate.
-     *
-     * The first time a new client is used, a random instance tag should be generated. One can use
-     * {@link InstanceTag#random(java.security.SecureRandom)} for this. The randomly generated instance tag should be persisted. At
-     * any later time the client is started, the same instance tag must be returned.
-     *
-     * Note that the instance tag is also returned as part of the client profile ({@link #getClientProfile(SessionID)}).
-     * The instance tag in the ClientProfile should match the tag returned here.
-     *
-     * @param sessionID the session ID for which the instance tag is requested
-     * @return Returns instance tag.
-     */
-    // FIXME consider removing 'getInstanceTag' field and getting instance tag from Client Profile itself.
-    @Nonnull
-    InstanceTag getInstanceTag(@Nonnull SessionID sessionID);
-
-    /**
      * Request local fingerprint in raw byte form.
      *
      * @param sessionID the session ID

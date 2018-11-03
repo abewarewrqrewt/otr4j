@@ -46,7 +46,6 @@ public class OtrSessionManagerTest {
     @Test
     public void testGetSession() {
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        when(host.getInstanceTag(any(SessionID.class))).thenReturn(SMALLEST_TAG);
         when(host.getLocalKeyPair(any(SessionID.class))).thenReturn(DSA_KEY_PAIR);
         when(host.getLongTermKeyPair(any(SessionID.class))).thenReturn(EDDSA_KEY_PAIR);
         when(host.getClientProfile(any(SessionID.class))).thenReturn(PROFILE);

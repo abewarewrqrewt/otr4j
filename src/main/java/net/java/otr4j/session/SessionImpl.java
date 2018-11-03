@@ -181,17 +181,17 @@ final class SessionImpl implements Session, Context, AuthContext {
     private OfferStatus offerStatus;
 
     /**
+     * The Client Profile.
+     */
+    private final ClientProfile profile;
+
+    /**
      * The OTR-encodable, signed payload containing the client profile, ready to be sent.
      */
     // TODO refresh client profile payload after it is expired. (Maybe leave until after initial use, as expiration date is recommended for 2+ weeks.)
     // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
     // TODO ability for user to specify amount of expiration time on a profile
     private final ClientProfilePayload profilePayload;
-
-    /**
-     * Sender instance tag.
-     */
-    private final InstanceTag senderTag;
 
     /**
      * Receiver instance tag.
@@ -268,8 +268,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @param host  The OTR engine host listener.
      */
     SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
-        this(null, sessionID, host, host.getInstanceTag(sessionID), ZERO_TAG, new SecureRandom(),
-                StateInitial.empty());
+        this(null, sessionID, host, ZERO_TAG, new SecureRandom(), StateInitial.empty());
     }
 
     /**
@@ -282,9 +281,6 @@ final class SessionImpl implements Session, Context, AuthContext {
      * session.
      * @param sessionID The session ID.
      * @param host OTR engine host instance.
-     * @param senderTag The sender instance tag. The sender instance tag must be
-     * provided. In case the ZERO tag is provided, we generate a random instance
-     * tag for the sender.
      * @param receiverTag The receiver instance tag. The receiver instance tag
      * is allowed to be ZERO.
      * @param secureRandom The secure random instance.
@@ -294,7 +290,6 @@ final class SessionImpl implements Session, Context, AuthContext {
     private SessionImpl(@Nullable final SessionImpl masterSession,
             @Nonnull final SessionID sessionID,
             @Nonnull final OtrEngineHost host,
-            @Nonnull final InstanceTag senderTag,
             @Nonnull final InstanceTag receiverTag,
             @Nonnull final SecureRandom secureRandom,
             @Nonnull final AuthState authState) {
@@ -304,10 +299,6 @@ final class SessionImpl implements Session, Context, AuthContext {
         this.sessionState = new StatePlaintext(sessionID);
         this.authState = requireNonNull(authState);
         this.host = requireNonNull(host);
-        if (senderTag.equals(ZERO_TAG)) {
-            throw new IllegalArgumentException("Only actual instance tags are allowed.");
-        }
-        this.senderTag = senderTag;
         this.receiverTag = requireNonNull(receiverTag);
         this.offerStatus = OfferStatus.IDLE;
         // Master session uses the map to manage slave sessions. Slave sessions do not use the map.
@@ -317,13 +308,13 @@ final class SessionImpl implements Session, Context, AuthContext {
         outgoingSession = this;
         // Initialize message fragmentation support.
         fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
-        final ClientProfile profile = this.host.getClientProfile(sessionID);
-        if (!profile.getInstanceTag().equals(this.senderTag)) {
-            throw new IllegalStateException("Provided client profile does not match with the instance tag for this session.");
+        this.profile = this.host.getClientProfile(sessionID);
+        if (this.profile.getInstanceTag().equals(ZERO_TAG)) {
+            throw new IllegalArgumentException("Only actual instance tags are allowed. The 'zero' tag is not valid.");
         }
         final Calendar expirationDate = Calendar.getInstance();
         expirationDate.add(Calendar.DAY_OF_YEAR, 14);
-        this.profilePayload = ClientProfilePayload.sign(profile, expirationDate.getTimeInMillis() / 1000,
+        this.profilePayload = ClientProfilePayload.sign(this.profile, expirationDate.getTimeInMillis() / 1000,
                 this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
     }
 
@@ -472,7 +463,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             }
 
             if (fragment.getReceivertag().getValue() != 0
-                    && fragment.getReceivertag().getValue() != this.senderTag.getValue()) {
+                    && fragment.getReceivertag().getValue() != this.profile.getInstanceTag().getValue()) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
                 messageFromAnotherInstanceReceived(this.host, sessionID);
@@ -481,8 +472,8 @@ final class SessionImpl implements Session, Context, AuthContext {
 
             SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
             if (slave == null) {
-                slave = new SessionImpl(this, sessionID, this.host, this.senderTag,
-                    fragment.getSendertag(), this.secureRandom, this.authState);
+                slave = new SessionImpl(this, sessionID, this.host, fragment.getSendertag(),
+                        this.secureRandom, this.authState);
                 slave.addOtrEngineListener(slaveSessionsListener);
                 this.slaveSessions.put(fragment.getSendertag(), slave);
             }
@@ -507,7 +498,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 throw new OtrException("Invalid encoded message content.", e);
             }
 
-            if (!((EncodedMessage) m).getReceiverInstanceTag().equals(this.senderTag)
+            if (!((EncodedMessage) m).getReceiverInstanceTag().equals(this.profile.getInstanceTag())
                     && !(encodedM instanceof DHCommitMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))
                     && !(encodedM instanceof IdentityMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))) {
                 // The message is not intended for us. Discarding...
@@ -525,7 +516,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
                         final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                this.senderTag, encodedM.senderInstanceTag, this.secureRandom, this.authState);
+                                encodedM.senderInstanceTag, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
                     }
@@ -536,7 +527,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                 synchronized (slaveSessions) {
                     if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
                         final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                this.senderTag, encodedM.senderInstanceTag, this.secureRandom, this.authState);
+                                encodedM.senderInstanceTag, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
                     }
@@ -559,7 +550,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                         multipleInstancesDetected(this.host, sessionID);
                         multipleInstancesDetected(duplicate(listeners), sessionID);
                         final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                this.senderTag, encodedM.senderInstanceTag, this.secureRandom, this.authState);
+                                encodedM.senderInstanceTag, this.secureRandom, this.authState);
                         newSlaveSession.addOtrEngineListener(slaveSessionsListener);
                         slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
                     }
@@ -1041,7 +1032,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     @Nonnull
     public InstanceTag getSenderInstanceTag() {
-        return senderTag;
+        return this.profile.getInstanceTag();
     }
 
     @Override

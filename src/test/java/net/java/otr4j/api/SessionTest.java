@@ -1318,12 +1318,6 @@ public class SessionTest {
             return this.profile;
         }
 
-        @Nonnull
-        @Override
-        public InstanceTag getInstanceTag(@Nonnull final SessionID sessionID) {
-            return this.instanceTag;
-        }
-
         @Override
         public void askForSecret(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiverTag, @Nullable final String question) {
             logger.finest("A request for the secret was received. (Question: " + question + ") [NOT IMPLEMENTED, LOGGING ONLY]");
