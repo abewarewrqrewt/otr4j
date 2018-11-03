@@ -8,7 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -30,8 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
-import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 
@@ -45,7 +45,7 @@ final class StateAwaitingSig extends AbstractAuthState {
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingSig.class.getName());
 
     private final int version;
-    private final DHKeyPairJ localDHKeyPair;
+    private final DHKeyPairOTR3 localDHKeyPair;
     private final DHPublicKey remoteDHPublicKey;
     private final SharedSecret s;
 
@@ -55,7 +55,7 @@ final class StateAwaitingSig extends AbstractAuthState {
      */
     private final RevealSignatureMessage previousRevealSigMessage;
 
-    StateAwaitingSig(final int version, @Nonnull final DHKeyPairJ localDHKeyPair,
+    StateAwaitingSig(final int version, @Nonnull final DHKeyPairOTR3 localDHKeyPair,
             @Nonnull final DHPublicKey remoteDHPublicKey, @Nonnull final SharedSecret s,
             @Nonnull final RevealSignatureMessage previousRevealSigMessage) {
         super();
@@ -108,7 +108,7 @@ final class StateAwaitingSig extends AbstractAuthState {
         // OTR: "Reply with a new D-H Key message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
         LOGGER.finest("Generating local D-H key pair.");
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
-        final DHKeyPairJ newKeypair = generateDHKeyPair(context.secureRandom());
+        final DHKeyPairOTR3 newKeypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Ignoring AWAITING_SIG state and sending a new DH key message.");
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));

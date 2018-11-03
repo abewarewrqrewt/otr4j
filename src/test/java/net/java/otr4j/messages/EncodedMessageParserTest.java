@@ -10,7 +10,7 @@ package net.java.otr4j.messages;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -33,7 +33,7 @@ import static java.util.Arrays.copyOfRange;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
@@ -93,7 +93,7 @@ public class EncodedMessageParserTest {
 
     @Test
     public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(OTRv.THREE, keypair.getPublic(), new InstanceTag(12345),
                 new InstanceTag(9876543));
@@ -119,7 +119,7 @@ public class EncodedMessageParserTest {
 
     @Test
     public void testConstructAndParsePartialDHKeyMessage() throws UnsupportedLengthException, ProtocolException, OtrCryptoException, ValidationException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
         final DHKeyMessage m = new DHKeyMessage(OTRv.THREE, keypair.getPublic(), new InstanceTag(12345),
                 new InstanceTag(9876543));
@@ -146,7 +146,7 @@ public class EncodedMessageParserTest {
 
     @Test
     public void testParsingDataMessage() throws ProtocolException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        final DHKeyPairJ dhKeyPair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 dhKeyPair = generateDHKeyPair(RANDOM);
         final int senderKeyID = RANDOM.nextInt();
         final int receiverKeyID = RANDOM.nextInt();
         final byte[] ctr = randomBytes(RANDOM, new byte[8]);

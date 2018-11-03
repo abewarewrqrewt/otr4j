@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoException;
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.synchronizedList;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 
 /**
  * Session key manager.
@@ -48,7 +48,7 @@ final class SessionKeyManager {
      */
     private final List<byte[]> oldMacKeys = synchronizedList(new ArrayList<byte[]>(0));
 
-    SessionKeyManager(@Nonnull final SecureRandom secureRandom, @Nonnull final DHKeyPairJ localKeyPair,
+    SessionKeyManager(@Nonnull final SecureRandom secureRandom, @Nonnull final DHKeyPairOTR3 localKeyPair,
             @Nonnull final DHPublicKey remotePublicKey) throws OtrCryptoException {
         this.secureRandom = Objects.requireNonNull(secureRandom);
         // Prepare current set of session keys.
@@ -57,7 +57,7 @@ final class SessionKeyManager {
         current.put(Index.NEXT, new SessionKey(1, localKeyPair, 1, remotePublicKey));
         this.keys.put(Index.CURRENT, current);
         // Prepare next set of session keys.
-        final DHKeyPairJ nextLocalDH = generateDHKeyPair(this.secureRandom);
+        final DHKeyPairOTR3 nextLocalDH = generateDHKeyPair(this.secureRandom);
         final EnumMap<Index, SessionKey> next = new EnumMap<>(Index.class);
         next.put(Index.CURRENT, new SessionKey(2, nextLocalDH, 1, remotePublicKey));
         next.put(Index.NEXT, new SessionKey(2, nextLocalDH, 1, remotePublicKey));
@@ -143,7 +143,7 @@ final class SessionKeyManager {
         sess2.close();
 
         // Generate new key for NEXT slots
-        final DHKeyPairJ newKeyPair = generateDHKeyPair(secureRandom);
+        final DHKeyPairOTR3 newKeyPair = generateDHKeyPair(secureRandom);
         this.keys.get(Index.NEXT).put(Index.NEXT, new SessionKey(sess3.getLocalKeyID() + 1, newKeyPair,
                 sess3.getRemoteKeyID(), sess3.getRemotePublicKey()));
         this.keys.get(Index.NEXT).put(Index.CURRENT, new SessionKey(sess4.getLocalKeyID() + 1, newKeyPair,

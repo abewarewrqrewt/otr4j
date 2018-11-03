@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.smp;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
@@ -72,12 +72,12 @@ final class StateExpect1 extends AbstractSMPState {
         final BigInteger x3 = randomExponent();
 
         final BigInteger[] msg1 = new BigInteger[6];
-        msg1[0] = G1.modPow(x2, DHKeyPairJ.MODULUS);
+        msg1[0] = G1.modPow(x2, DHKeyPairOTR3.MODULUS);
         BigInteger[] res = proofKnowLog(x2, 1);
         msg1[1] = res[0];
         msg1[2] = res[1];
 
-        msg1[3] = G1.modPow(x3, DHKeyPairJ.MODULUS);
+        msg1[3] = G1.modPow(x3, DHKeyPairOTR3.MODULUS);
         res = proofKnowLog(x3, 2);
         msg1[4] = res[0];
         msg1[5] = res[1];
@@ -113,8 +113,8 @@ final class StateExpect1 extends AbstractSMPState {
         final BigInteger x3 = randomExponent();
 
         /* Combine the two halves from Bob and Alice and determine g2 and g3 */
-        final BigInteger g2 = msg1[0].modPow(x2, DHKeyPairJ.MODULUS);
-        final BigInteger g3 = msg1[3].modPow(x3, DHKeyPairJ.MODULUS);
+        final BigInteger g2 = msg1[0].modPow(x2, DHKeyPairOTR3.MODULUS);
+        final BigInteger g3 = msg1[3].modPow(x3, DHKeyPairOTR3.MODULUS);
 
         bstate.setState(new StateExpect1(this.secureRandom(), SMPStatus.INPROGRESS, x2, x3, g2, g3, g3o));
     }
@@ -135,23 +135,23 @@ final class StateExpect1 extends AbstractSMPState {
         final BigInteger secret = new BigInteger(1, secretBytes);
 
         final BigInteger[] msg2 = new BigInteger[11];
-        msg2[0] = G1.modPow(x2, DHKeyPairJ.MODULUS);
+        msg2[0] = G1.modPow(x2, DHKeyPairOTR3.MODULUS);
         BigInteger[] res = proofKnowLog(x2, 3);
         msg2[1] = res[0];
         msg2[2] = res[1];
 
-        msg2[3] = G1.modPow(x3, DHKeyPairJ.MODULUS);
+        msg2[3] = G1.modPow(x3, DHKeyPairOTR3.MODULUS);
         res = proofKnowLog(x3, 4);
         msg2[4] = res[0];
         msg2[5] = res[1];
 
         /* Calculate P and Q values for Bob */
         final BigInteger r = randomExponent();
-        final BigInteger p = g3.modPow(r, DHKeyPairJ.MODULUS);
+        final BigInteger p = g3.modPow(r, DHKeyPairOTR3.MODULUS);
         msg2[6] = p;
-        final BigInteger qb1 = G1.modPow(r, DHKeyPairJ.MODULUS);
-        final BigInteger qb2 = g2.modPow(secret, DHKeyPairJ.MODULUS);
-        final BigInteger q = qb1.multiply(qb2).mod(DHKeyPairJ.MODULUS);
+        final BigInteger qb1 = G1.modPow(r, DHKeyPairOTR3.MODULUS);
+        final BigInteger qb2 = g2.modPow(secret, DHKeyPairOTR3.MODULUS);
+        final BigInteger q = qb1.multiply(qb2).mod(DHKeyPairOTR3.MODULUS);
         msg2[7] = q;
 
         res = proofEqualCoords(g2, g3, secret, r, 5);

@@ -32,7 +32,7 @@ import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.Scalar.ONE;

@@ -8,7 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine.SHA256_DIGEST_LENGTH_BYTES;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
@@ -53,11 +53,11 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     private static final int LOCAL_DH_PRIVATE_KEY_ID = 1;
 
     private final int version;
-    private final DHKeyPairJ keypair;
+    private final DHKeyPairOTR3 keypair;
     private final byte[] remotePublicKeyHash;
     private final byte[] remotePublicKeyEncrypted;
 
-    StateAwaitingRevealSig(final int version, @Nonnull final DHKeyPairJ keypair,
+    StateAwaitingRevealSig(final int version, @Nonnull final DHKeyPairOTR3 keypair,
             @Nonnull final byte[] remotePublicKeyHash, @Nonnull final byte[] remotePublicKeyEncrypted) {
         super();
         if (version < 2 || version > 3) {
@@ -142,7 +142,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             OtrCryptoEngine.checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
             // OTR: "Verifies that Bob's gx is a legal value (2 <= gx <= modulus-2)"
             final BigInteger dhPublicKeyMpi = new OtrInputStream(remotePublicKeyBytes).readBigInt();
-            remoteDHPublicKey = verifyDHPublicKey(DHKeyPairJ.fromBigInteger(dhPublicKeyMpi));
+            remoteDHPublicKey = verifyDHPublicKey(DHKeyPairOTR3.fromBigInteger(dhPublicKeyMpi));
             // OTR: "Compute the Diffie-Hellman shared secret s."
             // OTR: "Use s to compute an AES key c' and two MAC keys m1' and m2', as specified below."
             s = this.keypair.generateSharedSecret(remoteDHPublicKey);

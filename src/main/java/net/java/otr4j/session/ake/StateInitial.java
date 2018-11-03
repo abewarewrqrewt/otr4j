@@ -10,7 +10,7 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.IdentityMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
@@ -107,7 +107,7 @@ public final class StateInitial extends AbstractAuthState {
     private DHKeyMessage handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "Reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
-        final DHKeyPairJ keypair = generateDHKeyPair(context.secureRandom());
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));

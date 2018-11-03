@@ -33,8 +33,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Key pair for DH private and public key.
  */
-// TODO choose better name for "old" OTRv3 DH keypair class.
-public final class DHKeyPairJ {
+public final class DHKeyPairOTR3 {
 
     private static final String KA_DH = "DH";
     private static final String KF_DH = "DH";
@@ -78,7 +77,7 @@ public final class DHKeyPairJ {
      * @param privateKey the private key
      * @param publicKey  the corresponding public key
      */
-    private DHKeyPairJ(@Nonnull final DHPrivateKey privateKey, @Nonnull final DHPublicKey publicKey) {
+    private DHKeyPairOTR3(@Nonnull final DHPrivateKey privateKey, @Nonnull final DHPublicKey publicKey) {
         this.privateKey = requireNonNull(privateKey);
         this.publicKey = requireNonNull(publicKey);
     }
@@ -90,13 +89,11 @@ public final class DHKeyPairJ {
      * @return Returns the DH key pair.
      */
     @Nonnull
-    public static DHKeyPairJ generateDHKeyPair(@Nonnull final SecureRandom random) {
+    public static DHKeyPairOTR3 generateDHKeyPair(@Nonnull final SecureRandom random) {
 
         // Generate a AsymmetricCipherKeyPair using BC.
-        final DHParameters dhParams = new DHParameters(MODULUS, GENERATOR, null,
-                DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH);
-        final DHKeyGenerationParameters params = new DHKeyGenerationParameters(
-                random, dhParams);
+        final DHParameters dhParams = new DHParameters(MODULUS, GENERATOR, null, DH_PRIVATE_KEY_MINIMUM_BIT_LENGTH);
+        final DHKeyGenerationParameters params = new DHKeyGenerationParameters(random, dhParams);
         final DHKeyPairGenerator kpGen = new DHKeyPairGenerator();
         kpGen.init(params);
         final KeyFactory keyFac;
@@ -118,8 +115,8 @@ public final class DHKeyPairJ {
 
         final DHPrivateKeyParameters priv = convertToPrivateKeyParams(pair.getPrivate());
         final DHParameters dhParameters = priv.getParameters();
-        final DHPrivateKeySpec privKeySpecs = new DHPrivateKeySpec(priv.getX(),
-                dhParameters.getP(), dhParameters.getG());
+        final DHPrivateKeySpec privKeySpecs = new DHPrivateKeySpec(priv.getX(), dhParameters.getP(),
+                dhParameters.getG());
         final DHPrivateKey privKey;
         try {
             privKey = (DHPrivateKey) keyFac.generatePrivate(privKeySpecs);
@@ -127,7 +124,7 @@ public final class DHKeyPairJ {
             throw new IllegalStateException("Failed to generate DH private key.", ex);
         }
 
-        return new DHKeyPairJ(privKey, pubKey);
+        return new DHKeyPairOTR3(privKey, pubKey);
     }
 
     /**
@@ -158,8 +155,7 @@ public final class DHKeyPairJ {
      * @throws OtrCryptoException In case of illegal key.
      */
     @Nonnull
-    public SharedSecret generateSharedSecret(@Nonnull final DHPublicKey publicKey)
-            throws OtrCryptoException {
+    public SharedSecret generateSharedSecret(@Nonnull final DHPublicKey publicKey) throws OtrCryptoException {
         verifyDHPublicKey(publicKey);
         try {
             final KeyAgreement ka = KeyAgreement.getInstance(KA_DH);
@@ -206,7 +202,8 @@ public final class DHKeyPairJ {
     @Nonnull
     private static DHPublicKeyParameters convertToPublicKeyParams(@Nonnull final AsymmetricKeyParameter params) {
         if (!(params instanceof DHPublicKeyParameters)) {
-            throw new IllegalArgumentException("Expected to acquire DHPublicKeyParameters instance, but it isn't. (" + params.getClass().getCanonicalName() + ")");
+            throw new IllegalArgumentException("Expected to acquire DHPublicKeyParameters instance, but it isn't. ("
+                    + params.getClass().getCanonicalName() + ")");
         }
         return (DHPublicKeyParameters) params;
     }
@@ -214,7 +211,8 @@ public final class DHKeyPairJ {
     @Nonnull
     private static DHPrivateKeyParameters convertToPrivateKeyParams(@Nonnull final AsymmetricKeyParameter params) {
         if (!(params instanceof DHPrivateKeyParameters)) {
-            throw new IllegalArgumentException("Expected to acquire DHPrivateKeyParameters instance, but it isn't. (" + params.getClass().getCanonicalName() + ")");
+            throw new IllegalArgumentException("Expected to acquire DHPrivateKeyParameters instance, but it isn't. ("
+                    + params.getClass().getCanonicalName() + ")");
         }
         return (DHPrivateKeyParameters) params;
     }

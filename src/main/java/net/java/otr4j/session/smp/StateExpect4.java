@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.smp;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
@@ -55,7 +55,7 @@ final class StateExpect4 extends AbstractSMPState {
 
         /* Calculate Rab and verify that secrets match */
 
-        final BigInteger rab = msg4[0].modPow(x3, DHKeyPairJ.MODULUS);
+        final BigInteger rab = msg4[0].modPow(x3, DHKeyPairOTR3.MODULUS);
         final int comp = rab.compareTo(pab);
 
         final SMPStatus status = (comp == 0) ? SMPStatus.SUCCEEDED : SMPStatus.FAILED;

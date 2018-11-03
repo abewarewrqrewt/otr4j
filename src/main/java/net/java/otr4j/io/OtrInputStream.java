@@ -10,7 +10,7 @@ package net.java.otr4j.io;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.Scalar;
@@ -24,7 +24,7 @@ import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 
 import static net.java.otr4j.api.InstanceTag.isValidInstanceTag;
-import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static net.java.otr4j.crypto.DSAKeyPair.createDSAPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
@@ -224,7 +224,7 @@ public final class OtrInputStream {
     @Nonnull
     public DHPublicKey readDHPublicKey() throws OtrCryptoException, ProtocolException {
         final BigInteger gyMpi = readBigInt();
-        return verifyDHPublicKey(DHKeyPairJ.fromBigInteger(gyMpi));
+        return verifyDHPublicKey(DHKeyPairOTR3.fromBigInteger(gyMpi));
     }
 
     /**

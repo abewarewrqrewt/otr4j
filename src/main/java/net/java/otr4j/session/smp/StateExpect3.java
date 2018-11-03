@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.smp;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.session.api.SMPStatus;
 
 import javax.annotation.Nonnull;
@@ -64,17 +64,17 @@ final class StateExpect3 extends AbstractSMPState {
         checkEqualCoords(msg3[2], msg3[3], msg3[4], msg3[0], msg3[1], g2, g3, 6);
 
         /* Find Pa/Pb and Qa/Qb */
-        BigInteger inv = p.modInverse(DHKeyPairJ.MODULUS);
-        final BigInteger pab = msg3[0].multiply(inv).mod(DHKeyPairJ.MODULUS);
-        inv = q.modInverse(DHKeyPairJ.MODULUS);
-        final BigInteger qab = msg3[1].multiply(inv).mod(DHKeyPairJ.MODULUS);
+        BigInteger inv = p.modInverse(DHKeyPairOTR3.MODULUS);
+        final BigInteger pab = msg3[0].multiply(inv).mod(DHKeyPairOTR3.MODULUS);
+        inv = q.modInverse(DHKeyPairOTR3.MODULUS);
+        final BigInteger qab = msg3[1].multiply(inv).mod(DHKeyPairOTR3.MODULUS);
 
 
         /* Verify Alice's log equality proof */
         checkEqualLogs(msg3[6], msg3[7], msg3[5], g3o, qab, 7);
 
         /* Calculate Rb and proof */
-        msg4[0] = qab.modPow(x3, DHKeyPairJ.MODULUS);
+        msg4[0] = qab.modPow(x3, DHKeyPairOTR3.MODULUS);
         final BigInteger[] res = proofEqualLogs(qab, x3, 8);
         msg4[1] = res[0];
         msg4[2] = res[1];
@@ -83,7 +83,7 @@ final class StateExpect3 extends AbstractSMPState {
 
         /* Calculate Rab and verify that secrets match */
 
-        final BigInteger rab = msg3[5].modPow(x3, DHKeyPairJ.MODULUS);
+        final BigInteger rab = msg3[5].modPow(x3, DHKeyPairOTR3.MODULUS);
         final int comp = rab.compareTo(pab);
 
         final SMPStatus status = (comp == 0) ? SMPStatus.SUCCEEDED : SMPStatus.FAILED;

@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -47,7 +47,7 @@ final class SessionKey implements AutoCloseable {
 
     private final int localKeyID;
     private final int remoteKeyID;
-    private final DHKeyPairJ localKeyPair;
+    private final DHKeyPairOTR3 localKeyPair;
     private final DHPublicKey remotePublicKey;
     private final SharedSecret s;
 
@@ -64,7 +64,7 @@ final class SessionKey implements AutoCloseable {
      */
     private boolean used;
 
-    SessionKey(final int localKeyID, @Nonnull final DHKeyPairJ localKeyPair, final int remoteKeyID,
+    SessionKey(final int localKeyID, @Nonnull final DHKeyPairOTR3 localKeyPair, final int remoteKeyID,
             @Nonnull final DHPublicKey remotePublicKey) throws OtrCryptoException {
         this.localKeyID = localKeyID;
         this.remoteKeyID = remoteKeyID;
@@ -84,7 +84,7 @@ final class SessionKey implements AutoCloseable {
     }
 
     @Nonnull
-    public DHKeyPairJ getLocalKeyPair() {
+    public DHKeyPairOTR3 getLocalKeyPair() {
         return localKeyPair;
     }
 

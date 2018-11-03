@@ -13,28 +13,28 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.SecureRandom;
 
 import static java.math.BigInteger.ONE;
-import static net.java.otr4j.crypto.DHKeyPairJ.MODULUS;
-import static net.java.otr4j.crypto.DHKeyPairJ.fromBigInteger;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
-import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.MODULUS;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.fromBigInteger;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @SuppressWarnings("ConstantConditions")
-public final class DHKeyPairJTest {
+public final class DHKeyPairOTR3Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test(expected = NullPointerException.class)
     public void testGenerateNullSharedSecret() throws OtrCryptoException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         keypair.generateSharedSecret(null);
     }
 
     @Test
     public void testGeneratedSharedSecretEqual() throws OtrCryptoException {
-        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(RANDOM);
-        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 aliceDHKeyPair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 bobDHKeyPair = generateDHKeyPair(RANDOM);
 
         assertEquals(aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic()),
                 bobDHKeyPair.generateSharedSecret(aliceDHKeyPair.getPublic()));
@@ -47,7 +47,7 @@ public final class DHKeyPairJTest {
 
     @Test
     public void testGenerateDHKeyPair() throws OtrCryptoException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         assertNotNull(keypair);
         verifyDHPublicKey(keypair.getPublic());
     }
@@ -59,7 +59,7 @@ public final class DHKeyPairJTest {
 
     @Test
     public void testConvertPublicKeyFromBigInteger() throws OtrCryptoException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         assertEquals(keypair.getPublic(), fromBigInteger(keypair.getPublic().getY()));
     }
 
@@ -76,14 +76,14 @@ public final class DHKeyPairJTest {
 
     @Test(expected = OtrCryptoException.class)
     public void testPreventUseOfIllegalPublicKeyToGenerateSecretTooSmall() throws OtrCryptoException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         final DHPublicKey illegalPublicKey = fromBigInteger(ONE);
         keypair.generateSharedSecret(illegalPublicKey);
     }
 
     @Test(expected = OtrCryptoException.class)
     public void testPreventUseOfIllegalPublicKeyToGenerateSecretTooLarge() throws OtrCryptoException {
-        final DHKeyPairJ keypair = generateDHKeyPair(RANDOM);
+        final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         final DHPublicKey illegalPublicKey = fromBigInteger(MODULUS);
         keypair.generateSharedSecret(illegalPublicKey);
     }

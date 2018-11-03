@@ -8,7 +8,7 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session.OTRv;
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.EncodedMessageParser;
@@ -20,7 +20,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -69,7 +69,7 @@ public class IOTest {
 
     @Test
     public void testIOBigInt() throws Exception {
-        DHKeyPairJ pair = generateDHKeyPair(this.secureRandom);
+        DHKeyPairOTR3 pair = generateDHKeyPair(this.secureRandom);
         BigInteger source = pair.getPublic().getY();
         byte[] converted = new OtrOutputStream().writeBigInt(source).toByteArray();
         BigInteger result = new OtrInputStream(converted).readBigInt();
@@ -78,7 +78,7 @@ public class IOTest {
 
     @Test
     public void testIODHPublicKey() throws Exception {
-        DHKeyPairJ pair = generateDHKeyPair(this.secureRandom);
+        DHKeyPairOTR3 pair = generateDHKeyPair(this.secureRandom);
         DHPublicKey source = pair.getPublic();
         byte[] converted = new OtrOutputStream().writeDHPublicKey(source).toByteArray();
         DHPublicKey result = new OtrInputStream(converted).readDHPublicKey();
@@ -87,7 +87,7 @@ public class IOTest {
 
     @Test
     public void testIODHKeyMessage() throws Exception {
-        DHKeyPairJ pair = generateDHKeyPair(this.secureRandom);
+        DHKeyPairOTR3 pair = generateDHKeyPair(this.secureRandom);
         DHKeyMessage source = new DHKeyMessage(OTRv.THREE, pair.getPublic(), ZERO_TAG, ZERO_TAG);
         String base64 = SerializationUtils.toString(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);

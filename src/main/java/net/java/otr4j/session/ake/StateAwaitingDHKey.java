@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.ake;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -27,8 +27,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
-import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static net.java.otr4j.io.OtrEncodables.encode;
 
 /**
@@ -43,11 +43,11 @@ final class StateAwaitingDHKey extends AbstractAuthState {
     private static final int LOCAL_DH_PRIVATE_KEY_ID = 1;
 
     private final int version;
-    private final DHKeyPairJ keypair;
+    private final DHKeyPairOTR3 keypair;
     private final byte[] r;
 
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
-    StateAwaitingDHKey(final int version, @Nonnull final DHKeyPairJ keypair, @Nonnull final byte[] r) {
+    StateAwaitingDHKey(final int version, @Nonnull final DHKeyPairOTR3 keypair, @Nonnull final byte[] r) {
         super();
         if (version < 2 || version > 3) {
             throw new IllegalArgumentException("unsupported version specified");
@@ -109,7 +109,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // i.e. reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
             LOGGER.finest("Forgetting old gx value that we sent (encrypted) earlier, and pretended we're in AUTHSTATE_NONE -> Sending DH key.");
             // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
-            final DHKeyPairJ newKeypair = generateDHKeyPair(context.secureRandom());
+            final DHKeyPairOTR3 newKeypair = generateDHKeyPair(context.secureRandom());
             context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
             return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderInstanceTag(),
                     context.getReceiverInstanceTag());

@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.ake;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
 
@@ -16,7 +16,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 
 /**
  * Container that stores all the security parameters that were negotiated during
@@ -27,12 +27,12 @@ import static net.java.otr4j.crypto.DHKeyPairJ.verifyDHPublicKey;
 public final class SecurityParameters {
 
     private final int version;
-    private final DHKeyPairJ localDHKeyPair;
+    private final DHKeyPairOTR3 localDHKeyPair;
     private final DSAPublicKey remoteLongTermPublicKey;
     private final DHPublicKey remoteDHPublicKey;
     private final SharedSecret s;
 
-    SecurityParameters(final int version, @Nonnull final DHKeyPairJ localDHKeyPair,
+    SecurityParameters(final int version, @Nonnull final DHKeyPairOTR3 localDHKeyPair,
             @Nonnull final DSAPublicKey remoteLongTermPublicKey, @Nonnull final DHPublicKey remoteDHPublicKey,
             @Nonnull final SharedSecret s) {
         if (version < 2 || version > 3) {
@@ -64,7 +64,7 @@ public final class SecurityParameters {
      * @return Returns the DH key pair.
      */
     @Nonnull
-    public DHKeyPairJ getLocalDHKeyPair() {
+    public DHKeyPairOTR3 getLocalDHKeyPair() {
         return localDHKeyPair;
     }
 

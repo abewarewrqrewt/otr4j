@@ -7,7 +7,7 @@
 
 package net.java.otr4j.session.smp;
 
-import net.java.otr4j.crypto.DHKeyPairJ;
+import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.session.api.SMPStatus;
@@ -20,7 +20,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import static net.java.otr4j.crypto.DHKeyPairJ.generateDHKeyPair;
+import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static org.junit.Assert.assertArrayEquals;
@@ -97,12 +97,12 @@ public class SMTest {
 
     @Test
     public void testCheckGroupElemJustValidUpperBound() throws SMException {
-        AbstractSMPState.checkGroupElem(DHKeyPairJ.MODULUS_MINUS_TWO);
+        AbstractSMPState.checkGroupElem(DHKeyPairOTR3.MODULUS_MINUS_TWO);
     }
 
     @Test(expected = SMException.class)
     public void testCheckGroupElemTooLarge() throws SMException {
-        AbstractSMPState.checkGroupElem(DHKeyPairJ.MODULUS_MINUS_TWO.add(BigInteger.ONE));
+        AbstractSMPState.checkGroupElem(DHKeyPairOTR3.MODULUS_MINUS_TWO.add(BigInteger.ONE));
     }
 
     @Test
@@ -209,13 +209,13 @@ public class SMTest {
         // Alice
         final SM alice = new SM(sr);
         final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 aliceDHKeyPair = generateDHKeyPair(sr);
         final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
 
         // Bob
         final SM bob = new SM(sr);
         final DSAKeyPair bobKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 bobDHKeyPair = generateDHKeyPair(sr);
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Shared secret
@@ -259,13 +259,13 @@ public class SMTest {
         // Alice
         final SM alice = new SM(sr);
         final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 aliceDHKeyPair = generateDHKeyPair(sr);
         final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
 
         // Bob
         final SM bob = new SM(sr);
         final DSAKeyPair bobKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 bobDHKeyPair = generateDHKeyPair(sr);
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Shared secret
@@ -734,12 +734,12 @@ public class SMTest {
         // Alice
         final SM alice = new SM(sr);
         final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 aliceDHKeyPair = generateDHKeyPair(sr);
         final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
         // Bob
         final SM bob = new SM(sr);
         final DSAKeyPair bobKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 bobDHKeyPair = generateDHKeyPair(sr);
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Prepare sm instance for StateExpect3.
@@ -757,12 +757,12 @@ public class SMTest {
         // Alice
         final SM alice = new SM(sr);
         final DSAKeyPair aliceKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ aliceDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 aliceDHKeyPair = generateDHKeyPair(sr);
         final byte[] alicePublic = getFingerprintRaw(aliceKeyPair.getPublic());
         // Bob
         final SM bob = new SM(sr);
         final DSAKeyPair bobKeyPair = generateDSAKeyPair();
-        final DHKeyPairJ bobDHKeyPair = generateDHKeyPair(sr);
+        final DHKeyPairOTR3 bobDHKeyPair = generateDHKeyPair(sr);
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Prepare sm instance for StateExpect3.
