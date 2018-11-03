@@ -55,6 +55,7 @@ import java.net.ProtocolException;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -184,6 +185,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     // TODO refresh client profile payload after it is expired. (Maybe leave until after initial use, as expiration date is recommended for 2+ weeks.)
     // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
+    // TODO ability for user to specify amount of expiration time on a profile
     private final ClientProfilePayload profilePayload;
 
     /**
@@ -319,8 +321,10 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (!profile.getInstanceTag().equals(this.senderTag)) {
             throw new IllegalStateException("Provided client profile does not match with the instance tag for this session.");
         }
-        this.profilePayload = ClientProfilePayload.sign(profile, this.host.getLocalKeyPair(sessionID),
-                this.host.getLongTermKeyPair(sessionID));
+        final Calendar expirationDate = Calendar.getInstance();
+        expirationDate.add(Calendar.DAY_OF_YEAR, 14);
+        this.profilePayload = ClientProfilePayload.sign(profile, expirationDate.getTimeInMillis() / 1000,
+                this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
     }
 
     /**

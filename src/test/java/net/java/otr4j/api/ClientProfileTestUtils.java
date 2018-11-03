@@ -39,8 +39,8 @@ public final class ClientProfileTestUtils {
 
     public ClientProfilePayload createUserProfile() {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
-                this.forgingKey, singleton(Session.OTRv.FOUR), this.expirationTime, null);
-        return ClientProfilePayload.sign(profile, null, this.eddsaLongTermKeyPair);
+                this.forgingKey, singleton(Session.OTRv.FOUR), null);
+        return ClientProfilePayload.sign(profile, this.expirationTime, null, this.eddsaLongTermKeyPair);
     }
 
     public ClientProfilePayload createTransitionalUserProfile() {
@@ -48,7 +48,7 @@ public final class ClientProfileTestUtils {
         versions.add(Session.OTRv.THREE);
         versions.add(Session.OTRv.FOUR);
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
-                this.forgingKey, versions, this.expirationTime, this.dsaKeyPair.getPublic());
-        return ClientProfilePayload.sign(profile, this.dsaKeyPair, this.eddsaLongTermKeyPair);
+                this.forgingKey, versions, this.dsaKeyPair.getPublic());
+        return ClientProfilePayload.sign(profile, this.expirationTime, this.dsaKeyPair, this.eddsaLongTermKeyPair);
     }
 }

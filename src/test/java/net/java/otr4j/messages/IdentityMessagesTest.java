@@ -40,8 +40,9 @@ public final class IdentityMessagesTest {
     @Test
     public void testValidateIdentity() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), this.forgingPublicKey,
-            Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
-        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
+            Collections.singleton(4), null);
+        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile,
+                System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, SMALLEST_TAG, HIGHEST_TAG, profilePayload,
                 ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
         validate(message);
@@ -57,8 +58,9 @@ public final class IdentityMessagesTest {
     @Test(expected = NullPointerException.class)
     public void testValidateIdentityNullEcdhPublicKey() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), this.forgingPublicKey,
-            Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
-        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
+            Collections.singleton(4), null);
+        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile,
+                System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, profilePayload,
                 null, dhKeyPair.getPublicKey());
         validate(message);
@@ -67,8 +69,9 @@ public final class IdentityMessagesTest {
     @Test(expected = NullPointerException.class)
     public void testValidateIdentityNullDhPublicKey() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), this.forgingPublicKey,
-            Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
-        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
+            Collections.singleton(4), null);
+        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile,
+                System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, profilePayload,
                 ecdhKeyPair.getPublicKey(), null);
         validate(message);
@@ -77,8 +80,9 @@ public final class IdentityMessagesTest {
     @Test(expected = ValidationException.class)
     public void testValidateIdentityInconsistentInstanceTag() throws OtrCryptoException, ValidationException {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), this.forgingPublicKey,
-            Collections.singleton(4), System.currentTimeMillis() / 1000 + 86400, null);
-        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile, null, longTermKeyPair);
+            Collections.singleton(4), null);
+        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile,
+                System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, profilePayload,
                 ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
         validate(message);

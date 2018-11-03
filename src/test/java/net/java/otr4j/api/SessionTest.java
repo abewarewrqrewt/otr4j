@@ -1225,8 +1225,7 @@ public class SessionTest {
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
             this.profile = new ClientProfile(this.instanceTag, this.ed448KeyPair.getPublicKey(), this.forgingPublicKey,
-                    Collections.singleton(OTRv.FOUR), expirationCalendar.getTimeInMillis() / 1000,
-                    null);
+                    Collections.singleton(OTRv.FOUR), null);
             this.session = createSession(sessionID, this);
         }
 

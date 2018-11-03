@@ -50,12 +50,6 @@ public final class ClientProfile {
     private final Set<Integer> versions;
 
     /**
-     * Profile expiration date in 64-bit Unix timestamp (ignoring leap seconds).
-     */
-    // FIXME consider removing expiration date from the unsigned client profile. Its function is only for the signed payload.
-    private final long expirationUnixTime;
-
-    /**
      * DSA public key.
      */
     private final DSAPublicKey dsaPublicKey;
@@ -67,18 +61,16 @@ public final class ClientProfile {
      * @param longTermPublicKey  the long-term Ed448 public key
      * @param forgingKey         the Ed448 Forging public key
      * @param versions           supported protocol versions
-     * @param expirationUnixTime the expiration date in unix timestamp (in seconds)
      * @param dsaPublicKey       the DSA public key
      */
     public ClientProfile(@Nonnull final InstanceTag instanceTag, @Nonnull final Point longTermPublicKey,
-            @Nonnull final Point forgingKey, @Nonnull final Set<Integer> versions, final long expirationUnixTime,
+            @Nonnull final Point forgingKey, @Nonnull final Set<Integer> versions,
             @Nullable final DSAPublicKey dsaPublicKey) {
         this.instanceTag = requireNonNull(instanceTag);
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
         this.forgingKey = requireNonNull(forgingKey);
         this.versions = requireMinElements(1, requireElements(singletonList(OTRv.FOUR),
                 requireNoIllegalValues(asList(OTRv.ONE, OTRv.TWO), versions)));
-        this.expirationUnixTime = expirationUnixTime;
         this.dsaPublicKey = dsaPublicKey;
     }
 
@@ -123,15 +115,6 @@ public final class ClientProfile {
     }
 
     /**
-     * Get the expiration date as unix timestamp (in seconds).
-     *
-     * @return Returns the unix timestamp in seconds.
-     */
-    public long getExpirationUnixTime() {
-        return this.expirationUnixTime;
-    }
-
-    /**
      * The long-term DSA public key. (Used in OTRv3.)
      *
      * @return Returns the public key.
@@ -150,7 +133,7 @@ public final class ClientProfile {
             return false;
         }
         final ClientProfile that = (ClientProfile) o;
-        return expirationUnixTime == that.expirationUnixTime && Objects.equals(instanceTag, that.instanceTag)
+        return Objects.equals(instanceTag, that.instanceTag)
                 && Objects.equals(longTermPublicKey, that.longTermPublicKey)
                 && Objects.equals(forgingKey, that.forgingKey) && Objects.equals(versions, that.versions)
                 && Objects.equals(dsaPublicKey, that.dsaPublicKey);
@@ -158,6 +141,6 @@ public final class ClientProfile {
 
     @Override
     public int hashCode() {
-        return Objects.hash(instanceTag, longTermPublicKey, forgingKey, versions, expirationUnixTime, dsaPublicKey);
+        return Objects.hash(instanceTag, longTermPublicKey, forgingKey, versions, dsaPublicKey);
     }
 }

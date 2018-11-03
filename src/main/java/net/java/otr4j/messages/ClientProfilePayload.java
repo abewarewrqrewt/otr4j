@@ -83,20 +83,21 @@ public final class ClientProfilePayload implements OtrEncodable {
     /**
      * Generates a client profile payload by converting the profile and signing with provided keys.
      *
-     * @param profile       The client profile to be converted.
-     * @param dsaPrivateKey OTRv3 DSA private key for signing. (Transitional signature)
-     * @param eddsaKeyPair  EdDSA key pair.
+     * @param profile                   The client profile to be converted.
+     * @param expirationUnixTimeSeconds Expiration time of profile as unix timestamp in seconds.
+     * @param dsaPrivateKey             OTRv3 DSA private key for signing. (Transitional signature)
+     * @param eddsaKeyPair              EdDSA key pair.
      * @return Returns a Client Profile payload that can be serialized to an OTR-encoded data stream.
      */
     @Nonnull
-    public static ClientProfilePayload sign(@Nonnull final ClientProfile profile,
+    public static ClientProfilePayload sign(@Nonnull final ClientProfile profile, final long expirationUnixTimeSeconds,
             @Nullable final DSAKeyPair dsaPrivateKey, @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
         fields.add(new ED448ForgingKeyField(profile.getForgingKey()));
         fields.add(new VersionsField(profile.getVersions()));
-        fields.add(new ExpirationDateField(profile.getExpirationUnixTime()));
+        fields.add(new ExpirationDateField(expirationUnixTimeSeconds));
         final DSAPublicKey dsaPublicKey = profile.getDsaPublicKey();
         if (dsaPublicKey != null) {
             if (dsaPrivateKey == null) {
@@ -260,9 +261,8 @@ public final class ClientProfilePayload implements OtrEncodable {
         final Point longTermPublicKey = findByType(this.fields, ED448PublicKeyField.class).publicKey;
         final Point forgingKey = findByType(this.fields, ED448ForgingKeyField.class).publicKey;
         final Set<Integer> versions = findByType(this.fields, VersionsField.class).versions;
-        final long expirationUnixTime = findByType(this.fields, ExpirationDateField.class).timestamp;
         final DSAPublicKeyField dsaPublicKeyField = findByType(this.fields, DSAPublicKeyField.class, null);
-        return new ClientProfile(instanceTag, longTermPublicKey, forgingKey, versions, expirationUnixTime,
+        return new ClientProfile(instanceTag, longTermPublicKey, forgingKey, versions,
             dsaPublicKeyField == null ? null : dsaPublicKeyField.publicKey);
     }
 
@@ -620,6 +620,11 @@ public final class ClientProfilePayload implements OtrEncodable {
 
         private final long timestamp;
 
+        /**
+         * Expiration time as unix timestamp in seconds.
+         *
+         * @param timestamp expiration timestamp
+         */
         private ExpirationDateField(final long timestamp) {
             this.timestamp = timestamp;
         }

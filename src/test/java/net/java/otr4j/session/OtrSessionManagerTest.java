@@ -40,8 +40,8 @@ public class OtrSessionManagerTest {
     private static final EdDSAKeyPair EDDSA_KEY_PAIR = EdDSAKeyPair.generate(RANDOM);
     private static final Point PUBLIC_KEY = ECDHKeyPair.generate(RANDOM).getPublicKey();
     private static final DSAKeyPair DSA_KEY_PAIR = DSAKeyPair.generateDSAKeyPair();
-    private static final ClientProfile PROFILE = new ClientProfile(SMALLEST_TAG, EDDSA_KEY_PAIR.getPublicKey(), PUBLIC_KEY,
-            Collections.singleton(OTRv.FOUR), Long.MAX_VALUE / 1000, DSA_KEY_PAIR.getPublic());
+    private static final ClientProfile PROFILE = new ClientProfile(SMALLEST_TAG, EDDSA_KEY_PAIR.getPublicKey(),
+            PUBLIC_KEY, Collections.singleton(OTRv.FOUR), DSA_KEY_PAIR.getPublic());
 
     @Test
     public void testGetSession() {

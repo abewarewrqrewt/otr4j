@@ -35,49 +35,47 @@ public final class ClientProfileTest {
     @Test
     public void testConstructWithoutDSAPublicKey() {
         new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
-                System.currentTimeMillis() / 1000 + 86400, null);
+                null);
     }
 
     @Test
     public void testConstructWithDSAPublicKey() {
         new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
-                System.currentTimeMillis() / 1000 + 86400,
                 dsaKeyPair.getPublic());
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullInstanceTag() {
         new ClientProfile(null, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
-                System.currentTimeMillis() / 1000 + 86400, null);
+                null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullPublicKey() {
         new ClientProfile(SMALLEST_TAG, null, forgingPublicKey, singleton(OTRv.FOUR),
-            System.currentTimeMillis() / 1000 + 86400, null);
+                null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullForgingKey() {
         new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), null, singleton(OTRv.FOUR),
-            System.currentTimeMillis() / 1000 + 86400, null);
+                null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullVersions() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, null,
-            System.currentTimeMillis() / 1000 + 86400, null);
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, null, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructEmptyVersions() {
         new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey,
-            Collections.<Integer>emptySet(), System.currentTimeMillis() / 1000 + 86400, null);
+                Collections.<Integer>emptySet(), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalVersionsList() {
         new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.THREE),
-            System.currentTimeMillis() / 1000 + 86400, null);
+                null);
     }
 }
