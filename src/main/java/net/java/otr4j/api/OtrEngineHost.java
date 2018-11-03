@@ -149,6 +149,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID the session ID for which the instance tag is requested
      * @return Returns instance tag.
      */
+    // FIXME consider removing 'getInstanceTag' field and getting instance tag from Client Profile itself.
     @Nonnull
     InstanceTag getInstanceTag(@Nonnull SessionID sessionID);
 

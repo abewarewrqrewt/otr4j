@@ -78,7 +78,6 @@ import static net.java.otr4j.api.Session.OTRv.FOUR;
 import static net.java.otr4j.api.Session.OTRv.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
-import static net.java.otr4j.messages.ClientProfilePayload.sign;
 import static net.java.otr4j.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 
@@ -115,6 +114,8 @@ import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
  * @author Danny van Heumen
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
+// TODO investigate if TooManyFields PMD suppression is still needed after further incorporating ClientProfile
+@SuppressWarnings("PMD.TooManyFields")
 final class SessionImpl implements Session, Context, AuthContext {
 
     private static final String DEFAULT_FALLBACK_MESSAGE = "Your contact is requesting to start an encrypted chat. Please install an app that supports OTR: https://github.com/otr4j/otr4j/wiki/Apps";
@@ -177,6 +178,13 @@ final class SessionImpl implements Session, Context, AuthContext {
      * Offer status for whitespace-tagged message indicating OTR supported.
      */
     private OfferStatus offerStatus;
+
+    /**
+     * The OTR-encodable, signed payload containing the client profile, ready to be sent.
+     */
+    // TODO refresh client profile payload after it is expired. (Maybe leave until after initial use, as expiration date is recommended for 2+ weeks.)
+    // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
+    private final ClientProfilePayload profilePayload;
 
     /**
      * Sender instance tag.
@@ -307,6 +315,12 @@ final class SessionImpl implements Session, Context, AuthContext {
         outgoingSession = this;
         // Initialize message fragmentation support.
         fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
+        final ClientProfile profile = this.host.getClientProfile(sessionID);
+        if (!profile.getInstanceTag().equals(this.senderTag)) {
+            throw new IllegalStateException("Provided client profile does not match with the instance tag for this session.");
+        }
+        this.profilePayload = ClientProfilePayload.sign(profile, this.host.getLocalKeyPair(sessionID),
+                this.host.getLongTermKeyPair(sessionID));
     }
 
     /**
@@ -1017,14 +1031,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nonnull
     @Override
     public ClientProfilePayload getClientProfilePayload() {
-        // FIXME keep client profile payload (and profile itself?) as session instance field
-        // FIXME verify that instance tag in payload is same as instance tag of session
-        // FIXME initialize client profile payload at session construction, as one-time operation
-        // TODO figure out how to refresh client profile payload after it being expired. (Maybe leave until after initial use, as expiration date is recommended for 2+ weeks.)
-        // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
-        final SessionID sessionID = this.sessionState.getSessionID();
-        final ClientProfile profile = this.host.getClientProfile(sessionID);
-        return sign(profile, this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
+        return this.profilePayload;
     }
 
     @Override
