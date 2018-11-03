@@ -7,6 +7,7 @@
 
 package net.java.otr4j.crypto.ed448;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -16,6 +17,7 @@ import static net.java.otr4j.crypto.ed448.ECDHKeyPair.generate;
 import static net.java.otr4j.crypto.ed448.Ed448.identity;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -70,5 +72,18 @@ public class ECDHKeyPairTest {
     public void testSharedSecretDoesNotAcceptIdentity() throws ValidationException {
         final ECDHKeyPair keypair1 = ECDHKeyPair.generate(RANDOM);
         keypair1.generateSharedSecret(identity());
+    }
+
+    // FIXME figure out what the deal is with this contributary behavior and how to trigger this as a unit test
+    @Ignore("We should be able to create circumstances where other point has small contribution and a ValidationException results. So far, I haven't been able to.")
+    @Test(expected = ValidationException.class)
+    public void testSharedSecretWithIllegalPoint() throws ValidationException {
+        final byte[] otherScalar = randomBytes(RANDOM, new byte[57]);
+        otherScalar[0] |= 0b00000011;
+        otherScalar[56] = 0;
+        otherScalar[55] |= 0b10000000;
+        final Point other = multiplyByBase(Scalar.decodeScalar(otherScalar));
+        final ECDHKeyPair keypair = ECDHKeyPair.generate(RANDOM);
+        keypair.generateSharedSecret(other);
     }
 }
