@@ -27,7 +27,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * arithmetic operations, but it does have the benefit that the current bad implementation is isolated to the innermost
  * implementation details.
  */
-// FIXME implement arithmetic operations that operate directly on byte-arrays.
+// FIXME implement arithmetic operations that operate directly on byte-arrays. ('toBigInteger' is workaround to make current implementation work.)
 public final class Scalar implements Comparable<Scalar>, AutoCloseable {
 
     /**
@@ -194,7 +194,6 @@ public final class Scalar implements Comparable<Scalar>, AutoCloseable {
         return 0;
     }
 
-    // FIXME workaround that is necessary as long as Point cannot calculate with byte-arrays.
     @Nonnull
     BigInteger toBigInteger() {
         requireNotCleared();

@@ -7,11 +7,14 @@
 
 package net.java.otr4j.io;
 
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nonnull;
 
+import static java.util.Collections.sort;
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.io.MessageParser.encodeVersionString;
 
 /**
  * OTRv2 OTR query message.
@@ -19,7 +22,6 @@ import static java.util.Objects.requireNonNull;
  * @author George Politis
  * @author Danny van Heumen
  */
-// FIXME QueryMessage not constructed in way where tag is relevant for serialization. Consider restructuring this such that work is fully predictable.
 public class QueryMessage implements Message {
 
     private final Set<Integer> versions;
@@ -32,12 +34,14 @@ public class QueryMessage implements Message {
      */
     public QueryMessage(@Nonnull final Set<Integer> versions) {
         this.versions = requireNonNull(versions);
-        // FIXME !!! bad workaround because we generate the actually sent Query-string in SerializationUtils.toString(m)!
-        final StringBuilder tag = new StringBuilder("?OTRv");
-        for (final int version : versions) {
-            tag.append(version);
+        final StringBuilder tag = new StringBuilder();
+        if (!versions.isEmpty()) {
+            tag.append("?OTRv");
+            final ArrayList<Integer> sorted = new ArrayList<>(versions);
+            sort(sorted);
+            tag.append(encodeVersionString(sorted));
+            tag.append('?');
         }
-        tag.append('?');
         this.tag = tag.toString();
     }
 

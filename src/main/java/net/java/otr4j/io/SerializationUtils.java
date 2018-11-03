@@ -15,15 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.sort;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ERROR;
-import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_Q;
-import static net.java.otr4j.io.EncodingConstants.HEAD_QUERY_V;
-import static net.java.otr4j.io.MessageParser.encodeVersionString;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 
 /**
@@ -71,14 +67,7 @@ public final class SerializationUtils {
             if (query.getVersions().size() == 1 && query.getVersions().contains(1)) {
                 throw new UnsupportedOperationException("OTR v1 is no longer supported. Support in the library has been removed, so the query message should not contain a version 1 entry.");
             }
-            if (query.getVersions().size() > 0) {
-                writer.write(HEAD);
-                writer.write(HEAD_QUERY_V);
-                final ArrayList<Integer> versions = new ArrayList<>(query.getVersions());
-                sort(versions);
-                writer.write(encodeVersionString(versions));
-                writer.write(HEAD_QUERY_Q);
-            }
+            writer.write(query.getTag());
         } else if (m instanceof OtrEncodable) {
             writer.write(HEAD_ENCODED);
             final byte[] otrEncodedMessage = new OtrOutputStream().write((OtrEncodable) m).toByteArray();

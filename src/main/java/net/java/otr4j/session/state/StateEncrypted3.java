@@ -257,7 +257,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         logger.finest("Error message starts AKE.");
         final Set<Integer> versions = allowedVersions(policy);
         logger.finest("Sending Query");
-        context.injectMessage(new QueryMessage("", versions));
+        context.injectMessage(new QueryMessage(versions));
     }
 
     @Override

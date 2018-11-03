@@ -916,8 +916,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         final OtrPolicy policy = this.getSessionPolicy();
         final Set<Integer> allowedVersions = OtrPolicyUtil.allowedVersions(policy);
         if (allowedVersions.isEmpty()) {
-            // TODO consider making this an OtrException as this is reasonably possible with configuration.
-            throw new IllegalStateException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
+            throw new OtrException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }
         final QueryMessage queryMessage = new QueryMessage(allowedVersions);
         setState(new StateInitial(queryMessage.getTag()));
