@@ -19,7 +19,6 @@ import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
-import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -96,7 +95,7 @@ public final class Ed448Test {
 
     @Test
     public void testMultiplyByBaseOne() {
-        final Point point = multiplyByBase(ONE);
+        final Point point = multiplyByBase(Scalars.one());
         assertNotNull(point);
     }
 }

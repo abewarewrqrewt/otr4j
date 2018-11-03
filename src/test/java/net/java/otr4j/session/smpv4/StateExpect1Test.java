@@ -9,6 +9,7 @@ package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.Scalar;
+import net.java.otr4j.crypto.ed448.Scalars;
 import org.bouncycastle.util.test.FixedSecureRandom;
 import org.junit.Test;
 
@@ -18,7 +19,6 @@ import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.ed448.Point.createPoint;
-import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static org.junit.Assert.assertEquals;
@@ -244,7 +244,7 @@ public final class StateExpect1Test {
     public void testProcessIllegalc2() throws SMPAbortException {
         final StateExpect1 state = new StateExpect1(RANDOM, UNDECIDED);
         final Context context = new Context();
-        final SMPMessage1 message = new SMPMessage1("Hello", g2a, ONE, d2_a, g3a, c3_a, d3_a);
+        final SMPMessage1 message = new SMPMessage1("Hello", g2a, Scalars.one(), d2_a, g3a, c3_a, d3_a);
         state.process(context, message);
     }
 
@@ -252,7 +252,7 @@ public final class StateExpect1Test {
     public void testProcessIllegald2() throws SMPAbortException {
         final StateExpect1 state = new StateExpect1(RANDOM, UNDECIDED);
         final Context context = new Context();
-        final SMPMessage1 message = new SMPMessage1("Hello", g2a, c2_a, ONE, g3a, c3_a, d3_a);
+        final SMPMessage1 message = new SMPMessage1("Hello", g2a, c2_a, Scalars.one(), g3a, c3_a, d3_a);
         state.process(context, message);
     }
 
@@ -260,7 +260,7 @@ public final class StateExpect1Test {
     public void testProcessIllegalc3() throws SMPAbortException {
         final StateExpect1 state = new StateExpect1(RANDOM, UNDECIDED);
         final Context context = new Context();
-        final SMPMessage1 message = new SMPMessage1("Hello", g2a, c2_a, d2_a, g3a, ONE, d3_a);
+        final SMPMessage1 message = new SMPMessage1("Hello", g2a, c2_a, d2_a, g3a, Scalars.one(), d3_a);
         state.process(context, message);
     }
 
@@ -268,7 +268,7 @@ public final class StateExpect1Test {
     public void testProcessIllegald3() throws SMPAbortException {
         final StateExpect1 state = new StateExpect1(RANDOM, UNDECIDED);
         final Context context = new Context();
-        final SMPMessage1 message = new SMPMessage1("Hello", g2a, c2_a, d2_a, g3a, c3_a, ONE);
+        final SMPMessage1 message = new SMPMessage1("Hello", g2a, c2_a, d2_a, g3a, c3_a, Scalars.one());
         state.process(context, message);
     }
 

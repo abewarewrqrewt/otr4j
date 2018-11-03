@@ -9,6 +9,7 @@ package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.Scalar;
+import net.java.otr4j.crypto.ed448.Scalars;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -16,7 +17,6 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.Point.createPoint;
-import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static org.junit.Assert.assertEquals;
@@ -170,7 +170,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageIllegalcr() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, ONE, d7);
+        final SMPMessage4 message = new SMPMessage4(rb, Scalars.one(), d7);
         state.process(context, message);
     }
 
@@ -178,7 +178,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageIllegald7() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, Scalars.one());
         state.process(context, message);
     }
 
@@ -186,15 +186,15 @@ public final class StateExpect4Test {
     public void testProcessBadMessageIllegalrb() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(createPoint(BigInteger.ONE, BigInteger.ONE), cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(createPoint(BigInteger.ONE, BigInteger.ONE), cr, Scalars.one());
         state.process(context, message);
     }
 
     @Test(expected = SMPAbortException.class)
     public void testProcessBadMessageBada3() throws SMPAbortException {
-        final StateExpect4 state = new StateExpect4(RANDOM, ONE, g3b, pa, pb, qa, qb);
+        final StateExpect4 state = new StateExpect4(RANDOM, Scalars.one(), g3b, pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, Scalars.one());
         state.process(context, message);
     }
 
@@ -202,7 +202,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageBadg3b() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b.negate(), pa, pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, Scalars.one());
         state.process(context, message);
     }
 
@@ -210,7 +210,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageBadpa() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa.negate(), pb, qa, qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, Scalars.one());
         state.process(context, message);
     }
 
@@ -218,7 +218,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageBadqa() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa.negate(), qb);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, Scalars.one());
         state.process(context, message);
     }
 
@@ -226,7 +226,7 @@ public final class StateExpect4Test {
     public void testProcessBadMessageBadqb() throws SMPAbortException {
         final StateExpect4 state = new StateExpect4(RANDOM, a3, g3b, pa, pb, qa, qb.negate());
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage4 message = new SMPMessage4(rb, cr, ONE);
+        final SMPMessage4 message = new SMPMessage4(rb, cr, Scalars.one());
         state.process(context, message);
     }
 

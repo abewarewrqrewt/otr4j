@@ -15,9 +15,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
-import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.SCALAR_LENGTH_BYTES;
-import static net.java.otr4j.crypto.ed448.Scalar.ZERO;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
@@ -55,27 +53,27 @@ public final class ScalarTest {
     @Test
     public void testConstruct() {
         final Scalar scalar = new Scalar(new byte[57]);
-        assertArrayEquals(ZERO.encode(), scalar.encode());
+        assertArrayEquals(Scalars.zero().encode(), scalar.encode());
     }
 
     @Test
     public void testProcessZeroScalar() {
-        assertArrayEquals(ONE.encode(), ZERO.add(ONE).encode());
-        assertArrayEquals(ZERO.encode(), ZERO.multiply(ONE).encode());
-        assertArrayEquals(ONE.encode(), ONE.subtract(ZERO).encode());
-        assertArrayEquals(ZERO.encode(), ZERO.mod(ONE).encode());
-        assertArrayEquals(ZERO.encode(), ZERO.negate().encode());
-        assertEquals(BigInteger.ZERO, ZERO.toBigInteger());
-        assertArrayEquals(new byte[SCALAR_LENGTH_BYTES], ZERO.encode());
+        assertArrayEquals(Scalars.one().encode(), Scalars.zero().add(Scalars.one()).encode());
+        assertArrayEquals(Scalars.zero().encode(), Scalars.zero().multiply(Scalars.one()).encode());
+        assertArrayEquals(Scalars.one().encode(), Scalars.one().subtract(Scalars.zero()).encode());
+        assertArrayEquals(Scalars.zero().encode(), Scalars.zero().mod(Scalars.one()).encode());
+        assertArrayEquals(Scalars.zero().encode(), Scalars.zero().negate().encode());
+        assertEquals(BigInteger.ZERO, Scalars.zero().toBigInteger());
+        assertArrayEquals(new byte[SCALAR_LENGTH_BYTES], Scalars.zero().encode());
     }
 
     @Test
     public void testProcessOneScalar() {
-        assertArrayEquals(ONE.encode(), ONE.add(ZERO).encode());
-        assertArrayEquals(ONE.encode(), ONE.multiply(ONE).encode());
-        assertArrayEquals(ONE.encode(), ONE.subtract(ZERO).encode());
-        assertArrayEquals(ZERO.encode(), ONE.mod(ONE).encode());
-        assertEquals(BigInteger.ONE, ONE.toBigInteger());
+        assertArrayEquals(Scalars.one().encode(), Scalars.one().add(Scalars.zero()).encode());
+        assertArrayEquals(Scalars.one().encode(), Scalars.one().multiply(Scalars.one()).encode());
+        assertArrayEquals(Scalars.one().encode(), Scalars.one().subtract(Scalars.zero()).encode());
+        assertArrayEquals(Scalars.zero().encode(), Scalars.one().mod(Scalars.one()).encode());
+        assertEquals(BigInteger.ONE, Scalars.one().toBigInteger());
     }
 
     @Test
@@ -157,12 +155,12 @@ public final class ScalarTest {
 
     @Test
     public void testScalarModulo() {
-        assertArrayEquals(ZERO.encode(), decodeScalar(new byte[]{8}).mod(decodeScalar(new byte[]{4})).encode());
+        assertArrayEquals(Scalars.zero().encode(), decodeScalar(new byte[]{8}).mod(decodeScalar(new byte[]{4})).encode());
     }
 
     @Test
     public void testScalarModuloQ() {
-        assertArrayEquals(ZERO.encode(), Q_SCALAR.mod(Q_SCALAR).encode());
+        assertArrayEquals(Scalars.zero().encode(), Q_SCALAR.mod(Q_SCALAR).encode());
     }
 
     @Test
@@ -178,9 +176,9 @@ public final class ScalarTest {
 
     @Test
     public void testScalarComparison() {
-        assertEquals(1, ONE.compareTo(ZERO));
-        assertEquals(-1, ZERO.compareTo(ONE));
-        assertEquals(0, ONE.compareTo(ONE));
+        assertEquals(1, Scalars.one().compareTo(Scalars.zero()));
+        assertEquals(-1, Scalars.zero().compareTo(Scalars.one()));
+        assertEquals(0, Scalars.one().compareTo(Scalars.one()));
     }
 
     @Test
@@ -245,7 +243,7 @@ public final class ScalarTest {
         assertFalse(scalar.equals(null));
     }
 
-    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
+    @SuppressWarnings( {"EqualsBetweenInconvertibleTypes", "SimplifiableJUnitAssertion"})
     @Test
     public void testScalarNotEqualsDifferentType() {
         final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
@@ -270,6 +268,83 @@ public final class ScalarTest {
     @Test
     public void testScalarHashCode() {
         // not sure what thing we can test for this, for now just call the method and see that it does not fail
-        Scalar.ZERO.hashCode();
+        Scalars.zero().hashCode();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarAddAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.add(Scalars.zero());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarSubtractAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.subtract(Scalars.zero());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarMultiplyAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.multiply(Scalars.zero());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarNegateAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.negate();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarModAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.mod(Scalars.one());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarEncodeAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.encode();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarToBigIntegerAfterClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        scalar.toBigInteger();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarAddAfterCloseOther() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        Scalars.zero().add(scalar);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarSubtractAfterCloseOther() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        Scalars.zero().subtract(scalar);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarMultiplyAfterCloseOther() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        Scalars.zero().multiply(scalar);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testScalarModAfterCloseOther() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        Scalars.one().mod(scalar);
     }
 }

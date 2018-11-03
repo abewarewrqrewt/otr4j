@@ -9,6 +9,7 @@ package net.java.otr4j.session.smpv4;
 
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.Scalar;
+import net.java.otr4j.crypto.ed448.Scalars;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.junit.Test;
 
@@ -17,7 +18,6 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.Point.createPoint;
-import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static org.junit.Assert.assertEquals;
@@ -197,7 +197,7 @@ public final class StateExpect2Test {
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
         r7.encodeTo(fakeRandomData, 171);
-        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, ONE, a3);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, Scalars.one(), a3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
         state.process(context, message);
@@ -210,7 +210,7 @@ public final class StateExpect2Test {
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
         r7.encodeTo(fakeRandomData, 171);
-        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, ONE);
+        final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, Scalars.one());
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
         state.process(context, message);
@@ -329,7 +329,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, ONE, d2, g3b, c3, d3, pb, qb, cp, d5, d6);
+        final SMPMessage2 message = new SMPMessage2(g2b, Scalars.one(), d2, g3b, c3, d3, pb, qb, cp, d5, d6);
         state.process(context, message);
     }
 
@@ -342,7 +342,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, c2, ONE, g3b, c3, d3, pb, qb, cp, d5, d6);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, Scalars.one(), g3b, c3, d3, pb, qb, cp, d5, d6);
         state.process(context, message);
     }
 
@@ -355,7 +355,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, ONE, d3, pb, qb, cp, d5, d6);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, Scalars.one(), d3, pb, qb, cp, d5, d6);
         state.process(context, message);
     }
 
@@ -368,7 +368,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, ONE, pb, qb, cp, d5, d6);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, Scalars.one(), pb, qb, cp, d5, d6);
         state.process(context, message);
     }
 
@@ -381,7 +381,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, ONE, d5, d6);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, Scalars.one(), d5, d6);
         state.process(context, message);
     }
 
@@ -394,7 +394,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, ONE, d6);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, Scalars.one(), d6);
         state.process(context, message);
     }
 
@@ -407,7 +407,7 @@ public final class StateExpect2Test {
         r7.encodeTo(fakeRandomData, 171);
         final StateExpect2 state = new StateExpect2(new FixedSecureRandom(fakeRandomData), secret, a2, a3);
         final SMPContext context = mock(SMPContext.class);
-        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, ONE);
+        final SMPMessage2 message = new SMPMessage2(g2b, c2, d2, g3b, c3, d3, pb, qb, cp, d5, Scalars.one());
         state.process(context, message);
     }
 }

@@ -135,7 +135,6 @@ public final class Ed448 {
      * @param random SecureRandom instance
      * @return Returns a newly generated random value.
      */
-    // FIXME how to reliable generate random value "in q"? (Is this correct for scalars? 0 <= x < q (... or [0,q-1])? (We probably need to generate `a larger value mod q`, but do we need to care about uniform distributed of mod q random value?)
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
         return decodeScalar(randomBytes(random, new byte[57]));
     }

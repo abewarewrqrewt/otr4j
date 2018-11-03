@@ -127,7 +127,6 @@ public final class Point {
      *
      * @return Returns the byte-array representing the point.
      */
-    // FIXME duplicating memory but should it be cleaned?
     @Nonnull
     public byte[] encode() {
         return this.encoded.clone();

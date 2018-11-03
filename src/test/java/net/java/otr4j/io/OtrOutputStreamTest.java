@@ -10,6 +10,7 @@ package net.java.otr4j.io;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.crypto.ed448.Scalars;
 import net.java.otr4j.crypto.ed448.ValidationException;
 import org.junit.Test;
 
@@ -35,7 +36,6 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
-import static net.java.otr4j.crypto.ed448.Scalar.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -363,7 +363,7 @@ public class OtrOutputStreamTest {
     @Test
     public void testWriteScalar() {
         final byte[] expected = new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        assertArrayEquals(expected, new OtrOutputStream().writeScalar(ONE).toByteArray());
+        assertArrayEquals(expected, new OtrOutputStream().writeScalar(Scalars.one()).toByteArray());
     }
 
     @Test
