@@ -85,8 +85,8 @@ public final class ClientProfilePayload implements OtrEncodable {
      *
      * @param profile                   The client profile to be converted.
      * @param expirationUnixTimeSeconds Expiration time of profile as unix timestamp in seconds.
-     * @param dsaPrivateKey             OTRv3 DSA private key for signing. (Transitional signature)
-     * @param eddsaKeyPair              EdDSA key pair.
+     * @param dsaKeyPair                OTRv3 DSA key pair for signing. (Transitional signature)
+     * @param eddsaKeyPair              EdDSA long-term key pair.
      * @return Returns a Client Profile payload that can be serialized to an OTR-encoded data stream.
      */
     @Nonnull
