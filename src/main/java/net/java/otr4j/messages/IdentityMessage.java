@@ -42,7 +42,6 @@ public final class IdentityMessage extends AbstractEncodedMessage {
      * @param y                the ECDH public key 'Y'
      * @param b                the DH public key 'B'
      */
-    // FIXME need to do additional validation for values being injected in constructor?
     public IdentityMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
             @Nonnull final Point y, @Nonnull final BigInteger b) {

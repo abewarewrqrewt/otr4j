@@ -21,7 +21,6 @@ import static net.java.otr4j.messages.MysteriousT4.encode;
 /**
  * Utility class for AuthIMessage.
  */
-// FIXME write unit tests
 public final class AuthIMessages {
 
     private AuthIMessages() {
@@ -46,6 +45,7 @@ public final class AuthIMessages {
      * @throws OtrCryptoException  In case of failure during ring signature verification.
      * @throws ValidationException In case validation fails.
      */
+    // FIXME incorporate forging keys, other changes in creation of ring signatures
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
             @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfilePayload profileBobPayload, @Nonnull final ClientProfile profileBob,
