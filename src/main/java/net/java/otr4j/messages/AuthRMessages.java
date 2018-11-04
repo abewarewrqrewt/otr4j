@@ -33,7 +33,9 @@ public final class AuthRMessages {
      * Validate an AuthRMessage, using additional parameters to provide required data.
      *
      * @param message                 the AUTH_R message
-     * @param ourClientProfilePayload our ClientProfile instance
+     * @param ourClientProfilePayload our ClientProfile payload instance (non-validated)
+     * @param ourProfile              our Client Profile instance (the same as the payload, but validated)
+     * @param theirProfile            their Client Profile instance
      * @param senderAccountID         the sender's account ID
      * @param receiverAccountID       the Receiver's account ID
      * @param receiverECDHPublicKey   the receiver's ECDH public key
@@ -43,26 +45,26 @@ public final class AuthRMessages {
      *                             public keys or the ring signature.
      * @throws ValidationException In case any part fails validation.
      */
-    public static void validate(@Nonnull final AuthRMessage message, @Nonnull final ClientProfilePayload ourClientProfilePayload,
-            @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID,
-            @Nonnull final Point receiverECDHPublicKey, @Nonnull final BigInteger receiverDHPublicKey,
-            @Nonnull final String queryTag) throws OtrCryptoException, ValidationException {
+    public static void validate(@Nonnull final AuthRMessage message,
+            @Nonnull final ClientProfilePayload ourClientProfilePayload, @Nonnull final ClientProfile ourProfile,
+            @Nonnull final ClientProfile theirProfile, @Nonnull final String senderAccountID,
+            @Nonnull final String receiverAccountID, @Nonnull final Point receiverECDHPublicKey,
+            @Nonnull final BigInteger receiverDHPublicKey, @Nonnull final String queryTag) throws OtrCryptoException,
+            ValidationException {
         try {
             verifyECDHPublicKey(message.getX());
         } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
             throw new ValidationException("Illegal ECDH public key.", e);
         }
         verifyDHPublicKey(message.getA());
-        final ClientProfile theirProfile = message.getClientProfile().validate();
         if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
-        final ClientProfile ourClientProfile = ourClientProfilePayload.validate();
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
         final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
                 receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag.getValue(),
                 message.receiverInstanceTag.getValue(), queryTag, senderAccountID, receiverAccountID);
-        ringVerify(ourClientProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
+        ringVerify(ourProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
                 message.getSigma(), t);
     }
 }

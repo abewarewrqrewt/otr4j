@@ -121,8 +121,8 @@ public final class StateInitial extends AbstractAuthState {
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
             throws OtrCryptoException, ValidationException {
-        validate(message);
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        validate(message, theirClientProfile);
         final ClientProfilePayload profile = context.getClientProfilePayload();
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);

@@ -33,8 +33,21 @@ public final class IdentityMessagesTest {
     private final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
 
     @Test(expected = NullPointerException.class)
-    public void testValidateNull() throws OtrCryptoException, ValidationException {
-        validate(null);
+    public void testValidateNullMessage() throws OtrCryptoException, ValidationException {
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), this.forgingPublicKey,
+                Collections.singleton(4), null);
+        validate(null, profile);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testValidateNullProfile() throws OtrCryptoException, ValidationException {
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), this.forgingPublicKey,
+                Collections.singleton(4), null);
+        final ClientProfilePayload profilePayload = ClientProfilePayload.sign(profile,
+                System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
+        final IdentityMessage message = new IdentityMessage(4, SMALLEST_TAG, HIGHEST_TAG, profilePayload,
+                ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
+        validate(message, null);
     }
 
     @Test
@@ -45,14 +58,14 @@ public final class IdentityMessagesTest {
                 System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, SMALLEST_TAG, HIGHEST_TAG, profilePayload,
                 ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
-        validate(message);
+        validate(message, profile);
     }
 
     @Test(expected = NullPointerException.class)
     public void testValidateIdentityNullClientProfile() throws OtrCryptoException, ValidationException {
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, null,
                 ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
-        validate(message);
+        validate(message, null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -63,7 +76,7 @@ public final class IdentityMessagesTest {
                 System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, profilePayload,
                 null, dhKeyPair.getPublicKey());
-        validate(message);
+        validate(message, profile);
     }
 
     @Test(expected = NullPointerException.class)
@@ -74,7 +87,7 @@ public final class IdentityMessagesTest {
                 System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, profilePayload,
                 ecdhKeyPair.getPublicKey(), null);
-        validate(message);
+        validate(message, profile);
     }
 
     @Test(expected = ValidationException.class)
@@ -85,6 +98,6 @@ public final class IdentityMessagesTest {
                 System.currentTimeMillis() / 1000 + 86400, null, longTermKeyPair);
         final IdentityMessage message = new IdentityMessage(4, HIGHEST_TAG, SMALLEST_TAG, profilePayload,
                 ecdhKeyPair.getPublicKey(), dhKeyPair.getPublicKey());
-        validate(message);
+        validate(message, profile);
     }
 }

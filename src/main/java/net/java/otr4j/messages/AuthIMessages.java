@@ -33,8 +33,10 @@ public final class AuthIMessages {
      *
      * @param message           the Auth-I message to be validated
      * @param queryTag          the query tag
-     * @param ourProfilePayload our client profile (as payload)
-     * @param profilePayloadBob other party's client profile (as payload)
+     * @param ourProfilePayload our client profile (non-validated, as payload)
+     * @param ourProfile        our client profile
+     * @param profileBobPayload other party's client profile (as payload)
+     * @param profileBob        other party's client profile, validated
      * @param x                 ephemeral ECDH public key 'X'
      * @param y                 ephemeral ECDH public key 'Y'
      * @param a                 ephemeral DH public key 'A'
@@ -44,21 +46,18 @@ public final class AuthIMessages {
      * @throws OtrCryptoException  In case of failure during ring signature verification.
      * @throws ValidationException In case validation fails.
      */
-    // FIXME pass ClientProfile i.s.o. ClientProfilePayload. We only need to validate them once.
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
-            @Nonnull final ClientProfilePayload ourProfilePayload,
-            @Nonnull final ClientProfilePayload profilePayloadBob, @Nonnull final Point x, @Nonnull final Point y,
-            @Nonnull final BigInteger a, @Nonnull final BigInteger b, @Nonnull final String senderAccountID,
-            @Nonnull final String receiverAccountID)
+            @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final ClientProfile ourProfile,
+            @Nonnull final ClientProfilePayload profileBobPayload, @Nonnull final ClientProfile profileBob,
+            @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
+            @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID)
             throws OtrCryptoException, ValidationException {
-        final ClientProfile profileBob = profilePayloadBob.validate();
         if (!message.senderInstanceTag.equals(profileBob.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
-        final ClientProfile ourProfile = ourProfilePayload.validate();
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
-        final byte[] t = encode(AUTH_I, ourProfilePayload, profilePayloadBob, x, y, a, b,
+        final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
                 message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
                 receiverAccountID);
         // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, X}, t)."

@@ -27,14 +27,15 @@ public final class IdentityMessages {
     /**
      * Validate identity message.
      *
-     * @param message The identity message.
+     * @param message      The identity message.
+     * @param theirProfile Their profile. The one shipped in the identity message. The message is passed in
+     *                     independently such that we can avoid validating the profile multiple times.
      * @throws OtrCryptoException  Validation failure of cryptographic components.
      * @throws ValidationException Validation failure of parts of the Identity message.
      */
-    public static void validate(@Nonnull final IdentityMessage message) throws OtrCryptoException, ValidationException {
-        // TODO consider moving this out to first use case, instead of prematurely validating here.
-        final ClientProfile profile = message.getClientProfile().validate();
-        if (!message.senderInstanceTag.equals(profile.getInstanceTag())) {
+    public static void validate(@Nonnull final IdentityMessage message, @Nonnull final ClientProfile theirProfile)
+            throws OtrCryptoException, ValidationException {
+        if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         try {

@@ -82,7 +82,6 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
             throws OtrCryptoException, ValidationException {
-        // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
         }
@@ -111,8 +110,8 @@ final class StateAwaitingAuthI extends AbstractAuthState {
      */
     private AuthRMessage handleIdentityMessage(@Nonnull final AuthContext context, @Nonnull final IdentityMessage message)
             throws OtrCryptoException, ValidationException {
-        IdentityMessages.validate(message);
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
+        IdentityMessages.validate(message, theirNewClientProfile);
         // Note: we query the context for a new client profile, because we're responding to a new Identity message.
         // This ensures a "fresh" profile. (May be unnecessary, but seems smart right now ... I may regret it later)
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
@@ -137,13 +136,13 @@ final class StateAwaitingAuthI extends AbstractAuthState {
     private void handleAuthIMessage(@Nonnull final AuthContext context, @Nonnull final AuthIMessage message)
             throws OtrCryptoException, ValidationException {
         try {
-            validate(message, this.queryTag, this.ourProfile, this.profileBob, this.ourECDHKeyPair.getPublicKey(),
-                    this.y, this.ourDHKeyPair.getPublicKey(), this.b, context.getRemoteAccountID(),
-                    context.getLocalAccountID());
-            // FIXME check if we can pass in a previously validated profileBob instance.
+            final ClientProfile profileBobValidated = this.profileBob.validate();
+            final ClientProfile ourProfileValidated = this.ourProfile.validate();
+            validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
+                    this.ourECDHKeyPair.getPublicKey(), this.y, this.ourDHKeyPair.getPublicKey(), this.b,
+                    context.getRemoteAccountID(), context.getLocalAccountID());
             final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
-                    this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b, this.ourProfile.validate(),
-                    this.profileBob.validate());
+                    this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b, ourProfileValidated, profileBobValidated);
             context.secure(params);
         } finally {
             context.setState(StateInitial.empty());

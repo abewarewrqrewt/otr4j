@@ -51,7 +51,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     /**
      * Our user's client profile payload.
      */
-    private final ClientProfilePayload ourClientProfile;
+    private final ClientProfilePayload ourProfilePayload;
 
     /**
      * The query tag that triggered this AKE. The query tag is part of the shared session state common knowledge that is
@@ -74,12 +74,12 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
-            @Nonnull final ClientProfilePayload ourClientProfile, @Nonnull final String queryTag,
+            @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final String queryTag,
             @Nonnull final IdentityMessage previousMessage) {
         super();
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
-        this.ourClientProfile = requireNonNull(ourClientProfile);
+        this.ourProfilePayload = requireNonNull(ourProfilePayload);
         this.queryTag = requireNonNull(queryTag);
         this.previousMessage = requireNonNull(previousMessage);
     }
@@ -88,7 +88,6 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Override
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
             throws OtrCryptoException, ValidationException {
-        // FIXME need to verify protocol versions?
         if (message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
         }
@@ -104,7 +103,8 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     @Nullable
     private AbstractEncodedMessage handleIdentityMessage(@Nonnull final AuthContext context,
             @Nonnull final IdentityMessage message) throws OtrCryptoException, ValidationException {
-        IdentityMessages.validate(message);
+        final ClientProfile theirProfile = message.getClientProfile().validate();
+        IdentityMessages.validate(message, theirProfile);
         if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
             // execution.
@@ -118,19 +118,21 @@ final class StateAwaitingAuthR extends AbstractAuthState {
     private AuthIMessage handleAuthRMessage(@Nonnull final AuthContext context, @Nonnull final AuthRMessage message)
             throws OtrCryptoException, ValidationException {
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
-        validate(message, this.ourClientProfile, context.getRemoteAccountID(), context.getLocalAccountID(),
-                this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
+        final ClientProfile ourClientProfile = this.ourProfilePayload.validate();
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, context.getRemoteAccountID(),
+                context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(),
+                this.queryTag);
         try {
             context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA(),
-                    this.ourClientProfile.validate(), theirClientProfile));
+                    ourClientProfile, theirClientProfile));
         } finally {
             // TODO should we preserve the most recent query tag or start with empty initial state?
             context.setState(StateInitial.empty());
         }
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
-        final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourClientProfile, message.getX(),
+        final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
