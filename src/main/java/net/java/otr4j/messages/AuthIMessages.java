@@ -51,9 +51,6 @@ public final class AuthIMessages {
             @Nonnull final BigInteger a, @Nonnull final BigInteger b, @Nonnull final String senderAccountID,
             @Nonnull final String receiverAccountID)
             throws OtrCryptoException, ValidationException {
-        if (message.getType() != AuthIMessage.MESSAGE_AUTH_I) {
-            throw new IllegalStateException("AUTH_R message should not have any other type than 0x91.");
-        }
         final ClientProfile profileBob = profilePayloadBob.validate();
         if (!message.senderInstanceTag.equals(profileBob.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");

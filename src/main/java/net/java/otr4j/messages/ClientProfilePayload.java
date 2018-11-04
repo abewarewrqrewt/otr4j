@@ -91,7 +91,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      */
     @Nonnull
     public static ClientProfilePayload sign(@Nonnull final ClientProfile profile, final long expirationUnixTimeSeconds,
-            @Nullable final DSAKeyPair dsaPrivateKey, @Nonnull final EdDSAKeyPair eddsaKeyPair) {
+            @Nullable final DSAKeyPair dsaKeyPair, @Nonnull final EdDSAKeyPair eddsaKeyPair) {
         final ArrayList<Field> fields = new ArrayList<>();
         fields.add(new InstanceTagField(profile.getInstanceTag().getValue()));
         fields.add(new ED448PublicKeyField(profile.getLongTermPublicKey()));
@@ -100,7 +100,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         fields.add(new ExpirationDateField(expirationUnixTimeSeconds));
         final DSAPublicKey dsaPublicKey = profile.getDsaPublicKey();
         if (dsaPublicKey != null) {
-            if (dsaPrivateKey == null) {
+            if (dsaKeyPair == null) {
                 throw new IllegalArgumentException("DSA public key provided, but private key is not provided.");
             }
             fields.add(new DSAPublicKeyField(dsaPublicKey));
@@ -111,10 +111,10 @@ public final class ClientProfilePayload implements OtrEncodable {
         }
         final byte[] partialM = out.toByteArray();
         final byte[] m;
-        if (dsaPrivateKey == null) {
+        if (dsaKeyPair == null) {
             m = partialM;
         } else {
-            final DSASignature transitionalSignature = dsaPrivateKey.signRS(partialM);
+            final DSASignature transitionalSignature = dsaKeyPair.signRS(partialM);
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
             fields.add(sigField);
             m = concatenate(partialM, encode(sigField));

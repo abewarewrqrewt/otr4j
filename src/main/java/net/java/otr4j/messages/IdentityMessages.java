@@ -32,9 +32,6 @@ public final class IdentityMessages {
      * @throws ValidationException Validation failure of parts of the Identity message.
      */
     public static void validate(@Nonnull final IdentityMessage message) throws OtrCryptoException, ValidationException {
-        if (message.getType() != IdentityMessage.MESSAGE_IDENTITY) {
-            throw new IllegalStateException("Identity message should not have any other type than 0x08.");
-        }
         // TODO consider moving this out to first use case, instead of prematurely validating here.
         final ClientProfile profile = message.getClientProfile().validate();
         if (!message.senderInstanceTag.equals(profile.getInstanceTag())) {

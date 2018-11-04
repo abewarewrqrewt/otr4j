@@ -133,6 +133,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID The session ID for which the Client Profile is requested.
      * @return Returns the Client Profile for this client.
      */
+    // FIXME consider removing methods 'getLocalKeyPair' and 'getLongTermKeyPair' and making them part of ClientProfile.
     @Nonnull
     ClientProfile getClientProfile(@Nonnull SessionID sessionID);
 
