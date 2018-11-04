@@ -22,7 +22,6 @@ import static net.java.otr4j.util.Integers.requireInRange;
 /**
  * OTRv4 Interactive DAKE Auth R Message.
  */
-// FIXME write unit tests
 public final class AuthRMessage extends AbstractEncodedMessage {
 
     static final byte MESSAGE_AUTH_R = (byte) 0x36;
