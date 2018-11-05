@@ -13,9 +13,9 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.SharedSecret4;
+import net.java.otr4j.io.EncryptedMessage.Content;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.PlainTextMessage;
-import net.java.otr4j.io.SerializationUtils.Content;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
@@ -39,7 +39,7 @@ import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
-import static net.java.otr4j.io.SerializationUtils.extractContents;
+import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
 
 /**

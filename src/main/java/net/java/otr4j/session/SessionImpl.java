@@ -30,7 +30,6 @@ import net.java.otr4j.io.Fragment;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.io.QueryMessage;
-import net.java.otr4j.io.SerializationUtils;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DHCommitMessage;
@@ -79,6 +78,7 @@ import static net.java.otr4j.api.Session.OTRv.FOUR;
 import static net.java.otr4j.api.Session.OTRv.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
+import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static net.java.otr4j.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 
@@ -715,7 +715,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     public void injectMessage(@Nonnull final Message m) throws OtrException {
         final SessionID sessionId = this.sessionState.getSessionID();
-        final String serialized = SerializationUtils.toString(m);
+        final String serialized = writeMessage(m);
         final String[] fragments;
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
@@ -883,7 +883,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (m == null) {
             return new String[0];
         }
-        final String serialized = SerializationUtils.toString(m);
+        final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
             setState(new StateInitial(((PlainTextMessage) m).getTag()));
             return new String[] {serialized};

@@ -89,7 +89,7 @@ public class IOTest {
     public void testIODHKeyMessage() throws Exception {
         DHKeyPairOTR3 pair = generateDHKeyPair(this.secureRandom);
         DHKeyMessage source = new DHKeyMessage(OTRv.THREE, pair.getPublic(), ZERO_TAG, ZERO_TAG);
-        String base64 = SerializationUtils.toString(source);
+        String base64 = MessageWriter.writeMessage(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
         final AbstractEncodedMessage result = EncodedMessageParser.parse(message.getVersion(), message.getType(),
                 message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());
@@ -107,7 +107,7 @@ public class IOTest {
         byte[] revealedKey = new byte[] {1, 2, 3, 4};
         RevealSignatureMessage source = new RevealSignatureMessage(
                 protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, ZERO_TAG, ZERO_TAG);
-        String base64 = SerializationUtils.toString(source);
+        String base64 = MessageWriter.writeMessage(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
         final AbstractEncodedMessage result = EncodedMessageParser.parse(message.getVersion(), message.getType(),
                 message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());

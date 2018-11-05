@@ -14,6 +14,7 @@ import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.EncryptedMessage.Content;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.PlainTextMessage;
@@ -45,9 +46,8 @@ import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hmac;
+import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.io.OtrEncodables.encode;
-import static net.java.otr4j.io.SerializationUtils.Content;
-import static net.java.otr4j.io.SerializationUtils.extractContents;
 import static net.java.otr4j.session.smp.SmpTlvHandler.smpPayload;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
@@ -216,6 +216,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                         context.injectMessage(transformSending(context, "", singletonList(response)));
                     }
                 } catch (final SMException e) {
+                    // TODO (how to) handle corrupt TLVs appropriately, as being discussed in https://github.com/otrv4/otrv4/commit/dcd62e4f036830261c35f63ecc775d0ba628f8d8 (may not be final conclusion)
                     throw new OtrException("Failed to process TLV.", e);
                 }
                 continue;
