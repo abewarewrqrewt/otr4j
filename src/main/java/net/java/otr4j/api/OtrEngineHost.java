@@ -19,7 +19,6 @@ import javax.annotation.Nonnull;
  *
  * @author George Politis
  */
-// TODO consider splitting up the OTRv3 and OTRv4 EngineHost interfaces such that one can use random instance tags and the other queries the host.
 public interface OtrEngineHost extends SmpEngineHost {
 
     /**
@@ -105,8 +104,10 @@ public interface OtrEngineHost extends SmpEngineHost {
     /**
      * Request local key pair from Engine Host. (OTRv2/OTRv3)
      * <p>
-     * As OTR version 4 is now the preferred version, the local key pair will tyically be used to provide a transitional
-     * signature. Only when version 4 is not acceptable/suitable, will this be the primary key pair.
+     * As OTR version 4 is now the preferred version, the local key pair will typically be used to provide a
+     * transitional signature. Only when version 4 is not acceptable/suitable, will this be the primary key pair.
+     * <p>
+     * The local OTRv3 key pair can be generated using {@link DSAKeyPair#generateDSAKeyPair()}.
      *
      * @param sessionID the session ID
      * @return Returns the local key pair.
@@ -116,6 +117,8 @@ public interface OtrEngineHost extends SmpEngineHost {
 
     /**
      * Request local long-term key pair from Engine Host. (OTRv4)
+     * <p>
+     * The long-term key pair can be generated using {@link EdDSAKeyPair#generate(java.security.SecureRandom)}.
      *
      * @param sessionID the session ID
      * @return Returns the local long-term Ed448-goldilocks key pair.
@@ -134,7 +137,6 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID The session ID for which the Client Profile is requested.
      * @return Returns the Client Profile for this client.
      */
-    // FIXME consider removing methods 'getLocalKeyPair' and 'getLongTermKeyPair' and making them part of ClientProfile.
     @Nonnull
     ClientProfile getClientProfile(@Nonnull SessionID sessionID);
 

@@ -57,11 +57,16 @@ public final class ClientProfile {
     /**
      * Constructor for the client profile instance.
      *
-     * @param instanceTag        the instance tag
-     * @param longTermPublicKey  the long-term Ed448 public key
-     * @param forgingKey         the Ed448 Forging public key
-     * @param versions           supported protocol versions
-     * @param dsaPublicKey       the DSA public key
+     * @param instanceTag       The instance tag. As the instance tag is now part of the client profile, it should be
+     *                          persistent such that other clients can rely on the client information for next time you
+     *                          are establishing secure communications.
+     * @param longTermPublicKey The long-term Ed448 public key. This is the public key of the key pair provided at
+     *                          {@link OtrEngineHost#getLongTermKeyPair(SessionID)}.
+     * @param forgingKey        The Ed448 Forging public key. The key can be generated using
+     *                          {@link net.java.otr4j.crypto.ed448.EdDSAKeyPair#generate(java.security.SecureRandom)}.
+     * @param versions          supported protocol versions
+     * @param dsaPublicKey      The DSA public key. This is the public key of the key pair provided at
+     *                          {@link OtrEngineHost#getLocalKeyPair(SessionID)}.
      */
     public ClientProfile(@Nonnull final InstanceTag instanceTag, @Nonnull final Point longTermPublicKey,
             @Nonnull final Point forgingKey, @Nonnull final Set<Integer> versions,
