@@ -344,9 +344,8 @@ public final class ClientProfilePayload implements OtrEncodable {
             throw new ValidationException("Incorrect number of forging key fields: " + forgingKeyFields.size());
         }
         try {
-            // FIXME how should we exactly verify the forging key?
             verifyEdDSAPublicKey(forgingKeyFields.get(0).publicKey);
-        } catch (OtrCryptoException e) {
+        } catch (final OtrCryptoException e) {
             throw new ValidationException("Illegal Ed448 forging key.", e);
         }
         if (versionsFields.size() != 1) {

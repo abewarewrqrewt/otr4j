@@ -22,6 +22,7 @@ import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
 /**
  * Class that provides access to Ed448 constants.
  */
+// FIXME clean up COFACTOR as it is not used
 public final class Ed448 {
 
     /**
@@ -97,6 +98,21 @@ public final class Ed448 {
     @Nonnull
     public static Point multiplyByBase(@Nonnull final Scalar scalar) {
         return new Point(nl.dannyvanheumen.joldilocks.Ed448.multiplyByBase(scalar.toBigInteger()).encode());
+    }
+
+    /**
+     * Require point to be valid.
+     *
+     * @param point the point to validate
+     * @return Returns the same point iff it is valid.
+     */
+    @Nonnull
+    public static Point requireValidPoint(@Nonnull final Point point) {
+        if (checkIdentity(point)) {
+            throw new IllegalArgumentException("Point is illegal: point is identity.");
+        }
+        // FIXME make full implementation of point validation.
+        return point;
     }
 
     /**

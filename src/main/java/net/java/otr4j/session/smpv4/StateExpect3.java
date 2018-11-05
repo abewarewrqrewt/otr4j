@@ -26,13 +26,13 @@ import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.generateRandomValueInZq;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
+import static net.java.otr4j.crypto.ed448.Ed448.requireValidPoint;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static org.bouncycastle.util.Arrays.concatenate;
 
-// FIXME verify that generated points are on the curve (OTRv4: 7d1955f248548fdf8fdebb3b9c4954936b435638)
 final class StateExpect3 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect3.class.getName());
@@ -114,7 +114,7 @@ final class StateExpect3 implements SMPState {
             context.setState(new StateExpect1(this.random, FAILED));
         }
         // Compose final message to other party.
-        final Point rb = smp3.qa.add(this.qb.negate()).multiply(this.b3);
+        final Point rb = requireValidPoint(smp3.qa.add(this.qb.negate()).multiply(this.b3));
         final Scalar r7 = generateRandomValueInZq(this.random);
         final Scalar cr = hashToScalar(SMP_VALUE_0X08, concatenate(multiplyByBase(r7).encode(),
                 smp3.qa.add(this.qb.negate()).multiply(r7).encode()));

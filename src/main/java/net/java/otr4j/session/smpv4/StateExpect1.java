@@ -28,6 +28,7 @@ import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.generateRandomValueInZq;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
+import static net.java.otr4j.crypto.ed448.Ed448.requireValidPoint;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
@@ -42,7 +43,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * </li>
  * </ol>
  */
-// FIXME verify that generated points are on the curve (OTRv4: 7d1955f248548fdf8fdebb3b9c4954936b435638)
 final class StateExpect1 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect1.class.getName());
@@ -91,8 +91,8 @@ final class StateExpect1 implements SMPState {
         final Scalar a3 = generateRandomValueInZq(this.random);
         final Scalar r2 = generateRandomValueInZq(this.random);
         final Scalar r3 = generateRandomValueInZq(this.random);
-        final Point g2a = multiplyByBase(a2);
-        final Point g3a = multiplyByBase(a3);
+        final Point g2a = requireValidPoint(multiplyByBase(a2));
+        final Point g3a = requireValidPoint(multiplyByBase(a3));
         final Scalar q = primeOrder();
         final Scalar c2 = hashToScalar(SMP_VALUE_0X01, multiplyByBase(r2).encode());
         final Scalar d2 = r2.subtract(a2.multiply(c2)).mod(q);
@@ -122,17 +122,17 @@ final class StateExpect1 implements SMPState {
         final Scalar r4 = generateRandomValueInZq(this.random);
         final Scalar r5 = generateRandomValueInZq(this.random);
         final Scalar r6 = generateRandomValueInZq(this.random);
-        final Point g2b = multiplyByBase(b2);
-        final Point g3b = multiplyByBase(b3);
+        final Point g2b = requireValidPoint(multiplyByBase(b2));
+        final Point g3b = requireValidPoint(multiplyByBase(b3));
         final Scalar q = primeOrder();
         final Scalar c2 = hashToScalar(SMP_VALUE_0X03, multiplyByBase(r2).encode());
         final Scalar d2 = r2.subtract(b2.multiply(c2)).mod(q);
         final Scalar c3 = hashToScalar(SMP_VALUE_0X04, multiplyByBase(r3).encode());
         final Scalar d3 = r3.subtract(b3.multiply(c3)).mod(q);
-        final Point g2 = this.message.g2a.multiply(b2);
-        final Point g3 = this.message.g3a.multiply(b3);
-        final Point pb = g3.multiply(r4);
-        final Point qb = multiplyByBase(r4).add(g2.multiply(secret.mod(q)));
+        final Point g2 = requireValidPoint(this.message.g2a.multiply(b2));
+        final Point g3 = requireValidPoint(this.message.g3a.multiply(b3));
+        final Point pb = requireValidPoint(g3.multiply(r4));
+        final Point qb = requireValidPoint(multiplyByBase(r4).add(g2.multiply(secret.mod(q))));
         final Scalar cp = hashToScalar(SMP_VALUE_0X05, concatenate(g3.multiply(r5).encode(),
                 multiplyByBase(r5).add(g2.multiply(r6)).encode()));
         final Scalar d5 = r5.subtract(r4.multiply(cp)).mod(q);

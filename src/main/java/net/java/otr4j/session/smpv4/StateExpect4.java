@@ -28,7 +28,6 @@ import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
 import static net.java.otr4j.session.api.SMPStatus.UNDECIDED;
 import static org.bouncycastle.util.Arrays.concatenate;
 
-// FIXME verify that generated points are on the curve (OTRv4: 7d1955f248548fdf8fdebb3b9c4954936b435638)
 final class StateExpect4 implements SMPState {
 
     private static final Logger LOGGER = Logger.getLogger(StateExpect4.class.getName());
