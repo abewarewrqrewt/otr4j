@@ -76,24 +76,27 @@ public final class MysteriousT4 {
         final KDFUsage bobsProfileUsage;
         final KDFUsage alicesProfileUsage;
         final KDFUsage phiUsage;
+        final byte[] prefix;
         switch (purpose) {
         case AUTH_R:
             bobsProfileUsage = KDFUsage.AUTH_R_BOB_CLIENT_PROFILE;
             alicesProfileUsage = KDFUsage.AUTH_R_ALICE_CLIENT_PROFILE;
             phiUsage = KDFUsage.AUTH_R_PHI;
+            prefix = new byte[] {0x00};
             break;
         case AUTH_I:
             bobsProfileUsage = KDFUsage.AUTH_I_BOB_CLIENT_PROFILE;
             alicesProfileUsage = KDFUsage.AUTH_I_ALICE_CLIENT_PROFILE;
             phiUsage = KDFUsage.AUTH_I_PHI;
+            prefix = new byte[] {0x01};
             break;
         default:
             throw new UnsupportedOperationException("Unsupported purpose.");
         }
         final byte[] bobsProfileEncoded = kdf1(bobsProfileUsage, OtrEncodables.encode(profileBob),
-            USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
+                USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] alicesProfileEncoded = kdf1(alicesProfileUsage, OtrEncodables.encode(profileAlice),
-            USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
+                USER_PROFILE_DERIVATIVE_LENGTH_BYTES);
         final byte[] yEncoded = y.encode();
         final byte[] xEncoded = x.encode();
         final byte[] bEncoded = new OtrOutputStream().writeBigInt(b).toByteArray();
@@ -101,9 +104,8 @@ public final class MysteriousT4 {
         // FIXME double-check if phi is now a mix of phi and phi' values.
         final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
-        // FIXME fix initial byte, now only uses 0x00, but is 0x00 for Auth-R and 0x01 for Auth-I
-        return concatenate(new byte[][]{new byte[]{0x00}, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
-            bEncoded, aEncoded, sharedSessionDerivative});
+        return concatenate(new byte[][] {prefix, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
+                bEncoded, aEncoded, sharedSessionDerivative});
     }
 
     /**
