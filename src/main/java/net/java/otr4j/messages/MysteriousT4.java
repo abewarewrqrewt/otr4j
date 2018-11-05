@@ -101,7 +101,6 @@ public final class MysteriousT4 {
         final byte[] xEncoded = x.encode();
         final byte[] bEncoded = new OtrOutputStream().writeBigInt(b).toByteArray();
         final byte[] aEncoded = new OtrOutputStream().writeBigInt(a).toByteArray();
-        // FIXME double-check if phi is now a mix of phi and phi' values.
         final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
         return concatenate(new byte[][] {prefix, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
@@ -111,6 +110,9 @@ public final class MysteriousT4 {
     /**
      * Generate the shared session state that is used in verification the session consistency. Note that this part is
      * basically only concerned with the correct serialization of provided data.
+     * <p>
+     * NOTE: the generated phi value is the value defined by the OTRv4 spec, and additional contact ID values which
+     * would be part of the implementer contribution.
      *
      * @param senderInstanceTag   The sender instance tag.
      * @param receiverInstanceTag The receiver instance tag.

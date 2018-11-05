@@ -237,7 +237,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     private final OtrEngineListener slaveSessionsListener = new OtrEngineListener() {
 
-        // FIXME temporarily suppress PMD warning due to false-positive in use of existing static import. (https://github.com/pmd/pmd/issues/1316)
+        // TODO temporarily suppress PMD warning due to false-positive in use of existing static import. (https://github.com/pmd/pmd/issues/1316)
         @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiver) {
