@@ -45,7 +45,6 @@ public final class AuthIMessages {
      * @throws OtrCryptoException  In case of failure during ring signature verification.
      * @throws ValidationException In case validation fails.
      */
-    // FIXME incorporate forging keys, other changes in creation of ring signatures
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
             @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfilePayload profileBobPayload, @Nonnull final ClientProfile profileBob,
@@ -60,7 +59,6 @@ public final class AuthIMessages {
         final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
                 message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
                 receiverAccountID);
-        // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, X}, t)."
-        ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getLongTermPublicKey(), x, message.getSigma(), t);
+        ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.getSigma(), t);
     }
 }

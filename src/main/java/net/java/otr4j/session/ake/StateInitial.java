@@ -8,7 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.ClientProfile;
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
@@ -82,14 +82,14 @@ public final class StateInitial extends AbstractAuthState {
     public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
             throws OtrCryptoException, ValidationException {
 
-        if (message.protocolVersion < Session.OTRv.TWO || message.protocolVersion > Session.OTRv.FOUR) {
+        if (message.protocolVersion < OTRv.TWO || message.protocolVersion > OTRv.FOUR) {
             throw new IllegalArgumentException("unsupported protocol version");
         }
-        if ((message.protocolVersion == Session.OTRv.TWO || message.protocolVersion == Session.OTRv.THREE)
+        if ((message.protocolVersion == OTRv.TWO || message.protocolVersion == OTRv.THREE)
                 && message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
         }
-        if (message.protocolVersion == Session.OTRv.FOUR && message instanceof IdentityMessage) {
+        if (message.protocolVersion == OTRv.FOUR && message instanceof IdentityMessage) {
             return handleIdentityMessage(context, (IdentityMessage) message);
         }
         // OTR: "Ignore the message."
@@ -135,9 +135,9 @@ public final class StateInitial extends AbstractAuthState {
             context.getReceiverInstanceTag().getValue(), this.queryTag, context.getLocalAccountID(),
             context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
-                theirClientProfile.getLongTermPublicKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+                theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
-        final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
+        final AuthRMessage authRMessage = new AuthRMessage(OTRv.FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
                 message.getClientProfile()));

@@ -57,8 +57,8 @@ public final class AuthRMessagesTest {
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX.getPublicKey(), ourY.getPublicKey(),
                 theirA.getPublicKey(), ourB.getPublicKey(), SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?",
                 "alice@network", "bob@network");
-        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourLongTermKeyPair.getPublicKey(),
-                theirLongTermKeyPair.getPublicKey(), ourY.getPublicKey(), m);
+        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
+                ourY.getPublicKey(), m);
         final AuthRMessage message = new AuthRMessage(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload,
                 theirX.getPublicKey(), theirA.getPublicKey(), sigma);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
@@ -90,8 +90,8 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "alice@network", "bob@network");
-        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourLongTermKeyPair.getPublicKey(),
-                theirLongTermKeyPair.getPublicKey(), ourY, m);
+        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
+                ourY, m);
         final AuthRMessage message = new AuthRMessage(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
@@ -123,8 +123,8 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "alice@network", "bob@network");
-        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourLongTermKeyPair.getPublicKey(),
-                theirLongTermKeyPair.getPublicKey(), ourY, m);
+        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
+                ourY, m);
         final AuthRMessage message = new AuthRMessage(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
@@ -156,8 +156,8 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "alice@network", "bob@network");
-        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourLongTermKeyPair.getPublicKey(),
-                theirLongTermKeyPair.getPublicKey(), ourY, m);
+        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
+                ourY, m);
         final AuthRMessage message = new AuthRMessage(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
@@ -189,8 +189,8 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "", "");
-        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourLongTermKeyPair.getPublicKey(),
-                theirLongTermKeyPair.getPublicKey(), ourY, m);
+        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
+                ourY, m);
         final AuthRMessage message = new AuthRMessage(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",

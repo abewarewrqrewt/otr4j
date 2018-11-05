@@ -45,7 +45,6 @@ public final class AuthRMessages {
      *                             public keys or the ring signature.
      * @throws ValidationException In case any part fails validation.
      */
-    // FIXME incorporate forging keys, other changes in creation of ring signatures
     public static void validate(@Nonnull final AuthRMessage message,
             @Nonnull final ClientProfilePayload ourClientProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfile theirProfile, @Nonnull final String senderAccountID,
@@ -64,8 +63,7 @@ public final class AuthRMessages {
         final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
                 receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag.getValue(),
                 message.receiverInstanceTag.getValue(), queryTag, senderAccountID, receiverAccountID);
-        // "Verify the sigma with Ring Signature Authentication, that is sigma == RVrf({H_b, H_a, Y}, t)."
-        ringVerify(ourProfile.getLongTermPublicKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
+        ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
                 message.getSigma(), t);
     }
 }

@@ -27,7 +27,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * upon which the OTR session is built.
      *
      * @param sessionID The session ID
-     * @param msg The message to inject
+     * @param msg       The message to inject
      */
     // TODO consider adding IOException to method signature. The whole protocol is intended for networking-like purposes, so it is reasonable to expect that an IOException might occur at some point.
     void injectMessage(@Nonnull SessionID sessionID, @Nonnull String msg);
@@ -46,7 +46,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * received decrypted.
      *
      * @param sessionID The session ID
-     * @param msg the body of the received message that was not encrypted
+     * @param msg       the body of the received message that was not encrypted
      */
     void unencryptedMessageReceived(@Nonnull SessionID sessionID, @Nonnull String msg);
 
@@ -55,7 +55,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * OTR.
      *
      * @param sessionID the session ID
-     * @param error the error message
+     * @param error     the error message
      */
     void showError(@Nonnull SessionID sessionID, @Nonnull String error);
 
@@ -63,7 +63,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * Signal Engine Host that OTR secure session is finished.
      *
      * @param sessionID the session ID
-     * @param msgText message text
+     * @param msgText   message text
      */
     void finishedSessionMessage(@Nonnull SessionID sessionID, @Nonnull String msgText);
 
@@ -72,7 +72,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * required for messages to be sent.
      *
      * @param sessionID the session ID
-     * @param msgText the encryption required message
+     * @param msgText   the encryption required message
      */
     void requireEncryptedMessage(@Nonnull SessionID sessionID, @Nonnull String msgText);
 
@@ -86,7 +86,7 @@ public interface OtrEngineHost extends SmpEngineHost {
 
     /**
      * Get instructions for the necessary fragmentation operations.
-     *
+     * <p>
      * If no fragmentation is necessary, return {@link Integer#MAX_VALUE} to
      * indicate the largest possible fragment size. Return any positive
      * integer to specify a maximum fragment size and enable fragmentation
@@ -95,8 +95,7 @@ public interface OtrEngineHost extends SmpEngineHost {
      * message, fragmentation will fail with an IOException when
      * fragmentation is attempted during message encryption.
      *
-     * @param sessionID
-     *            the session ID of the session
+     * @param sessionID the session ID of the session
      * @return Returns the maximum fragment size allowed. Or return the
      * maximum value possible, {@link Integer#MAX_VALUE}, if fragmentation
      * is not necessary.
@@ -105,6 +104,9 @@ public interface OtrEngineHost extends SmpEngineHost {
 
     /**
      * Request local key pair from Engine Host. (OTRv2/OTRv3)
+     * <p>
+     * As OTR version 4 is now the preferred version, the local key pair will tyically be used to provide a transitional
+     * signature. Only when version 4 is not acceptable/suitable, will this be the primary key pair.
      *
      * @param sessionID the session ID
      * @return Returns the local key pair.
@@ -118,13 +120,12 @@ public interface OtrEngineHost extends SmpEngineHost {
      * @param sessionID the session ID
      * @return Returns the local long-term Ed448-goldilocks key pair.
      */
-    // TODO consider if this method is still useful. Should we simply pass on the (non-payload) ClientProfile and have it contain the EdDSA key pair?
     @Nonnull
     EdDSAKeyPair getLongTermKeyPair(@Nonnull SessionID sessionID);
 
     /**
      * Request the client's Client Profile.
-     *
+     * <p>
      * The client profile is requested from the OTR engine host. The session ID is provided as a parameter to indicate
      * for which session a client profile is requested. The session ID can be used to distinguish between different
      * networks or users, such that it becomes possible to return one of many possible client profiles, based on the
@@ -191,13 +192,13 @@ public interface OtrEngineHost extends SmpEngineHost {
     /**
      * Report on discovery of extra symmetric key in message.
      *
-     * @param sessionID The session ID
-     * @param message The message that contained TLV 8. (The signal that
-     * indicates use of the Extra Symmetric Key)
+     * @param sessionID         The session ID
+     * @param message           The message that contained TLV 8. (The signal that
+     *                          indicates use of the Extra Symmetric Key)
      * @param extraSymmetricKey The extra symmetric key itself. The key is
-     * calculated from the session key matching that of the message that
-     * contained TLV 8.
-     * @param tlvData The data embedded in TLV 8.
+     *                          calculated from the session key matching that of the message that
+     *                          contained TLV 8.
+     * @param tlvData           The data embedded in TLV 8.
      */
     void extraSymmetricKeyDiscovered(@Nonnull final SessionID sessionID, @Nonnull final String message,
             @Nonnull final byte[] extraSymmetricKey, @Nonnull final byte[] tlvData);

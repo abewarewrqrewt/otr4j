@@ -101,6 +101,7 @@ public final class MysteriousT4 {
         // FIXME double-check if phi is now a mix of phi and phi' values.
         final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
+        // FIXME fix initial byte, now only uses 0x00, but is 0x00 for Auth-R and 0x01 for Auth-I
         return concatenate(new byte[][]{new byte[]{0x00}, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
             bEncoded, aEncoded, sharedSessionDerivative});
     }
