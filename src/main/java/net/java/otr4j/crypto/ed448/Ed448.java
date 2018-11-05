@@ -22,7 +22,6 @@ import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
 /**
  * Class that provides access to Ed448 constants.
  */
-// FIXME clean up COFACTOR as it is not used
 public final class Ed448 {
 
     /**
@@ -34,11 +33,6 @@ public final class Ed448 {
      * Base Point of the curve.
      */
     private static final Point G = new Point(new byte[] {20, -6, 48, -14, 91, 121, 8, -104, -83, -56, -41, 78, 44, 19, -67, -3, -60, 57, 124, -26, 28, -1, -45, 58, -41, -62, -96, 5, 30, -100, 120, -121, 64, -104, -93, 108, 115, 115, -22, 75, 98, -57, -55, 86, 55, 32, 118, -120, 36, -68, -74, 110, 113, 70, 63, 105, 0});
-
-    /**
-     * Scalar value representing one.
-     */
-    private static final Scalar COFACTOR = new Scalar(new byte[] {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
     /**
      * Prime order.
@@ -67,16 +61,6 @@ public final class Ed448 {
     @Nonnull
     public static Scalar primeOrder() {
         return Q;
-    }
-
-    /**
-     * Access cofactor of Ed448-Goldilocks curve.
-     *
-     * @return Returns cofactor.
-     */
-    @Nonnull
-    static Scalar cofactor() {
-        return COFACTOR;
     }
 
     /**
