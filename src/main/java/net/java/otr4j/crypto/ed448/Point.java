@@ -18,18 +18,33 @@ import java.util.Arrays;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
+import static org.bouncycastle.util.Arrays.clear;
 
 /**
  * Point wrapper classed used to abstract away from the actual cryptographic implementation.
  */
 // FIXME write unit tests for Point wrapper
-// FIXME implement Closeable and ensure proper clearing of internal point representation as byte-array.
-public final class Point {
+public final class Point implements AutoCloseable {
 
-    final byte[] encoded;
+    private final byte[] encoded;
+
+    private boolean cleared = false;
 
     Point(@Nonnull final byte[] encoded) {
         this.encoded = requireLengthExactly(PUBLIC_KEY_SIZE, encoded);
+    }
+
+    @SuppressWarnings("PMD.MethodReturnsInternalArray")
+    @Nonnull
+    byte[] getEncoded() {
+        requireNotCleared();
+        return this.encoded;
+    }
+
+    @Override
+    public void close() {
+        clear(this.encoded);
+        this.cleared = true;
     }
 
     /**
@@ -85,6 +100,7 @@ public final class Point {
      */
     @Nonnull
     public Point negate() {
+        requireNotCleared();
         try {
             return new Point(Points.decode(this.encoded).negate().encode());
         } catch (final Points.InvalidDataException e) {
@@ -100,6 +116,7 @@ public final class Point {
      */
     @Nonnull
     public Point multiply(@Nonnull final Scalar scalar) {
+        requireNotCleared();
         try {
             return new Point(Points.decode(this.encoded).multiply(scalar.toBigInteger()).encode());
         } catch (final Points.InvalidDataException e) {
@@ -115,6 +132,7 @@ public final class Point {
      */
     @Nonnull
     public Point add(@Nonnull final Point point) {
+        requireNotCleared();
         try {
             return new Point(Points.decode(this.encoded).add(Points.decode(point.encoded)).encode());
         } catch (final Points.InvalidDataException e) {
@@ -129,6 +147,7 @@ public final class Point {
      */
     @Nonnull
     public byte[] encode() {
+        requireNotCleared();
         return this.encoded.clone();
     }
 
@@ -139,6 +158,13 @@ public final class Point {
      * @throws IOException In case of failure in the output stream during encoding.
      */
     public void encodeTo(@Nonnull final OutputStream out) throws IOException {
+        requireNotCleared();
         out.write(this.encoded, 0, PUBLIC_KEY_SIZE);
+    }
+
+    private void requireNotCleared() {
+        if (this.cleared) {
+            throw new IllegalStateException("Point data was already cleared.");
+        }
     }
 }

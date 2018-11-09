@@ -21,7 +21,7 @@ import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
 public class ECDHKeyPairTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -54,9 +54,23 @@ public class ECDHKeyPairTest {
     }
 
     @Test
+    public void testGetPublicKeyAfterClose() {
+        final ECDHKeyPair keypair = generate(RANDOM);
+        keypair.close();
+        keypair.getPublicKey();
+    }
+
+    @Test
     public void testGetSecretKey() {
         final ECDHKeyPair keypair = new ECDHKeyPair(sk);
         assertEquals(sk, keypair.getSecretKey());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGetSecretKeyAfterClose() {
+        final ECDHKeyPair keypair = generate(RANDOM);
+        keypair.close();
+        keypair.getSecretKey();
     }
 
     @Test
@@ -85,5 +99,13 @@ public class ECDHKeyPairTest {
         final Point other = multiplyByBase(Scalar.decodeScalar(otherScalar));
         final ECDHKeyPair keypair = ECDHKeyPair.generate(RANDOM);
         keypair.generateSharedSecret(other);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGenerateSharedSecretAfterClose() throws ValidationException {
+        final ECDHKeyPair keypair = generate(RANDOM);
+        final Point otherPoint = generate(RANDOM).getPublicKey();
+        keypair.close();
+        keypair.generateSharedSecret(otherPoint);
     }
 }

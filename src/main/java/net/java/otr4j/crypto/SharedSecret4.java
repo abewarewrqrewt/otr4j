@@ -270,7 +270,9 @@ public final class SharedSecret4 implements AutoCloseable {
         requireInitializationCompleted();
         final byte[] k_ecdh;
         try {
-            k_ecdh = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey).encode();
+            final Point sharedSecret = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey);
+            k_ecdh = sharedSecret.encode();
+            sharedSecret.close();
         } catch (final ValidationException e) {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }

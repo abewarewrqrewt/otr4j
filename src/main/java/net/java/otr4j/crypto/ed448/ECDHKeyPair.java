@@ -8,7 +8,6 @@
 package net.java.otr4j.crypto.ed448;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
@@ -114,8 +113,11 @@ public final class ECDHKeyPair implements AutoCloseable {
      * @return Returns the secret key or null if resource is already closed.
      */
     // TODO is this method really needed?
-    @Nullable
+    @Nonnull
     Scalar getSecretKey() {
+        if (this.secretKey == null) {
+            throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
+        }
         return this.secretKey;
     }
 
@@ -126,6 +128,7 @@ public final class ECDHKeyPair implements AutoCloseable {
      * @return Returns the shared secret point.
      * @throws ValidationException In case of illegal ECDH public key.
      */
+    // TODO mark as CleanupObligation, once these annotations are in use
     @Nonnull
     public Point generateSharedSecret(@Nonnull final Point otherPublicKey) throws ValidationException {
         if (this.secretKey == null) {
@@ -134,7 +137,7 @@ public final class ECDHKeyPair implements AutoCloseable {
         final Point sharedSecret = otherPublicKey.multiply(this.secretKey);
         // TODO is this sufficient to discover all illegal public keys?
         // Immediately using BouncyCastle's constantTimeAreEqual such that we don't run into the all-zero-bytes assertions
-        if (constantTimeAreEqual(new byte[57], sharedSecret.encoded)) {
+        if (constantTimeAreEqual(new byte[57], sharedSecret.getEncoded())) {
             throw new ValidationException("Illegal ECDH public key: other point has small contribution.");
         }
         if (checkIdentity(sharedSecret)) {

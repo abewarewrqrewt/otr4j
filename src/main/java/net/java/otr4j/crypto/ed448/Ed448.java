@@ -107,8 +107,8 @@ public final class Ed448 {
      */
     @CheckReturnValue
     public static boolean checkIdentity(@Nonnull final Point point) {
-        requireLengthExactly(PUBLIC_KEY_SIZE, point.encoded);
-        return constantTimeEqualsOrSame(IDENTITY.encoded, point.encoded);
+        requireLengthExactly(PUBLIC_KEY_SIZE, point.getEncoded());
+        return constantTimeEqualsOrSame(IDENTITY.getEncoded(), point.getEncoded());
     }
 
     /**
@@ -123,7 +123,7 @@ public final class Ed448 {
     public static boolean containsPoint(@Nonnull final Point p) {
         try {
             // FIXME does it even make sense to call 'contains'? I suspect that 'Points.decode' already does a point validity check, but maybe not identity check.
-            return nl.dannyvanheumen.joldilocks.Ed448.contains(Points.decode(p.encoded));
+            return nl.dannyvanheumen.joldilocks.Ed448.contains(Points.decode(p.getEncoded()));
         } catch (final Points.InvalidDataException e) {
             return false;
         }

@@ -23,8 +23,6 @@ public final class EdDSAKeyPairTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final EdDSAKeyPair keypair = generate(RANDOM);
-
     @Test(expected = NullPointerException.class)
     public void testGenerateNullRandom() {
         generate(null);
@@ -37,63 +35,93 @@ public final class EdDSAKeyPairTest {
 
     @Test
     public void testRegeneratePublicKey() {
-        final Point expected = this.keypair.getPublicKey();
-        final Point generated = multiplyByBase(this.keypair.getSecretKey());
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final Point expected = keypair.getPublicKey();
+        final Point generated = multiplyByBase(keypair.getSecretKey());
         assertEquals(expected, generated);
     }
 
     @Test(expected = NullPointerException.class)
     public void testSignNullMessage() {
-        this.keypair.sign(null);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        keypair.sign(null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testVerifyNullPublicKey() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        final byte[] sig = this.keypair.sign(message);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final byte[] sig = keypair.sign(message);
         verify(null, message, sig);
     }
 
     @Test(expected = NullPointerException.class)
     public void testVerifyNullMessage() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        final byte[] sig = this.keypair.sign(message);
-        verify(this.keypair.getPublicKey(), null, sig);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final byte[] sig = keypair.sign(message);
+        verify(keypair.getPublicKey(), null, sig);
     }
 
     @Test(expected = NullPointerException.class)
     public void testVerifyNullSignature() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        verify(this.keypair.getPublicKey(), message, null);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        verify(keypair.getPublicKey(), message, null);
     }
 
     @Test
     public void testSignatureIsVerifiable() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        final byte[] sig = this.keypair.sign(message);
-        verify(this.keypair.getPublicKey(), message, sig);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final byte[] sig = keypair.sign(message);
+        verify(keypair.getPublicKey(), message, sig);
     }
 
     @Test(expected = ValidationException.class)
     public void testVerifyWrongPublicKey() throws ValidationException {
         final EdDSAKeyPair keypair2 = EdDSAKeyPair.generate(RANDOM);
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        final byte[] sig = this.keypair.sign(message);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final byte[] sig = keypair.sign(message);
         verify(keypair2.getPublicKey(), message, sig);
     }
 
     @Test(expected = ValidationException.class)
     public void testVerifyWrongMessage() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        final byte[] sig = this.keypair.sign(message);
-        verify(this.keypair.getPublicKey(), "bladkfjsaf".getBytes(UTF_8), sig);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final byte[] sig = keypair.sign(message);
+        verify(keypair.getPublicKey(), "bladkfjsaf".getBytes(UTF_8), sig);
     }
 
     @Test(expected = ValidationException.class)
     public void testVerifyWrongSignature() throws ValidationException {
         final byte[] message = "SomeRandomMessage".getBytes(UTF_8);
-        final byte[] sig = this.keypair.sign(message);
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        final byte[] sig = keypair.sign(message);
         sig[0] = 0;
-        verify(this.keypair.getPublicKey(), message, sig);
+        verify(keypair.getPublicKey(), message, sig);
+    }
+
+    @Test
+    public void testGetPublicKeyAfterClose() {
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        keypair.close();
+        assertNotNull(keypair.getPublicKey());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGetSecretKeyAfterClose() {
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        keypair.close();
+        keypair.getSecretKey();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSignAfterClose() {
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        keypair.close();
+        keypair.sign("SomeRandomMessage".getBytes(UTF_8));
     }
 }
