@@ -49,7 +49,7 @@ Development stages:
   * Double Ratchet:
     * ☑ Generate next message keys (in-order messages)
     * ☑ Generate future message keys (skip over missing messages)
-    * ☐ Store for skipped message keys (out-of-order messages)
+    * ☐ Store and recall skipped message keys (out-of-order messages)
   * Shared secrets management:
     * ☑ Ephemeral DH with 3072-bit parameters
     * ☑ Ephemeral ECDH based on Ed448-Goldilocks
@@ -76,7 +76,8 @@ Development stages:
   * OTRv4
     * ☑ Base "Extra Symmetric Key" available for use.
     * ☐ Derived keys based on OTRv4 prescribed key derivation
-* ...
+* Misc
+  * ☐ Ability to define own, customized per network, `phi` (shared session state) implementer addition for the `t` value calculation.
 
 ## Operational
 

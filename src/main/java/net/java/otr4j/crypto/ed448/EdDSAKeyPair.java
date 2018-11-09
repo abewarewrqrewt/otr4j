@@ -27,9 +27,8 @@ import static org.bouncycastle.util.Arrays.copyOfRange;
 /**
  * EdDSA key pair.
  */
-// FIXME implement AutoCloseable such that cryptographic material can be cleaned up appropriately.
 // TODO check how we should restore the EdDSAKeyPair from the OtrEngineHost perspective. It needs to store and restore the DSAKeyPair on every execution session.
-public final class EdDSAKeyPair {
+public final class EdDSAKeyPair implements AutoCloseable {
 
     /**
      * Context value as applied in OTRv4.
@@ -38,6 +37,7 @@ public final class EdDSAKeyPair {
 
     private final byte[] symmetricKey;
     private final byte[] publicKey;
+    private boolean cleared = false;
 
     private EdDSAKeyPair(@Nonnull final byte[] symmetricKey, @Nonnull final byte[] publicKey) {
         assert !allZeroBytes(symmetricKey);
@@ -87,6 +87,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public byte[] sign(@Nonnull final byte[] message) {
+        requireNotCleared();
         final byte[] signature = new byte[Ed448.SIGNATURE_SIZE];
         Ed448.sign(this.symmetricKey, 0, ED448_CONTEXT, message, 0, message.length, signature, 0);
         return signature;
@@ -113,6 +114,7 @@ public final class EdDSAKeyPair {
      */
     @Nonnull
     public Scalar getSecretKey() {
+        requireNotCleared();
         final byte[] h = shake256(this.symmetricKey, 2 * SECRET_KEY_SIZE);
         final byte[] secretKey = copyOfRange(h, 0, SECRET_KEY_SIZE);
         clear(h);
@@ -123,6 +125,18 @@ public final class EdDSAKeyPair {
             return decodeScalar(secretKey);
         } finally {
             clear(secretKey);
+        }
+    }
+
+    @Override
+    public void close() {
+        clear(this.symmetricKey);
+        this.cleared = true;
+    }
+
+    private void requireNotCleared() {
+        if (this.cleared) {
+            throw new IllegalStateException("Scalar is already cleared.");
         }
     }
 }

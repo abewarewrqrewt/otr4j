@@ -80,7 +80,16 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     private BigInteger theirDHPublicKey;
 
-    SharedSecret4(@Nonnull final SecureRandom random, @Nullable final DHKeyPair ourDHKeyPair,
+    /**
+     * Shared Secret 4.
+     *
+     * @param random             the secure random instance
+     * @param ourDHKeyPair       our DH key pair
+     * @param ourECDHKeyPair     our ECDH key pair
+     * @param theirDHPublicKey   their DH public key
+     * @param theirECDHPublicKey their ECDH public key
+     */
+    public SharedSecret4(@Nonnull final SecureRandom random, @Nullable final DHKeyPair ourDHKeyPair,
             @Nullable final ECDHKeyPair ourECDHKeyPair, @Nullable final BigInteger theirDHPublicKey,
             @Nullable final Point theirECDHPublicKey) {
         this.random = requireNonNull(random);
@@ -105,18 +114,6 @@ public final class SharedSecret4 implements AutoCloseable {
         clear(this.k);
         this.ecdhKeyPair.close();
         this.dhKeyPair.close();
-    }
-
-    /**
-     * Create shared secret based on security parameters established during the key exchange.
-     *
-     * @param random SecureRandom instance
-     * @param params established security parameters
-     * @return Returns SharedSecret4 instance.
-     */
-    public static SharedSecret4 createSharedSecret(@Nonnull final SecureRandom random, @Nonnull final SecurityParameters4 params) {
-        return new SharedSecret4(random, requireNonNull(params.getDhKeyPair()), requireNonNull(params.getEcdhKeyPair()),
-            requireNonNull(params.getA()), requireNonNull(params.getX()));
     }
 
     /**
@@ -221,8 +218,14 @@ public final class SharedSecret4 implements AutoCloseable {
         if (this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
             throw new IllegalStateException("To rotate our key pairs, it is required that other party's public keys are available.");
         }
+        if (this.ecdhKeyPair != null) {
+            this.ecdhKeyPair.close();
+        }
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
         if (regenerateDHKeyPair) {
+            if (this.dhKeyPair != null) {
+                this.dhKeyPair.close();
+            }
             this.dhKeyPair = DHKeyPair.generate(this.random);
         }
         regenerateK(Rotation.SENDER_KEYS, regenerateDHKeyPair);

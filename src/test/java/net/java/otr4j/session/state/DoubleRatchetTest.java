@@ -25,7 +25,6 @@ import java.util.Arrays;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.crypto.SharedSecret4TestUtils.createSharedSecret4;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -193,9 +192,9 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
 
         // Start encrypting and authenticating using Bob's double ratchet.
@@ -217,9 +216,9 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
         final RotationResult rotation = aliceRatchet.rotateSenderKeys();
         bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation.dhPublicKey);
@@ -232,7 +231,7 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), randomBytes(RANDOM, new byte[64]));
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), randomBytes(RANDOM, new byte[64]));
         bobRatchet.rotateSenderKeys();
     }
 
@@ -244,9 +243,9 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
 
         // Start encrypting and authenticating using Bob's double ratchet.
@@ -266,9 +265,9 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
 
         // Start encrypting and authenticating using Bob's double ratchet.
@@ -291,9 +290,9 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
 
         // Start encrypting and authenticating using Bob's double ratchet.
@@ -315,7 +314,7 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
 
         // Start encrypting and authenticating using Bob's double ratchet.
@@ -334,9 +333,9 @@ public class DoubleRatchetTest {
         final DHKeyPair bobDH = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair bobECDH = ECDHKeyPair.generate(RANDOM);
         final DoubleRatchet bobRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
+                new SharedSecret4(RANDOM, bobDH, bobECDH, null, null), initialRootKey.clone());
         final DoubleRatchet aliceRatchet = new DoubleRatchet(RANDOM,
-                createSharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
+                new SharedSecret4(RANDOM, null, null, bobDH.getPublicKey(), bobECDH.getPublicKey()),
                 initialRootKey.clone());
 
         // Start encrypting and authenticating using Bob's double ratchet.
@@ -495,6 +494,6 @@ public class DoubleRatchetTest {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
-        return createSharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey, theirECDHPublicKey);
+        return new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 }

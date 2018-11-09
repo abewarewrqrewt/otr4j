@@ -9,11 +9,13 @@ package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 import static java.util.Objects.requireNonNull;
 
@@ -23,7 +25,7 @@ import static java.util.Objects.requireNonNull;
  * Container that contains the negotiated security parameters during an OTRv4 Interactive DAKE session.
  */
 // FIXME migrate into Message State state machine.
-public final class SecurityParameters4 {
+public final class SecurityParameters4 implements AutoCloseable {
 
     private final Component initializationComponent;
     private final ECDHKeyPair ecdhKeyPair;
@@ -56,6 +58,12 @@ public final class SecurityParameters4 {
         this.theirProfile = requireNonNull(theirProfile);
     }
 
+    @Override
+    public void close() {
+        this.ecdhKeyPair.close();
+        this.dhKeyPair.close();
+    }
+
     /**
      * Get the component that should be initialized in the Double Ratchet.
      *
@@ -64,26 +72,6 @@ public final class SecurityParameters4 {
     @Nonnull
     public Component getInitializationComponent() {
         return initializationComponent;
-    }
-
-    /**
-     * Get local ephemeral ECDH key pair.
-     *
-     * @return Returns ECDH key pair.
-     */
-    @Nonnull
-    public ECDHKeyPair getEcdhKeyPair() {
-        return ecdhKeyPair;
-    }
-
-    /**
-     * Get local ephemeral DH key pair.
-     *
-     * @return Returns DH key pair.
-     */
-    @Nonnull
-    public DHKeyPair getDhKeyPair() {
-        return dhKeyPair;
     }
 
     /**
@@ -124,6 +112,17 @@ public final class SecurityParameters4 {
     @Nonnull
     public ClientProfile getTheirProfile() {
         return theirProfile;
+    }
+
+    /**
+     * Generate a OTRv4 shared secret based on the keys contained in the SecurityParameters4 instance.
+     *
+     * @param random secure random instance
+     * @return Returns a newly generated SharedSecret4 instance based on contained keys.
+     */
+    @Nonnull
+    public SharedSecret4 generateSharedSecret(@Nonnull final SecureRandom random) {
+        return new SharedSecret4(random, this.dhKeyPair, this.ecdhKeyPair, this.a, this.x);
     }
 
     /**

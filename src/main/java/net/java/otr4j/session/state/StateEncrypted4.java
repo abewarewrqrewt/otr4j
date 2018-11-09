@@ -37,7 +37,6 @@ import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
-import static net.java.otr4j.crypto.SharedSecret4.createSharedSecret;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
@@ -62,12 +61,13 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         super(context.getSessionID(), context.getHost());
         final byte[] exchangeK;
         final byte[] ssid;
-        try (SharedSecret4 exchangeSecret = createSharedSecret(context.secureRandom(), params)) {
+        try (SharedSecret4 exchangeSecret = params.generateSharedSecret(context.secureRandom())) {
             ssid = exchangeSecret.generateSSID();
             exchangeK = exchangeSecret.getK();
         }
         final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK,
                 params.getInitializationComponent());
+        params.close();
         this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
         this.smp = new SMP(context.secureRandom(), context.getHost(), context.getSessionID(), ssid,
                 params.getOurProfile().getLongTermPublicKey(), params.getTheirProfile().getLongTermPublicKey(),
