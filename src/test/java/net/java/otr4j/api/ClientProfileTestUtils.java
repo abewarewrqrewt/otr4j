@@ -39,14 +39,14 @@ public final class ClientProfileTestUtils {
 
     public ClientProfilePayload createUserProfile() {
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
-                this.forgingKey, singleton(Session.OTRv.FOUR), null);
+                this.forgingKey, singleton(Session.Version.FOUR), null);
         return ClientProfilePayload.sign(profile, this.expirationTime, null, this.eddsaLongTermKeyPair);
     }
 
     public ClientProfilePayload createTransitionalUserProfile() {
         final TreeSet<Integer> versions = new TreeSet<>();
-        versions.add(Session.OTRv.THREE);
-        versions.add(Session.OTRv.FOUR);
+        versions.add(Session.Version.THREE);
+        versions.add(Session.Version.FOUR);
         final ClientProfile profile = new ClientProfile(SMALLEST_TAG, this.eddsaLongTermKeyPair.getPublicKey(),
                 this.forgingKey, versions, this.dsaKeyPair.getPublic());
         return ClientProfilePayload.sign(profile, this.expirationTime, this.dsaKeyPair, this.eddsaLongTermKeyPair);

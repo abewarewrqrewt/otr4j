@@ -98,7 +98,7 @@ final class OtrFragmenter {
      *                           does not support fragmentation, for example if only OTRv1 is allowed.
      */
     int numberOfFragments(final int version, @Nonnull final String message) throws ProtocolException {
-        if (version < Session.OTRv.TWO) {
+        if (version < Session.Version.TWO) {
             return 1;
         }
         final int fragmentSize = this.host.getMaxFragmentSize(this.sessionID);
@@ -209,11 +209,11 @@ final class OtrFragmenter {
     private String createMessageFragment(final int version, final int id, final int sendertag, final int receivertag,
             final int count, final int total, @Nonnull final String partialContent) {
         switch (version) {
-        case Session.OTRv.TWO:
+        case Session.Version.TWO:
             return createV2MessageFragment(count, total, partialContent);
-        case Session.OTRv.THREE:
+        case Session.Version.THREE:
             return createV3MessageFragment(sendertag, receivertag, count, total, partialContent);
-        case Session.OTRv.FOUR:
+        case Session.Version.FOUR:
             return createV4MessageFragment(id, sendertag, receivertag, count, total, partialContent);
         default:
             throw new IllegalArgumentException("Unsupported protocol version: " + version);
@@ -270,11 +270,11 @@ final class OtrFragmenter {
      */
     private int computeHeaderSize(final int version) {
         switch (version) {
-        case Session.OTRv.TWO:
+        case Session.Version.TWO:
             return OTRV2_HEADER_SIZE;
-        case Session.OTRv.THREE:
+        case Session.Version.THREE:
             return OTRV3_HEADER_SIZE;
-        case Session.OTRv.FOUR:
+        case Session.Version.FOUR:
             return OTRV4_HEADER_SIZE;
         default:
             throw new UnsupportedOperationException("Unsupported protocol version: " + version);

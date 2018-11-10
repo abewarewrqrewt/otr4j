@@ -49,7 +49,7 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV2() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t ");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
         assertEquals("", msg.getCleanText());
     }
 
@@ -57,7 +57,7 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV3() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
         assertEquals("", msg.getCleanText());
     }
 
@@ -65,7 +65,7 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t \t  ");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertTrue(msg.getVersions().contains(Session.Version.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -73,9 +73,9 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV2V3V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(3, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
-        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -83,8 +83,8 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV2AndV3() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t");
         assertEquals(2, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
         assertEquals("", msg.getCleanText());
     }
 
@@ -92,8 +92,8 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV1V2V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t \t  ");
         assertEquals(2, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
-        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -101,7 +101,7 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV1AndV2() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t ");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
         assertEquals("", msg.getCleanText());
     }
 
@@ -109,8 +109,8 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV1V3V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(2, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
-        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -118,7 +118,7 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV1AndV3() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
         assertEquals("", msg.getCleanText());
     }
 
@@ -126,9 +126,9 @@ public final class MessageParserTest {
     public void testCorrectIdentificationOfWhitespaceTagV1V2V3V4() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse(" \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t   \t\t  \t\t  \t\t \t  ");
         assertEquals(3, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
-        assertTrue(msg.getVersions().contains(Session.OTRv.FOUR));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.FOUR));
         assertEquals("", msg.getCleanText());
     }
 
@@ -136,7 +136,7 @@ public final class MessageParserTest {
     public void testCorrectWhitespaceErasure() throws ProtocolException {
         PlainTextMessage msg = (PlainTextMessage) parse("Hello \t  \t\t\t\t \t \t \t   \t \t  \t   \t\t  \t\t world!");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.THREE));
+        assertTrue(msg.getVersions().contains(Session.Version.THREE));
         assertEquals("Hello world!", msg.getCleanText());
     }
 
@@ -144,7 +144,7 @@ public final class MessageParserTest {
     public void testCorrectDeduplicationOfVersionsWhileParsingQueryMessage() throws ProtocolException {
         final QueryMessage msg = (QueryMessage) parse("?OTRv2222222?");
         assertEquals(1, msg.getVersions().size());
-        assertTrue(msg.getVersions().contains(Session.OTRv.TWO));
+        assertTrue(msg.getVersions().contains(Session.Version.TWO));
     }
 
     @Test

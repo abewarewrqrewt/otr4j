@@ -10,7 +10,7 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -133,7 +133,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     @Override
     @Nonnull
     public byte[] getExtraSymmetricKey() {
-        if (this.protocolVersion == OTRv.TWO) {
+        if (this.protocolVersion == Session.Version.TWO) {
             throw new UnsupportedOperationException("An OTR version 2 session was negotiated. The Extra Symmetric Key is not available in this version of the protocol.");
         }
         return this.sessionKeyManager.extraSymmetricKey();

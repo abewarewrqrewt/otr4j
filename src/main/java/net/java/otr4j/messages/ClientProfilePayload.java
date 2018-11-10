@@ -351,7 +351,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (versionsFields.size() != 1) {
             throw new ValidationException("Incorrect number of versions fields: " + versionsFields.size());
         }
-        if (!versionsFields.get(0).versions.contains(Session.OTRv.FOUR)) {
+        if (!versionsFields.get(0).versions.contains(Session.Version.FOUR)) {
             throw new ValidationException("Expected at least OTR version 4 to be supported.");
         }
         if (expirationDateFields.size() != 1) {

@@ -74,8 +74,8 @@ import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
-import static net.java.otr4j.api.Session.OTRv.FOUR;
-import static net.java.otr4j.api.Session.OTRv.THREE;
+import static net.java.otr4j.api.Session.Version.FOUR;
+import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
@@ -454,7 +454,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         final SessionID sessionID = this.sessionState.getSessionID();
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
-        if (masterSession == this && m instanceof Fragment && ((Fragment) m).getVersion() > OTRv.TWO) {
+        if (masterSession == this && m instanceof Fragment && ((Fragment) m).getVersion() > Version.TWO) {
             final Fragment fragment = (Fragment) m;
             if (ZERO_TAG.equals(fragment.getSendertag())) {
                 logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
@@ -593,7 +593,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Nullable
     private String handleFragment(@Nonnull final Fragment fragment) throws OtrException {
-        assert this.masterSession != this || fragment.getVersion() == OTRv.TWO
+        assert this.masterSession != this || fragment.getVersion() == Version.TWO
             : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
         final String reassembledText;
         try {
@@ -640,7 +640,7 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Nullable
     private String handleEncodedMessage(@Nonnull final AbstractEncodedMessage message) throws OtrException {
-        assert this.masterSession != this || message.protocolVersion == OTRv.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
+        assert this.masterSession != this || message.protocolVersion == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         if (message instanceof DataMessage) {
             return handleDataMessage((DataMessage) message);
         }
@@ -668,9 +668,9 @@ final class SessionImpl implements Session, Context, AuthContext {
         } else if (queryMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
             injectMessage(respondAuth(THREE, ZERO_TAG, queryMessage.getTag()));
-        } else if (queryMessage.getVersions().contains(OTRv.TWO) && policy.isAllowV2()) {
+        } else if (queryMessage.getVersions().contains(Version.TWO) && policy.isAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, queryMessage.getTag()));
+            injectMessage(respondAuth(Version.TWO, ZERO_TAG, queryMessage.getTag()));
         } else {
             logger.info("Query message received, but none of the versions are acceptable. They are either excluded by policy or through lack of support.");
         }
@@ -687,7 +687,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nullable
     private String handleDataMessage(@Nonnull final DataMessage data) throws OtrException {
-        assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
+        assert this.masterSession != this || data.protocolVersion == Version.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
@@ -700,7 +700,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
     @Nullable
     private String handleDataMessage(@Nonnull final DataMessage4 data) throws OtrException {
-        assert this.masterSession != this || data.protocolVersion == OTRv.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
+        assert this.masterSession != this || data.protocolVersion == Version.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
                 new Object[] {sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
@@ -786,10 +786,10 @@ final class SessionImpl implements Session, Context, AuthContext {
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(OTRv.TWO) && policy.isAllowV2()) {
+        } else if (plainTextMessage.getVersions().contains(Version.TWO) && policy.isAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(OTRv.TWO, ZERO_TAG, plainTextMessage.getTag()));
+                injectMessage(respondAuth(Version.TWO, ZERO_TAG, plainTextMessage.getTag()));
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }
@@ -806,7 +806,7 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         // Verify that policy allows handling message according to protocol version.
         final OtrPolicy policy = getSessionPolicy();
-        if (m.protocolVersion == OTRv.TWO && !policy.isAllowV2()) {
+        if (m.protocolVersion == Version.TWO && !policy.isAllowV2()) {
             logger.finest("ALLOW_V2 is not set, ignore this message.");
             return null;
         }
@@ -1165,7 +1165,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nonnull
     private AbstractEncodedMessage respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
             @Nonnull final String queryTag) throws OtrException {
-        if (!OTRv.SUPPORTED.contains(version)) {
+        if (!Version.SUPPORTED.contains(version)) {
             throw new OtrException("Unsupported OTR version encountered.");
         }
         // Ensure we initiate authentication state in master session, as we

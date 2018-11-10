@@ -8,7 +8,7 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
@@ -108,7 +108,7 @@ public final class Fragment implements Message {
         // Acquire data from fragment message.
         Matcher matcher;
         if ((matcher = PATTERN_V4.matcher(message)).matches()) {
-            version = OTRv.FOUR;
+            version = Session.Version.FOUR;
             identifier = parseUnsignedInt(matcher.group(1), HEXADECIMAL_SYSTEM);
             sendertagValue = parseUnsignedInt(matcher.group(2), HEXADECIMAL_SYSTEM);
             receivertagValue = parseUnsignedInt(matcher.group(3), HEXADECIMAL_SYSTEM);
@@ -116,7 +116,7 @@ public final class Fragment implements Message {
             total = parseInt(matcher.group(5), DECIMAL_SYSTEM);
             content = matcher.group(6);
         } else if ((matcher = PATTERN_V3.matcher(message)).matches()) {
-            version = OTRv.THREE;
+            version = Session.Version.THREE;
             identifier = ZERO_IDENTIFIER;
             sendertagValue = parseUnsignedInt(matcher.group(1), HEXADECIMAL_SYSTEM);
             receivertagValue = parseUnsignedInt(matcher.group(2), HEXADECIMAL_SYSTEM);
@@ -124,7 +124,7 @@ public final class Fragment implements Message {
             total = parseInt(matcher.group(4), DECIMAL_SYSTEM);
             content = matcher.group(5);
         } else if ((matcher = PATTERN_V2.matcher(message)).matches()) {
-            version = OTRv.TWO;
+            version = Session.Version.TWO;
             identifier = ZERO_IDENTIFIER;
             sendertagValue = ZERO_VALUE;
             receivertagValue = ZERO_VALUE;

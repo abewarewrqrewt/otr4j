@@ -7,7 +7,8 @@
 
 package net.java.otr4j.io;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ public class MessageWriterTest {
     public void testPlaintextMessageNoNullMangling() {
         final String data = "This is a test with \0 null \0 values.";
         final PlainTextMessage m = new PlainTextMessage("?OTRv23?",
-                new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE)), data);
+                new HashSet<>(Arrays.asList(Version.TWO, Version.THREE)), data);
         assertTrue(writeMessage(m).startsWith("This is a test with \0 null \0 values."));
     }
 
@@ -48,19 +49,19 @@ public class MessageWriterTest {
 
     @Test
     public void testCorrectQueryHeaderV2() {
-        final QueryMessage msg = new QueryMessage("?OTRv2?", Collections.singleton(OTRv.TWO));
+        final QueryMessage msg = new QueryMessage("?OTRv2?", Collections.singleton(Session.Version.TWO));
         assertEquals("?OTRv2?", writeMessage(msg));
     }
 
     @Test
     public void testCorrectQueryHeaderV3() {
-        final QueryMessage msg = new QueryMessage("?OTRv3?", Collections.singleton(OTRv.THREE));
+        final QueryMessage msg = new QueryMessage("?OTRv3?", Collections.singleton(Session.Version.THREE));
         assertEquals("?OTRv3?", writeMessage(msg));
     }
 
     @Test
     public void testCorrectQueryHeaderV2AndV3() {
-        final QueryMessage msg = new QueryMessage("?OTRv23?", new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE)));
+        final QueryMessage msg = new QueryMessage("?OTRv23?", new HashSet<>(Arrays.asList(Version.TWO, Session.Version.THREE)));
         assertEquals("?OTRv23?", writeMessage(msg));
     }
 
@@ -73,28 +74,28 @@ public class MessageWriterTest {
     @Test
     public void testWhitespaceTagsAllVersions() {
         final HashSet<Integer> versions = new HashSet<>();
-        versions.add(OTRv.TWO);
-        versions.add(OTRv.THREE);
-        versions.add(OTRv.FOUR);
+        versions.add(Session.Version.TWO);
+        versions.add(Version.THREE);
+        versions.add(Version.FOUR);
         final PlainTextMessage m = new PlainTextMessage(versions, "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t   \t\t  \t\t  \t\t \t  ", writeMessage(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion2Only() {
-        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.TWO), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(Version.TWO), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t ", writeMessage(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion3Only() {
-        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.THREE), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(Version.THREE), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t  \t\t", writeMessage(m));
     }
 
     @Test
     public void testWhitespaceTagsVersion4Only() {
-        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(OTRv.FOUR), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.singleton(Version.FOUR), "Hello");
         assertEquals("Hello \t  \t\t\t\t \t \t \t    \t\t \t  ", writeMessage(m));
     }
 

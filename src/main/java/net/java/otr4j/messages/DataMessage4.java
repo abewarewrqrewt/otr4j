@@ -8,7 +8,7 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -67,7 +67,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
             @Nonnull final InstanceTag receiverInstanceTag, final byte flags, final int pn, final int i, final int j,
             @Nonnull final Point ecdhPublicKey, @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
             @Nonnull final byte[] ciphertext, @Nonnull final byte[] authenticator, @Nonnull final byte[] revealedMacs) {
-        super(requireInRange(OTRv.FOUR, OTRv.FOUR, protocolVersion), senderInstanceTag, receiverInstanceTag);
+        super(requireInRange(Version.FOUR, Version.FOUR, protocolVersion), senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
         this.pn = pn;
         this.i = i;

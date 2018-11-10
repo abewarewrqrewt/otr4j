@@ -19,7 +19,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.util.Collections.singleton;
-import static net.java.otr4j.api.Session.OTRv.FOUR;
+import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
 import static net.java.otr4j.session.ake.SecurityParameters4.Component.THEIRS;

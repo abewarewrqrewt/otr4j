@@ -137,11 +137,11 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
                 ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.getX(), t);
-        return new AuthIMessage(Session.OTRv.FOUR, senderTag, receiverTag, sigma);
+        return new AuthIMessage(Session.Version.FOUR, senderTag, receiverTag, sigma);
     }
 
     @Override
     public int getVersion() {
-        return Session.OTRv.FOUR;
+        return Session.Version.FOUR;
     }
 }

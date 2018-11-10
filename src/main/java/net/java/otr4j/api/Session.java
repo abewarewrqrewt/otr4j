@@ -26,7 +26,7 @@ public interface Session {
      * Constants for OTR versions.
      */
     // TODO consider moving out of Session interface, converting to enum
-    interface OTRv {
+    interface Version {
 
         /**
          * OTR protocol version 1. (Not supported anymore.)

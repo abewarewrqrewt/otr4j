@@ -8,7 +8,8 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -21,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static net.java.otr4j.api.Session.OTRv.SUPPORTED;
+import static net.java.otr4j.api.Session.Version.SUPPORTED;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
@@ -128,7 +129,7 @@ public final class MessageParser {
                 final byte messageType = input.readByte();
                 final InstanceTag senderInstanceTag;
                 final InstanceTag receiverInstanceTag;
-                if (protocolVersion == OTRv.THREE || protocolVersion == OTRv.FOUR) {
+                if (protocolVersion == Session.Version.THREE || protocolVersion == Session.Version.FOUR) {
                     senderInstanceTag = input.readInstanceTag();
                     receiverInstanceTag = input.readInstanceTag();
                 } else {
@@ -149,15 +150,15 @@ public final class MessageParser {
         while (matcher.find()) {
             // Ignore group 1 (OTRv1 tag) as V1 is not supported anymore.
             if (!v2 && matcher.start(2) > -1) {
-                versions.add(OTRv.TWO);
+                versions.add(Version.TWO);
                 v2 = true;
             }
             if (!v3 && matcher.start(3) > -1) {
-                versions.add(OTRv.THREE);
+                versions.add(Session.Version.THREE);
                 v3 = true;
             }
             if (!v4 && matcher.start(4) > -1) {
-                versions.add(OTRv.FOUR);
+                versions.add(Version.FOUR);
                 v4 = true;
             }
             if (v2 && v3 && v4) {

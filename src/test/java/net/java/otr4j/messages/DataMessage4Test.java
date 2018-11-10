@@ -7,7 +7,8 @@
 
 package net.java.otr4j.messages;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
@@ -43,9 +44,9 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ECDH_PUBLIC_KEY, DH_PUBLIC_KEY, nonce, content, authenticator, revealedMACs);
-        assertEquals(OTRv.FOUR, message.protocolVersion);
+        assertEquals(Version.FOUR, message.protocolVersion);
         assertEquals(SMALLEST_TAG, message.senderInstanceTag);
         assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
         assertEquals(0, message.getFlags());
@@ -66,9 +67,9 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ECDH_PUBLIC_KEY, null, nonce, content, authenticator, revealedMACs);
-        assertEquals(OTRv.FOUR, message.protocolVersion);
+        assertEquals(Version.FOUR, message.protocolVersion);
         assertEquals(SMALLEST_TAG, message.senderInstanceTag);
         assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
         assertEquals(0, message.getFlags());
@@ -89,7 +90,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.THREE, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
+        new DataMessage4(Version.THREE, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
                 DH_PUBLIC_KEY, nonce, content, authenticator, revealedMACs);
     }
 
@@ -99,7 +100,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.TWO, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
+        new DataMessage4(Session.Version.TWO, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
                 DH_PUBLIC_KEY, nonce, content, authenticator, revealedMACs);
     }
 
@@ -109,7 +110,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, null, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, null, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
                 DH_PUBLIC_KEY, nonce, content, authenticator, revealedMACs);
     }
 
@@ -119,7 +120,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, null, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, null, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY,
                 DH_PUBLIC_KEY, nonce, content, authenticator, revealedMACs);
     }
 
@@ -129,7 +130,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, null, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, null, DH_PUBLIC_KEY,
                 nonce, content, authenticator, revealedMACs);
     }
 
@@ -138,7 +139,7 @@ public final class DataMessage4Test {
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 null, content, authenticator, revealedMACs);
     }
 
@@ -148,7 +149,7 @@ public final class DataMessage4Test {
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, content, authenticator, revealedMACs);
     }
 
@@ -158,7 +159,7 @@ public final class DataMessage4Test {
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, content, authenticator, revealedMACs);
     }
 
@@ -167,7 +168,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, null, authenticator, revealedMACs);
     }
 
@@ -176,7 +177,7 @@ public final class DataMessage4Test {
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, content, null, revealedMACs);
     }
 
@@ -186,7 +187,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[63]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, content, authenticator, revealedMACs);
     }
 
@@ -196,7 +197,7 @@ public final class DataMessage4Test {
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[65]);
         final byte[] revealedMACs = new byte[0];
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, content, authenticator, revealedMACs);
     }
 
@@ -205,7 +206,7 @@ public final class DataMessage4Test {
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final byte[] nonce = randomBytes(RANDOM, new byte[24]);
         final byte[] authenticator = randomBytes(RANDOM, new byte[64]);
-        new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
+        new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0, ECDH_PUBLIC_KEY, DH_PUBLIC_KEY,
                 nonce, content, authenticator, null);
     }
 
@@ -220,7 +221,7 @@ public final class DataMessage4Test {
         final byte[] nonce = new byte[] {38, 61, -77, -100, 105, 4, -49, -79, -109, 19, -87, 101, -85, 115, -26, 54, -113, -116, 4, -7, 28, -110, 40, -107};
         final byte[] authenticator = new byte[] {120, -5, 83, -51, -98, 99, 4, 55, -79, 125, 70, -78, 8, 95, -25, 44, -15, 2, 30, -37, 0, -15, -78, -105, 69, 48, -108, 108, 63, -71, 106, -2, 115, 40, 58, 91, -9, 93, 117, 115, 72, 108, 50, -4, 120, -23, 59, 106, 85, -59, 38, -56, 97, -75, -85, 54, 13, -115, -77, 89, -93, 54, 64, -5};
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, dhPublicKey, nonce, content, authenticator, revealedMACs);
         final OtrOutputStream out = new OtrOutputStream();
         message.writeTo(out);
@@ -236,7 +237,7 @@ public final class DataMessage4Test {
         final byte[] nonce = new byte[] {38, 61, -77, -100, 105, 4, -49, -79, -109, 19, -87, 101, -85, 115, -26, 54, -113, -116, 4, -7, 28, -110, 40, -107};
         final byte[] authenticator = new byte[] {120, -5, 83, -51, -98, 99, 4, 55, -79, 125, 70, -78, 8, 95, -25, 44, -15, 2, 30, -37, 0, -15, -78, -105, 69, 48, -108, 108, 63, -71, 106, -2, 115, 40, 58, 91, -9, 93, 117, 115, 72, 108, 50, -4, 120, -23, 59, 106, 85, -59, 38, -56, 97, -75, -85, 54, 13, -115, -77, 89, -93, 54, 64, -5};
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, null, nonce, content, authenticator, revealedMACs);
         final OtrOutputStream out = new OtrOutputStream();
         message.writeTo(out);
@@ -254,7 +255,7 @@ public final class DataMessage4Test {
         final byte[] nonce = new byte[] {38, 61, -77, -100, 105, 4, -49, -79, -109, 19, -87, 101, -85, 115, -26, 54, -113, -116, 4, -7, 28, -110, 40, -107};
         final byte[] authenticator = new byte[] {120, -5, 83, -51, -98, 99, 4, 55, -79, 125, 70, -78, 8, 95, -25, 44, -15, 2, 30, -37, 0, -15, -78, -105, 69, 48, -108, 108, 63, -71, 106, -2, 115, 40, 58, 91, -9, 93, 117, 115, 72, 108, 50, -4, 120, -23, 59, 106, 85, -59, 38, -56, 97, -75, -85, 54, 13, -115, -77, 89, -93, 54, 64, -5};
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, dhPublicKey, nonce, content, authenticator, revealedMACs);
         final OtrOutputStream out = new OtrOutputStream();
         message.writeDataMessageSections(out);
@@ -270,7 +271,7 @@ public final class DataMessage4Test {
         final byte[] nonce = new byte[] {38, 61, -77, -100, 105, 4, -49, -79, -109, 19, -87, 101, -85, 115, -26, 54, -113, -116, 4, -7, 28, -110, 40, -107};
         final byte[] authenticator = new byte[] {120, -5, 83, -51, -98, 99, 4, 55, -79, 125, 70, -78, 8, 95, -25, 44, -15, 2, 30, -37, 0, -15, -78, -105, 69, 48, -108, 108, 63, -71, 106, -2, 115, 40, 58, 91, -9, 93, 117, 115, 72, 108, 50, -4, 120, -23, 59, 106, 85, -59, 38, -56, 97, -75, -85, 54, 13, -115, -77, 89, -93, 54, 64, -5};
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, null, nonce, content, authenticator, revealedMACs);
         final OtrOutputStream out = new OtrOutputStream();
         message.writeDataMessageSections(out);
@@ -287,7 +288,7 @@ public final class DataMessage4Test {
         final byte[] nonce = new byte[] {38, 61, -77, -100, 105, 4, -49, -79, -109, 19, -87, 101, -85, 115, -26, 54, -113, -116, 4, -7, 28, -110, 40, -107};
         final byte[] authenticator = new byte[] {120, -5, 83, -51, -98, 99, 4, 55, -79, 125, 70, -78, 8, 95, -25, 44, -15, 2, 30, -37, 0, -15, -78, -105, 69, 48, -108, 108, 63, -71, 106, -2, 115, 40, 58, 91, -9, 93, 117, 115, 72, 108, 50, -4, 120, -23, 59, 106, 85, -59, 38, -56, 97, -75, -85, 54, 13, -115, -77, 89, -93, 54, 64, -5};
         final byte[] revealedMACs = new byte[0];
-        final DataMessage4 message = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 message = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, dhPublicKey, nonce, content, authenticator, revealedMACs);
         // Given the constructed message, produce full serialization and data message sections and ensure that
         // data message sections are part of full serialization.

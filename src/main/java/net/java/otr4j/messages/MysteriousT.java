@@ -8,7 +8,8 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -85,7 +86,7 @@ public final class MysteriousT implements OtrEncodable {
             @Nonnull final InstanceTag receiverInstanceTag, final byte flags, final int senderKeyID,
             final int recipientKeyID, @Nonnull final DHPublicKey nextDH, @Nonnull final byte[] ctr,
             @Nonnull final byte[] encryptedMessage) {
-        if (protocolVersion < OTRv.TWO || protocolVersion > OTRv.THREE) {
+        if (protocolVersion < Session.Version.TWO || protocolVersion > Session.Version.THREE) {
             throw new IllegalArgumentException("Illegal protocol version specified.");
         }
         this.protocolVersion = protocolVersion;
@@ -164,7 +165,7 @@ public final class MysteriousT implements OtrEncodable {
     public void writeTo(@Nonnull final OtrOutputStream out) {
         out.writeShort(this.protocolVersion);
         out.writeByte(this.messageType);
-        if (this.protocolVersion == OTRv.THREE) {
+        if (this.protocolVersion == Version.THREE) {
             out.writeInstanceTag(this.senderInstanceTag);
             out.writeInstanceTag(this.receiverInstanceTag);
         }

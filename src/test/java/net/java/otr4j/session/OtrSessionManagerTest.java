@@ -11,7 +11,7 @@ import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineListener;
 import net.java.otr4j.api.Session;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
@@ -41,7 +41,7 @@ public class OtrSessionManagerTest {
     private static final Point PUBLIC_KEY = ECDHKeyPair.generate(RANDOM).getPublicKey();
     private static final DSAKeyPair DSA_KEY_PAIR = DSAKeyPair.generateDSAKeyPair();
     private static final ClientProfile PROFILE = new ClientProfile(SMALLEST_TAG, EDDSA_KEY_PAIR.getPublicKey(),
-            PUBLIC_KEY, Collections.singleton(OTRv.FOUR), DSA_KEY_PAIR.getPublic());
+            PUBLIC_KEY, Collections.singleton(Version.FOUR), DSA_KEY_PAIR.getPublic());
 
     @Test
     public void testGetSession() {

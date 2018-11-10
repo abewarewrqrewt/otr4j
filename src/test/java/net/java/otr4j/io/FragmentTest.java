@@ -8,7 +8,7 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import org.junit.Test;
 
 import java.net.ProtocolException;
@@ -101,35 +101,35 @@ public final class FragmentTest {
     @Test
     public void testParseSingleFragmentOTRv4HighBitIdentifier() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|ffffffff|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64));
-        assertEquals(OTRv.FOUR, fragment.getVersion());
+        assertEquals(Version.FOUR, fragment.getVersion());
         assertEquals(0xffffffff, fragment.getIdentifier());
     }
 
     @Test
     public void testParseSingleFragmentOTRv4HighBitSenderTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|3c5b5f03|ffffffff|27e31597,00001,00001,%s,", helloWorldBase64));
-        assertEquals(OTRv.FOUR, fragment.getVersion());
+        assertEquals(Version.FOUR, fragment.getVersion());
         assertEquals(new InstanceTag(0xffffffff), fragment.getSendertag());
     }
 
     @Test
     public void testParseSingleFragmentOTRv4HighBitReceiverTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|3c5b5f03|5a73a599|ffffffff,00001,00001,%s,", helloWorldBase64));
-        assertEquals(OTRv.FOUR, fragment.getVersion());
+        assertEquals(Version.FOUR, fragment.getVersion());
         assertEquals(new InstanceTag(0xffffffff), fragment.getReceivertag());
     }
 
     @Test
     public void testParseSingleFragmentOTRv3HighBitSenderTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|ffffffff|27e31597,00001,00001,%s,", helloWorldBase64));
-        assertEquals(OTRv.THREE, fragment.getVersion());
+        assertEquals(Version.THREE, fragment.getVersion());
         assertEquals(new InstanceTag(0xffffffff), fragment.getSendertag());
     }
 
     @Test
     public void testParseSingleFragmentOTRv3HighBitReceiverTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|5a73a599|ffffffff,00001,00001,%s,", helloWorldBase64));
-        assertEquals(OTRv.THREE, fragment.getVersion());
+        assertEquals(Version.THREE, fragment.getVersion());
         assertEquals(new InstanceTag(0xffffffff), fragment.getReceivertag());
     }
 
@@ -203,7 +203,7 @@ public final class FragmentTest {
     @Test
     public void testOTRv3FormattedFragment() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64));
-        assertEquals(OTRv.THREE, fragment.getVersion());
+        assertEquals(Version.THREE, fragment.getVersion());
     }
 
     @Test

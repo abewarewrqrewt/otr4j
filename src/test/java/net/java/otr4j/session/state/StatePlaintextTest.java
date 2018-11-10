@@ -10,7 +10,7 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
@@ -37,7 +37,7 @@ public class StatePlaintextTest {
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithViablePolicy() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv234?",
-                new HashSet<>(Arrays.asList(OTRv.TWO, OTRv.THREE, OTRv.FOUR)),
+                new HashSet<>(Arrays.asList(Version.TWO, Version.THREE, Version.FOUR)),
                 "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
@@ -52,7 +52,7 @@ public class StatePlaintextTest {
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithOTRv2OnlyPolicy() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv2?",
-                Collections.singleton(OTRv.TWO), "Hello world!");
+                Collections.singleton(Version.TWO), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.SEND_WHITESPACE_TAG);
@@ -66,7 +66,7 @@ public class StatePlaintextTest {
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithOTRv3OnlyPolicy() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv3?",
-                Collections.singleton(OTRv.THREE), "Hello world!");
+                Collections.singleton(Version.THREE), "Hello world!");
         final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3 | OtrPolicy.SEND_WHITESPACE_TAG);

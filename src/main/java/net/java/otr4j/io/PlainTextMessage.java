@@ -7,7 +7,8 @@
 
 package net.java.otr4j.io;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
@@ -64,13 +65,13 @@ public final class PlainTextMessage extends QueryMessage {
         final StringBuilder builder = new StringBuilder(58);
         builder.append(" \t  \t\t\t\t \t \t \t  ");
         for (final int version : versions) {
-            if (version == OTRv.TWO) {
+            if (version == Session.Version.TWO) {
                 builder.append("  \t\t  \t ");
             }
-            if (version == OTRv.THREE) {
+            if (version == Session.Version.THREE) {
                 builder.append("  \t\t  \t\t");
             }
-            if (version == OTRv.FOUR) {
+            if (version == Version.FOUR) {
                 builder.append("  \t\t \t  ");
             }
         }

@@ -51,7 +51,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private static final byte DATA_MESSAGE_TYPE = 0x03;
 
-    private static final int VERSION = Session.OTRv.FOUR;
+    private static final int VERSION = Session.Version.FOUR;
 
     private final DoubleRatchet ratchet;
 

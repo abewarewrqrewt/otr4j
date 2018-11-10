@@ -8,7 +8,8 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
@@ -44,12 +45,12 @@ abstract class AbstractAuthState implements AuthState {
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
             @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
-        if (!OTRv.SUPPORTED.contains(version)) {
+        if (!Version.SUPPORTED.contains(version)) {
             throw new IllegalArgumentException("unknown or unsupported protocol version");
         }
-        if (version == OTRv.TWO || version == OTRv.THREE) {
+        if (version == Version.TWO || version == Session.Version.THREE) {
             return initiateVersion3(context, version, receiverTag);
-        } else if (version == OTRv.FOUR) {
+        } else if (version == Version.FOUR) {
             return initiateVersion4(context, receiverTag, queryTag);
         } else {
             throw new UnsupportedOperationException("Unsupported protocol version.");
@@ -96,7 +97,7 @@ abstract class AbstractAuthState implements AuthState {
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
-        final IdentityMessage message = new IdentityMessage(OTRv.FOUR, context.getSenderInstanceTag(),
+        final IdentityMessage message = new IdentityMessage(Version.FOUR, context.getSenderInstanceTag(),
                 receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
         context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
         return message;

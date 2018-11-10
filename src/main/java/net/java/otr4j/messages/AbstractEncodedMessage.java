@@ -8,7 +8,8 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
@@ -85,11 +86,11 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         writer.writeShort(this.protocolVersion);
         writer.writeByte(getType());
         switch (this.protocolVersion) {
-        case OTRv.TWO:
+        case Version.TWO:
             // skipping serializing instance tags
             break;
-        case OTRv.THREE:
-        case OTRv.FOUR:
+        case Version.THREE:
+        case Session.Version.FOUR:
             writer.writeInstanceTag(this.senderInstanceTag);
             writer.writeInstanceTag(this.receiverInstanceTag);
             break;

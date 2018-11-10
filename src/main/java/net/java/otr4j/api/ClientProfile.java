@@ -7,7 +7,6 @@
 
 package net.java.otr4j.api;
 
-import net.java.otr4j.api.Session.OTRv;
 import net.java.otr4j.crypto.ed448.Point;
 
 import javax.annotation.Nonnull;
@@ -74,8 +73,8 @@ public final class ClientProfile {
         this.instanceTag = requireNonNull(instanceTag);
         this.longTermPublicKey = requireNonNull(longTermPublicKey);
         this.forgingKey = requireNonNull(forgingKey);
-        this.versions = requireMinElements(1, requireElements(singletonList(OTRv.FOUR),
-                requireNoIllegalValues(asList(OTRv.ONE, OTRv.TWO), versions)));
+        this.versions = requireMinElements(1, requireElements(singletonList(Session.Version.FOUR),
+                requireNoIllegalValues(asList(Session.Version.ONE, Session.Version.TWO), versions)));
         this.dsaPublicKey = dsaPublicKey;
     }
 

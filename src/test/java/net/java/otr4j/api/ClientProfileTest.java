@@ -7,7 +7,7 @@
 
 package net.java.otr4j.api;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -34,31 +34,31 @@ public final class ClientProfileTest {
 
     @Test
     public void testConstructWithoutDSAPublicKey() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(Session.Version.FOUR),
                 null);
     }
 
     @Test
     public void testConstructWithDSAPublicKey() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(Version.FOUR),
                 dsaKeyPair.getPublic());
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullInstanceTag() {
-        new ClientProfile(null, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.FOUR),
+        new ClientProfile(null, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(Session.Version.FOUR),
                 null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullPublicKey() {
-        new ClientProfile(SMALLEST_TAG, null, forgingPublicKey, singleton(OTRv.FOUR),
+        new ClientProfile(SMALLEST_TAG, null, forgingPublicKey, singleton(Session.Version.FOUR),
                 null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConsructNullForgingKey() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), null, singleton(OTRv.FOUR),
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), null, singleton(Version.FOUR),
                 null);
     }
 
@@ -75,7 +75,7 @@ public final class ClientProfileTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalVersionsList() {
-        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(OTRv.THREE),
+        new ClientProfile(SMALLEST_TAG, this.longTermKeyPair.getPublicKey(), forgingPublicKey, singleton(Session.Version.THREE),
                 null);
     }
 }

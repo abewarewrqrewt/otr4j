@@ -7,7 +7,7 @@
 
 package net.java.otr4j.util;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.MessageParser;
 import net.java.otr4j.io.OtrInputStream;
@@ -64,7 +64,7 @@ public final class BlockingQueuesTestUtils {
         for (int i = 0; i < messages.size(); i++) {
             final String msg = messages.get(i);
             final Message m = MessageParser.parse(msg);
-            if (m instanceof Fragment && ((Fragment) m).getVersion() == OTRv.THREE) {
+            if (m instanceof Fragment && ((Fragment) m).getVersion() == Session.Version.THREE) {
                 fragments.add(new FragmentEntry(i, ((Fragment) m).getIndex(), msg));
             }
         }

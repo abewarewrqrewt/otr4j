@@ -8,7 +8,7 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
@@ -43,7 +43,7 @@ public final class AuthIMessageTest {
     @Test
     public void testConstruction() {
         final AuthIMessage m = new AuthIMessage(4, INSTANCE_TAG, INSTANCE_TAG, SIG);
-        assertEquals(OTRv.FOUR, m.protocolVersion);
+        assertEquals(Version.FOUR, m.protocolVersion);
         assertEquals(INSTANCE_TAG, m.senderInstanceTag);
         assertEquals(INSTANCE_TAG, m.receiverInstanceTag);
         assertEquals(MESSAGE_AUTH_I, m.getType());
@@ -52,12 +52,12 @@ public final class AuthIMessageTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructionIllegalVersion() {
-        new AuthIMessage(OTRv.THREE, INSTANCE_TAG, INSTANCE_TAG, SIG);
+        new AuthIMessage(Version.THREE, INSTANCE_TAG, INSTANCE_TAG, SIG);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructionNullRingSignature() {
-        new AuthIMessage(OTRv.FOUR, INSTANCE_TAG, INSTANCE_TAG, null);
+        new AuthIMessage(Version.FOUR, INSTANCE_TAG, INSTANCE_TAG, null);
     }
 
     @Test

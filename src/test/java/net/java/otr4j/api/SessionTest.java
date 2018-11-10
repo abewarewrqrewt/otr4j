@@ -7,7 +7,7 @@
 
 package net.java.otr4j.api;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
@@ -152,7 +152,7 @@ public class SessionTest {
         // Expecting Auth-R message, DH-Key message from Alice.
         assertNull(c.clientBob.receiveMessage());
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
-        assertEquals(OTRv.FOUR, c.clientBob.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(Version.FOUR, c.clientBob.session.getOutgoingSession().getProtocolVersion());
         assertNull(c.clientBob.receiveMessage());
         assertNull(bob2.receiveMessage());
         assertNull(bob2.receiveMessage());
@@ -167,7 +167,7 @@ public class SessionTest {
         assertNull(bob2.receiveMessage());
         assertNull(bob2.receiveMessage());
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
-        assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(Version.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
 
         final String msg1 = "Hello Bob, this new IM software you installed on my PC the other day says we are talking Off-the-Record, what's that supposed to mean?";
         c.clientAlice.sendMessage(msg1);
@@ -213,7 +213,7 @@ public class SessionTest {
         rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
-        assertEquals(OTRv.FOUR, c.clientBob.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(Session.Version.FOUR, c.clientBob.session.getOutgoingSession().getProtocolVersion());
         rearrangeFragments(bob2.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
         // Expecting Auth-I message from Bob, Signature message from Bob 2.
@@ -227,7 +227,7 @@ public class SessionTest {
         rearrangeFragments(bob2.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
-        assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(Session.Version.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
 
         // Due to 2 sessions being set up at the same time, either one can be established first. The first session is
         // automatically chosen to be the default session, so we need to manually set our chosen session as default
@@ -281,10 +281,10 @@ public class SessionTest {
         assertNull(bob2.receiveMessage());
         assertNull(bob2.receiveMessage());
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
-        assertEquals(OTRv.THREE, c.clientBob.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(Session.Version.THREE, c.clientBob.session.getOutgoingSession().getProtocolVersion());
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
         // TODO there is an issue with the OTR protocol such that acting on a received DH-Commit message skips the check of whether higher versions of the OTR protocol are available. (Consider not responding unless a query tag was previously sent.)
-        assertEquals(OTRv.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
+        assertEquals(Version.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
         // Expecting Reveal Signature message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertNull(c.clientAlice.receiveMessage());
@@ -1225,7 +1225,7 @@ public class SessionTest {
             final Calendar expirationCalendar = Calendar.getInstance();
             expirationCalendar.add(Calendar.DAY_OF_YEAR, 7);
             this.profile = new ClientProfile(this.instanceTag, this.ed448KeyPair.getPublicKey(), this.forgingPublicKey,
-                    Collections.singleton(OTRv.FOUR), null);
+                    Collections.singleton(Session.Version.FOUR), null);
             this.session = createSession(sessionID, this);
         }
 

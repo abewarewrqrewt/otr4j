@@ -125,7 +125,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
                 theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
-        final AuthRMessage authRMessage = new AuthRMessage(Session.OTRv.FOUR, context.getSenderInstanceTag(),
+        final AuthRMessage authRMessage = new AuthRMessage(Session.Version.FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
@@ -151,6 +151,6 @@ final class StateAwaitingAuthI extends AbstractAuthState {
 
     @Override
     public int getVersion() {
-        return Session.OTRv.FOUR;
+        return Session.Version.FOUR;
     }
 }

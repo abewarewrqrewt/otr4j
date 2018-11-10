@@ -8,7 +8,8 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -95,7 +96,7 @@ public class EncodedMessageParserTest {
     public void testConstructAndParseDHKeyMessage() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
-        final DHKeyMessage m = new DHKeyMessage(OTRv.THREE, keypair.getPublic(), new InstanceTag(12345),
+        final DHKeyMessage m = new DHKeyMessage(Version.THREE, keypair.getPublic(), new InstanceTag(12345),
                 new InstanceTag(9876543));
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
@@ -121,7 +122,7 @@ public class EncodedMessageParserTest {
     public void testConstructAndParsePartialDHKeyMessage() throws UnsupportedLengthException, ProtocolException, OtrCryptoException, ValidationException {
         final DHKeyPairOTR3 keypair = generateDHKeyPair(RANDOM);
         // Prepare output message to parse.
-        final DHKeyMessage m = new DHKeyMessage(OTRv.THREE, keypair.getPublic(), new InstanceTag(12345),
+        final DHKeyMessage m = new DHKeyMessage(Session.Version.THREE, keypair.getPublic(), new InstanceTag(12345),
                 new InstanceTag(9876543));
         final OtrOutputStream output = new OtrOutputStream();
         m.writeTo(output);
@@ -132,14 +133,14 @@ public class EncodedMessageParserTest {
             // try every substring in between.
             final byte[] partial = copyOf(payload, i);
             try {
-                parse(OTRv.THREE, DHKeyMessage.MESSAGE_DHKEY, new InstanceTag(12345),
+                parse(Version.THREE, DHKeyMessage.MESSAGE_DHKEY, new InstanceTag(12345),
                         new InstanceTag(9876543), new OtrInputStream(partial));
                 fail("Expected exception due to parsing an incomplete message.");
             } catch (final ProtocolException | OtrCryptoException expected) {
                 // Expected behavior for partial messages being parsed.
             }
         }
-        final AbstractEncodedMessage dhKeyMessage = parse(OTRv.THREE, DHKeyMessage.MESSAGE_DHKEY,
+        final AbstractEncodedMessage dhKeyMessage = parse(Version.THREE, DHKeyMessage.MESSAGE_DHKEY,
                 new InstanceTag(12345), new InstanceTag(9876543), new OtrInputStream(payload));
         assertTrue(dhKeyMessage instanceof DHKeyMessage);
     }
@@ -166,12 +167,12 @@ public class EncodedMessageParserTest {
         final Point ecdhPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final BigInteger dhPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
-        final DataMessage4 input = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 input = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, dhPublicKey, randomBytes(RANDOM, new byte[24]), content,
                 randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parse(OTRv.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parse(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
         assertEquals(input, result);
     }
 
@@ -179,12 +180,12 @@ public class EncodedMessageParserTest {
     public void testParsingDataMessage4WithoutDHPublicKey() throws ProtocolException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         final Point ecdhPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
-        final DataMessage4 input = new DataMessage4(OTRv.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
+        final DataMessage4 input = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ecdhPublicKey, null, randomBytes(RANDOM, new byte[24]), content,
                 randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parse(OTRv.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parse(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
         assertEquals(input, result);
     }
 }

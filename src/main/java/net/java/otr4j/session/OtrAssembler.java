@@ -41,10 +41,10 @@ final class OtrAssembler {
     String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
         final int version = fragment.getVersion();
         switch (version) {
-        case Session.OTRv.TWO:
-        case Session.OTRv.THREE:
+        case Session.Version.TWO:
+        case Session.Version.THREE:
             return inOrder.accumulate(fragment);
-        case Session.OTRv.FOUR:
+        case Session.Version.FOUR:
             return outOfOrder.accumulate(fragment);
         default:
             throw new UnsupportedOperationException("Unsupported protocol version.");

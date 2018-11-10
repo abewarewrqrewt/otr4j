@@ -7,7 +7,8 @@
 
 package net.java.otr4j.messages;
 
-import net.java.otr4j.api.Session.OTRv;
+import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.util.ByteArrays;
 import org.junit.Test;
 
@@ -29,12 +30,12 @@ public class SignatureMessageTest {
 
     @Test
     public void testProtocolVerificationWorking() {
-        new SignatureMessage(OTRv.THREE, new byte[0], new byte[0], SMALLEST_TAG, SMALLEST_TAG);
+        new SignatureMessage(Version.THREE, new byte[0], new byte[0], SMALLEST_TAG, SMALLEST_TAG);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testProtocolVerificationVersionFourNotAllowed() {
-        new SignatureMessage(OTRv.FOUR, new byte[0], new byte[0], SMALLEST_TAG, SMALLEST_TAG);
+        new SignatureMessage(Version.FOUR, new byte[0], new byte[0], SMALLEST_TAG, SMALLEST_TAG);
     }
 
     /** since this test is based on randomly generated data,
@@ -47,7 +48,7 @@ public class SignatureMessageTest {
         for (int i = 1; i <= 10000000; i *= 10) {
             byte[] fakeEncrypted = randomBytes(RANDOM, new byte[i]);
             RANDOM.nextBytes(fakeEncryptedMAC);
-            current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            current = new SignatureMessage(Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
             assertNotEquals(current, previous);
             if (previous != null) {
@@ -59,7 +60,7 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[100];
             fill(fakeEncrypted, (byte) i);
             fill(fakeEncryptedMAC, (byte) i);
-            current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            current = new SignatureMessage(Session.Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
             assertNotEquals(current.hashCode(), previous.hashCode());
             previous = current;
@@ -75,13 +76,13 @@ public class SignatureMessageTest {
         for (int i = 1; i <= 10000000; i *= 10) {
             final byte[] fakeEncrypted = randomBytes(RANDOM, new byte[i]);
             RANDOM.nextBytes(fakeEncryptedMAC);
-            SignatureMessage sm = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            SignatureMessage sm = new SignatureMessage(Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
             assertNotNull(sm);
             final byte[] fakeEncrypted2 = new byte[i];
             System.arraycopy(fakeEncrypted, 0, fakeEncrypted2, 0, fakeEncrypted.length);
             final byte[] fakeEncryptedMAC2 = randomBytes(RANDOM, new byte[MAC_LENGTH_BYTES]);
             System.arraycopy(fakeEncryptedMAC, 0, fakeEncryptedMAC2, 0, fakeEncryptedMAC.length);
-            SignatureMessage sm2 = new SignatureMessage(OTRv.THREE, fakeEncrypted2, fakeEncryptedMAC2, ZERO_TAG, ZERO_TAG);
+            SignatureMessage sm2 = new SignatureMessage(Session.Version.THREE, fakeEncrypted2, fakeEncryptedMAC2, ZERO_TAG, ZERO_TAG);
             assertNotNull(sm2);
             assertEquals(sm, sm2);
             assertNotEquals(sm, previous);
@@ -95,7 +96,7 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[1000];
             fill(fakeEncrypted, (byte) i);
             fill(fakeEncryptedMAC, (byte) i);
-            SignatureMessage current = new SignatureMessage(OTRv.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            SignatureMessage current = new SignatureMessage(Session.Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
             assertNotEquals(current, previous);
             previous = current;

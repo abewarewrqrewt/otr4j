@@ -31,9 +31,9 @@ public class OtrPolicyUtilTest {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OTRL_POLICY_DEFAULT);
         final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
         assertEquals(3, versions.size());
-        assertTrue(versions.contains(Session.OTRv.TWO));
-        assertTrue(versions.contains(Session.OTRv.THREE));
-        assertTrue(versions.contains(Session.OTRv.FOUR));
+        assertTrue(versions.contains(Session.Version.TWO));
+        assertTrue(versions.contains(Session.Version.THREE));
+        assertTrue(versions.contains(Session.Version.FOUR));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class OtrPolicyUtilTest {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3);
         final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
         assertEquals(1, versions.size());
-        assertTrue(versions.contains(Session.OTRv.THREE));
+        assertTrue(versions.contains(Session.Version.THREE));
     }
 
     @Test
@@ -56,8 +56,8 @@ public class OtrPolicyUtilTest {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3 | OtrPolicy.WHITESPACE_START_AKE);
         final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
         assertEquals(2, versions.size());
-        assertTrue(versions.contains(Session.OTRv.TWO));
-        assertTrue(versions.contains(Session.OTRv.THREE));
+        assertTrue(versions.contains(Session.Version.TWO));
+        assertTrue(versions.contains(Session.Version.THREE));
     }
 
     @Test
