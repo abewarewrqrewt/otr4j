@@ -36,7 +36,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 /**
  * The Shared Secret-mechanism used in OTRv4.
  */
-// FIXME write tests for testing key rotation.
 public final class SharedSecret4 implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
@@ -218,14 +217,8 @@ public final class SharedSecret4 implements AutoCloseable {
         if (this.theirECDHPublicKey == null || this.theirDHPublicKey == null) {
             throw new IllegalStateException("To rotate our key pairs, it is required that other party's public keys are available.");
         }
-        if (this.ecdhKeyPair != null) {
-            this.ecdhKeyPair.close();
-        }
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
         if (regenerateDHKeyPair) {
-            if (this.dhKeyPair != null) {
-                this.dhKeyPair.close();
-            }
             this.dhKeyPair = DHKeyPair.generate(this.random);
         }
         regenerateK(Rotation.SENDER_KEYS, regenerateDHKeyPair);
@@ -248,10 +241,12 @@ public final class SharedSecret4 implements AutoCloseable {
         if (!containsPoint(requireNonNull(theirECDHPublicKey))) {
             throw new OtrCryptoException("ECDH public key failed verification.");
         }
-        if (this.ecdhKeyPair.getPublicKey().equals(theirECDHPublicKey)) {
+        if (this.ecdhKeyPair.getPublicKey().equals(theirECDHPublicKey)
+                || this.theirECDHPublicKey != null && this.theirECDHPublicKey.equals(theirECDHPublicKey)) {
             throw new OtrCryptoException("A new, different ECDH public key is expected for initializing the new ratchet.");
         }
-        if (this.dhKeyPair.getPublicKey().equals(theirDHPublicKey)) {
+        if (this.dhKeyPair.getPublicKey().equals(theirDHPublicKey)
+                || this.theirDHPublicKey != null && this.theirDHPublicKey.equals(theirDHPublicKey)) {
             throw new OtrCryptoException("A new, different DH public key is expected for initializing the new ratchet.");
         }
         this.theirECDHPublicKey = theirECDHPublicKey;

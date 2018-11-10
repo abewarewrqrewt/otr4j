@@ -206,8 +206,7 @@ public class SharedSecret4Test {
         assertFalse(Arrays.equals(firstK, secondK));
     }
 
-    // FIXME This notes that it is possible to go back to an earlier ratchet state by providing the same public keys again, ... within reason for a short while. Is this by design?
-    @Test
+    @Test(expected = OtrCryptoException.class)
     public void testRotateSamePublicKeysEveryThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
@@ -229,7 +228,7 @@ public class SharedSecret4Test {
         assertFalse(Arrays.equals(firstK, ss.getK()));
     }
 
-    @Test
+    @Test(expected = OtrCryptoException.class)
     public void testRotateSamePublicKeysEveryNonThirdIteration() throws OtrCryptoException {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
@@ -237,5 +236,86 @@ public class SharedSecret4Test {
         final byte[] firstK = ss.getK();
         ss.rotateTheirKeys(false, theirECDHPublicKey, null);
         assertFalse(Arrays.equals(firstK, ss.getK()));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRotateOurKeysWithoutTheirKeysNoDHKeyPairRotation() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, null);
+        shared.rotateOurKeys(false);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRotateOurKeysWithoutTheirKeysWithDHKeyPairRotation() {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, null);
+        shared.rotateOurKeys(true);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRotateTheirKeysWithoutOurs() throws OtrCryptoException {
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, null, null, theirDHPublicKey, theirECDHPublicKey);
+        shared.rotateTheirKeys(true, ECDHKeyPair.generate(RANDOM).getPublicKey(),
+                DHKeyPair.generate(RANDOM).getPublicKey());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRotateTheirKeysWithNullECDHPoint() throws OtrCryptoException {
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.rotateTheirKeys(true, null, DHKeyPair.generate(RANDOM).getPublicKey());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRotateTheirKeysWithIllegalECDHPoint() throws OtrCryptoException {
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.rotateTheirKeys(true, null, DHKeyPair.generate(RANDOM).getPublicKey());
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testRotateTheirKeysWithOurECDHPublicKey() throws OtrCryptoException {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair,
+                DHKeyPair.generate(RANDOM).getPublicKey(), ECDHKeyPair.generate(RANDOM).getPublicKey());
+        shared.rotateTheirKeys(true, ourECDHKeyPair.getPublicKey(),
+                DHKeyPair.generate(RANDOM).getPublicKey());
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testRotateTheirKeysWithOurDHPublicKey() throws OtrCryptoException {
+        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
+        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair,
+                DHKeyPair.generate(RANDOM).getPublicKey(), ECDHKeyPair.generate(RANDOM).getPublicKey());
+        shared.rotateTheirKeys(true, ECDHKeyPair.generate(RANDOM).getPublicKey(),
+                ourDHKeyPair.getPublicKey());
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testRotateTheirKeysWithTheirCurrentECDHPublicKey() throws OtrCryptoException {
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.rotateTheirKeys(true, theirECDHPublicKey, DHKeyPair.generate(RANDOM).getPublicKey());
+    }
+
+    @Test(expected = OtrCryptoException.class)
+    public void testRotateTheirKeysWithTheirCurrentDHPublicKey() throws OtrCryptoException {
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.rotateTheirKeys(true, ECDHKeyPair.generate(RANDOM).getPublicKey(), theirDHPublicKey);
     }
 }

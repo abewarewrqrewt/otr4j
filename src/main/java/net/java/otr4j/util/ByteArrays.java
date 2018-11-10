@@ -9,7 +9,6 @@ package net.java.otr4j.util;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-
 import java.io.ByteArrayOutputStream;
 import java.util.Locale;
 
