@@ -30,8 +30,8 @@ public final class SecurityParameters4 implements AutoCloseable {
     private final Component initializationComponent;
     private final ECDHKeyPair ecdhKeyPair;
     private final DHKeyPair dhKeyPair;
-    private final Point x;
-    private final BigInteger a;
+    private final Point theirECDHPublicKey;
+    private final BigInteger theirDHPublicKey;
     private final ClientProfile ourProfile;
     private final ClientProfile theirProfile;
 
@@ -42,18 +42,18 @@ public final class SecurityParameters4 implements AutoCloseable {
      *                                updated with the deterministically generated key pairs.
      * @param ecdhKeyPair             Our ECDH key pair.
      * @param dhKeyPair               Our DH key pair.
-     * @param x                       Their ECDH public key. Typically called 'X' or 'Y'.
-     * @param a                       Their DH public key. Typically called 'a' or 'b'.
+     * @param theirECDHPublicKey      Their ECDH public key. Typically called 'X' for Alice, or 'Y' for Bob.
+     * @param theirDHPublicKey        Their DH public key. Typically called 'a' for Alice, or 'b' for Bob.
      */
-    // FIXME consider renaming x and a to something less wrong. x and a are specific for alice, however SecurityParameters4 is used for both parties.
     SecurityParameters4(@Nonnull final Component initializationComponent, @Nonnull final ECDHKeyPair ecdhKeyPair,
-            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a,
-            @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile theirProfile) {
+            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point theirECDHPublicKey,
+            @Nonnull final BigInteger theirDHPublicKey, @Nonnull final ClientProfile ourProfile,
+            @Nonnull final ClientProfile theirProfile) {
         this.initializationComponent = requireNonNull(initializationComponent);
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
-        this.x = requireNonNull(x);
-        this.a = requireNonNull(a);
+        this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
+        this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         this.ourProfile = requireNonNull(ourProfile);
         this.theirProfile = requireNonNull(theirProfile);
     }
@@ -75,23 +75,23 @@ public final class SecurityParameters4 implements AutoCloseable {
     }
 
     /**
-     * Get the Ephemeral ECDH public key.
+     * Get the Ephemeral ECDH public key. Typically 'X' for Alice, or 'Y' for Bob.
      *
      * @return Returns ECDH public key.
      */
     @Nonnull
-    public Point getX() {
-        return x;
+    public Point getTheirECDHPublicKey() {
+        return theirECDHPublicKey;
     }
 
     /**
-     * Get the Ephemeral DH public key.
+     * Get the Ephemeral DH public key. Typically 'A' for Alice, or 'B' for Bob.
      *
      * @return Returns DH public key.
      */
     @Nonnull
-    public BigInteger getA() {
-        return a;
+    public BigInteger getTheirDHPublicKey() {
+        return theirDHPublicKey;
     }
 
     /**
@@ -122,7 +122,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      */
     @Nonnull
     public SharedSecret4 generateSharedSecret(@Nonnull final SecureRandom random) {
-        return new SharedSecret4(random, this.dhKeyPair, this.ecdhKeyPair, this.a, this.x);
+        return new SharedSecret4(random, this.dhKeyPair, this.ecdhKeyPair, this.theirDHPublicKey, this.theirECDHPublicKey);
     }
 
     /**

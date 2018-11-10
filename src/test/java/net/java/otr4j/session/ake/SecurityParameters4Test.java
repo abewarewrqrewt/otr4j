@@ -81,8 +81,8 @@ public class SecurityParameters4Test {
         final BigInteger a = dhKeyPair.getPublicKey();
         final SecurityParameters4 params = new SecurityParameters4(THEIRS, ecdhKeyPair, dhKeyPair, x, a, profile1, profile2);
         assertEquals(THEIRS, params.getInitializationComponent());
-        assertEquals(x, params.getX());
-        assertEquals(a, params.getA());
+        assertEquals(x, params.getTheirECDHPublicKey());
+        assertEquals(a, params.getTheirDHPublicKey());
         assertEquals(profile1, params.getOurProfile());
         assertEquals(profile2, params.getTheirProfile());
     }
