@@ -23,7 +23,6 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * Point wrapper classed used to abstract away from the actual cryptographic implementation.
  */
-// FIXME write unit tests for Point wrapper
 public final class Point implements AutoCloseable {
 
     private final byte[] encoded;
@@ -132,7 +131,8 @@ public final class Point implements AutoCloseable {
      */
     @Nonnull
     public Point add(@Nonnull final Point point) {
-        requireNotCleared();
+        this.requireNotCleared();
+        point.requireNotCleared();
         try {
             return new Point(Points.decode(this.encoded).add(Points.decode(point.encoded)).encode());
         } catch (final Points.InvalidDataException e) {
