@@ -12,6 +12,7 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.io.EncryptedMessage.Content;
 import net.java.otr4j.io.OtrOutputStream;
@@ -184,7 +185,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         throw new IllegalStateException("OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
-    // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...)
+    // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...) - should fix itself once extra DAKE state is introduced.
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
@@ -227,13 +228,17 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
-            // TODO (how to) handle corrupt TLVs appropriately, as being discussed in https://github.com/otrv4/otrv4/commit/dcd62e4f036830261c35f63ecc775d0ba628f8d8 (may not be final conclusion)
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
-                final TLV response = this.smp.process(tlv);
-                if (response != null) {
-                    // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
-                    context.injectMessage(transformSending(context, "", singletonList(response)));
+                try {
+                    final TLV response = this.smp.process(tlv);
+                    if (response != null) {
+                        // FIXME if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
+                        context.injectMessage(transformSending(context, "", singletonList(response)));
+                    }
+                } catch (final ProtocolException | OtrCryptoException e) {
+                    LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may be indicative of a bad implementation of OTR at the other party.",
+                            e);
                 }
                 continue;
             }

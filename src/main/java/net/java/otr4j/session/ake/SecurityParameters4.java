@@ -42,10 +42,10 @@ public final class SecurityParameters4 implements AutoCloseable {
      *                                updated with the deterministically generated key pairs.
      * @param ecdhKeyPair             Our ECDH key pair.
      * @param dhKeyPair               Our DH key pair.
-     * @param x                       Their ECDH public key.
-     * @param a                       Their DH public key.
+     * @param x                       Their ECDH public key. Typically called 'X' or 'Y'.
+     * @param a                       Their DH public key. Typically called 'a' or 'b'.
      */
-    // TODO consider renaming x and a to something less wrong. x and a are specific for alice, however SecurityParameters4 is used for both parties.
+    // FIXME consider renaming x and a to something less wrong. x and a are specific for alice, however SecurityParameters4 is used for both parties.
     SecurityParameters4(@Nonnull final Component initializationComponent, @Nonnull final ECDHKeyPair ecdhKeyPair,
             @Nonnull final DHKeyPair dhKeyPair, @Nonnull final Point x, @Nonnull final BigInteger a,
             @Nonnull final ClientProfile ourProfile, @Nonnull final ClientProfile theirProfile) {
