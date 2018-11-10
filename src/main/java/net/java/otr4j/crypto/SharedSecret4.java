@@ -10,7 +10,6 @@ package net.java.otr4j.crypto;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.ValidationException;
-import net.java.otr4j.session.ake.SecurityParameters4;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -118,26 +117,26 @@ public final class SharedSecret4 implements AutoCloseable {
     /**
      * Prepare initial SharedSecret4 instance.
      *
-     * @param random                  SecureRandom instance
-     * @param k                       mixed shared secret 'K'
-     * @param initializationComponent Indicator for which part of the cryptographic material should be initialized.
+     * @param random         SecureRandom instance
+     * @param k              mixed shared secret 'K'
+     * @param initialization Indicator for which part of the cryptographic material should be initialized.
      * @return Returns the initialized shared secrets instance.
      */
     @Nonnull
     public static SharedSecret4 initialize(@Nonnull final SecureRandom random, @Nonnull final byte[] k,
-            @Nonnull final SecurityParameters4.Component initializationComponent) {
+            @Nonnull final Rotation initialization) {
         final ECDHKeyPair initialECDHKeyPair = ECDHKeyPair.generate(kdf1(ECDH_FIRST_EPHEMERAL, k, SECRET_KEY_LENGTH_BYTES));
         final DHKeyPair initialDHKeyPair = DHKeyPair.generate(kdf1(DH_FIRST_EPHEMERAL, k, DH_PRIVATE_KEY_LENGTH_BYTES));
-        switch (initializationComponent) {
-        case OURS:
+        switch (initialization) {
+        case SENDER_KEYS:
             // Bob initializes his shared secrets for the Double Ratchet, although it is still missing Alice's keys.
             return new SharedSecret4(random, initialDHKeyPair, initialECDHKeyPair, null, null);
-        case THEIRS:
+        case RECEIVER_KEYS:
             // Alice initializes her shared secrets for the Double Ratchet with Bob's deterministic ECDH and DH key pairs.
             initialECDHKeyPair.close();
             initialDHKeyPair.close();
             return new SharedSecret4(random, null, null, initialDHKeyPair.getPublicKey(),
-                initialECDHKeyPair.getPublicKey());
+                    initialECDHKeyPair.getPublicKey());
         default:
             throw new UnsupportedOperationException("Unsupported component. Shared secret cannot be generated.");
         }
@@ -293,7 +292,17 @@ public final class SharedSecret4 implements AutoCloseable {
         }
     }
 
-    private enum Rotation {
-        SENDER_KEYS, RECEIVER_KEYS
+    /**
+     * The initialization/rotation focus of the operation on the shared secret.
+     */
+    public enum Rotation {
+        /**
+         * Initialization/rotation of sender keys.
+         */
+        SENDER_KEYS,
+        /**
+         * Initialization/rotation of receiver keys.
+         */
+        RECEIVER_KEYS
     }
 }

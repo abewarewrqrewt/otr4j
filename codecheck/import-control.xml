@@ -27,8 +27,6 @@
 
         <!-- TODO a violation that is accepted for now, but should be fixed some day. (This issue seems to indicate that we shouldn't make 'messages' a subpackage of 'io'.) -->
         <allow local-only="true" pkg="net.java.otr4j.io" exact-match="true"/>
-        <!-- TODO a violation that is accepted for now, but should be fixed some day. -->
-        <allow local-only="true" class="net.java.otr4j.session.ake.SecurityParameters4" exact-match="true"/>
 
         <allow pkg="net.java.otr4j.api"/>
         <allow local-only="true" pkg="net.java.otr4j.crypto"/>

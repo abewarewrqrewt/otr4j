@@ -65,9 +65,19 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
             ssid = exchangeSecret.generateSSID();
             exchangeK = exchangeSecret.getK();
         }
-        final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK,
-                params.getInitializationComponent());
+        final SharedSecret4.Rotation component;
+        switch (params.getInitializationComponent()) {
+        case THEIRS:
+            component = SharedSecret4.Rotation.RECEIVER_KEYS;
+            break;
+        case OURS:
+            component = SharedSecret4.Rotation.SENDER_KEYS;
+            break;
+        default:
+            throw new UnsupportedOperationException("Unknown initialization component.");
+        }
         params.close();
+        final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK, component);
         this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
         this.smp = new SMP(context.secureRandom(), context.getHost(), context.getSessionID(), ssid,
                 params.getOurProfile().getLongTermPublicKey(), params.getTheirProfile().getLongTermPublicKey(),
