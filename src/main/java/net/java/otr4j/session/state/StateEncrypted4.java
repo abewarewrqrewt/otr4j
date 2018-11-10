@@ -54,6 +54,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private static final int VERSION = Session.Version.FOUR;
 
+    private static final byte IGNORE_UNREADABLE = 0x01;
+
     private final DoubleRatchet ratchet;
 
     private final SMP smp;
@@ -132,6 +134,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs) {
+        return transformSending(context, msgText, tlvs, (byte) 0);
+    }
+
+    private DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs, final byte flags) {
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
@@ -149,7 +156,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
         final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsContent);
         this.ratchet.rotateSendingChainKey();
-        return new DataMessage4(VERSION, context.getSenderInstanceTag(), context.getReceiverInstanceTag(), (byte) 0x00,
+        return new DataMessage4(VERSION, context.getSenderInstanceTag(), context.getReceiverInstanceTag(), flags,
                 this.ratchet.getPn(), ratchetId, messageId, this.ratchet.getECDHPublicKey(),
                 rotation == null ? null : rotation.dhPublicKey, result.nonce, result.ciphertext, authenticator,
                 rotation == null ? new byte[0] : rotation.revealedMacs);
@@ -186,6 +193,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     }
 
     // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...) - should fix itself once extra DAKE state is introduced.
+    // FIXME write tests for SMP_ABORT sets UNREADABLE flag, SMP payload corrupted, SMP payload incomplete, ...
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
@@ -233,8 +241,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 try {
                     final TLV response = this.smp.process(tlv);
                     if (response != null) {
-                        // FIXME if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
-                        context.injectMessage(transformSending(context, "", singletonList(response)));
+                        context.injectMessage(transformSending(context, "", singletonList(response),
+                                this.smp.smpAbortedTLV(response) ? IGNORE_UNREADABLE : 0));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
                     LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may be indicative of a bad implementation of OTR at the other party.",
