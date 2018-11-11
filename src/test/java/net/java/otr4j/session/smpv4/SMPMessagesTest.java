@@ -20,7 +20,7 @@ import static java.math.BigInteger.valueOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOf;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
-import static net.java.otr4j.crypto.ed448.Point.createPoint;
+import static net.java.otr4j.crypto.ed448.PointTestUtils.createPoint;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP1;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP2;

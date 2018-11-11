@@ -24,7 +24,7 @@ import static net.java.otr4j.api.InstanceTag.HIGHEST_VALUE;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_VALUE;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
-import static net.java.otr4j.crypto.ed448.Point.createPoint;
+import static net.java.otr4j.crypto.ed448.PointTestUtils.createPoint;
 import static net.java.otr4j.messages.AuthRMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
 

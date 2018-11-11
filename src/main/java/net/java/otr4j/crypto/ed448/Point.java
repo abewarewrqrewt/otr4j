@@ -12,7 +12,6 @@ import nl.dannyvanheumen.joldilocks.Points;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.util.Arrays;
 
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
@@ -60,19 +59,6 @@ public final class Point implements AutoCloseable {
         } catch (final Points.InvalidDataException e) {
             throw new ValidationException("Failed to read encoded point. Illegal point encountered.", e);
         }
-    }
-
-    /**
-     * Construct a new point based on scalar values for x and y coordinates.
-     *
-     * @param x the x-coordinate
-     * @param y the y-coordinate
-     * @return Returns newly created point.
-     */
-    // FIXME consider if this method is really needed. Should we use utility method for this purpose?
-    @Nonnull
-    public static Point createPoint(@Nonnull final BigInteger x, @Nonnull final BigInteger y) {
-        return new Point(Points.createPoint(x, y).encode());
     }
 
     @Override
