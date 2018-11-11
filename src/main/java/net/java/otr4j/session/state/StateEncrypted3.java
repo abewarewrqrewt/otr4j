@@ -59,6 +59,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
+// FIXME check if flag IGNORE_UNREADABLE needs to be set on all messages containing TLV payload.
 final class StateEncrypted3 extends AbstractStateEncrypted {
 
     /**
@@ -209,10 +210,11 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
+                // TODO consider checking for IGNORE_UNREADABLE flag in message and warn in log in case other party is not behaving according to protocol.
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
-                        // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable?
+                        // FIXME if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable?
                         context.injectMessage(transformSending(context, "", singletonList(response)));
                     }
                 } catch (final SMException e) {
@@ -226,6 +228,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
+                // TODO consider checking for IGNORE_UNREADABLE and warn if other party misbehaves.
                 context.setState(new StateFinished(this.sessionID));
                 break;
             case USE_EXTRA_SYMMETRIC_KEY:
@@ -306,6 +309,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     public void end(@Nonnull final Context context) throws OtrException {
         // TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of sending the data message,
         // we already include remaining MAC keys in the Data message itself.
+        // FIXME need to set flag IGNORE_UNREADABLE
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
         try {

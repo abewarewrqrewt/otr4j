@@ -46,6 +46,7 @@ import static net.java.otr4j.session.smpv4.SMP.smpPayload;
  * The OTRv4 ENCRYPTED message state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
+// FIXME check if flag IGNORE_UNREADABLE needs to be set on all messages containing TLV payload.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
@@ -238,6 +239,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
+                // TODO consider checking for IGNORE_UNREADABLE flag in message and warn in log in case other party is not behaving according to protocol.
                 try {
                     final TLV response = this.smp.process(tlv);
                     if (response != null) {
@@ -255,6 +257,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
+                // TODO consider checking for IGNORE_UNREADABLE and warn if other party misbehaves.
                 context.setState(new StateFinished(this.sessionID));
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
@@ -282,6 +285,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     public void end(@Nonnull final Context context) throws OtrException {
         // Note: although we send a TLV 1 (DISCONNECT) here, we should not reveal remaining MACs.
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, new byte[0]);
+        // FIXME need to set flag IGNORE_UNREADABLE
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
         try {
             context.injectMessage(m);

@@ -116,6 +116,8 @@ import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
 // TODO investigate if TooManyFields PMD suppression is still needed after further incorporating ClientProfile
+// TODO do not report an error if flag IGNORE_UNREADABLE is set.
+// TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place.
 @SuppressWarnings("PMD.TooManyFields")
 final class SessionImpl implements Session, Context, AuthContext {
 
@@ -1282,7 +1284,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
-        // TODO if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
+        // FIXME if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
         final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);
