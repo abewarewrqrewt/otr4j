@@ -46,7 +46,6 @@ import static net.java.otr4j.session.smpv4.SMP.smpPayload;
  * The OTRv4 ENCRYPTED message state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
-// FIXME check if flag IGNORE_UNREADABLE needs to be set on all messages containing TLV payload.
 final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
@@ -222,7 +221,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                     final TLV response = this.smp.process(tlv);
                     if (response != null) {
                         context.injectMessage(transformSending(context, "", singletonList(response),
-                                this.smp.smpAbortedTLV(response) ? FLAG_IGNORE_UNREADABLE : 0));
+                                FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
                     LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may be indicative of a bad implementation of OTR at the other party.",
