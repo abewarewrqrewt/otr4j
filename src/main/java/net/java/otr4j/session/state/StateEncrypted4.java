@@ -155,7 +155,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 result.ciphertext, new byte[64], rotation == null ? new byte[0] : rotation.revealedMacs);
         final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
-        return unauthenticated.replaceAuthenticator(authenticator);
+        return new DataMessage4(unauthenticated, authenticator);
     }
 
     @Nonnull

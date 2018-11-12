@@ -47,6 +47,18 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     private final byte[] revealedMacs;
 
     /**
+     * Construct a new instance of DataMessage4 with the authenticator replaced by the provided one.
+     *
+     * @param original      the original DataMessage4 instance
+     * @param authenticator the substitute authenticator
+     */
+    public DataMessage4(@Nonnull final DataMessage4 original, @Nonnull final byte[] authenticator) {
+        this(original.protocolVersion, original.senderInstanceTag, original.receiverInstanceTag, original.flags,
+                original.pn, original.i, original.j, original.ecdhPublicKey, original.dhPublicKey, original.nonce,
+                original.ciphertext, authenticator, original.revealedMacs);
+    }
+
+    /**
      * Constructor for the data message.
      *
      * @param protocolVersion     the protocol version
@@ -237,18 +249,5 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         }
         writer.writeNonce(this.nonce);
         writer.writeData(this.ciphertext);
-    }
-
-    /**
-     * Produce a new instance of DataMessage4 with the authenticator replaced by the provided one.
-     *
-     * @param authenticator the substitute authenticator
-     * @return Returns a new instance of DataMessage4 with the substitute authenticator.
-     */
-    @Nonnull
-    public DataMessage4 replaceAuthenticator(@Nonnull final byte[] authenticator) {
-        return new DataMessage4(this.protocolVersion, this.senderInstanceTag, this.receiverInstanceTag, this.flags,
-                this.pn, this.i, this.j, this.ecdhPublicKey, this.dhPublicKey, this.nonce, this.ciphertext,
-                authenticator, this.revealedMacs);
     }
 }
