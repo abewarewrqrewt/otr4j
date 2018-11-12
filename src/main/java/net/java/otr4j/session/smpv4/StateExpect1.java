@@ -108,11 +108,11 @@ final class StateExpect1 implements SMPState {
             @Nonnull final Scalar secret) {
         requireNonNull(context);
         if (this.message == null) {
-            LOGGER.log(Level.WARNING, "The answer to the SMP question is provided, but no message is available. Ignoring answer.");
+            LOGGER.log(Level.WARNING, "The answer to an SMP question is provided, but no SMP init message is waiting to be answered. Ignoring answer.");
             return null;
         }
         if (!question.equals(this.message.question)) {
-            LOGGER.log(Level.INFO, "The question does not match the question in the remembered message. The request-for-secret is probably outdated. Ignoring answer.");
+            LOGGER.log(Level.INFO, "The question does not match the question in the waiting message. The request-for-secret is probably outdated. Ignoring answer.");
             return null;
         }
         final Scalar b2 = generateRandomValueInZq(this.random);
