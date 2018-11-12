@@ -1199,6 +1199,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
+        // FIXME send TLV message with IGNORE_UNREADABLE flag set.
         injectMessage(session.transformSending(this, "", singletonList(tlv)));
         if (!session.getSmpHandler().smpAbortedTLV(tlv)) {
             return;
@@ -1206,6 +1207,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
         // if this aborts a running SMP negotiation.
         final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
+        // FIXME send TLV message with IGNORE_UNREADABLE flag set.
         injectMessage(session.transformSending(this, "", singletonList(tlv2)));
     }
 
@@ -1260,6 +1262,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Responding to SMP request failed, because current session is not encrypted.", e);
         }
+        // FIXME send TLV message with IGNORE_UNREADABLE flag set.
         final Message m = session.transformSending(this, "", singletonList(tlv));
         if (m != null) {
             injectMessage(m);

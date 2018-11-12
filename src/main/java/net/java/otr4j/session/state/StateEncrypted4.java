@@ -216,7 +216,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         for (final TLV tlv : content.tlvs) {
             logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
-                // TODO consider checking for IGNORE_UNREADABLE flag in message and warn in log in case other party is not behaving according to protocol.
+                if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
+                    logger.log(Level.WARNING, "Other party is using a faulty OTR client: all SMP messages are expected to have the IGNORE_UNREADABLE flag set.");
+                }
                 try {
                     final TLV response = this.smp.process(tlv);
                     if (response != null) {
