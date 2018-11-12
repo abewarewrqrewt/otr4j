@@ -262,8 +262,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     public void end(@Nonnull final Context context) throws OtrException {
         // Note: although we send a TLV 1 (DISCONNECT) here, we should not reveal remaining MACs.
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, new byte[0]);
-        // FIXME need to set flag IGNORE_UNREADABLE
-        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
+        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv),
+                FLAG_IGNORE_UNREADABLE);
         try {
             context.injectMessage(m);
         } finally {
