@@ -7,7 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionStatus;
@@ -40,6 +39,7 @@ import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
+import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
 
 /**
@@ -51,11 +51,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
 
-    private static final byte DATA_MESSAGE_TYPE = 0x03;
-
     private static final int VERSION = Session.Version.FOUR;
-
-    private static final byte IGNORE_UNREADABLE = 0x01;
 
     private final DoubleRatchet ratchet;
 
@@ -138,7 +134,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         return transformSending(context, msgText, tlvs, (byte) 0);
     }
 
-    private DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+    DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs, final byte flags) {
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
@@ -153,29 +149,13 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         final EncryptionResult result = this.ratchet.encrypt(msgBytes);
         final int ratchetId = this.ratchet.getI();
         final int messageId = this.ratchet.getJ();
-        final byte[] dataMessageSectionsContent = generateDataMessageContent(ratchetId, messageId,
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), rotation, result);
-        final byte[] authenticator = this.ratchet.authenticate(dataMessageSectionsContent);
+        final DataMessage4 unauthenticated = new DataMessage4(VERSION, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), flags, this.ratchet.getPn(), ratchetId, messageId,
+                this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
+                result.ciphertext, new byte[64], rotation == null ? new byte[0] : rotation.revealedMacs);
+        final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
-        return new DataMessage4(VERSION, context.getSenderInstanceTag(), context.getReceiverInstanceTag(), flags,
-                this.ratchet.getPn(), ratchetId, messageId, this.ratchet.getECDHPublicKey(),
-                rotation == null ? null : rotation.dhPublicKey, result.nonce, result.ciphertext, authenticator,
-                rotation == null ? new byte[0] : rotation.revealedMacs);
-    }
-
-    @Nonnull
-    private byte[] generateDataMessageContent(final int ratchetId, final int messageId,
-            @Nonnull final InstanceTag sender, @Nonnull final InstanceTag receiver,
-            @Nullable final RotationResult rotation, @Nonnull final EncryptionResult encryptionResult) {
-        final OtrOutputStream out = new OtrOutputStream().writeShort(VERSION).writeByte(DATA_MESSAGE_TYPE)
-                .writeInt(sender.getValue()).writeInt(receiver.getValue()).writeByte(0x00).writeInt(this.ratchet.getPn())
-                .writeInt(ratchetId).writeInt(messageId).writePoint(this.ratchet.getECDHPublicKey());
-        if (rotation == null || rotation.dhPublicKey == null) {
-            out.writeData(new byte[0]);
-        } else {
-            out.writeBigInt(rotation.dhPublicKey);
-        }
-        return out.writeNonce(encryptionResult.nonce).writeData(encryptionResult.ciphertext).toByteArray();
+        return unauthenticated.replaceAuthenticator(authenticator);
     }
 
     @Nonnull
@@ -222,9 +202,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         // message key and the next receiving chain key. The message is then verified and decrypted.
         final byte[] dmc;
         try {
-            final OtrOutputStream out = new OtrOutputStream();
-            message.writeDataMessageSections(out);
-            this.ratchet.verify(message.getI(), message.getJ(), out.toByteArray(), message.getAuthenticator());
+            this.ratchet.verify(message.getI(), message.getJ(), encodeDataMessageSections(message), message.getAuthenticator());
             dmc = this.ratchet.decrypt(message.getI(), message.getJ(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
             LOGGER.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
@@ -244,7 +222,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                     final TLV response = this.smp.process(tlv);
                     if (response != null) {
                         context.injectMessage(transformSending(context, "", singletonList(response),
-                                this.smp.smpAbortedTLV(response) ? IGNORE_UNREADABLE : 0));
+                                this.smp.smpAbortedTLV(response) ? FLAG_IGNORE_UNREADABLE : 0));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
                     LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may be indicative of a bad implementation of OTR at the other party.",

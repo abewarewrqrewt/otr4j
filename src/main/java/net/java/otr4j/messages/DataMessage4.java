@@ -223,7 +223,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      *
      * @param writer the output stream to write to.
      */
-    public void writeDataMessageSections(@Nonnull final OtrOutputStream writer) {
+    void writeDataMessageSections(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
         writer.writeByte(this.flags);
         writer.writeInt(this.pn);
@@ -237,5 +237,18 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         }
         writer.writeNonce(this.nonce);
         writer.writeData(this.ciphertext);
+    }
+
+    /**
+     * Produce a new instance of DataMessage4 with the authenticator replaced by the provided one.
+     *
+     * @param authenticator the substitute authenticator
+     * @return Returns a new instance of DataMessage4 with the substitute authenticator.
+     */
+    @Nonnull
+    public DataMessage4 replaceAuthenticator(@Nonnull final byte[] authenticator) {
+        return new DataMessage4(this.protocolVersion, this.senderInstanceTag, this.receiverInstanceTag, this.flags,
+                this.pn, this.i, this.j, this.ecdhPublicKey, this.dhPublicKey, this.nonce, this.ciphertext,
+                authenticator, this.revealedMacs);
     }
 }

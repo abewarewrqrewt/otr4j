@@ -29,6 +29,12 @@ abstract class AbstractState implements State {
 
     static final String DEFAULT_REPLY_UNREADABLE_MESSAGE = "This message cannot be read.";
 
+    /**
+     * Constant for the flag IGNORE_UNREADABLE, which is used to indicate that if such a flagged message cannot be read,
+     * we do not need to respond with an error message.
+     */
+    static final byte FLAG_IGNORE_UNREADABLE = 0x01;
+
     private static final Logger LOGGER = Logger.getLogger(AbstractState.class.getName());
 
     @Override
@@ -47,8 +53,8 @@ abstract class AbstractState implements State {
         context.setState(encrypted);
         if (params.getInitializationComponent() == SecurityParameters4.Component.THEIRS) {
             LOGGER.log(Level.FINE, "We initialized THEIR component of the Double Ratchet, so it is complete. Sending heartbeat message.");
-            // TODO this is not a formal heartbeat message because we do not set the ignoreUnreadable flag.
-            context.injectMessage(encrypted.transformSending(context, "", Collections.<TLV>emptyList()));
+            context.injectMessage(encrypted.transformSending(context, "", Collections.<TLV>emptyList(),
+                    FLAG_IGNORE_UNREADABLE));
         } else {
             LOGGER.log(Level.FINE, "We initialized OUR component of the Double Ratchet. We are still missing the other party's public key material, hence we cannot send messages yet. Now we wait to receive a message from the other party.");
         }
