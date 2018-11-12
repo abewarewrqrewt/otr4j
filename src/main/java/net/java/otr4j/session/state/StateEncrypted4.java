@@ -236,7 +236,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
-                // TODO consider checking for IGNORE_UNREADABLE and warn if other party misbehaves.
+                if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
+                    logger.log(Level.WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
+                }
                 context.setState(new StateFinished(this.sessionID));
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
