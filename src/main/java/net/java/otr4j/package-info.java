@@ -19,6 +19,7 @@
 // TODO consider the effectiveness of clearing data as JVM might optimize the activity away due to data not being used afterwards.
 // TODO OTRv4: Non-Interactive DAKE, Pre-Key Profile, KCI Attacks, full support for out-of-order messages
 // TODO OTRv4: How should we handle the case where our own client profile is not valid (anymore)?
+// NOTE OTRv3 does not document that SMP TLVs should have IGNORE_UNREADABLE flag set. So for now, we're not setting the flag for SMP TLVs.
 // FUTURE could we create some kind of basic client such that we can perform cross-implementation testing and fuzzing?
 // FUTURE does it make sense to have some kind of plug-in system for OTR extensions?
 // FUTURE consider if it makes sense to have some kind of SecurityManager rule/policy that prevents code from inspecting any otr4j instances. (This can also be tackled by using otr4j as module, as you have to explicitly allow "opening up" to reflection.)
