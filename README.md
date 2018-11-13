@@ -77,6 +77,8 @@ Development stages:
     * ☑ Base "Extra Symmetric Key" available for use.
     * ☐ Derived keys based on OTRv4 prescribed key derivation
 * Misc
+  * ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  
+  _Although not explicitly document that this is necessary, it should not break any existing applications. This makes implementations of OTRv3 and OTRv4 more similar and promotes better behavior in general, being: the other party is not needlessly warned for (lost) messages that do not contain valuable content, i.e. they are part of the OTR process, but do not contain user content themselves._
   * ☐ Ability to define own, customized per network, `phi` (shared session state) implementer addition for the `t` value calculation.
 
 ## Operational

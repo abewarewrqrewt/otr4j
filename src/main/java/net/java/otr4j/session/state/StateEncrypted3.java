@@ -59,7 +59,6 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
-// TODO consider setting FLAG_IGNORE_UNREADABLE on any DISCONNECT and SMP messages. It shouldn't break old OTRv3-only protocol implementations.
 final class StateEncrypted3 extends AbstractStateEncrypted {
 
     /**
@@ -213,7 +212,8 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
-                        context.injectMessage(transformSending(context, "", singletonList(response), FLAG_NONE));
+                        context.injectMessage(transformSending(context, "", singletonList(response),
+                                FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final SMException e) {
                     // TODO (how to) handle corrupt TLVs appropriately, as being discussed in https://github.com/otrv4/otrv4/commit/dcd62e4f036830261c35f63ecc775d0ba628f8d8 (may not be final conclusion)
@@ -306,9 +306,9 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     public void end(@Nonnull final Context context) throws OtrException {
         // TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of sending the data message,
         // we already include remaining MAC keys in the Data message itself.
-        // FIXME need to set flag IGNORE_UNREADABLE
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
-        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv), FLAG_NONE);
+        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv),
+                FLAG_IGNORE_UNREADABLE);
         try {
             context.injectMessage(m);
         } finally {
