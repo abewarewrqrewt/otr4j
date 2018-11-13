@@ -107,8 +107,7 @@ public final class EncodedMessageParser {
                 final byte[] authenticator = payload.readMacOTR4();
                 final byte[] revealedMacs = payload.readData();
                 // We only verify the format of the data message, but do not perform the validation actions yet.
-                // Validation is delayed until a later point as we are missing context information for full
-                // validation.
+                // Validation is delayed until a later point as we are missing context information for full validation.
                 return new DataMessage4(version, senderInstanceTag, receiverInstanceTag, flags, pn, i, j, ecdhPublicKey,
                         ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext, authenticator, revealedMacs);
             }

@@ -8,7 +8,7 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrOutputStream;
 
@@ -45,7 +45,7 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     public IdentityMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
             @Nonnull final Point y, @Nonnull final BigInteger b) {
-        super(requireInRange(Session.Version.FOUR, Session.Version.FOUR, protocolVersion), senderInstance, receiverInstance);
+        super(requireInRange(Version.FOUR, Version.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.y = requireNonNull(y);
         this.b = requireNonNull(b);

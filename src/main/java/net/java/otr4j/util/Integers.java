@@ -27,7 +27,6 @@ public final class Integers {
      * @return Returns same value as provided iff it passes minimum bound check.
      * @throws IllegalArgumentException Throws IllegalArgumentException in case value does not pass check.
      */
-    // TODO verify all uses to ensure that protocol version checking for OTRv4 uses == 4 i.s.o. >= 4.
     public static int requireAtLeast(final int minInclusive, final int value) {
         if (value < minInclusive) {
             throw new IllegalArgumentException("value is expected to be at minimum " + minInclusive + ", but was " + value);

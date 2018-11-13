@@ -8,6 +8,7 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
@@ -48,7 +49,7 @@ public final class SignatureMessage extends AbstractEncodedMessage {
     public SignatureMessage(final int protocolVersion, @Nonnull final byte[] xEncrypted,
             @Nonnull final byte[] xEncryptedMAC, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance) {
-        super(requireInRange(2, 3, protocolVersion), senderInstance, receiverInstance);
+        super(requireInRange(Version.TWO, Version.THREE, protocolVersion), senderInstance, receiverInstance);
         this.xEncrypted = requireNonNull(xEncrypted);
         this.xEncryptedMAC = requireNonNull(xEncryptedMAC);
     }
