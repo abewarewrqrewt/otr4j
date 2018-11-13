@@ -129,11 +129,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     @Nonnull
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs) {
-        return transformSending(context, msgText, tlvs, (byte) 0);
-    }
-
-    DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs, final byte flags) {
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {

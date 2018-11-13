@@ -33,6 +33,17 @@ import java.util.List;
 public interface State {
 
     /**
+     * Constant to indicate that no flag bit is set.
+     */
+    byte FLAG_NONE = 0x00;
+
+    /**
+     * Constant for the flag IGNORE_UNREADABLE, which is used to indicate that if such a flagged message cannot be read,
+     * we do not need to respond with an error message.
+     */
+    byte FLAG_IGNORE_UNREADABLE = 0x01;
+
+    /**
      * Get active protocol version.
      *
      * @return Returns protocol version that is active in this session state.
@@ -83,12 +94,14 @@ public interface State {
      *
      * @param context The session context.
      * @param msgText The message ready to be sent.
-     * @param tlvs List of TLVs.
+     * @param tlvs    List of TLVs.
+     * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
      * @return Returns message to be sent over IM transport.
      * @throws OtrException In case an exception occurs.
      */
     @Nullable
-    Message transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs) throws OtrException;
+    Message transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
+            final byte flags) throws OtrException;
 
     /**
      * Handle the received plaintext message.

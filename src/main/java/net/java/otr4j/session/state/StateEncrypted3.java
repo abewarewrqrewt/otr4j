@@ -59,6 +59,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  *
  * @author Danny van Heumen
  */
+// TODO consider setting FLAG_IGNORE_UNREADABLE on any DISCONNECT and SMP messages. It shouldn't break old OTRv3-only protocol implementations.
 final class StateEncrypted3 extends AbstractStateEncrypted {
 
     /**
@@ -212,7 +213,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
-                        context.injectMessage(transformSending(context, "", singletonList(response)));
+                        context.injectMessage(transformSending(context, "", singletonList(response), FLAG_NONE));
                     }
                 } catch (final SMException e) {
                     // TODO (how to) handle corrupt TLVs appropriately, as being discussed in https://github.com/otrv4/otrv4/commit/dcd62e4f036830261c35f63ecc775d0ba628f8d8 (may not be final conclusion)
@@ -263,7 +264,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     @Override
     @Nonnull
     public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs) throws OtrException {
+            @Nonnull final List<TLV> tlvs, final byte flags) throws OtrException {
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
 
@@ -288,7 +289,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
         // Calculate T.
         final MysteriousT t = new MysteriousT(this.protocolVersion, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), (byte) 0, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMsg);
+                context.getReceiverInstanceTag(), flags, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMsg);
 
         // Calculate T hash.
         final byte[] sendingMACKey = encryptionKeys.sendingMAC();
@@ -307,7 +308,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         // we already include remaining MAC keys in the Data message itself.
         // FIXME need to set flag IGNORE_UNREADABLE
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
-        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv));
+        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv), FLAG_NONE);
         try {
             context.injectMessage(m);
         } finally {

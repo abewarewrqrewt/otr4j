@@ -111,7 +111,8 @@ final class StateFinished extends AbstractState {
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) {
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs, final byte flags) {
         finishedSessionMessage(context.getHost(), sessionId, msgText);
         return null;
     }

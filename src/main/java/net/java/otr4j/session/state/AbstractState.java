@@ -29,12 +29,6 @@ abstract class AbstractState implements State {
 
     static final String DEFAULT_REPLY_UNREADABLE_MESSAGE = "This message cannot be read.";
 
-    /**
-     * Constant for the flag IGNORE_UNREADABLE, which is used to indicate that if such a flagged message cannot be read,
-     * we do not need to respond with an error message.
-     */
-    static final byte FLAG_IGNORE_UNREADABLE = 0x01;
-
     private static final Logger LOGGER = Logger.getLogger(AbstractState.class.getName());
 
     @Override

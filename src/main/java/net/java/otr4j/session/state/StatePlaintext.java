@@ -124,7 +124,8 @@ public final class StatePlaintext extends AbstractState {
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText, @Nonnull final List<TLV> tlvs) throws OtrException {
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs, final byte flags) throws OtrException {
         final OtrPolicy otrPolicy = context.getSessionPolicy();
         if (otrPolicy.isRequireEncryption()) {
             // Prevent original message from being sent. Start AKE.

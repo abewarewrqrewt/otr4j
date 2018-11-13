@@ -81,6 +81,8 @@ import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static net.java.otr4j.messages.EncodedMessageParser.parse;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
+import static net.java.otr4j.session.state.State.FLAG_IGNORE_UNREADABLE;
+import static net.java.otr4j.session.state.State.FLAG_NONE;
 
 /**
  * Implementation of the OTR session.
@@ -881,7 +883,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (masterSession == this && outgoingSession != this) {
             return outgoingSession.transformSending(msgText, tlvs);
         }
-        final Message m = this.sessionState.transformSending(this, msgText, tlvs);
+        final Message m = this.sessionState.transformSending(this, msgText, tlvs, FLAG_NONE);
         if (m == null) {
             return new String[0];
         }
@@ -1199,16 +1201,14 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        // FIXME send TLV message with IGNORE_UNREADABLE flag set.
-        injectMessage(session.transformSending(this, "", singletonList(tlv)));
+        injectMessage(session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
         if (!session.getSmpHandler().smpAbortedTLV(tlv)) {
             return;
         }
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
         // if this aborts a running SMP negotiation.
         final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        // FIXME send TLV message with IGNORE_UNREADABLE flag set.
-        injectMessage(session.transformSending(this, "", singletonList(tlv2)));
+        injectMessage(session.transformSending(this, "", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
     }
 
     /**
@@ -1262,8 +1262,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Responding to SMP request failed, because current session is not encrypted.", e);
         }
-        // FIXME send TLV message with IGNORE_UNREADABLE flag set.
-        final Message m = session.transformSending(this, "", singletonList(tlv));
+        final Message m = session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
         if (m != null) {
             injectMessage(m);
         }
@@ -1287,8 +1286,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
-        // FIXME if TLV contains SMP_ABORT type, need to set flag IgnoreUnreadable.
-        final Message m = session.transformSending(this, "", singletonList(tlv));
+        final Message m = session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
         if (m != null) {
             injectMessage(m);
         }
