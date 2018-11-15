@@ -234,7 +234,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
                 if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
                     logger.log(Level.WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
-                context.setState(new StateFinished(this.sessionID));
+                context.transition(this, new StateFinished(this.sessionID));
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
@@ -268,7 +268,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
         } finally {
             // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
             // have problems injecting the message into the transport.
-            context.setState(new StatePlaintext(this.sessionID));
+            context.transition(this, new StatePlaintext(this.sessionID));
         }
     }
 }

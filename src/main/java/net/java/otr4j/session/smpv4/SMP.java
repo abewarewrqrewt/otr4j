@@ -51,6 +51,7 @@ import static org.bouncycastle.util.Arrays.clear;
 /**
  * OTRv4 variant of the Socialist Millionaire's Protocol.
  */
+// FIXME verify if scalar handling is correct according to recent added details (https://github.com/otrv4/otrv4/commit/74dc71b0968499c0e7fbb1314fcf963e7d4a9603)
 public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SMP.class.getName());

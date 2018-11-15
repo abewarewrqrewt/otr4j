@@ -38,13 +38,13 @@ abstract class AbstractState implements State {
 
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
-        context.setState(new StateEncrypted3(context, params));
+        context.transition(this, new StateEncrypted3(context, params));
     }
 
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) throws OtrException {
         final StateEncrypted4 encrypted = new StateEncrypted4(context, params);
-        context.setState(encrypted);
+        context.transition(this, encrypted);
         if (params.getInitializationComponent() == SecurityParameters4.Component.THEIRS) {
             LOGGER.log(Level.FINE, "We initialized THEIR component of the Double Ratchet, so it is complete. Sending heartbeat message.");
             context.injectMessage(encrypted.transformSending(context, "", Collections.<TLV>emptyList(),

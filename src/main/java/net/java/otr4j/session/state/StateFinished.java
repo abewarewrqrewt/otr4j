@@ -119,6 +119,6 @@ final class StateFinished extends AbstractState {
 
     @Override
     public void end(@Nonnull final Context context) {
-        context.setState(new StatePlaintext(this.sessionId));
+        context.transition(this, new StatePlaintext(this.sessionId));
     }
 }

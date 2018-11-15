@@ -65,11 +65,19 @@ public interface Context {
     OtrPolicy getSessionPolicy();
 
     /**
-     * Set new session state.
+     * Transition to a new session state.
+     * <p>
+     * As part of setting the new state, the current state is being verified. If the provided 'fromState' argument is
+     * not the current state, transitioning is not allowed. This is a sanity check to ensure that we are not operating
+     * on bad assumptions.
+     * <p>
+     * TODO In the future, a clearing/clean-up will immediately follow transitioning, such that the old
+     * session state is cleaned as soon as transitioning has completed.
      *
-     * @param state The new session state.
+     * @param fromState the current state instance - will be cleared after transitioning
+     * @param toState   the new state instance - will become current after transitioning
      */
-    void setState(@Nonnull State state);
+    void transition(@Nonnull State fromState, @Nonnull State toState);
 
     /**
      * Get sender (our) instance tag.
