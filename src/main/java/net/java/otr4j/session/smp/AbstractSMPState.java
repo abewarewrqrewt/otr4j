@@ -22,7 +22,7 @@ import java.util.Objects;
  * only. Specific exceptions are thrown to indicate the unexpected state
  * changes.
  */
-abstract class AbstractSMPState {
+abstract class AbstractSMPState implements AutoCloseable {
 
     static final BigInteger G1 = DHKeyPairOTR3.GENERATOR;
 
@@ -36,6 +36,9 @@ abstract class AbstractSMPState {
     AbstractSMPState(@Nonnull final SecureRandom sr) {
         this.sr = Objects.requireNonNull(sr);
     }
+
+    @Override
+    public abstract void close();
 
     /**
      * Status of the SM protocol.

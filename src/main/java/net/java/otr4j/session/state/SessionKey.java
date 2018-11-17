@@ -268,6 +268,7 @@ final class SessionKey implements AutoCloseable {
         this.s.close();
         Arrays.fill(this.receivingCtr, (byte) 0);
         Arrays.fill(this.sendingCtr, (byte) 0);
+        // FIXME this.localKeyPair.close();
     }
 
     /**

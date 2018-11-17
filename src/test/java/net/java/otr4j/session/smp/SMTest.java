@@ -138,6 +138,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.UNDECIDED;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         sm.checkKnowLog(BigInteger.ONE, BigInteger.TEN, BigInteger.ZERO, 0);
     }
@@ -150,6 +155,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.UNDECIDED;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         sm.checkEqualCoords(BigInteger.ONE, BigInteger.TEN, BigInteger.ZERO, BigInteger.valueOf(100L), BigInteger.valueOf(50L), BigInteger.valueOf(25L), BigInteger.valueOf(12L), 0);
     }
@@ -161,6 +171,11 @@ public class SMTest {
             @Override
             SMPStatus status() {
                 return SMPStatus.UNDECIDED;
+            }
+
+            @Override
+            public void close() {
+                // no need to clean up
             }
         };
         sm.checkEqualLogs(BigInteger.ONE, BigInteger.TEN, BigInteger.ZERO, BigInteger.valueOf(23L), BigInteger.valueOf(35L), 0);
@@ -431,6 +446,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.UNDECIDED;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
     }
 
@@ -449,6 +469,11 @@ public class SMTest {
             @Nonnull
             SMPStatus status() {
                 return SMPStatus.UNDECIDED;
+            }
+
+            @Override
+            public void close() {
+                // no need to clean up
             }
         };
         final SM sm = new SM(sr);
@@ -478,6 +503,11 @@ public class SMTest {
             @Nonnull
             SMPStatus status() {
                 return SMPStatus.UNDECIDED;
+            }
+
+            @Override
+            public void close() {
+                // no need to clean up
             }
         };
         final SM sm = new SM(sr);
@@ -509,6 +539,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         final SM sm = new SM(sr);
         sm.setState(s);
@@ -538,6 +573,11 @@ public class SMTest {
             @Override
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
+            }
+
+            @Override
+            public void close() {
+                // no need to clean up
             }
         };
         final SM sm = new SM(sr);
@@ -569,6 +609,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         final SM sm = new SM(sr);
         sm.setState(s);
@@ -598,6 +643,11 @@ public class SMTest {
             @Override
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
+            }
+
+            @Override
+            public void close() {
+                // no need to clean up
             }
         };
         final SM sm = new SM(sr);
@@ -629,6 +679,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         final SM sm = new SM(sr);
         sm.setState(s);
@@ -659,6 +714,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         final SM sm = new SM(sr);
         sm.setState(s);
@@ -688,6 +748,11 @@ public class SMTest {
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
             }
+
+            @Override
+            public void close() {
+                // no need to clean up
+            }
         };
         final SM sm = new SM(sr);
         sm.setState(s);
@@ -716,6 +781,11 @@ public class SMTest {
             @Override
             SMPStatus status() {
                 return SMPStatus.INPROGRESS;
+            }
+
+            @Override
+            public void close() {
+                // no need to clean up
             }
         };
         final SM sm = new SM(sr);

@@ -29,7 +29,7 @@ import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
  *
  * @author Danny van Heumen
  */
-final class SessionKeyManager {
+final class SessionKeyManager implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(SessionKeyManager.class.getName());
 
@@ -62,6 +62,15 @@ final class SessionKeyManager {
         next.put(Index.CURRENT, new SessionKey(2, nextLocalDH, 1, remotePublicKey));
         next.put(Index.NEXT, new SessionKey(2, nextLocalDH, 1, remotePublicKey));
         this.keys.put(Index.NEXT, next);
+    }
+
+    @Override
+    public void close() {
+        this.keys.get(Index.CURRENT).get(Index.CURRENT).close();
+        this.keys.get(Index.CURRENT).get(Index.NEXT).close();
+        this.keys.get(Index.NEXT).get(Index.CURRENT).close();
+        this.keys.get(Index.NEXT).get(Index.NEXT).close();
+        this.oldMacKeys.clear();
     }
 
     /**

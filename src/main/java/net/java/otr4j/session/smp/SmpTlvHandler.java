@@ -41,7 +41,7 @@ import static net.java.otr4j.session.api.SMPStatus.SUCCEEDED;
  *
  * @author Danny van Heumen
  */
-public final class SmpTlvHandler implements SMPHandler {
+public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
 
     private static final byte[] VERSION_BYTE = new byte[] {1};
     /**
@@ -300,5 +300,11 @@ public final class SmpTlvHandler implements SMPHandler {
     @Nonnull
     private String getFingerprint() {
         return OtrCryptoEngine.getFingerprint(this.remotePublicKey);
+    }
+
+    @Override
+    public void close() {
+        this.s.close();
+        this.sm.close();
     }
 }

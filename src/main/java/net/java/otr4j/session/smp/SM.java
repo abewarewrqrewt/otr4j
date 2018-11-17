@@ -44,7 +44,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
  * Socialist Millionaire protocol implementation.
  */
 @SuppressWarnings({"PMD.AvoidRethrowingException", "PMD.AvoidCatchingGenericException"})
-final class SM {
+final class SM implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(SM.class.getName());
 
@@ -337,5 +337,10 @@ final class SM {
         } finally {
             LOGGER.log(Level.FINE, "Final SMP exchange state: {0}", this.state.status().name());
         }
+    }
+
+    @Override
+    public void close() {
+        this.state.close();
     }
 }

@@ -35,6 +35,11 @@ final class StateExpect2 extends AbstractSMPState {
     }
 
     @Override
+    public void close() {
+        // FIXME implement smp3 - StateExpect2 clean-up
+    }
+
+    @Override
     @Nonnull
     SMPStatus status() {
         return SMPStatus.INPROGRESS;

@@ -141,8 +141,8 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
     @Override
     public void destroy() {
-        // FIXME this.smpTlvHandler.destroy();
-        // FIXME this.sessionKeyManager.destroy();
+        this.smpTlvHandler.close();
+        this.sessionKeyManager.close();
     }
 
     @Override
