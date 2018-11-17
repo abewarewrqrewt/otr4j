@@ -401,7 +401,7 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     /**
-     * Get the remaining MAC keys to be revealed. (And remove them from the internal list to be revealed.)
+     * Get the remaining MAC-keys-to-be-revealed. (And remove them from the internal list to be revealed.)
      * <p>
      * NOTE: this method should only used to acquire the last remaining MAC keys prior to a session end. The general
      * revelation case is facilitated through key rotation, i.e. {@link #rotateSenderKeys()}.
@@ -413,6 +413,15 @@ final class DoubleRatchet implements AutoCloseable {
         final byte[] revealed = this.macsToReveal.toByteArray();
         this.macsToReveal.reset();
         return revealed;
+    }
+
+    /**
+     * Forget the remaining MAC-keys-to-be-revealed. (This is called whenever remaining MAC keys need not be revealed
+     * before actually closing.)
+     */
+    void forgetRemainingMACsToReveal() {
+        requireNotClosed();
+        this.macsToReveal.reset();
     }
 
     private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
