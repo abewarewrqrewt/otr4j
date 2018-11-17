@@ -89,7 +89,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.10.0</version>
+                    <version>3.11.0</version>
                     <configuration>
                         <!--linkXRef seems to require org.apache.maven.plugins:maven-jxr-plugin, which is not currently
                         available. -->
@@ -137,7 +137,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <executions>
                     <execution>
                         <id>default-compile</id>
@@ -193,7 +193,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>3.0.0-M1</version>
                 <configuration>
                     <enableAssertions>true</enableAssertions>
                     <systemPropertyVariables>
@@ -304,7 +304,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
+                <version>0.8.2</version>
                 <executions>
                     <execution>
                         <id>pre-unit-test</id>
@@ -338,7 +338,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.11.0</version>
             </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
