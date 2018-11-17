@@ -380,14 +380,14 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
     }
 
-    // FIXME how to implement clearing sensitive data from old states upon transitioning. Calling AutoCloseable.close may recurse into same instance that calls setState, is this desirable?
-    // FIXME unit test new 'transition' behavior. (both correct and incorrect states)
+    // FIXME unit test new 'transition' behavior and subsequent 'destroy'-ing. (both correct and incorrect states)
     @Override
     public void transition(@Nonnull final State fromState, @Nonnull final State toState) {
         if (this.sessionState != fromState) {
-            throw new IllegalArgumentException("Provided 'fromState' is not the current state.");
+            throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state.");
         }
         this.sessionState = requireNonNull(toState);
+        fromState.destroy();
         sessionStatusChanged(duplicate(listeners), toState.getSessionID(), this.receiverTag);
     }
 

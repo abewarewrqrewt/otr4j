@@ -119,7 +119,7 @@ final class DoubleRatchet implements AutoCloseable {
         this.pn = 0;
         this.sharedSecret.close();
         if (this.macsToReveal.size() > 0) {
-            throw new IllegalStateException("BUG: Remaining MACs have not been revealed. Failure to accomplish full deniability.");
+            throw new IllegalStateException("BUG: Remaining MACs have not been revealed.");
         }
         this.macsToReveal.reset();
         this.senderRatchet.close();

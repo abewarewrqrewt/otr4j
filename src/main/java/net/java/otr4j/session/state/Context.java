@@ -4,17 +4,19 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
+
 package net.java.otr4j.session.state;
 
-import java.security.SecureRandom;
-import javax.annotation.Nonnull;
+import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.io.Message;
-import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.SessionID;
+import net.java.otr4j.io.Message;
+
+import javax.annotation.Nonnull;
+import java.security.SecureRandom;
 
 /**
  * Session state context.
@@ -71,8 +73,9 @@ public interface Context {
      * not the current state, transitioning is not allowed. This is a sanity check to ensure that we are not operating
      * on bad assumptions.
      * <p>
-     * TODO In the future, a clearing/clean-up will immediately follow transitioning, such that the old
-     * session state is cleaned as soon as transitioning has completed.
+     * Upon calling this method it is assumed that the #toState instance is fully initiated and operational. Immediately
+     * after transitioning, the fromState instance will be {@link State#destroy()}ed. This also requires that the old
+     * and new state cannot share any data that is clearable, as it will be cleared as part of destroying the old state.
      *
      * @param fromState the current state instance - will be cleared after transitioning
      * @param toState   the new state instance - will become current after transitioning

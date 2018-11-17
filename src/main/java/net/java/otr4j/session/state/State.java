@@ -190,4 +190,9 @@ public interface State {
      */
     @Nonnull
     SMPHandler getSmpHandler() throws IncorrectStateException;
+
+    /**
+     * Securely clear the content of the state after {@link Context#transition(State, State)}-ing away from it.
+     */
+    void destroy();
 }

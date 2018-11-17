@@ -24,6 +24,14 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
 
 /**
+ * The OTR session manager.
+ * <p>
+ * The session manager helps to manage sessions. The {@link SessionID} identifies each session. The session manager
+ * observes changes to each session.
+ * <p>
+ * To merely create a new session, i.e. without actually using the session manager, use
+ * {@link #createSession(SessionID, OtrEngineHost)}.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */

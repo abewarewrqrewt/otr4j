@@ -140,6 +140,12 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     }
 
     @Override
+    public void destroy() {
+        // FIXME this.smpTlvHandler.destroy();
+        // FIXME this.sessionKeyManager.destroy();
+    }
+
+    @Override
     @Nonnull
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was

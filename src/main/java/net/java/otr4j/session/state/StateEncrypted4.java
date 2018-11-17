@@ -46,7 +46,7 @@ import static net.java.otr4j.session.smpv4.SMP.smpPayload;
  * The OTRv4 ENCRYPTED message state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
-final class StateEncrypted4 extends AbstractStateEncrypted implements AutoCloseable {
+final class StateEncrypted4 extends AbstractStateEncrypted {
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
 
@@ -84,7 +84,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted implements AutoClosea
     }
 
     @Override
-    public void close() {
+    public void destroy() {
         this.ratchet.close();
         this.smp.close();
     }

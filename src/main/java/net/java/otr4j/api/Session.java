@@ -18,6 +18,9 @@ import javax.annotation.Nullable;
 
 /**
  * Interface that defines the OTR session.
+ * <p>
+ * This the primary interface for clients (users of otr4j) to interact with. It provides access to all the (available)
+ * OTR functionality. In addition, it manages the session and any (unexpected) state transitions.
  */
 @SuppressWarnings("PMD.ConstantsInInterface")
 public interface Session {

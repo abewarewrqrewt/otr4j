@@ -92,6 +92,11 @@ public final class StatePlaintext extends AbstractState {
     }
 
     @Override
+    public void destroy() {
+        // no sensitive material to destroy
+    }
+
+    @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         final OtrEngineHost host = context.getHost();

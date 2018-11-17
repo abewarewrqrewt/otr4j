@@ -82,6 +82,11 @@ final class StateFinished extends AbstractState {
     }
 
     @Override
+    public void destroy() {
+        // no sensitive material to destroy
+    }
+
+    @Override
     @Nonnull
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was received unencrypted.
