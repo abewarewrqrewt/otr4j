@@ -40,7 +40,7 @@ final class StateExpect3 extends AbstractSMPState {
 
     @Override
     public void close() {
-        // FIXME implement smp3 - StateExpect3 clean-up
+        // Nothing to clean up for current implementation.
     }
 
     @Override
