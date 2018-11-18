@@ -127,7 +127,6 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA(),
                     ourClientProfile, theirClientProfile));
         } finally {
-            // TODO should we preserve the most recent query tag or start with empty initial state?
             context.setState(StateInitial.empty());
         }
         final InstanceTag senderTag = context.getSenderInstanceTag();

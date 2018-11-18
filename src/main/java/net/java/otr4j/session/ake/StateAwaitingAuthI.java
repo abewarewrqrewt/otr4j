@@ -34,6 +34,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.AuthIMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
 import static net.java.otr4j.messages.MysteriousT4.encode;
+import static net.java.otr4j.session.ake.SecurityParameters4.Component.THEIRS;
 
 /**
  * The state AWAITING_AUTH_I.
@@ -87,7 +88,6 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         }
         if (message instanceof AuthIMessage) {
             handleAuthIMessage(context, (AuthIMessage) message);
-            // FIXME need to send heartbeat message or queued user message in order to finalize Double Ratchet for other party.
             return null;
         }
         // OTR: "Ignore the message."
@@ -141,9 +141,8 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
                     this.ourECDHKeyPair.getPublicKey(), this.y, this.ourDHKeyPair.getPublicKey(), this.b,
                     context.getRemoteAccountID(), context.getLocalAccountID());
-            final SecurityParameters4 params = new SecurityParameters4(SecurityParameters4.Component.THEIRS,
-                    this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b, ourProfileValidated, profileBobValidated);
-            context.secure(params);
+            context.secure(new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
+                    ourProfileValidated, profileBobValidated));
         } finally {
             context.setState(StateInitial.empty());
         }

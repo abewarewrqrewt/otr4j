@@ -117,7 +117,6 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  * @author Danny van Heumen
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
-// TODO investigate if TooManyFields PMD suppression is still needed after further incorporating ClientProfile
 // TODO do not report an error if flag IGNORE_UNREADABLE is set.
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place.
 @SuppressWarnings("PMD.TooManyFields")

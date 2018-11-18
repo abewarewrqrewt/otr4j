@@ -35,6 +35,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
@@ -60,6 +61,8 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * @author Danny van Heumen
  */
 final class StateEncrypted3 extends AbstractStateEncrypted {
+
+    private static final Logger LOGGER = Logger.getLogger(StateEncrypted3.class.getName());
 
     /**
      * TLV 8 notifies the recipient to use the extra symmetric key to set up an
@@ -222,8 +225,8 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                                 FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final SMException e) {
-                    // TODO (how to) handle corrupt TLVs appropriately, as being discussed in https://github.com/otrv4/otrv4/commit/dcd62e4f036830261c35f63ecc775d0ba628f8d8 (may not be final conclusion)
-                    throw new OtrException("Failed to process TLV.", e);
+                    LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
+                            e);
                 }
                 continue;
             }

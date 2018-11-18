@@ -243,9 +243,8 @@ final class SessionKey implements AutoCloseable {
                 throw new ReceivingCounterValidationFailed("lower counter value");
             }
         }
-        // Note that by OTR spec we aren't allowed to accept all-zeroes spec.
-        // Therefore, if all bytes are identical, fail receiving counter
-        // validation.
+        // Note that by OTR spec we aren't allowed to accept all-zeroes spec. Therefore, if all bytes are identical,
+        // fail receiving counter validation.
         throw new ReceivingCounterValidationFailed("identical counter value");
     }
 
@@ -268,7 +267,6 @@ final class SessionKey implements AutoCloseable {
         this.s.close();
         Arrays.fill(this.receivingCtr, (byte) 0);
         Arrays.fill(this.sendingCtr, (byte) 0);
-        // FIXME this.localKeyPair.close();
     }
 
     /**

@@ -57,7 +57,7 @@ public final class DHKeyPairOTR3 {
     /**
      * The generator used in DH.
      */
-    public static final BigInteger GENERATOR = new BigInteger("2", 10);
+    public static final BigInteger GENERATOR = BIGINTEGER_TWO;
 
     static {
         try {

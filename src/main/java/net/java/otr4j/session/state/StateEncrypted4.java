@@ -221,7 +221,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
                                 FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
-                    LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may be indicative of a bad implementation of OTR at the other party.",
+                    LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
                             e);
                 }
                 continue;
