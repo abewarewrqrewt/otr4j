@@ -118,7 +118,7 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
 // TODO do not report an error if flag IGNORE_UNREADABLE is set.
-// TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place.
+// TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
 @SuppressWarnings("PMD.TooManyFields")
 final class SessionImpl implements Session, Context, AuthContext {
 
@@ -379,11 +379,11 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
     }
 
-    // FIXME unit test new 'transition' behavior and subsequent 'destroy'-ing. (both correct and incorrect states)
     @Override
     public void transition(@Nonnull final State fromState, @Nonnull final State toState) {
         if (this.sessionState != fromState) {
-            throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state.");
+            throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state. Expected "
+                    + this.sessionState + ", but got " + fromState);
         }
         this.sessionState = requireNonNull(toState);
         fromState.destroy();
@@ -969,7 +969,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (version == 0) {
             startSession();
         } else {
-            // FIXME what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message.
+            // FIXME what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message. (This is related to the OTRv4-interactive-only mode.)
             injectMessage(respondAuth(version, this.receiverTag, ""));
         }
     }

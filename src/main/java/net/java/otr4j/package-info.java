@@ -5,8 +5,8 @@
  * See terms of license at gnu.org.
  */
 // TODO verify that logging with parameters ('{}') works correctly.
-// FIXME migrate to using SpotBugs annotations, instead of dormant JSR-305. (Are these supported in IntelliJ?)
-// FIXME use @CleanupObligation to verify correct clean-up of cryptographically sensitive material.
+// TODO migrate to using SpotBugs annotations, instead of dormant JSR-305. (Are these supported in IntelliJ?)
+// TODO use @CleanupObligation to verify correct clean-up of cryptographically sensitive material.
 // TODO Verify rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
 // TODO Use maven-site-plugin (or similar) to generate a full report on the status of otr4j project.
 // TODO Investigate use of SpotBugs and its annotation to manage "resources" and correct closing.
@@ -14,8 +14,6 @@
 // TODO consistent naming of constants used in OTRv4 parts of implementation. (Sometimes LENGTH is at the start of the constant, sometimes at the end.)
 // TODO Verify that mitigation for OTRv2 MAC revalation bug is in place. (Refer to documentation about revealing MAC keys.)
 // TODO remove OTRv2 support to comply with OTRv4 spec.
-// TODO Verify that all files have the correct license header above the files.
-// TODO analyze over-all package structure and see if we can reduce (the number of causes for) cyclic dependencies.
 // TODO consider the effectiveness of clearing data as JVM might optimize the activity away due to data not being used afterwards.
 // TODO OTRv4: Non-Interactive DAKE, Pre-Key Profile, KCI Attacks, full support for out-of-order messages
 // TODO OTRv4: How should we handle the case where our own client profile is not valid (anymore)?
