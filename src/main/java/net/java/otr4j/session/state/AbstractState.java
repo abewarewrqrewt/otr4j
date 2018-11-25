@@ -39,11 +39,6 @@ abstract class AbstractState implements State {
         OtrEngineHostUtil.showError(context.getHost(), this.getSessionID(), errorMessage.error);
     }
 
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
-        context.transition(this, new StateEncrypted3(context, params));
-    }
-
     void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
             LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
@@ -58,6 +53,11 @@ abstract class AbstractState implements State {
             return;
         }
         signalUnreadableMessage(context);
+    }
+
+    @Override
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
+        context.transition(this, new StateEncrypted3(context, params));
     }
 
     @Override
