@@ -79,7 +79,7 @@ import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
-import static net.java.otr4j.messages.EncodedMessageParser.parse;
+import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.state.State.FLAG_IGNORE_UNREADABLE;
 import static net.java.otr4j.session.state.State.FLAG_NONE;
@@ -497,7 +497,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             // In case of OTRv3 delegate message processing to dedicated slave session.
             final AbstractEncodedMessage encodedM;
             try {
-                encodedM = parse(((EncodedMessage) m).getVersion(), ((EncodedMessage) m).getType(),
+                encodedM = parseEncodedMessage(((EncodedMessage) m).getVersion(), ((EncodedMessage) m).getType(),
                         ((EncodedMessage) m).getSenderInstanceTag(), ((EncodedMessage) m).getReceiverInstanceTag(),
                         ((EncodedMessage) m).getPayload());
             } catch (final ProtocolException e) {
@@ -628,7 +628,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                     logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
                     return null;
                 }
-                return handleEncodedMessage(parse(((EncodedMessage) message).getVersion(),
+                return handleEncodedMessage(parseEncodedMessage(((EncodedMessage) message).getVersion(),
                         ((EncodedMessage) message).getType(), ((EncodedMessage) message).getSenderInstanceTag(),
                         ((EncodedMessage) message).getReceiverInstanceTag(), ((EncodedMessage) message).getPayload()));
             }
