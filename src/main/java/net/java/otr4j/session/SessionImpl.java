@@ -117,7 +117,6 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  * @author Danny van Heumen
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
-// TODO do not report an error if flag IGNORE_UNREADABLE is set.
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
 @SuppressWarnings("PMD.TooManyFields")
 final class SessionImpl implements Session, Context, AuthContext {
@@ -701,6 +700,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         try {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final ProtocolException e) {
+            // TODO consider how we should signal unreadable message for illegal data messages and potentially show error to client. (Where we escape handling logic through ProtocolException.)
             throw new OtrException("Failed to process full data message.", e);
         }
     }
@@ -715,6 +715,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             return this.sessionState.handleDataMessage(this, data);
         } catch (final ProtocolException e) {
             logger.log(Level.FINE, "An illegal message was received. Processing was aborted.", e);
+            // TODO consider how we should signal unreadable message for illegal data messages and potentially show error to client. (Where we escape handling logic through ProtocolException.)
             return null;
         }
     }

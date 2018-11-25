@@ -12,6 +12,8 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.ErrorMessage;
+import net.java.otr4j.messages.DataMessage;
+import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 
@@ -20,6 +22,8 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
+
 /**
  * Abstract base implementation for session state implementations.
  *
@@ -27,8 +31,7 @@ import java.util.logging.Logger;
  */
 abstract class AbstractState implements State {
 
-    static final String DEFAULT_REPLY_UNREADABLE_MESSAGE = "This message cannot be read.";
-
+    // TODO is this "anonymous" logging an issue? (I.e. no session information in the log message.)
     private static final Logger LOGGER = Logger.getLogger(AbstractState.class.getName());
 
     @Override
@@ -39,6 +42,22 @@ abstract class AbstractState implements State {
     @Override
     public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
         context.transition(this, new StateEncrypted3(context, params));
+    }
+
+    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
+        if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
+            LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
+            return;
+        }
+        signalUnreadableMessage(context);
+    }
+
+    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
+        if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
+            LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
+            return;
+        }
+        signalUnreadableMessage(context);
     }
 
     @Override

@@ -7,12 +7,10 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.DataMessage;
@@ -23,12 +21,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrEngineHostUtil.finishedSessionMessage;
-import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
-import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
 
 /**
  * Message state FINISHED. This message state is initiated through events
@@ -38,6 +36,8 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
  * @author Danny van Heumen
  */
 final class StateFinished extends AbstractState {
+
+    private static final Logger LOGGER = Logger.getLogger(StateFinished.class.getName());
 
     private final SessionID sessionId;
 
@@ -97,20 +97,16 @@ final class StateFinished extends AbstractState {
     @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
-        final OtrEngineHost host = context.getHost();
-        unreadableMessageReceived(host, sessionId);
-        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-        context.injectMessage(new ErrorMessage(replymsg));
+        LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
+        handleUnreadableMessage(context, message);
         return null;
     }
 
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
-        final OtrEngineHost host = context.getHost();
-        unreadableMessageReceived(host, sessionId);
-        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-        context.injectMessage(new ErrorMessage(replymsg));
+        LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
+        handleUnreadableMessage(context, message);
         return null;
     }
 

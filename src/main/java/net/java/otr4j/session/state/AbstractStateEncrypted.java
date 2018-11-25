@@ -7,7 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
@@ -26,16 +25,10 @@ abstract class AbstractStateEncrypted extends AbstractState implements StateEncr
     @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
     final Logger logger;
 
-    /**
-     * OTR engine host.
-     */
-    final OtrEngineHost host;
-
-    AbstractStateEncrypted(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
+    AbstractStateEncrypted(@Nonnull final SessionID sessionID) {
         super();
         this.sessionID = requireNonNull(sessionID);
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
-        this.host = requireNonNull(host);
     }
 
     @Nonnull

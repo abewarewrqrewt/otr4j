@@ -7,7 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.Session;
@@ -35,14 +34,11 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
-import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
-import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
@@ -61,8 +57,6 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * @author Danny van Heumen
  */
 final class StateEncrypted3 extends AbstractStateEncrypted {
-
-    private static final Logger LOGGER = Logger.getLogger(StateEncrypted3.class.getName());
 
     /**
      * TLV 8 notifies the recipient to use the extra symmetric key to set up an
@@ -101,7 +95,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     private final SessionKeyManager sessionKeyManager;
 
     StateEncrypted3(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
-        super(context.getSessionID(), context.getHost());
+        super(context.getSessionID());
         this.protocolVersion = params.getVersion();
         this.smpTlvHandler = new SmpTlvHandler(context.secureRandom(), context.getSessionID(),
                 params.getRemoteLongTermPublicKey(), context.getReceiverInstanceTag(), context.getHost(), params.getS());
@@ -160,32 +154,26 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage data)
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
             throws OtrException, ProtocolException {
         logger.finest("Message state is ENCRYPTED. Trying to decrypt message.");
-        final OtrEngineHost host = context.getHost();
         // Find matching session keys.
         final SessionKey matchingKeys;
         try {
-            matchingKeys = sessionKeyManager.get(data.recipientKeyID,
-                    data.senderKeyID);
+            matchingKeys = sessionKeyManager.get(message.recipientKeyID, message.senderKeyID);
         } catch (final SessionKeyManager.SessionKeyUnavailableException ex) {
             logger.finest("No matching keys found.");
-            unreadableMessageReceived(host, this.sessionID);
-            final String replymsg = getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-            context.injectMessage(new ErrorMessage(replymsg));
+            handleUnreadableMessage(context, message);
             return null;
         }
 
         // Verify received MAC with a locally calculated MAC.
         logger.finest("Transforming T to byte[] to calculate it's HmacSHA1.");
 
-        final byte[] computedMAC = sha1Hmac(encode(data.getT()), matchingKeys.receivingMAC());
-        if (!constantTimeEquals(computedMAC, data.mac)) {
+        final byte[] computedMAC = sha1Hmac(encode(message.getT()), matchingKeys.receivingMAC());
+        if (!constantTimeEquals(computedMAC, message.mac)) {
             logger.finest("MAC verification failed, ignoring message");
-            unreadableMessageReceived(host, this.sessionID);
-            final String replymsg = getReplyForUnreadableMessage(host, this.sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-            context.injectMessage(new ErrorMessage(replymsg));
+            handleUnreadableMessage(context, message);
             return null;
         }
 
@@ -195,22 +183,22 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         matchingKeys.markUsed();
         final byte[] dmc;
         try {
-            final byte[] lengthenedReceivingCtr = matchingKeys.verifyReceivingCtr(data.ctr);
-            dmc = aesDecrypt(matchingKeys.receivingAESKey(), lengthenedReceivingCtr, data.encryptedMessage);
+            final byte[] lengthenedReceivingCtr = matchingKeys.verifyReceivingCtr(message.ctr);
+            dmc = aesDecrypt(matchingKeys.receivingAESKey(), lengthenedReceivingCtr, message.encryptedMessage);
         } catch (final SessionKey.ReceivingCounterValidationFailed ex) {
             logger.log(Level.WARNING, "Receiving ctr value failed validation, ignoring message: {0}", ex.getMessage());
-            showError(host, this.sessionID, "Counter value of received message failed validation.");
+            showError(context.getHost(), this.sessionID, "Counter value of received message failed validation.");
             context.injectMessage(new ErrorMessage("Message's counter value failed validation."));
             return null;
         }
 
         // Rotate keys if necessary.
         final SessionKey mostRecent = this.sessionKeyManager.getMostRecentSessionKeys();
-        if (mostRecent.getLocalKeyID() == data.recipientKeyID) {
+        if (mostRecent.getLocalKeyID() == message.recipientKeyID) {
             this.sessionKeyManager.rotateLocalKeys();
         }
-        if (mostRecent.getRemoteKeyID() == data.senderKeyID) {
-            this.sessionKeyManager.rotateRemoteKeys(data.nextDH);
+        if (mostRecent.getRemoteKeyID() == message.senderKeyID) {
+            this.sessionKeyManager.rotateRemoteKeys(message.nextDH);
         }
 
         // Extract and process TLVs.
@@ -225,7 +213,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                                 FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final SMException e) {
-                    LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
+                    this.logger.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
                             e);
                 }
                 continue;
@@ -239,7 +227,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 break;
             case USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();
-                extraSymmetricKeyDiscovered(this.host, this.sessionID, content.message, key, tlv.getValue());
+                extraSymmetricKeyDiscovered(context.getHost(), this.sessionID, content.message, key, tlv.getValue());
                 break;
             default:
                 logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
@@ -252,7 +240,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
-        throw new IllegalStateException("OTRv2/OTRv3 encrypted message state does not handle OTRv4 data messages.");
+        throw new IllegalStateException("BUG: OTRv2/OTRv3 encrypted message state does not handle OTRv4 data messages.");
     }
 
     @Override

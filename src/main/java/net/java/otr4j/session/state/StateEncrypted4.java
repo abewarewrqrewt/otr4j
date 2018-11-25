@@ -57,7 +57,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
     private final SMP smp;
 
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
-        super(context.getSessionID(), context.getHost());
+        super(context.getSessionID());
         final byte[] exchangeK;
         final byte[] ssid;
         try (SharedSecret4 exchangeSecret = params.generateSharedSecret(context.secureRandom())) {
@@ -164,7 +164,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
-        throw new IllegalStateException("OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
+        throw new IllegalStateException("BUG: OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
     // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...) - should fix itself once extra DAKE state is introduced.
@@ -200,9 +200,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
             dmc = this.ratchet.decrypt(message.getI(), message.getJ(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
             LOGGER.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
+            handleUnreadableMessage(context, message);
             return null;
         } catch (final VerificationException e) {
             LOGGER.log(Level.FINE, "Received message fails verification. Rejecting the message.");
+            handleUnreadableMessage(context, message);
             return null;
         }
         this.ratchet.rotateReceivingChainKey();

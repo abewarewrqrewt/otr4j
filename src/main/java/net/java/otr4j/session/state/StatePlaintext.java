@@ -8,13 +8,11 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OfferStatus;
-import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.DataMessage;
@@ -28,11 +26,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
-import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 
 /**
@@ -43,6 +41,8 @@ import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
  * @author Danny van Heumen
  */
 public final class StatePlaintext extends AbstractState {
+
+    private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
 
     private final SessionID sessionId;
 
@@ -99,20 +99,16 @@ public final class StatePlaintext extends AbstractState {
     @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
-        final OtrEngineHost host = context.getHost();
-        unreadableMessageReceived(host, sessionId);
-        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-        context.injectMessage(new ErrorMessage(replymsg));
+        LOGGER.log(Level.FINEST, "Received OTRv3 data message in PLAINTEXT state. Message cannot be read.");
+        handleUnreadableMessage(context, message);
         return null;
     }
 
     @Nullable
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
-        final OtrEngineHost host = context.getHost();
-        unreadableMessageReceived(host, sessionId);
-        final String replymsg = getReplyForUnreadableMessage(host, sessionId, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-        context.injectMessage(new ErrorMessage(replymsg));
+        LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
+        handleUnreadableMessage(context, message);
         return null;
     }
 
