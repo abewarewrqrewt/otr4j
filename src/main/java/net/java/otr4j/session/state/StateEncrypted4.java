@@ -196,8 +196,8 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
         // message key and the next receiving chain key. The message is then verified and decrypted.
         final byte[] dmc;
         try {
-            this.ratchet.verify(message.getI(), message.getJ(), encodeDataMessageSections(message), message.getAuthenticator());
-            dmc = this.ratchet.decrypt(message.getI(), message.getJ(), message.getCiphertext(), message.getNonce());
+            dmc = this.ratchet.decrypt(message.getI(), message.getJ(), encodeDataMessageSections(message),
+                    message.getAuthenticator(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
             LOGGER.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
             handleUnreadableMessage(context, message);

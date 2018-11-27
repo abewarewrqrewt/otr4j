@@ -55,7 +55,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * DoubleRatchet is NOT thread-safe.
  */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
-// TODO consider combining verify & decrypt such that the method ensures that only verified ciphertexts are decrypted.
 final class DoubleRatchet implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
@@ -250,44 +249,31 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     /**
-     * Decrypt message contents.
+     * Verify then decrypt a received OTRv4 data message.
      *
-     * @param ratchetId  the ratchet ID of the current message
-     * @param messageId  the message ID of the current message
-     * @param ciphertext the (encrypted) ciphertext
-     * @param nonce      the nonce that was used during the encryption process
-     * @return Returns decrypted message contents.
+     * @param ratchetId                  ID for the receiving ratchet.
+     * @param messageId                  ID for the receiving ratchet message ID.
+     * @param encodedDataMessageSections Data message sections that need to be authenticated, encoded as byte-array.
+     * @param ciphertext                 The encrypted message ciphertext.
+     * @param nonce                      The nonce used in encryption.
+     * @return Returns the decrypted ciphertext.
+     * @throws VerificationException       If data message fails verification, i.e. the authenticators do not match.
+     * @throws RotationLimitationException In case of failure to acquire the corresponding message keys. This exception
+     *                                     occurs when the first message of a new message is missing and therefore we
+     *                                     cannot generate the necessary keys.
      */
-    @Nonnull
-    byte[] decrypt(final int ratchetId, final int messageId, @Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce)
-            throws RotationLimitationException {
-        LOGGER.log(Level.FINEST, "Generating message keys for decryption of ratchet {0}, message {1}.",
+    byte[] decrypt(final int ratchetId, final int messageId, @Nonnull final byte[] encodedDataMessageSections,
+            @Nonnull final byte[] authenticator, @Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce)
+            throws VerificationException, RotationLimitationException {
+        LOGGER.log(Level.FINEST, "Generating message keys for verification and decryption of ratchet {0}, message {1}.",
                 new Object[] {this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
-            return keys.decrypt(ciphertext, nonce);
-        }
-    }
-
-    /**
-     * Verify message contents using an authenticator.
-     *
-     * @param ratchetId                  the ratchet ID
-     * @param messageId                  the message ID
-     * @param dataMessageSectionsContent the hash of the data message sections
-     * @param authenticator              the authenticator
-     * @throws RotationLimitationException Failure to perform key rotation towards the necessary message keys.
-     * @throws VerificationException Thrown in case verification has failed.
-     */
-    void verify(final int ratchetId, final int messageId, @Nonnull final byte[] dataMessageSectionsContent,
-            @Nonnull final byte[] authenticator) throws RotationLimitationException, VerificationException {
-        LOGGER.log(Level.FINEST, "Generating message keys for verification of ratchet {0}, message {1}.",
-                new Object[]{this.i - 1, this.receiverRatchet.messageID});
-        try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
-            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsContent,
-                DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
+            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, encodedDataMessageSections,
+                    DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
             keys.verify(digest, authenticator);
             this.macsToReveal.write(authenticator, 0, authenticator.length);
             clear(digest);
+            return keys.decrypt(ciphertext, nonce);
         }
     }
 
