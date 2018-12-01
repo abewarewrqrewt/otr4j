@@ -7,7 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.OtrEngineHostUtil;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -22,6 +21,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 
 /**
@@ -36,7 +36,7 @@ abstract class AbstractState implements State {
 
     @Override
     public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage) throws OtrException {
-        OtrEngineHostUtil.showError(context.getHost(), this.getSessionID(), errorMessage.error);
+        showError(context.getHost(), this.getSessionID(), errorMessage.error);
     }
 
     void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {

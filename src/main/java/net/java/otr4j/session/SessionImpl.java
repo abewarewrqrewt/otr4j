@@ -647,6 +647,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nullable
     private String handleEncodedMessage(@Nonnull final AbstractEncodedMessage message) throws OtrException {
         assert this.masterSession != this || message.protocolVersion == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
+        assert !ZERO_TAG.equals(message.senderInstanceTag) : "BUG: No message without sender instance tag should reach this point.";
         if (message instanceof DataMessage) {
             return handleDataMessage((DataMessage) message);
         }

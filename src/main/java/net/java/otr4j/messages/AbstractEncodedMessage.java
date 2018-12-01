@@ -105,4 +105,10 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
      * @return the integer value of the type
      */
     public abstract int getType();
+
+    @Override
+    public String toString() {
+        return "AbstractEncodedMessage{" + "protocolVersion=" + protocolVersion + ", senderInstanceTag="
+                + senderInstanceTag + ", receiverInstanceTag=" + receiverInstanceTag + '}';
+    }
 }

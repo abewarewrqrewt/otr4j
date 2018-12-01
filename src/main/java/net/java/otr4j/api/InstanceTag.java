@@ -159,4 +159,9 @@ public final class InstanceTag {
     public int hashCode() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "InstanceTag{value=" + value + '}';
+    }
 }
