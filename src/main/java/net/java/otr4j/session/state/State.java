@@ -7,18 +7,19 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
-import net.java.otr4j.session.ake.SecurityParameters;
-import net.java.otr4j.session.ake.SecurityParameters4;
+import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
@@ -92,7 +93,6 @@ public interface State {
      * Transforms a message ready to be sent given the current session state of
      * OTR.
      *
-     * @param context The session context.
      * @param msgText The message ready to be sent.
      * @param tlvs    List of TLVs.
      * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
@@ -100,72 +100,61 @@ public interface State {
      * @throws OtrException In case an exception occurs.
      */
     @Nullable
-    Message transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
-            final byte flags) throws OtrException;
+    Message transformSending(@Nonnull String msgText, @Nonnull List<TLV> tlvs, final byte flags) throws OtrException;
 
     /**
      * Handle the received plaintext message.
      *
-     * @param context The session context.
      * @param plainTextMessage The received plaintext message.
      * @return Returns the cleaned plaintext message. (The message excluding
      * possible whitespace tags or other OTR artifacts.)
      */
     @Nonnull
-    String handlePlainTextMessage(@Nonnull Context context, @Nonnull PlainTextMessage plainTextMessage);
+    String handlePlainTextMessage(@Nonnull PlainTextMessage plainTextMessage);
+
+    /**
+     * Handle the received encoded message.
+     *
+     * @param message the encoded message
+     */
+    @Nullable
+    String handleEncodedMessage(@Nonnull EncodedMessage message) throws OtrException;
+
+    AuthState getState();
+
+    void setState(@Nonnull AuthState state);
+
+    @Nonnull
+    AbstractEncodedMessage initiateAKE(int version, InstanceTag receiverInstanceTag, String queryTag);
 
     /**
      * Handle the received data message in OTRv2/OTRv3 format.
      *
-     * @param context The session context.
      * @param message The received data message.
      * @return Returns the decrypted message text.
      * @throws ProtocolException In case of I/O reading fails.
      * @throws OtrException      In case an exception occurs.
      */
-    @Nullable
-    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage message) throws ProtocolException, OtrException;
+    String handleDataMessage(@Nonnull DataMessage message) throws ProtocolException, OtrException;
 
     /**
      * Handle the received data message in OTRv4 format.
      *
-     * @param context The session context.
      * @param message The received data message.
      * @return Returns the decrypted message text.
      * @throws ProtocolException In case of I/O reading failures.
      * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
      */
     @Nullable
-    String handleDataMessage(@Nonnull Context context, @Nonnull DataMessage4 message) throws ProtocolException, OtrException;
+    String handleDataMessage(@Nonnull DataMessage4 message) throws ProtocolException, OtrException;
 
     /**
      * Handle the received error message.
      *
-     * @param context The session context.
      * @param errorMessage The error message.
      * @throws OtrException In case an exception occurs.
      */
-    void handleErrorMessage(@Nonnull Context context, @Nonnull ErrorMessage errorMessage) throws OtrException;
-
-    /**
-     * Call to secure a session after a successful Authentication was performed. (OTRv2/OTRv3)
-     *
-     * @param context The session context.
-     * @param params  The security parameters that are needed to set up and
-     *                maintain the encrypted message state.
-     * @throws OtrCryptoException In case we fail to establish the secure state.
-     */
-    void secure(@Nonnull Context context, @Nonnull SecurityParameters params) throws OtrCryptoException;
-
-    /**
-     * Call to secure a session after a successful Authentication was performed. (OTRv4)
-     *
-     * @param context The session context.
-     * @param params  The security parameters (OTRv4) that are needed to set up and maintain the encrypted message
-     *                state.
-     * @throws OtrException In case we fail to inject a HeartBeat message into the network.
-     */
-    void secure(@Nonnull Context context, @Nonnull SecurityParameters4 params) throws OtrException;
+    void handleErrorMessage(@Nonnull ErrorMessage errorMessage) throws OtrException;
 
     /**
      * Call to end encrypted session, if any.
@@ -173,10 +162,9 @@ public interface State {
      * In case an encrypted session is established, this is the moment where the final MAC codes are revealed as part of
      * the TLV DISCONNECT message.
      *
-     * @param context The session context.
      * @throws OtrException In case an exception occurs.
      */
-    void end(@Nonnull Context context) throws OtrException;
+    void end() throws OtrException;
 
     /**
      * Get SMP TLV handler for use in SMP negotiations.

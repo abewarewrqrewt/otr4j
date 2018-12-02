@@ -102,7 +102,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // resending D-H Commit message to every instance, now dedicate it
             // to the sender of the received D-H Commit message. That way, we do
             // not needlessly trigger other OTRv2 and OTRv3 clients.
-            return new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted, context.getSenderInstanceTag(),
+            return new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted, context.getSenderTag(),
                     message.senderInstanceTag);
         } else {
             // OTR: "Otherwise: Forget your old gx value that you sent (encrypted) earlier, and pretend you're in AUTHSTATE_NONE;
@@ -111,8 +111,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
             final DHKeyPairOTR3 newKeypair = generateDHKeyPair(context.secureRandom());
             context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
-            return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderInstanceTag(),
-                    context.getReceiverInstanceTag());
+            return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderTag(),
+                    context.getReceiverTag());
         }
     }
 
@@ -142,7 +142,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
         // OTR: "Sends Alice r, AESc(XB), MACm2(AESc(XB))"
         final RevealSignatureMessage revealSigMessage = new RevealSignatureMessage(this.version, xEncrypted,
-                xEncryptedHash, this.r, context.getSenderInstanceTag(), context.getReceiverInstanceTag());
+                xEncryptedHash, this.r, context.getSenderTag(), context.getReceiverTag());
         context.setState(new StateAwaitingSig(this.version, this.keypair, message.dhPublicKey, s, revealSigMessage));
         return revealSigMessage;
     }

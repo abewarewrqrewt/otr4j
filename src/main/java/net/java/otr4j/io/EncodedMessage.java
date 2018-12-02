@@ -56,6 +56,7 @@ public final class EncodedMessage implements Message {
      *
      * @return sender instance tag
      */
+    // TODO consider renaming to getSenderTag for brevity.
     public InstanceTag getSenderInstanceTag() {
         return senderInstanceTag;
     }

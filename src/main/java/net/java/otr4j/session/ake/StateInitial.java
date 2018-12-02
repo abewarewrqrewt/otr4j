@@ -62,7 +62,6 @@ public final class StateInitial extends AbstractAuthState {
      *
      * @param queryTag the last query tag used
      */
-    // FIXME we should ensure that everywhere a whitespace tag or query message is sent, we update the initial state to reflect the last such hint.
     public StateInitial(@Nonnull final String queryTag) {
         super();
         this.queryTag = requireNonNull(queryTag);
@@ -114,8 +113,8 @@ public final class StateInitial extends AbstractAuthState {
                 message.dhPublicKeyEncrypted));
         LOGGER.finest("Sending D-H key message.");
         // OTR: "Sends Bob gy"
-        return new DHKeyMessage(message.protocolVersion, keypair.getPublic(), context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag());
+        return new DHKeyMessage(message.protocolVersion, keypair.getPublic(), context.getSenderTag(),
+                context.getReceiverTag());
     }
 
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
@@ -132,14 +131,14 @@ public final class StateInitial extends AbstractAuthState {
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
-            a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), this.queryTag, context.getLocalAccountID(),
+            a.getPublicKey(), message.getB(), context.getSenderTag().getValue(),
+            context.getReceiverTag().getValue(), this.queryTag, context.getLocalAccountID(),
             context.getRemoteAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
                 theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
-        final AuthRMessage authRMessage = new AuthRMessage(Version.FOUR, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
+        final AuthRMessage authRMessage = new AuthRMessage(Version.FOUR, context.getSenderTag(),
+                context.getReceiverTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
                 message.getClientProfile()));
         return authRMessage;

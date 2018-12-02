@@ -19,6 +19,7 @@ import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.smpv4.SMP;
@@ -46,6 +47,7 @@ import static net.java.otr4j.session.smpv4.SMP.smpPayload;
  * The OTRv4 ENCRYPTED message state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
+// FIXME write additional unit tests for StateEncrypted4
 final class StateEncrypted4 extends AbstractStateEncrypted {
 
     private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
@@ -56,8 +58,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     private final SMP smp;
 
-    StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
-        super(context.getSessionID());
+    StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params,
+            @Nonnull final AuthState authState) {
+        super(context, authState);
         final byte[] exchangeK;
         final byte[] ssid;
         try (SharedSecret4 exchangeSecret = params.generateSharedSecret(context.secureRandom())) {
@@ -128,8 +131,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     @Nonnull
     @Override
-    public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) {
+    public DataMessage4 transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags) {
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
@@ -154,16 +156,16 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     @Nonnull
     @Override
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage message) {
+    public String handlePlainTextMessage(@Nonnull final PlainTextMessage message) {
         // Display the message to the user, but warn him that the message was received unencrypted.
         final String cleanText = message.getCleanText();
-        unencryptedMessageReceived(context.getHost(), this.sessionID, cleanText);
+        unencryptedMessageReceived(context.getHost(), getSessionID(), cleanText);
         return cleanText;
     }
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
+    public String handleDataMessage(@Nonnull final DataMessage message) {
         throw new IllegalStateException("BUG: OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
@@ -171,7 +173,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
     // FIXME write tests for SMP_ABORT sets UNREADABLE flag, SMP payload corrupted, SMP payload incomplete, ...
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+    public String handleDataMessage(@Nonnull final DataMessage4 message)
             throws OtrException, ProtocolException {
         if (message.getJ() == 0) {
             if (message.getI() < this.ratchet.getI()) {
@@ -200,11 +202,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
                     message.getAuthenticator(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
             LOGGER.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
-            handleUnreadableMessage(context, message);
+            handleUnreadableMessage(message);
             return null;
         } catch (final VerificationException e) {
             LOGGER.log(Level.FINE, "Received message fails verification. Rejecting the message.");
-            handleUnreadableMessage(context, message);
+            handleUnreadableMessage(message);
             return null;
         }
         this.ratchet.rotateReceivingChainKey();
@@ -219,8 +221,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
                 try {
                     final TLV response = this.smp.process(tlv);
                     if (response != null) {
-                        context.injectMessage(transformSending(context, "", singletonList(response),
-                                FLAG_IGNORE_UNREADABLE));
+                        context.injectMessage(transformSending("", singletonList(response), FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
                     LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
@@ -237,7 +238,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
                     logger.log(Level.WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
                 this.ratchet.forgetRemainingMACsToReveal();
-                context.transition(this, new StateFinished(this.sessionID));
+                context.transition(this, new StateFinished(this.context, getState()));
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
@@ -255,23 +256,22 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
     }
 
     @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
+    public void secure(@Nonnull final SecurityParameters params) {
         // TODO verify if this is correct according to OTRv4 spec once released.
         throw new IllegalStateException("Transitioning to lower protocol version ENCRYPTED message state is forbidden.");
     }
 
     @Override
-    public void end(@Nonnull final Context context) throws OtrException {
+    public void end() throws OtrException {
         // Note: although we send a TLV 1 (DISCONNECT) here, we should not reveal remaining MACs.
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, new byte[0]);
-        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv),
-                FLAG_IGNORE_UNREADABLE);
+        final AbstractEncodedMessage m = transformSending("", singletonList(disconnectTlv), FLAG_IGNORE_UNREADABLE);
         try {
             context.injectMessage(m);
         } finally {
             // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
             // have problems injecting the message into the transport.
-            context.transition(this, new StatePlaintext(this.sessionID));
+            context.transition(this, new StatePlaintext(this.context, getState()));
         }
     }
 }

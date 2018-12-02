@@ -8,13 +8,13 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrEngineHostUtil.finishedSessionMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 
@@ -35,26 +34,18 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
  *
  * @author Danny van Heumen
  */
+// FIXME write additional unit tests for StatePlaintext
 final class StateFinished extends AbstractState {
 
     private static final Logger LOGGER = Logger.getLogger(StateFinished.class.getName());
 
-    private final SessionID sessionId;
-
-    StateFinished(final SessionID sessionId) {
-        super();
-        this.sessionId = requireNonNull(sessionId);
+    StateFinished(@Nonnull final Context context, @Nonnull final AuthState authState) {
+        super(context, authState);
     }
 
     @Override
     public int getVersion() {
         return 0;
-    }
-
-    @Override
-    @Nonnull
-    public SessionID getSessionID() {
-        return this.sessionId;
     }
 
     @Override
@@ -88,38 +79,38 @@ final class StateFinished extends AbstractState {
 
     @Override
     @Nonnull
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
+    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was received unencrypted.
-        unencryptedMessageReceived(context.getHost(), sessionId, plainTextMessage.getCleanText());
+        unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
         return plainTextMessage.getCleanText();
     }
 
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
+    public String handleDataMessage(@Nonnull final DataMessage message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(message);
         return null;
     }
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
+    public String handleDataMessage(@Nonnull final DataMessage4 message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(message);
         return null;
     }
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+    public Message transformSending(@Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs, final byte flags) {
-        finishedSessionMessage(context.getHost(), sessionId, msgText);
+        finishedSessionMessage(context.getHost(), getSessionID(), msgText);
         return null;
     }
 
     @Override
-    public void end(@Nonnull final Context context) {
-        context.transition(this, new StatePlaintext(this.sessionId));
+    public void end() {
+        context.transition(this, new StatePlaintext(this.context, getState()));
     }
 }

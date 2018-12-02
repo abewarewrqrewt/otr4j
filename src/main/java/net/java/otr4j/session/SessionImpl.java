@@ -21,9 +21,6 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.DSAKeyPair;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Fragment;
@@ -31,16 +28,11 @@ import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.io.QueryMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
-import net.java.otr4j.messages.DataMessage;
-import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.messages.IdentityMessage;
-import net.java.otr4j.session.ake.AuthContext;
-import net.java.otr4j.session.ake.AuthState;
-import net.java.otr4j.session.ake.SecurityParameters;
-import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.ake.StateInitial;
 import net.java.otr4j.session.state.Context;
 import net.java.otr4j.session.state.IncorrectStateException;
@@ -69,9 +61,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
-import static net.java.otr4j.api.OtrEngineHostUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
-import static net.java.otr4j.api.OtrEngineListenerUtil.multipleInstancesDetected;
 import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
 import static net.java.otr4j.api.Session.Version.FOUR;
@@ -79,10 +69,10 @@ import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
-import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.state.State.FLAG_IGNORE_UNREADABLE;
 import static net.java.otr4j.session.state.State.FLAG_NONE;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * Implementation of the OTR session.
@@ -118,8 +108,9 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
+// FIXME evaluate what data should move into session state object, e.g. SessionID?
 @SuppressWarnings("PMD.TooManyFields")
-final class SessionImpl implements Session, Context, AuthContext {
+final class SessionImpl implements Session, Context {
 
     private static final String DEFAULT_FALLBACK_MESSAGE = "Your contact is requesting to start an encrypted chat. Please install an app that supports OTR: https://github.com/otr4j/otr4j/wiki/Apps";
 
@@ -138,12 +129,6 @@ final class SessionImpl implements Session, Context, AuthContext {
     private volatile State sessionState;
 
     /**
-     * State management for the AKE negotiation.
-     */
-    @Nonnull
-    private volatile AuthState authState;
-
-    /**
      * Slave sessions contain the mappings of instance tags to outgoing
      * sessions. In case of the master session, it is initialized with an empty
      * instance. In case of slaves the slaveSessions instance is initialized to
@@ -151,6 +136,9 @@ final class SessionImpl implements Session, Context, AuthContext {
      */
     @Nonnull
     private final Map<InstanceTag, SessionImpl> slaveSessions;
+
+    @Nonnull
+    private final SessionID sessionID;
 
     /**
      * The currently selected slave session that will be used as the session
@@ -263,43 +251,37 @@ final class SessionImpl implements Session, Context, AuthContext {
      * Package-private constructor for creating new sessions. To create a sessions without using the OTR session
      * manager, we offer a static method that (indirectly) provides access to the session implementation. See
      * {@link OtrSessionManager#createSession(SessionID, OtrEngineHost)}.
-     *
+     * <p>
      * This constructor constructs a master session instance.
      *
      * @param sessionID The session ID
-     * @param host  The OTR engine host listener.
+     * @param host      The OTR engine host listener.
      */
     SessionImpl(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
-        this(null, sessionID, host, ZERO_TAG, new SecureRandom(), StateInitial.empty());
+        this(null, sessionID, host, ZERO_TAG, new SecureRandom());
     }
 
     /**
      * Constructor.
      *
-     * @param masterSession The master session instance. The provided instance
-     * is set as the master session. In case of the master session, null can
-     * be provided to indicate that this session instance is the master
-     * session. Providing null, sets the master session instance to this
-     * session.
-     * @param sessionID The session ID.
-     * @param host OTR engine host instance.
-     * @param receiverTag The receiver instance tag. The receiver instance tag
-     * is allowed to be ZERO.
-     * @param secureRandom The secure random instance.
-     * @param authState The initial authentication state of this session
-     * instance.
+     * @param masterSession The master session instance. The provided instance is set as the master session. In case of
+     *                      the master session, null can be provided to indicate that this session instance is the
+     *                      master session. Providing null, sets the master session instance to this session.
+     * @param sessionID     The session ID.
+     * @param host          OTR engine host instance.
+     * @param receiverTag   The receiver instance tag. The receiver instance tag is allowed to be ZERO.
+     * @param secureRandom  The secure random instance.
      */
     private SessionImpl(@Nullable final SessionImpl masterSession,
             @Nonnull final SessionID sessionID,
             @Nonnull final OtrEngineHost host,
             @Nonnull final InstanceTag receiverTag,
-            @Nonnull final SecureRandom secureRandom,
-            @Nonnull final AuthState authState) {
+            @Nonnull final SecureRandom secureRandom) {
         this.masterSession = masterSession == null ? this : masterSession;
+        assert this.masterSession.masterSession == this.masterSession : "BUG: expected master session to be its own master session. This is likely an illegal state.";
         this.secureRandom = requireNonNull(secureRandom);
+        this.sessionID = requireNonNull(sessionID);
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
-        this.sessionState = new StatePlaintext(sessionID);
-        this.authState = requireNonNull(authState);
         this.host = requireNonNull(host);
         this.receiverTag = requireNonNull(receiverTag);
         this.offerStatus = OfferStatus.IDLE;
@@ -309,7 +291,6 @@ final class SessionImpl implements Session, Context, AuthContext {
                 : Collections.<InstanceTag, SessionImpl>emptyMap();
         outgoingSession = this;
         // Initialize message fragmentation support.
-        fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
         this.profile = this.host.getClientProfile(sessionID);
         if (this.profile.getInstanceTag().equals(ZERO_TAG)) {
             throw new IllegalArgumentException("Only actual instance tags are allowed. The 'zero' tag is not valid.");
@@ -318,6 +299,8 @@ final class SessionImpl implements Session, Context, AuthContext {
         expirationDate.add(Calendar.DAY_OF_YEAR, 14);
         this.profilePayload = ClientProfilePayload.sign(this.profile, expirationDate.getTimeInMillis() / 1000,
                 this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
+        this.sessionState = new StatePlaintext(this, StateInitial.empty());
+        this.fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
     }
 
     /**
@@ -332,50 +315,10 @@ final class SessionImpl implements Session, Context, AuthContext {
         return this.secureRandom;
     }
 
+    @Nonnull
     @Override
-    public void secure(@Nonnull final SecurityParameters s) throws InteractionFailedException {
-        try {
-            this.sessionState.secure(this, s);
-        } catch (final OtrCryptoException e) {
-            throw new InteractionFailedException(e);
-        }
-        if (this.sessionState.getStatus() != ENCRYPTED) {
-            throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
-        }
-        logger.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
-        if (this.masterSession.outgoingSession.sessionState.getStatus() == SessionStatus.PLAINTEXT) {
-            // This behavior is adopted to preserve behavior between otr4j
-            // before refactoring and after. Originally, the master session
-            // would contain some fields that would indicate session status
-            // even though a slave session was created. Now we ensure that once
-            // we have secured the session, we also switch to that session such
-            // that subsequently sent messages are already encrypted, even if
-            // the client does not explicitly switch.
-            logger.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
-            this.masterSession.setOutgoingSession(this.receiverTag);
-        }
-    }
-
-    @Override
-    public void secure(@Nonnull final SecurityParameters4 s) {
-        try {
-            this.sessionState.secure(this, s);
-        } catch (final OtrException e) {
-            // We failed to transmit the heartbeat message. This is not critical, although it is annoying for the other
-            // party as they will have to wait for the first (user) message from us to complete the Double Ratchet.
-            // Without it, they do not have access to the Message Keys that they need to send encrypted messages. (For
-            // now, just log the incident and assume things will be alright.)
-            logger.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.",
-                    e);
-        }
-        if (this.sessionState.getStatus() != ENCRYPTED) {
-            throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
-        }
-        logger.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
-        if (this.masterSession.outgoingSession.sessionState.getStatus() == SessionStatus.PLAINTEXT) {
-            logger.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
-            this.masterSession.setOutgoingSession(this.receiverTag);
-        }
+    public ClientProfilePayload getClientProfilePayload() {
+        return this.profilePayload;
     }
 
     @Override
@@ -390,12 +333,6 @@ final class SessionImpl implements Session, Context, AuthContext {
     }
 
     @Override
-    public void setState(@Nonnull final AuthState state) {
-        logger.log(Level.FINEST, "Updating state from {0} to {1}.", new Object[]{this.authState, state});
-        this.authState = requireNonNull(state);
-    }
-
-    @Override
     @Nonnull
     public SessionStatus getSessionStatus() {
         return this.outgoingSession.sessionState.getStatus();
@@ -404,7 +341,7 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Override
     @Nonnull
     public SessionID getSessionID() {
-        return this.sessionState.getSessionID();
+        return this.sessionID;
     }
 
     @Override
@@ -460,15 +397,18 @@ final class SessionImpl implements Session, Context, AuthContext {
 
         final SessionID sessionID = this.sessionState.getSessionID();
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
-        if (masterSession == this && m instanceof Fragment && ((Fragment) m).getVersion() > Version.TWO) {
+        if (masterSession == this && m instanceof Fragment) {
             final Fragment fragment = (Fragment) m;
+            // FIXME convert to ignore fragment as illegal.
+            requireInRange(THREE, FOUR, fragment.getVersion());
+
             if (ZERO_TAG.equals(fragment.getSendertag())) {
                 logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
                         new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
                 return null;
             }
 
-            if (fragment.getReceivertag().getValue() != 0
+            if (!ZERO_TAG.equals(fragment.getReceivertag())
                     && fragment.getReceivertag().getValue() != this.profile.getInstanceTag().getValue()) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
@@ -476,104 +416,60 @@ final class SessionImpl implements Session, Context, AuthContext {
                 return null;
             }
 
-            SessionImpl slave = this.slaveSessions.get(fragment.getSendertag());
-            if (slave == null) {
-                slave = new SessionImpl(this, sessionID, this.host, fragment.getSendertag(),
-                        this.secureRandom, this.authState);
-                slave.addOtrEngineListener(slaveSessionsListener);
-                this.slaveSessions.put(fragment.getSendertag(), slave);
+            final SessionImpl slave;
+            synchronized (this.slaveSessions) {
+                if (!this.slaveSessions.containsKey(fragment.getSendertag())) {
+                    final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                            fragment.getSendertag(), this.secureRandom);
+                    // FIXME how should we handle updating the queryTag in select slaveSessions?
+                    newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
+                    this.slaveSessions.put(fragment.getSendertag(), newSlaveSession);
+                }
+                slave = this.slaveSessions.get(fragment.getSendertag());
             }
             return slave.handleFragment(fragment);
-        } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).getVersion() == THREE
-                || ((EncodedMessage) m).getVersion() == FOUR)) {
+        } else if (masterSession == this && m instanceof EncodedMessage) {
+            final EncodedMessage message = (EncodedMessage) m;
+            // FIXME convert to ignore message as illegal.
+            requireInRange(THREE, FOUR, message.getVersion());
 
-            if (ZERO_TAG.equals(((EncodedMessage) m).getSenderInstanceTag())) {
+            if (ZERO_TAG.equals(message.getSenderInstanceTag())) {
                 // An encoded message without a sender instance tag is always bad.
                 logger.warning("Encoded message is missing sender instance tag. Ignoring message.");
                 return null;
             }
 
-            // In case of OTRv3 delegate message processing to dedicated slave session.
-            final AbstractEncodedMessage encodedM;
-            try {
-                encodedM = parseEncodedMessage(((EncodedMessage) m).getVersion(), ((EncodedMessage) m).getType(),
-                        ((EncodedMessage) m).getSenderInstanceTag(), ((EncodedMessage) m).getReceiverInstanceTag(),
-                        ((EncodedMessage) m).getPayload());
-            } catch (final ProtocolException e) {
-                // TODO we probably want to just drop the message, i.s.o. throwing exception.
-                throw new OtrException("Invalid encoded message content.", e);
-            }
-
-            if (!((EncodedMessage) m).getReceiverInstanceTag().equals(this.profile.getInstanceTag())
-                    && !(encodedM instanceof DHCommitMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))
-                    && !(encodedM instanceof IdentityMessage && ZERO_TAG.equals(encodedM.receiverInstanceTag))) {
+            if (!ZERO_TAG.equals(message.getReceiverInstanceTag())
+                    && !message.getReceiverInstanceTag().equals(this.profile.getInstanceTag())) {
                 // The message is not intended for us. Discarding...
-                logger.finest("Received an encoded message with receiver instance tag"
-                        + " that is different from ours. Ignore this message.");
+                logger.finest("Received an encoded message with receiver instance tag that is different from ours. Ignore this message.");
                 messageFromAnotherInstanceReceived(this.host, sessionID);
                 return null;
             }
 
-            final SessionImpl session;
-            if (encodedM instanceof DHCommitMessage || encodedM instanceof IdentityMessage) {
-                // We are more flexible with processing the DH Commit message as the message's receiver tag may be zero.
-                // It is zero as we may not have announced our sender tag yet, therefore they cannot include it in the
-                // DH commit message.
-                synchronized (slaveSessions) {
-                    if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
-                        final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                encodedM.senderInstanceTag, this.secureRandom, this.authState);
-                        newSlaveSession.addOtrEngineListener(slaveSessionsListener);
-                        slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
-                    }
-                    session = slaveSessions.get(encodedM.senderInstanceTag);
+            final SessionImpl slave;
+            synchronized (this.slaveSessions) {
+                if (!this.slaveSessions.containsKey(message.getSenderInstanceTag())) {
+                    final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                            message.getSenderInstanceTag(), this.secureRandom);
+                    // FIXME how should we handle updating the queryTag in select slaveSessions?
+                    newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
+                    this.slaveSessions.put(message.getSenderInstanceTag(), newSlaveSession);
                 }
-            } else if (encodedM instanceof DHKeyMessage) {
-                // DH Key messages should be complete, however we may receive multiple of these messages.
-                synchronized (slaveSessions) {
-                    if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
-                        final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                encodedM.senderInstanceTag, this.secureRandom, this.authState);
-                        newSlaveSession.addOtrEngineListener(slaveSessionsListener);
-                        slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
-                    }
-                    session = slaveSessions.get(encodedM.senderInstanceTag);
-                }
-                // Replicate AKE state to slave session for continuation of AKE negotiation. We may receive multiple
-                // DH Key replies as we may have sent a DH Commit message without specifying a receiver tag, hence
-                // multiple clients may be inclined to respond.
-                // Ideally we would NOT copy the state if we sent a DH Commit message with receiver instance tag
-                // earlier.
-                session.setState(this.authState);
-            } else {
-                // Handle other encoded messages. By now we expect the message sender's (receiver) tag to be known. If
-                // not we consider this a bad message and ignore it.
-                synchronized (slaveSessions) {
-                    if (!slaveSessions.containsKey(encodedM.senderInstanceTag)) {
-                        logger.log(Level.INFO,
-                                "Slave session instance missing for receiver tag: {0}. Our buddy may be logged in at multiple locations.",
-                                encodedM.senderInstanceTag.getValue());
-                        multipleInstancesDetected(this.host, sessionID);
-                        multipleInstancesDetected(duplicate(listeners), sessionID);
-                        final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                                encodedM.senderInstanceTag, this.secureRandom, this.authState);
-                        newSlaveSession.addOtrEngineListener(slaveSessionsListener);
-                        slaveSessions.put(encodedM.senderInstanceTag, newSlaveSession);
-                    }
-                    session = slaveSessions.get(encodedM.senderInstanceTag);
-                }
+                // FIXME how to copy authState? still needed? (from master to slave)
+                // FIXME when to detect multiple instances and signal local user with message?
+                slave = this.slaveSessions.get(message.getSenderInstanceTag());
             }
             logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}",
-                    encodedM.senderInstanceTag.getValue());
-            // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
-            return session.handleEncodedMessage(encodedM);
+                    message.getSenderInstanceTag().getValue());
+            return slave.handleEncodedMessage(message);
         }
 
         logger.log(Level.FINE, "Received message with type {0}", m.getClass());
         if (m instanceof Fragment) {
             return handleFragment((Fragment) m);
-        } else if (m instanceof AbstractEncodedMessage) {
-            return handleEncodedMessage((AbstractEncodedMessage) m);
+        } else if (m instanceof EncodedMessage) {
+            return handleEncodedMessage((EncodedMessage) m);
         } else if (m instanceof ErrorMessage) {
             handleErrorMessage((ErrorMessage) m);
             return null;
@@ -627,9 +523,7 @@ final class SessionImpl implements Session, Context, AuthContext {
                     logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
                     return null;
                 }
-                return handleEncodedMessage(parseEncodedMessage(((EncodedMessage) message).getVersion(),
-                        ((EncodedMessage) message).getType(), ((EncodedMessage) message).getSenderInstanceTag(),
-                        ((EncodedMessage) message).getReceiverInstanceTag(), ((EncodedMessage) message).getPayload()));
+                return handleEncodedMessage((EncodedMessage) message);
             }
             throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
         } catch (final ProtocolException e) {
@@ -645,21 +539,28 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @throws OtrException In case of failure to process.
      */
     @Nullable
-    private String handleEncodedMessage(@Nonnull final AbstractEncodedMessage message) throws OtrException {
-        assert this.masterSession != this || message.protocolVersion == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
-        assert !ZERO_TAG.equals(message.senderInstanceTag) : "BUG: No message without sender instance tag should reach this point.";
-        if (message instanceof DataMessage) {
-            return handleDataMessage((DataMessage) message);
+    private String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
+        assert this.masterSession != this || message.getVersion() == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
+        assert !ZERO_TAG.equals(message.getSenderInstanceTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
+        // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
+        if (message.getType() == DHCommitMessage.MESSAGE_DH_COMMIT || message.getType() == DHKeyMessage.MESSAGE_DHKEY
+                || message.getType() == IdentityMessage.MESSAGE_IDENTITY || message.getType() == AuthRMessage.MESSAGE_AUTH_R) {
+            // Both parties need similar behavior:
+            // 1. Party sending the Query/Whitespace-tagged message: the query tag is stored in the master session and
+            //    now has to be copied to the slave session. Now we receive AKE initiation message, and for the first
+            //    time receive the other party's instance tag. While the query tag is stored in the master session, it
+            //    has to be transferred to the slave session.
+            // 2. Party receiving the Query/Whitespace-tagged message and responding with first AKE message upon
+            //    receiving Query/Whitespace-tagged message. The Query/Whitespace-tagged message is processed in the
+            //    master session as no instance tag is available yet. The AKE initiation message is sent with only a
+            //    sender instance tag, i.e. our own instance tag. Hence we need to keep the query tag in the master
+            //    session until we have the other party's instance tag and can transfer the query tag to the
+            //    corresponding slave session.
+            // FIXME evaluate whether this screws things up in case we *do* know the receiver instance tag in advance, as we would be copying an outdated authentication-state instance.
+            // TODO verify whether this can also work if DH-Commit / Identity message is sent immediately with receiver instance tag. (As you can immediately store the query tag in the corresponding slave session.)
+            this.sessionState.setState(this.masterSession.sessionState.getState());
         }
-        if (message instanceof DataMessage4) {
-            return handleDataMessage((DataMessage4) message);
-        }
-        // Anything that is not a Data message is some kind of AKE message.
-        final AbstractEncodedMessage reply = handleAKEMessage(message);
-        if (reply != null) {
-            injectMessage(reply);
-        }
-        return null;
+        return this.sessionState.handleEncodedMessage(message);
     }
 
     private void handleQueryMessage(@Nonnull final QueryMessage queryMessage) throws OtrException {
@@ -671,13 +572,13 @@ final class SessionImpl implements Session, Context, AuthContext {
         final OtrPolicy policy = getSessionPolicy();
         if (queryMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("Query message with V4 support found. Sending Identity Message.");
-            injectMessage(respondAuth(FOUR, ZERO_TAG, queryMessage.getTag()));
+            respondAuth(FOUR, ZERO_TAG, queryMessage.getTag());
         } else if (queryMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(THREE, ZERO_TAG, queryMessage.getTag()));
+            respondAuth(THREE, ZERO_TAG, queryMessage.getTag());
         } else if (queryMessage.getVersions().contains(Version.TWO) && policy.isAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
-            injectMessage(respondAuth(Version.TWO, ZERO_TAG, queryMessage.getTag()));
+            respondAuth(Version.TWO, ZERO_TAG, queryMessage.getTag());
         } else {
             logger.info("Query message received, but none of the versions are acceptable. They are either excluded by policy or through lack of support.");
         }
@@ -689,36 +590,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received an error message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
-        this.sessionState.handleErrorMessage(this, errorMessage);
-    }
-
-    @Nullable
-    private String handleDataMessage(@Nonnull final DataMessage data) throws OtrException {
-        assert this.masterSession != this || data.protocolVersion == Version.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
-        final SessionID sessionId = this.sessionState.getSessionID();
-        logger.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
-        try {
-            return this.sessionState.handleDataMessage(this, data);
-        } catch (final ProtocolException e) {
-            // TODO consider how we should signal unreadable message for illegal data messages and potentially show error to client. (Where we escape handling logic through ProtocolException.)
-            throw new OtrException("Failed to process full data message.", e);
-        }
-    }
-
-    @Nullable
-    private String handleDataMessage(@Nonnull final DataMessage4 data) throws OtrException {
-        assert this.masterSession != this || data.protocolVersion == Version.TWO : "BUG: We should not process data messages in master session for protocol version 3 or higher.";
-        final SessionID sessionId = this.sessionState.getSessionID();
-        logger.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
-                new Object[] {sessionId.getAccountID(), sessionId.getUserID(), this.sessionState.getClass().getName()});
-        try {
-            return this.sessionState.handleDataMessage(this, data);
-        } catch (final ProtocolException e) {
-            logger.log(Level.FINE, "An illegal message was received. Processing was aborted.", e);
-            // TODO consider how we should signal unreadable message for illegal data messages and potentially show error to client. (Where we escape handling logic through ProtocolException.)
-            return null;
-        }
+        this.sessionState.handleErrorMessage(errorMessage);
     }
 
     @Override
@@ -729,7 +601,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
-            setState(new StateInitial(((QueryMessage) m).getTag()));
+            this.sessionState.setState(new StateInitial(((QueryMessage) m).getTag()));
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
             fragments = new String[] {serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
@@ -763,7 +635,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a plaintext message from {1} through {2}.",
                 new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
-        final String messagetext = this.sessionState.handlePlainTextMessage(this, plainTextMessage);
+        final String messagetext = this.sessionState.handlePlainTextMessage(plainTextMessage);
         if (plainTextMessage.getVersions().isEmpty()) {
             logger.finest("Received plaintext message without the whitespace tag.");
         } else {
@@ -779,81 +651,31 @@ final class SessionImpl implements Session, Context, AuthContext {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
-        setState(new StateInitial(plainTextMessage.getTag()));
+        this.sessionState.setState(new StateInitial(plainTextMessage.getTag()));
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
         if (plainTextMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
             try {
-                injectMessage(respondAuth(FOUR, ZERO_TAG, plainTextMessage.getTag()));
+                respondAuth(FOUR, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
         } else if (plainTextMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(THREE, ZERO_TAG, plainTextMessage.getTag()));
+                respondAuth(THREE, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
         } else if (plainTextMessage.getVersions().contains(Version.TWO) && policy.isAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                injectMessage(respondAuth(Version.TWO, ZERO_TAG, plainTextMessage.getTag()));
+                respondAuth(Version.TWO, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }
         } else {
             logger.info("Message with whitespace tags received, but none of the tags are useful. They are either excluded by policy or by lack of support.");
-        }
-    }
-
-    @Nullable
-    private AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage m) {
-        final SessionID sessionID = this.sessionState.getSessionID();
-        logger.log(Level.FINEST, "{0} received a signature message from {1} through {2}.",
-                new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
-
-        // Verify that policy allows handling message according to protocol version.
-        final OtrPolicy policy = getSessionPolicy();
-        if (m.protocolVersion == Version.TWO && !policy.isAllowV2()) {
-            logger.finest("ALLOW_V2 is not set, ignore this message.");
-            return null;
-        }
-        if (m.protocolVersion == THREE && !policy.isAllowV3()) {
-            logger.finest("ALLOW_V3 is not set, ignore this message.");
-            return null;
-        }
-        if (m.protocolVersion == FOUR && !policy.isAllowV4()) {
-            logger.finest("ALLOW_V4 is not set, ignore this message.");
-            return null;
-        }
-
-        // Verify that we received an AKE message using the previously agreed
-        // upon protocol version. Exception to this rule for DH Commit message,
-        // as this message initiates a new AKE negotiation and thus proposes a
-        // new protocol version corresponding to the message's intention.
-        if (!(m instanceof DHCommitMessage) && !(m instanceof IdentityMessage)
-                && m.protocolVersion != this.authState.getVersion()) {
-            logger.log(Level.INFO, "AKE message containing unexpected protocol version encountered. ({0} instead of {1}.) Ignoring.",
-                    new Object[]{m.protocolVersion, this.authState.getVersion()});
-            return null;
-        }
-
-        logger.log(Level.FINEST, "Handling AKE message in state {0}", this.authState.getClass().getName());
-        try {
-            return this.authState.handle(this, m);
-        } catch (final ProtocolException e) {
-            logger.log(Level.FINEST, "Ignoring message. Bad message content / incomplete message received.", e);
-            return null;
-        } catch (final OtrCryptoException e) {
-            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to cryptographic verification failure.", e);
-            return null;
-        } catch (final InteractionFailedException e) {
-            logger.log(Level.WARNING, "Failed to transition to ENCRYPTED message state.", e);
-            return null;
-        } catch (final OtrException e) {
-            logger.log(Level.FINEST, "Ignoring message. Exception while processing message due to non-cryptographic error.", e);
-            return null;
         }
     }
 
@@ -888,13 +710,13 @@ final class SessionImpl implements Session, Context, AuthContext {
         if (masterSession == this && outgoingSession != this) {
             return outgoingSession.transformSending(msgText, tlvs);
         }
-        final Message m = this.sessionState.transformSending(this, msgText, tlvs, FLAG_NONE);
+        final Message m = this.sessionState.transformSending(msgText, tlvs, FLAG_NONE);
         if (m == null) {
             return new String[0];
         }
         final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
-            setState(new StateInitial(((PlainTextMessage) m).getTag()));
+            this.sessionState.setState(new StateInitial(((PlainTextMessage) m).getTag()));
             return new String[] {serialized};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
@@ -928,7 +750,6 @@ final class SessionImpl implements Session, Context, AuthContext {
             throw new OtrException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }
         final QueryMessage queryMessage = new QueryMessage(allowedVersions);
-        setState(new StateInitial(queryMessage.getTag()));
         injectMessage(queryMessage);
     }
 
@@ -944,7 +765,7 @@ final class SessionImpl implements Session, Context, AuthContext {
             outgoingSession.endSession();
             return;
         }
-        this.sessionState.end(this);
+        this.sessionState.end();
     }
 
     /**
@@ -967,12 +788,12 @@ final class SessionImpl implements Session, Context, AuthContext {
             return;
         }
         final int version = this.sessionState.getVersion();
-        this.sessionState.end(this);
+        this.sessionState.end();
         if (version == 0) {
             startSession();
         } else {
             // FIXME what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message. (This is related to the OTRv4-interactive-only mode.)
-            injectMessage(respondAuth(version, this.receiverTag, ""));
+            respondAuth(version, this.receiverTag, "");
         }
     }
 
@@ -1005,36 +826,6 @@ final class SessionImpl implements Session, Context, AuthContext {
     @Nonnull
     public OtrPolicy getSessionPolicy() {
         return this.host.getSessionPolicy(this.sessionState.getSessionID());
-    }
-
-    @Nonnull
-    @Override
-    public String getLocalAccountID() {
-        return getSessionID().getAccountID();
-    }
-
-    @Nonnull
-    @Override
-    public String getRemoteAccountID() {
-        return getSessionID().getUserID();
-    }
-
-    @Override
-    @Nonnull
-    public DSAKeyPair getLocalKeyPair() {
-        return this.host.getLocalKeyPair(this.sessionState.getSessionID());
-    }
-
-    @Override
-    @Nonnull
-    public EdDSAKeyPair getLongTermKeyPair() {
-        return this.host.getLongTermKeyPair(this.sessionState.getSessionID());
-    }
-
-    @Nonnull
-    @Override
-    public ClientProfilePayload getClientProfilePayload() {
-        return this.profilePayload;
     }
 
     @Override
@@ -1149,6 +940,12 @@ final class SessionImpl implements Session, Context, AuthContext {
         return slave.getRemotePublicKey();
     }
 
+    @Override
+    @Nonnull
+    public SessionImpl getMasterSession() {
+        return masterSession;
+    }
+
     /**
      * Get the currently set outgoing instance. This instance is used for
      * outgoing traffic.
@@ -1168,22 +965,19 @@ final class SessionImpl implements Session, Context, AuthContext {
      * @param receiverTag The receiver tag to which to address the DH Commit
      * message. In case the receiver is not yet known (this is a valid use
      * case), specify {@link InstanceTag#ZERO_TAG}.
-     * @return Returns DH commit message as response to AKE query.
      * @throws OtrException In case of invalid/unsupported OTR protocol version.
      */
-    @Nonnull
-    private AbstractEncodedMessage respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
+    private void respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
             @Nonnull final String queryTag) throws OtrException {
         if (!Version.SUPPORTED.contains(version)) {
             throw new OtrException("Unsupported OTR version encountered.");
         }
-        // Ensure we initiate authentication state in master session, as we
-        // copy the master session's authentication state upon receiving a
-        // DHKey message. This is caused by the fact that we may get multiple
-        // D-H Key responses to a D-H Commit message without receiver instance
-        // tag. (This is due to the subtle workings of the implementation.)
+        // Ensure we initiate authentication state in master session, as we copy the master session's authentication
+        // state upon receiving a DHKey message. This is caused by the fact that we may get multiple D-H Key responses
+        // to a D-H Commit message without receiver instance tag. (This is due to the subtle workings of the
+        // implementation.)
         logger.finest("Responding to Query Message, acknowledging version " + version);
-        return this.masterSession.authState.initiate(this.masterSession, version, receiverTag, queryTag);
+        injectMessage(this.masterSession.sessionState.initiateAKE(version, receiverTag, queryTag));
     }
 
     /**
@@ -1206,14 +1000,14 @@ final class SessionImpl implements Session, Context, AuthContext {
         }
         // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        injectMessage(session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
+        injectMessage(session.transformSending("", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
         if (!session.getSmpHandler().smpAbortedTLV(tlv)) {
             return;
         }
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
         // if this aborts a running SMP negotiation.
         final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        injectMessage(session.transformSending(this, "", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
+        injectMessage(session.transformSending("", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
     }
 
     /**
@@ -1267,7 +1061,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Responding to SMP request failed, because current session is not encrypted.", e);
         }
-        final Message m = session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
+        final Message m = session.transformSending("", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
         if (m != null) {
             injectMessage(m);
         }
@@ -1291,7 +1085,7 @@ final class SessionImpl implements Session, Context, AuthContext {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
-        final Message m = session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
+        final Message m = session.transformSending("", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
         if (m != null) {
             injectMessage(m);
         }

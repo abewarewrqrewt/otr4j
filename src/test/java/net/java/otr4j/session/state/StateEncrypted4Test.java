@@ -12,6 +12,7 @@ import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.SecurityParameters4;
+import net.java.otr4j.session.ake.StateInitial;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -56,12 +57,12 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
                 dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        new StateEncrypted4(CONTEXT, params);
+        new StateEncrypted4(CONTEXT, params, StateInitial.empty());
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructStateEncrypted4NullParams() {
-        new StateEncrypted4(CONTEXT, null);
+        new StateEncrypted4(CONTEXT, null, StateInitial.empty());
     }
 
     @Test(expected = NullPointerException.class)
@@ -72,7 +73,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
                 dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        new StateEncrypted4(null, params);
+        new StateEncrypted4(null, params, StateInitial.empty());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -83,20 +84,8 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
                 dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params);
-        state.handleDataMessage(CONTEXT, (DataMessage) null);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testConstructStateEncrypted4HandleDataMessageNullContext() {
-        final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
-        final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
-        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
-        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
-                dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params);
-        state.handleDataMessage(null, (DataMessage) null);
+        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params, StateInitial.empty());
+        state.handleDataMessage((DataMessage) null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -107,7 +96,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
                 dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params);
-        state.handleDataMessage(CONTEXT, (DataMessage4) null);
+        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params, StateInitial.empty());
+        state.handleDataMessage((DataMessage4) null);
     }
 }

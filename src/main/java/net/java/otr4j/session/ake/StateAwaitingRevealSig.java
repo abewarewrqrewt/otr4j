@@ -108,8 +108,8 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // Forget the old D-H Commit message, and use this new one instead."
         context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
-        return new DHKeyMessage(message.protocolVersion, this.keypair.getPublic(), context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag());
+        return new DHKeyMessage(message.protocolVersion, this.keypair.getPublic(), context.getSenderTag(),
+                context.getReceiverTag());
     }
 
     /**
@@ -126,8 +126,9 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
      * @throws ProtocolException Thrown in case of message content errors.
      */
     @Nonnull
-    private SignatureMessage handleRevealSignatureMessage(@Nonnull final AuthContext context, @Nonnull final RevealSignatureMessage message)
-            throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
+    private SignatureMessage handleRevealSignatureMessage(@Nonnull final AuthContext context,
+            @Nonnull final RevealSignatureMessage message) throws OtrCryptoException,
+            AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
         // OTR: "Use the received value of r to decrypt the value of gx received in the D-H Commit Message, and verify
         // the hash therein. Decrypt the encrypted signature, and verify the signature and the MACs."
         final DHPublicKey remoteDHPublicKey;
@@ -192,7 +193,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2p());
         LOGGER.finest("Creating signature message for response.");
         // OTR: "Sends Bob AESc'(XA), MACm2'(AESc'(XA))"
-        return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag());
+        return new SignatureMessage(this.version, xEncrypted, xEncryptedHash, context.getSenderTag(),
+                context.getReceiverTag());
     }
 }

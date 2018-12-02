@@ -10,13 +10,13 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,31 +39,21 @@ import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
  *
  * @author Danny van Heumen
  */
+// FIXME write additional unit tests for StatePlaintext
 public final class StatePlaintext extends AbstractState {
 
     private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
 
-    private final SessionID sessionId;
-
     /**
      * Constructor for the Plaintext message state.
-     *
-     * @param sessionId the session ID
      */
-    public StatePlaintext(final SessionID sessionId) {
-        super();
-        this.sessionId = Objects.requireNonNull(sessionId);
+    public StatePlaintext(@Nonnull final Context context, @Nonnull final AuthState authState) {
+        super(context, authState);
     }
 
     @Override
     public int getVersion() {
         return 0;
-    }
-
-    @Override
-    @Nonnull
-    public SessionID getSessionID() {
-        return this.sessionId;
     }
 
     @Override
@@ -98,35 +87,35 @@ public final class StatePlaintext extends AbstractState {
 
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
+    public String handleDataMessage(@Nonnull final DataMessage message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv3 data message in PLAINTEXT state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(message);
         return null;
     }
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
+    public String handleDataMessage(@Nonnull final DataMessage4 message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(message);
         return null;
     }
 
     @Override
     @Nonnull
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
+    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
         // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
         // warn him that the message was received unencrypted.
         if (context.getSessionPolicy().isRequireEncryption()) {
-            unencryptedMessageReceived(context.getHost(), this.sessionId, plainTextMessage.getCleanText());
+            unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
         }
         return plainTextMessage.getCleanText();
     }
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) throws OtrException {
+    public Message transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags)
+            throws OtrException {
         final OtrPolicy otrPolicy = context.getSessionPolicy();
         if (otrPolicy.isRequireEncryption()) {
             // Prevent original message from being sent. Start AKE.
@@ -134,7 +123,7 @@ public final class StatePlaintext extends AbstractState {
                 throw new OtrException("OTR policy disallows all versions of the OTR protocol. We cannot initiate a new OTR session.");
             }
             context.startSession();
-            requireEncryptedMessage(context.getHost(), sessionId, msgText);
+            requireEncryptedMessage(context.getHost(), getSessionID(), msgText);
             return null;
         }
         if (!otrPolicy.isSendWhitespaceTag() || context.getOfferStatus() == OfferStatus.REJECTED) {
@@ -155,7 +144,7 @@ public final class StatePlaintext extends AbstractState {
     }
 
     @Override
-    public void end(@Nonnull final Context context) {
+    public void end() {
         // already in "ended" state
     }
 }

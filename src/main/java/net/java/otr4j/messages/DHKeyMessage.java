@@ -25,7 +25,7 @@ import static net.java.otr4j.util.Integers.requireInRange;
  */
 public final class DHKeyMessage extends AbstractEncodedMessage {
 
-    static final int MESSAGE_DHKEY = 0x0a;
+    public static final int MESSAGE_DHKEY = 0x0a;
 
     /**
      * DH public key.

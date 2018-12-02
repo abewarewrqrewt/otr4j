@@ -119,14 +119,14 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
-            message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), this.queryTag, context.getRemoteAccountID(),
+            message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderTag().getValue(),
+            context.getReceiverTag().getValue(), this.queryTag, context.getRemoteAccountID(),
             context.getLocalAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
                 theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
-        final AuthRMessage authRMessage = new AuthRMessage(Session.Version.FOUR, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
+        final AuthRMessage authRMessage = new AuthRMessage(Session.Version.FOUR, context.getSenderTag(),
+                context.getReceiverTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma);
         context.setState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
                 message.getB(), ourProfile, message.getClientProfile()));

@@ -15,6 +15,7 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.session.ake.StateInitial;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -40,12 +41,12 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv234?",
                 new HashSet<>(Arrays.asList(Version.TWO, Version.THREE, Version.FOUR)),
                 "Hello world!");
-        final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
     }
@@ -54,12 +55,12 @@ public class StatePlaintextTest {
     public void testTransformSendingEmbedWhitespaceTagWithOTRv2OnlyPolicy() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv2?",
                 Collections.singleton(Version.TWO), "Hello world!");
-        final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
     }
@@ -68,12 +69,12 @@ public class StatePlaintextTest {
     public void testTransformSendingEmbedWhitespaceTagWithOTRv3OnlyPolicy() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv3?",
                 Collections.singleton(Version.THREE), "Hello world!");
-        final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
     }
@@ -86,12 +87,12 @@ public class StatePlaintextTest {
             logger.setLevel(Level.OFF);
             final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
-            final StatePlaintext state = new StatePlaintext(sessionId);
             final Context context = mock(Context.class);
+            final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
             final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
             when(context.getSessionPolicy()).thenReturn(policy);
             when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-            final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+            final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
             assertEquals(expected, m);
             verify(context, never()).setOfferStatusSent();
         } finally {
@@ -103,12 +104,12 @@ public class StatePlaintextTest {
     public void testTransformDoNotSendWhitespaceTag() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
-        final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, never()).setOfferStatusSent();
     }
@@ -116,12 +117,12 @@ public class StatePlaintextTest {
     @Test
     public void testTransformAlreadySentWhitespaceTag() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv?",Collections.<Integer>emptySet(), "Hello world!");
-        final StatePlaintext state = new StatePlaintext(sessionId);
         final Context context = mock(Context.class);
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.REJECTED);
-        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, never()).setOfferStatusSent();
     }

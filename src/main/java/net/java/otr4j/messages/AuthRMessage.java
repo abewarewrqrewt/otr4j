@@ -24,7 +24,7 @@ import static net.java.otr4j.util.Integers.requireInRange;
  */
 public final class AuthRMessage extends AbstractEncodedMessage {
 
-    static final byte MESSAGE_AUTH_R = (byte) 0x36;
+    public static final byte MESSAGE_AUTH_R = (byte) 0x36;
 
     private final ClientProfilePayload clientProfile;
 

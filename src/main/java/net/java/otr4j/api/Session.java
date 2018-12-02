@@ -51,7 +51,6 @@ public interface Session {
         /**
          * Set of all supported OTR protocol versions.
          */
-        // TODO in time remove support for OTR version 2.
         Set<Integer> SUPPORTED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
         /**
          * Set of all known OTR protocol versions.

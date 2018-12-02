@@ -176,6 +176,7 @@ public final class Fragment implements Message {
      *
      * @return Returns the instance tag.
      */
+    // TODO consider renaming to getSenderTag for consistency
     @Nonnull
     public InstanceTag getSendertag() {
         return sendertag;

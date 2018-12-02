@@ -26,7 +26,7 @@ import static net.java.otr4j.util.Integers.requireInRange;
 public final class IdentityMessage extends AbstractEncodedMessage {
 
     // OTRv4 Encoded message types
-    static final int MESSAGE_IDENTITY = 0x35;
+    public static final int MESSAGE_IDENTITY = 0x35;
 
     private final ClientProfilePayload clientProfile;
     private final Point y;

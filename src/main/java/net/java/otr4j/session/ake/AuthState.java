@@ -26,6 +26,7 @@ import java.net.ProtocolException;
  *
  * @author Danny van Heumen
  */
+// FIXME implement destroying AuthState data upon transitioning.
 public interface AuthState {
 
     /**

@@ -129,8 +129,8 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         } finally {
             context.setState(StateInitial.empty());
         }
-        final InstanceTag senderTag = context.getSenderInstanceTag();
-        final InstanceTag receiverTag = context.getReceiverInstanceTag();
+        final InstanceTag senderTag = context.getSenderTag();
+        final InstanceTag receiverTag = context.getReceiverTag();
         final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
             receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());

@@ -26,7 +26,7 @@ import static net.java.otr4j.util.Integers.requireInRange;
  */
 public final class DHCommitMessage extends AbstractEncodedMessage {
 
-    static final int MESSAGE_DH_COMMIT = 0x02;
+    public static final int MESSAGE_DH_COMMIT = 0x02;
 
     /**
      * The encrypted DH public key.

@@ -12,8 +12,11 @@ import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
+import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
+import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.io.Message;
+import net.java.otr4j.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
@@ -58,6 +61,8 @@ public interface Context {
     @Nonnull
     SessionID getSessionID();
 
+    SessionStatus getSessionStatus();
+
     /**
      * Get session policy.
      *
@@ -98,6 +103,9 @@ public interface Context {
     @Nonnull
     InstanceTag getReceiverInstanceTag();
 
+    @Nonnull
+    ClientProfilePayload getClientProfilePayload();
+
     /**
      * Session's secure random instance.
      *
@@ -118,6 +126,9 @@ public interface Context {
      * Set offer status to sent.
      */
     void setOfferStatusSent();
+
+    // FIXME evaluate if we should use Session or SessionImpl
+    Session getMasterSession();
 
     /**
      * Start OTR session.

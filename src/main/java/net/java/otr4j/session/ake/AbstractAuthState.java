@@ -85,7 +85,7 @@ abstract class AbstractAuthState implements AuthState {
         final byte[] publicKeyHash = sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
-                context.getSenderInstanceTag(), receiverTag);
+                context.getSenderTag(), receiverTag);
         LOGGER.finest("Sending DH commit message.");
         context.setState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
@@ -97,7 +97,7 @@ abstract class AbstractAuthState implements AuthState {
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
-        final IdentityMessage message = new IdentityMessage(Version.FOUR, context.getSenderInstanceTag(),
+        final IdentityMessage message = new IdentityMessage(Version.FOUR, context.getSenderTag(),
                 receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
         context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
         return message;

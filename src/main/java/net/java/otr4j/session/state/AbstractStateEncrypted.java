@@ -11,34 +11,25 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.session.ake.AuthState;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static java.util.Objects.requireNonNull;
-
 abstract class AbstractStateEncrypted extends AbstractState implements StateEncrypted {
-
-    final SessionID sessionID;
 
     @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
     final Logger logger;
 
-    AbstractStateEncrypted(@Nonnull final SessionID sessionID) {
-        super();
-        this.sessionID = requireNonNull(sessionID);
+    AbstractStateEncrypted(@Nonnull final Context context, @Nonnull final AuthState authState) {
+        super(context, authState);
+        final SessionID sessionID = context.getSessionID();
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
     }
 
     @Nonnull
     @Override
-    public SessionID getSessionID() {
-        return this.sessionID;
-    }
-
-    @Nonnull
-    @Override
-    public abstract AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText,
-            @Nonnull List<TLV> tlvs, byte flags) throws OtrException;
+    public abstract AbstractEncodedMessage transformSending(@Nonnull String msgText, @Nonnull List<TLV> tlvs, byte flags)
+            throws OtrException;
 }
