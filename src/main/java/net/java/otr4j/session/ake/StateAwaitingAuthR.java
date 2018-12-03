@@ -127,7 +127,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
             context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA(),
                     ourClientProfile, theirClientProfile));
         } finally {
-            context.setState(StateInitial.empty());
+            context.setAuthState(StateInitial.empty());
         }
         final InstanceTag senderTag = context.getSenderTag();
         final InstanceTag receiverTag = context.getReceiverTag();

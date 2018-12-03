@@ -47,14 +47,14 @@ public interface AuthContext {
     String getRemoteAccountID();
 
     @Nonnull
-    AuthState getState();
+    AuthState getAuthState();
 
     /**
      * Update AKE state in context.
      *
      * @param state The new AKE state.
      */
-    void setState(@Nonnull AuthState state);
+    void setAuthState(@Nonnull AuthState state);
 
     /**
      * Transition to message state ENCRYPTED based on the provided parameters. (OTRv2/OTRv3)

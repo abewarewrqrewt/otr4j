@@ -110,7 +110,7 @@ final class StateAwaitingSig extends AbstractAuthState {
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
         final DHKeyPairOTR3 newKeypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Ignoring AWAITING_SIG state and sending a new DH key message.");
-        context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash,
+        context.setAuthState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
         return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderTag(),
                 context.getReceiverTag());
@@ -159,7 +159,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             // Ensure transition to AUTHSTATE_NONE.
             // OTR: "Transition authstate to AUTHSTATE_NONE."
             // OTR: "Regardless of whether the signature verifications succeed, the authstate variable is transitioned to AUTHSTATE_NONE."
-            context.setState(StateInitial.empty());
+            context.setAuthState(StateInitial.empty());
         }
     }
 }

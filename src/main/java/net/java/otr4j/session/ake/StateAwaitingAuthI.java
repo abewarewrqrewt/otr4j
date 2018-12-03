@@ -128,7 +128,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         final AuthRMessage authRMessage = new AuthRMessage(Session.Version.FOUR, context.getSenderTag(),
                 context.getReceiverTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma);
-        context.setState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
+        context.setAuthState(new StateAwaitingAuthI(this.queryTag, this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(),
                 message.getB(), ourProfile, message.getClientProfile()));
         return authRMessage;
     }
@@ -144,7 +144,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             context.secure(new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
                     ourProfileValidated, profileBobValidated));
         } finally {
-            context.setState(StateInitial.empty());
+            context.setAuthState(StateInitial.empty());
         }
     }
 

@@ -106,7 +106,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     private DHKeyMessage handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "Retransmit your D-H Key Message (the same one as you sent when you entered AUTHSTATE_AWAITING_REVEALSIG).
         // Forget the old D-H Commit message, and use this new one instead."
-        context.setState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
+        context.setAuthState(new StateAwaitingRevealSig(message.protocolVersion, this.keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
         return new DHKeyMessage(message.protocolVersion, this.keypair.getPublic(), context.getSenderTag(),
                 context.getReceiverTag());
@@ -165,7 +165,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             // Ensure transition to AUTHSTATE_NONE.
             // OTR: "Transition authstate to AUTHSTATE_NONE."
             // OTR: "Regardless of whether the signature verifications succeed, the authstate variable is transitioned to AUTHSTATE_NONE."
-            context.setState(StateInitial.empty());
+            context.setAuthState(StateInitial.empty());
         }
         // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
         // Transition to ENCRYPTED message state.

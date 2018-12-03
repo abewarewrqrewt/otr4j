@@ -120,9 +120,10 @@ public interface State {
     @Nullable
     String handleEncodedMessage(@Nonnull EncodedMessage message) throws OtrException;
 
-    AuthState getState();
+    @Nonnull
+    AuthState getAuthState();
 
-    void setState(@Nonnull AuthState state);
+    void setAuthState(@Nonnull AuthState state);
 
     @Nonnull
     AbstractEncodedMessage initiateAKE(int version, InstanceTag receiverInstanceTag, String queryTag);

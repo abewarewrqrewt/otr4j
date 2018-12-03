@@ -109,7 +109,7 @@ public final class StateInitial extends AbstractAuthState {
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
         final DHKeyPairOTR3 keypair = generateDHKeyPair(context.secureRandom());
         LOGGER.finest("Generated local D-H key pair.");
-        context.setState(new StateAwaitingRevealSig(message.protocolVersion, keypair, message.dhPublicKeyHash,
+        context.setAuthState(new StateAwaitingRevealSig(message.protocolVersion, keypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
         LOGGER.finest("Sending D-H key message.");
         // OTR: "Sends Bob gy"
@@ -139,7 +139,7 @@ public final class StateInitial extends AbstractAuthState {
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(Version.FOUR, context.getSenderTag(),
                 context.getReceiverTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
-        context.setState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
+        context.setAuthState(new StateAwaitingAuthI(this.queryTag, x, a, message.getY(), message.getB(), profile,
                 message.getClientProfile()));
         return authRMessage;
     }

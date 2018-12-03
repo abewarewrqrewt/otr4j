@@ -87,7 +87,7 @@ abstract class AbstractAuthState implements AuthState {
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
                 context.getSenderTag(), receiverTag);
         LOGGER.finest("Sending DH commit message.");
-        context.setState(new StateAwaitingDHKey(version, keypair, r));
+        context.setAuthState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
     }
 
@@ -99,7 +99,7 @@ abstract class AbstractAuthState implements AuthState {
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
         final IdentityMessage message = new IdentityMessage(Version.FOUR, context.getSenderTag(),
                 receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.setState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
+        context.setAuthState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
         return message;
     }
 }

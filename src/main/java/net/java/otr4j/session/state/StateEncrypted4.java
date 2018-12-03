@@ -238,7 +238,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
                     logger.log(Level.WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
                 this.ratchet.forgetRemainingMACsToReveal();
-                context.transition(this, new StateFinished(this.context, getState()));
+                context.transition(this, new StateFinished(this.context, getAuthState()));
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
@@ -271,7 +271,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
         } finally {
             // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
             // have problems injecting the message into the transport.
-            context.transition(this, new StatePlaintext(this.context, getState()));
+            context.transition(this, new StatePlaintext(this.context, getAuthState()));
         }
     }
 }

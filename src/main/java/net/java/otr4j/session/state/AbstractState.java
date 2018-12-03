@@ -303,12 +303,12 @@ abstract class AbstractState implements State, AuthContext {
 
     @Nonnull
     @Override
-    public AuthState getState() {
+    public AuthState getAuthState() {
         return this.authState;
     }
 
     @Override
-    public void setState(@Nonnull final AuthState state) {
+    public void setAuthState(@Nonnull final AuthState state) {
         LOGGER.fine("Transitioning authentication state to " + state);
         this.authState = requireNonNull(state);
     }

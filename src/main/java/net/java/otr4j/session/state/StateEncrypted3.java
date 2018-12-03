@@ -225,7 +225,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
-                context.transition(this, new StateFinished(this.context, getState()));
+                context.transition(this, new StateFinished(this.context, getAuthState()));
                 break;
             case USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();
@@ -313,7 +313,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         } finally {
             // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
             // have problems injecting the message into the transport.
-            context.transition(this, new StatePlaintext(this.context, getState()));
+            context.transition(this, new StatePlaintext(this.context, getAuthState()));
         }
     }
 }

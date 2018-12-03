@@ -110,7 +110,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             LOGGER.finest("Forgetting old gx value that we sent (encrypted) earlier, and pretended we're in AUTHSTATE_NONE -> Sending DH key.");
             // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
             final DHKeyPairOTR3 newKeypair = generateDHKeyPair(context.secureRandom());
-            context.setState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
+            context.setAuthState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
             return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderTag(),
                     context.getReceiverTag());
         }
@@ -143,7 +143,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         // OTR: "Sends Alice r, AESc(XB), MACm2(AESc(XB))"
         final RevealSignatureMessage revealSigMessage = new RevealSignatureMessage(this.version, xEncrypted,
                 xEncryptedHash, this.r, context.getSenderTag(), context.getReceiverTag());
-        context.setState(new StateAwaitingSig(this.version, this.keypair, message.dhPublicKey, s, revealSigMessage));
+        context.setAuthState(new StateAwaitingSig(this.version, this.keypair, message.dhPublicKey, s, revealSigMessage));
         return revealSigMessage;
     }
 }

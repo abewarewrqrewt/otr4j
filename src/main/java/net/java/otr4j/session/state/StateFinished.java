@@ -111,6 +111,6 @@ final class StateFinished extends AbstractState {
 
     @Override
     public void end() {
-        context.transition(this, new StatePlaintext(this.context, getState()));
+        context.transition(this, new StatePlaintext(this.context, getAuthState()));
     }
 }

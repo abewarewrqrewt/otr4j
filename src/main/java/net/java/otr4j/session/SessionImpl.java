@@ -558,7 +558,7 @@ final class SessionImpl implements Session, Context {
             //    corresponding slave session.
             // FIXME evaluate whether this screws things up in case we *do* know the receiver instance tag in advance, as we would be copying an outdated authentication-state instance.
             // TODO verify whether this can also work if DH-Commit / Identity message is sent immediately with receiver instance tag. (As you can immediately store the query tag in the corresponding slave session.)
-            this.sessionState.setState(this.masterSession.sessionState.getState());
+            this.sessionState.setAuthState(this.masterSession.sessionState.getAuthState());
         }
         return this.sessionState.handleEncodedMessage(message);
     }
@@ -601,7 +601,7 @@ final class SessionImpl implements Session, Context {
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
-            this.sessionState.setState(new StateInitial(((QueryMessage) m).getTag()));
+            this.sessionState.setAuthState(new StateInitial(((QueryMessage) m).getTag()));
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
             fragments = new String[] {serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
@@ -651,7 +651,7 @@ final class SessionImpl implements Session, Context {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
-        this.sessionState.setState(new StateInitial(plainTextMessage.getTag()));
+        this.sessionState.setAuthState(new StateInitial(plainTextMessage.getTag()));
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
         if (plainTextMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
@@ -716,7 +716,7 @@ final class SessionImpl implements Session, Context {
         }
         final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
-            this.sessionState.setState(new StateInitial(((PlainTextMessage) m).getTag()));
+            this.sessionState.setAuthState(new StateInitial(((PlainTextMessage) m).getTag()));
             return new String[] {serialized};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
