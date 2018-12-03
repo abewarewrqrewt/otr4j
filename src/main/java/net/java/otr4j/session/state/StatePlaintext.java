@@ -46,6 +46,9 @@ public final class StatePlaintext extends AbstractState {
 
     /**
      * Constructor for the Plaintext message state.
+     *
+     * @param context   the Message state machine context instance.
+     * @param authState the initial authentication (AKE) state instance.
      */
     public StatePlaintext(@Nonnull final Context context, @Nonnull final AuthState authState) {
         super(context, authState);

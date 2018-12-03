@@ -113,15 +113,36 @@ public interface State {
      * Handle the received encoded message.
      *
      * @param message the encoded message
+     * @return Returns decoded, decrypted plaintext message payload, if exists, or {@code null} otherwise.
+     * @throws OtrException In case of failure to process encoded message.
      */
+    // FIXME be more specific for OtrException, distinguish between message ignoring and actually throwing exception.
     @Nullable
     String handleEncodedMessage(@Nonnull EncodedMessage message) throws OtrException;
 
+    /**
+     * Get current authentication state from the AKE state machine.
+     *
+     * @return current authentication state
+     */
     @Nonnull
     AuthState getAuthState();
 
+    /**
+     * Set authentication state for the AKE state machine.
+     *
+     * @param state the new authentication state
+     */
     void setAuthState(@Nonnull AuthState state);
 
+    /**
+     * Initiate AKE.
+     *
+     * @param version             the protocol version
+     * @param receiverInstanceTag the receiver instance tag to be targeted, or {@link InstanceTag#ZERO_TAG} if unknown.
+     * @param queryTag            the query tag to which we respond
+     * @return Returns the encoded message initiating the AKE, either DH-Commit (OTRv2/OTRv3) or Identity message (OTRv4).
+     */
     @Nonnull
     AbstractEncodedMessage initiateAKE(int version, InstanceTag receiverInstanceTag, String queryTag);
 

@@ -23,27 +23,67 @@ import java.security.SecureRandom;
  */
 public interface AuthContext {
 
+    /**
+     * Acquire SecureRandom instance.
+     *
+     * @return SecureRandom instance
+     */
     @Nonnull
     SecureRandom secureRandom();
 
+    /**
+     * Get sender tag.
+     *
+     * @return Sender instance tag.
+     */
     @Nonnull
     InstanceTag getSenderTag();
 
+    /**
+     * Get receiver tag.
+     *
+     * @return Receiver instance tag.
+     */
     @Nonnull
     InstanceTag getReceiverTag();
 
+    /**
+     * Get OTR-encodable payload containing ClientProfile.
+     *
+     * @return ClientProfilePayload instance
+     */
     @Nonnull
     ClientProfilePayload getClientProfilePayload();
 
+    /**
+     * Get local OTRv3 long-term DSA key pair.
+     *
+     * @return DSA key pair
+     */
     @Nonnull
     DSAKeyPair getLocalKeyPair();
 
+    /**
+     * Get local OTRv4 long-term EdDSA key pair.
+     *
+     * @return EdDSA key pair
+     */
     @Nonnull
     EdDSAKeyPair getLongTermKeyPair();
 
+    /**
+     * Get session ID.
+     *
+     * @return Session ID
+     */
     @Nonnull
     SessionID getSessionID();
 
+    /**
+     * Get the current authentication (AKE) state of the AKE state machine.
+     *
+     * @return Returns the AuthState instance.
+     */
     @Nonnull
     AuthState getAuthState();
 

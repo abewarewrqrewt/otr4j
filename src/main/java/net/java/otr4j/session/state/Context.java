@@ -61,6 +61,11 @@ public interface Context {
     @Nonnull
     SessionID getSessionID();
 
+    /**
+     * Get the current status.
+     *
+     * @return Returns session status.
+     */
     SessionStatus getSessionStatus();
 
     /**
@@ -103,6 +108,11 @@ public interface Context {
     @Nonnull
     InstanceTag getReceiverInstanceTag();
 
+    /**
+     * Get the OTR-encodable payload of the client profile.
+     *
+     * @return Returns the OTR-encodable payload.
+     */
     @Nonnull
     ClientProfilePayload getClientProfilePayload();
 
@@ -127,6 +137,11 @@ public interface Context {
      */
     void setOfferStatusSent();
 
+    /**
+     * Get the master session to which the instance belongs.
+     *
+     * @return Returns master session instance, may be itself ("{@code this}").
+     */
     @Nonnull
     Session getMasterSession();
 
