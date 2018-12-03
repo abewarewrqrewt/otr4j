@@ -10,6 +10,7 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
+import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -120,9 +121,9 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final EdDSAKeyPair ourLongTermKeyPair = context.getLongTermKeyPair();
         final ClientProfile ourClientProfile = this.ourProfilePayload.validate();
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
-        validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, context.getRemoteAccountID(),
-                context.getLocalAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(),
-                this.queryTag);
+        final SessionID sessionID = context.getSessionID();
+        validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, sessionID.getUserID(),
+                sessionID.getAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
         try {
             context.secure(new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(), message.getA(),
                     ourClientProfile, theirClientProfile));
@@ -133,7 +134,7 @@ final class StateAwaitingAuthR extends AbstractAuthState {
         final InstanceTag receiverTag = context.getReceiverTag();
         final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),
             this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
-            receiverTag.getValue(), this.queryTag, context.getLocalAccountID(), context.getRemoteAccountID());
+            receiverTag.getValue(), this.queryTag, sessionID.getAccountID(), sessionID.getUserID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
                 ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.getX(), t);
         return new AuthIMessage(Session.Version.FOUR, senderTag, receiverTag, sigma);

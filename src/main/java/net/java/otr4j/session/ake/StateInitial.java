@@ -132,8 +132,8 @@ public final class StateInitial extends AbstractAuthState {
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
             a.getPublicKey(), message.getB(), context.getSenderTag().getValue(),
-            context.getReceiverTag().getValue(), this.queryTag, context.getLocalAccountID(),
-            context.getRemoteAccountID());
+            context.getReceiverTag().getValue(), this.queryTag, context.getSessionID().getAccountID(),
+            context.getSessionID().getUserID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
                 theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.

@@ -120,8 +120,8 @@ final class StateAwaitingAuthI extends AbstractAuthState {
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderTag().getValue(),
-            context.getReceiverTag().getValue(), this.queryTag, context.getRemoteAccountID(),
-            context.getLocalAccountID());
+            context.getReceiverTag().getValue(), this.queryTag, context.getSessionID().getUserID(),
+            context.getSessionID().getAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
                 theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
@@ -140,7 +140,7 @@ final class StateAwaitingAuthI extends AbstractAuthState {
             final ClientProfile ourProfileValidated = this.ourProfile.validate();
             validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
                     this.ourECDHKeyPair.getPublicKey(), this.y, this.ourDHKeyPair.getPublicKey(), this.b,
-                    context.getRemoteAccountID(), context.getLocalAccountID());
+                    context.getSessionID().getUserID(), context.getSessionID().getAccountID());
             context.secure(new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
                     ourProfileValidated, profileBobValidated));
         } finally {

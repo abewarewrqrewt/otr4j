@@ -84,18 +84,6 @@ abstract class AbstractState implements State, AuthContext {
 
     @Nonnull
     @Override
-    public String getLocalAccountID() {
-        return this.context.getSessionID().getUserID();
-    }
-
-    @Nonnull
-    @Override
-    public String getRemoteAccountID() {
-        return this.context.getSessionID().getAccountID();
-    }
-
-    @Nonnull
-    @Override
     public InstanceTag getSenderTag() {
         return this.context.getSenderInstanceTag();
     }

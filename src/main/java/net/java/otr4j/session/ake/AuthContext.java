@@ -8,6 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
+import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.messages.ClientProfilePayload;
@@ -41,10 +42,7 @@ public interface AuthContext {
     EdDSAKeyPair getLongTermKeyPair();
 
     @Nonnull
-    String getLocalAccountID();
-
-    @Nonnull
-    String getRemoteAccountID();
+    SessionID getSessionID();
 
     @Nonnull
     AuthState getAuthState();
