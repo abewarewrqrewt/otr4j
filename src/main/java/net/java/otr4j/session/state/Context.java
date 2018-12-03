@@ -127,7 +127,7 @@ public interface Context {
      */
     void setOfferStatusSent();
 
-    // FIXME evaluate if we should use Session or SessionImpl
+    @Nonnull
     Session getMasterSession();
 
     /**

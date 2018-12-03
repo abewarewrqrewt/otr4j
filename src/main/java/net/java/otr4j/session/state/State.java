@@ -17,14 +17,11 @@ import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
-import net.java.otr4j.messages.DataMessage;
-import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.net.ProtocolException;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 
@@ -129,27 +126,6 @@ public interface State {
     AbstractEncodedMessage initiateAKE(int version, InstanceTag receiverInstanceTag, String queryTag);
 
     /**
-     * Handle the received data message in OTRv2/OTRv3 format.
-     *
-     * @param message The received data message.
-     * @return Returns the decrypted message text.
-     * @throws ProtocolException In case of I/O reading fails.
-     * @throws OtrException      In case an exception occurs.
-     */
-    String handleDataMessage(@Nonnull DataMessage message) throws ProtocolException, OtrException;
-
-    /**
-     * Handle the received data message in OTRv4 format.
-     *
-     * @param message The received data message.
-     * @return Returns the decrypted message text.
-     * @throws ProtocolException In case of I/O reading failures.
-     * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
-     */
-    @Nullable
-    String handleDataMessage(@Nonnull DataMessage4 message) throws ProtocolException, OtrException;
-
-    /**
      * Handle the received error message.
      *
      * @param errorMessage The error message.
@@ -183,5 +159,6 @@ public interface State {
     /**
      * Securely clear the content of the state after {@link Context#transition(State, State)}-ing away from it.
      */
+    // FIXME verify that 'destroy' is implemented everywhere.
     void destroy();
 }

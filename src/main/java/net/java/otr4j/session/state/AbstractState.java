@@ -10,7 +10,6 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DSAKeyPair;
@@ -44,6 +43,7 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.Session.Version.THREE;
+import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
@@ -52,9 +52,12 @@ import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 /**
  * Abstract base implementation for session state implementations.
  *
+ * This abstract base implementation focuses on providing a general mechanism for handling authentication (AKE) message
+ * and state handling. Anything that is not AKE-related will be deferred to the state implementation subclass.
+ *
  * @author Danny van Heumen
  */
-// FIXME review implementation of encoded message handling and lift logic that is not general.
+// FIXME review implementation of encoded message handling and lift logic that is not (supposed to be) general.
 abstract class AbstractState implements State, AuthContext {
 
     // TODO is this "anonymous" logging an issue? (I.e. no session information in the log message.)
@@ -195,16 +198,14 @@ abstract class AbstractState implements State, AuthContext {
         }
         LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
         if (context.getMasterSession().getOutgoingSession().getSessionStatus() == PLAINTEXT) {
-            LOGGER.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
+            LOGGER.finest("Switching to the just-secured session, as the previous outgoing session was a PLAINTEXT state.");
             context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
         }
     }
 
     @Nullable
     @Override
-    public String handleEncodedMessage(@Nonnull final EncodedMessage message)
-            throws OtrException {
-
+    public String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
         // In case of OTRv3 delegate message processing to dedicated slave session.
         final AbstractEncodedMessage encodedM;
         try {
@@ -253,7 +254,7 @@ abstract class AbstractState implements State, AuthContext {
 
         // Verify that policy allows handling message according to protocol version.
         final OtrPolicy policy = context.getSessionPolicy();
-        if (m.protocolVersion == Session.Version.TWO && !policy.isAllowV2()) {
+        if (m.protocolVersion == TWO && !policy.isAllowV2()) {
             LOGGER.finest("ALLOW_V2 is not set, ignore this message.");
             return null;
         }
@@ -312,4 +313,26 @@ abstract class AbstractState implements State, AuthContext {
         LOGGER.fine("Transitioning authentication state to " + state);
         this.authState = requireNonNull(state);
     }
+
+    /**
+     * Handle the received data message in OTRv2/OTRv3 format.
+     *
+     * @param message The received data message.
+     * @return Returns the decrypted message text.
+     * @throws ProtocolException In case of I/O reading fails.
+     * @throws OtrException      In case an exception occurs.
+     */
+    @Nullable
+    abstract String handleDataMessage(@Nonnull DataMessage message) throws ProtocolException, OtrException;
+
+    /**
+     * Handle the received data message in OTRv4 format.
+     *
+     * @param message The received data message.
+     * @return Returns the decrypted message text.
+     * @throws ProtocolException In case of I/O reading failures.
+     * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
+     */
+    @Nullable
+    abstract String handleDataMessage(@Nonnull DataMessage4 message) throws ProtocolException, OtrException;
 }
