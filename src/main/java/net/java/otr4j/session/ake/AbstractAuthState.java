@@ -10,16 +10,12 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
-import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.messages.AbstractEncodedMessage;
-import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DHCommitMessage;
-import net.java.otr4j.messages.IdentityMessage;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -51,7 +47,7 @@ abstract class AbstractAuthState implements AuthState {
         if (version == Version.TWO || version == Session.Version.THREE) {
             return initiateVersion3(context, version, receiverTag);
         } else if (version == Version.FOUR) {
-            return initiateVersion4(context, receiverTag, queryTag);
+            throw new IllegalArgumentException("protocol version 4 is handled outside of AKE package, as part of message state machine.");
         } else {
             throw new UnsupportedOperationException("Unsupported protocol version.");
         }
@@ -89,17 +85,5 @@ abstract class AbstractAuthState implements AuthState {
         LOGGER.finest("Sending DH commit message.");
         context.setAuthState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
-    }
-
-    @Nonnull
-    private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag,
-            @Nonnull final String queryTag) {
-        final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
-        final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
-        final ClientProfilePayload profilePayload = context.getClientProfilePayload();
-        final IdentityMessage message = new IdentityMessage(Version.FOUR, context.getSenderTag(),
-                receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.setAuthState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
-        return message;
     }
 }

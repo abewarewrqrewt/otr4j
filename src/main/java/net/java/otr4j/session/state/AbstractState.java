@@ -7,13 +7,18 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
+import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DSAKeyPair;
+import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
@@ -25,10 +30,10 @@ import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
-import net.java.otr4j.session.ake.SecurityParameters4;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.api.Session.Version.FOUR;
@@ -46,7 +52,11 @@ import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
+import static net.java.otr4j.messages.IdentityMessages.validate;
+import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
+import static net.java.otr4j.messages.MysteriousT4.encode;
 import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 
 /**
@@ -71,9 +81,18 @@ abstract class AbstractState implements State, AuthContext {
     @Nonnull
     private volatile AuthState authState;
 
+    // FIXME help queryTag transition message state changes.
+    private String queryTag;
+
     AbstractState(@Nonnull final Context context, @Nonnull final AuthState authState) {
         this.context = requireNonNull(context);
         this.authState = requireNonNull(authState);
+        this.queryTag = "";
+    }
+
+    @Override
+    public void setQueryTag(final String queryTag) {
+        this.queryTag = requireNonNull(queryTag);
     }
 
     @Nonnull
@@ -98,18 +117,6 @@ abstract class AbstractState implements State, AuthContext {
     @Override
     public DSAKeyPair getLocalKeyPair() {
         return context.getHost().getLocalKeyPair(context.getSessionID());
-    }
-
-    @Nonnull
-    @Override
-    public EdDSAKeyPair getLongTermKeyPair() {
-        return context.getHost().getLongTermKeyPair(context.getSessionID());
-    }
-
-    @Nonnull
-    @Override
-    public ClientProfilePayload getClientProfilePayload() {
-        return context.getClientProfilePayload();
     }
 
     @Nonnull
@@ -161,8 +168,8 @@ abstract class AbstractState implements State, AuthContext {
         }
     }
 
-    @Override
-    public void secure(@Nonnull final SecurityParameters4 params) {
+    // FIXME move this and other OTRv4-only logic to intermediate state.
+    void secure(@Nonnull final SecurityParameters4 params) {
         try {
             final StateEncrypted4 encrypted = new StateEncrypted4(this.context, params, this.authState);
             this.context.transition(this, encrypted);
@@ -234,8 +241,9 @@ abstract class AbstractState implements State, AuthContext {
         return null;
     }
 
+    // FIXME remove OTRv4 logic once DAKE is fully migrated into Message state machine.
     @Nullable
-    private AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage m) {
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage m) {
         final SessionID sessionID = context.getSessionID();
         LOGGER.log(Level.FINEST, "{0} received an AKE message from {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
@@ -266,6 +274,16 @@ abstract class AbstractState implements State, AuthContext {
             return null;
         }
 
+        if (m instanceof IdentityMessage) {
+            try {
+                return handleIdentityMessage((IdentityMessage) m);
+            } catch (final OtrCryptoException | ValidationException e) {
+                // FIXME consider how to handle this case and where.
+                LOGGER.log(WARNING, "Failed to process identity message.", e);
+                return null;
+            }
+        }
+
         LOGGER.log(Level.FINEST, "Handling AKE message in state {0}", this.authState.getClass().getName());
         try {
             return this.authState.handle(this, m);
@@ -284,10 +302,52 @@ abstract class AbstractState implements State, AuthContext {
         }
     }
 
+    // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
+    @Nonnull
+    private AuthRMessage handleIdentityMessage(@Nonnull final IdentityMessage message)
+            throws OtrCryptoException, ValidationException {
+        final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        validate(message, theirClientProfile);
+        final ClientProfilePayload profile = context.getClientProfilePayload();
+        final SecureRandom secureRandom = context.secureRandom();
+        final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
+        final DHKeyPair a = DHKeyPair.generate(secureRandom);
+        final SessionID sessionID = context.getSessionID();
+        final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
+        // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
+        // Generate t value and calculate sigma based on known facts and generated t value.
+        final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
+                a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
+                context.getReceiverInstanceTag().getValue(), this.queryTag, sessionID.getAccountID(),
+                sessionID.getUserID());
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
+                theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+        // Generate response message and transition into next state.
+        final AuthRMessage authRMessage = new AuthRMessage(Session.Version.FOUR, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
+        this.context.transition(this, new StateAwaitingAuthI(this.context, this.authState, this.queryTag, x, a,
+                message.getY(), message.getB(), profile, message.getClientProfile()));
+        return authRMessage;
+    }
+
     @Nonnull
     @Override
     public AbstractEncodedMessage initiateAKE(final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
+        if (version == FOUR) {
+            return initiateVersion4(receiverInstanceTag, queryTag);
+        }
         return this.authState.initiate(this, version, receiverInstanceTag, queryTag);
+    }
+
+    private IdentityMessage initiateVersion4(final InstanceTag receiverTag, final String queryTag) {
+        final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
+        final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
+        final ClientProfilePayload profilePayload = context.getClientProfilePayload();
+        final IdentityMessage message = new IdentityMessage(Session.Version.FOUR, context.getSenderInstanceTag(),
+                receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
+        context.transition(this, new StateAwaitingAuthR(context, this.authState, ourECDHkeyPair, ourDHkeyPair,
+                profilePayload, queryTag, message));
+        return message;
     }
 
     @Nonnull

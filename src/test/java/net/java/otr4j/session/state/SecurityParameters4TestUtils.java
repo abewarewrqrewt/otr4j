@@ -1,4 +1,4 @@
-package net.java.otr4j.session.ake;
+package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.crypto.DHKeyPair;

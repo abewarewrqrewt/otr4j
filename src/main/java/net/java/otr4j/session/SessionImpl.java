@@ -299,7 +299,7 @@ final class SessionImpl implements Session, Context {
         expirationDate.add(Calendar.DAY_OF_YEAR, 14);
         this.profilePayload = ClientProfilePayload.sign(this.profile, expirationDate.getTimeInMillis() / 1000,
                 this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
-        this.sessionState = new StatePlaintext(this, StateInitial.empty());
+        this.sessionState = new StatePlaintext(this, StateInitial.instance());
         this.fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
     }
 
@@ -601,7 +601,7 @@ final class SessionImpl implements Session, Context {
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
-            this.sessionState.setAuthState(new StateInitial(((QueryMessage) m).getTag()));
+            this.sessionState.setQueryTag(((QueryMessage) m).getTag());
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
             fragments = new String[] {serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
@@ -651,7 +651,7 @@ final class SessionImpl implements Session, Context {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
-        this.sessionState.setAuthState(new StateInitial(plainTextMessage.getTag()));
+        this.sessionState.setQueryTag(plainTextMessage.getTag());
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
         if (plainTextMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
@@ -716,7 +716,7 @@ final class SessionImpl implements Session, Context {
         }
         final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
-            this.sessionState.setAuthState(new StateInitial(((PlainTextMessage) m).getTag()));
+            this.sessionState.setQueryTag(((PlainTextMessage) m).getTag());
             return new String[] {serialized};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;

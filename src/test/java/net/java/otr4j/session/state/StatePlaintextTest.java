@@ -34,15 +34,13 @@ import static org.mockito.Mockito.when;
 
 public class StatePlaintextTest {
 
-    private final SessionID sessionId = new SessionID("local", "remote", "xmpp");
-
     @Test
     public void testTransformSendingEmbedWhitespaceTagWithViablePolicy() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv234?",
                 new HashSet<>(Arrays.asList(Version.TWO, Version.THREE, Version.FOUR)),
                 "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
@@ -56,7 +54,7 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv2?",
                 Collections.singleton(Version.TWO), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
@@ -70,7 +68,7 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv3?",
                 Collections.singleton(Version.THREE), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
@@ -88,7 +86,7 @@ public class StatePlaintextTest {
             final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
             final Context context = mock(Context.class);
-            final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
+            final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
             final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
             when(context.getSessionPolicy()).thenReturn(policy);
             when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
@@ -105,7 +103,7 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
@@ -118,7 +116,7 @@ public class StatePlaintextTest {
     public void testTransformAlreadySentWhitespaceTag() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv?",Collections.<Integer>emptySet(), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.empty());
+        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.REJECTED);

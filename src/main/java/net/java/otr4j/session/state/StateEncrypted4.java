@@ -21,7 +21,6 @@ import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
-import net.java.otr4j.session.ake.SecurityParameters4;
 import net.java.otr4j.session.smpv4.SMP;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;

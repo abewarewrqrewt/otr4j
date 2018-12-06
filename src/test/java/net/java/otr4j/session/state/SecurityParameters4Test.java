@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package net.java.otr4j.session.ake;
+package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
@@ -13,6 +13,7 @@ import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.session.state.SecurityParameters4;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -21,8 +22,8 @@ import java.security.SecureRandom;
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
-import static net.java.otr4j.session.ake.SecurityParameters4.Component.OURS;
-import static net.java.otr4j.session.ake.SecurityParameters4.Component.THEIRS;
+import static net.java.otr4j.session.state.SecurityParameters4.Component.OURS;
+import static net.java.otr4j.session.state.SecurityParameters4.Component.THEIRS;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("ConstantConditions")

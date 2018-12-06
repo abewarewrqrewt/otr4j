@@ -159,7 +159,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             // Ensure transition to AUTHSTATE_NONE.
             // OTR: "Transition authstate to AUTHSTATE_NONE."
             // OTR: "Regardless of whether the signature verifications succeed, the authstate variable is transitioned to AUTHSTATE_NONE."
-            context.setAuthState(StateInitial.empty());
+            context.setAuthState(StateInitial.instance());
         }
     }
 }

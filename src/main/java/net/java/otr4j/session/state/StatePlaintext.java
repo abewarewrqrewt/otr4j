@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
@@ -14,6 +15,7 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
@@ -52,6 +54,12 @@ public final class StatePlaintext extends AbstractState {
      */
     public StatePlaintext(@Nonnull final Context context, @Nonnull final AuthState authState) {
         super(context, authState);
+    }
+
+    @Nonnull
+    @Override
+    public AbstractEncodedMessage initiateAKE(final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
+        return super.initiateAKE(version, receiverInstanceTag, queryTag);
     }
 
     @Override

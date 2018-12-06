@@ -10,8 +10,6 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DSAKeyPair;
-import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
-import net.java.otr4j.messages.ClientProfilePayload;
 
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
@@ -48,28 +46,12 @@ public interface AuthContext {
     InstanceTag getReceiverTag();
 
     /**
-     * Get OTR-encodable payload containing ClientProfile.
-     *
-     * @return ClientProfilePayload instance
-     */
-    @Nonnull
-    ClientProfilePayload getClientProfilePayload();
-
-    /**
      * Get local OTRv3 long-term DSA key pair.
      *
      * @return DSA key pair
      */
     @Nonnull
     DSAKeyPair getLocalKeyPair();
-
-    /**
-     * Get local OTRv4 long-term EdDSA key pair.
-     *
-     * @return EdDSA key pair
-     */
-    @Nonnull
-    EdDSAKeyPair getLongTermKeyPair();
 
     /**
      * Get session ID.
@@ -104,13 +86,6 @@ public interface AuthContext {
      * ENCRYPTED message state fails.
      */
     void secure(@Nonnull SecurityParameters params) throws InteractionFailedException;
-
-    /**
-     * Transition to message state ENCRYPTED based on the provided parameters. (OTRv4)
-     *
-     * @param params The security parameters as negotiated in the key exchange.
-     */
-    void secure(@Nonnull SecurityParameters4 params);
 
     /**
      * InteractionFailedException indicates an error happened while interacting
