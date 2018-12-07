@@ -9,7 +9,6 @@ package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.EncodedMessage;
@@ -48,14 +47,6 @@ public interface State {
      * (0 for plaintext/finished, OTR version for ENCRYPTED message state.)
      */
     int getVersion();
-
-    /**
-     * Get session ID.
-     *
-     * @return Returns session ID.
-     */
-    @Nonnull
-    SessionID getSessionID();
 
     /**
      * Get session status for currently active session.
@@ -97,7 +88,8 @@ public interface State {
      * @throws OtrException In case an exception occurs.
      */
     @Nullable
-    Message transformSending(@Nonnull String msgText, @Nonnull List<TLV> tlvs, final byte flags) throws OtrException;
+    Message transformSending(@Nonnull final Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
+            final byte flags) throws OtrException;
 
     /**
      * Handle the received plaintext message.
@@ -107,7 +99,7 @@ public interface State {
      * possible whitespace tags or other OTR artifacts.)
      */
     @Nonnull
-    String handlePlainTextMessage(@Nonnull PlainTextMessage plainTextMessage);
+    String handlePlainTextMessage(@Nonnull final Context context, @Nonnull PlainTextMessage plainTextMessage);
 
     /**
      * Handle the received encoded message.
@@ -118,7 +110,7 @@ public interface State {
      */
     // FIXME be more specific for OtrException, distinguish between message ignoring and actually throwing exception.
     @Nullable
-    String handleEncodedMessage(@Nonnull EncodedMessage message) throws OtrException;
+    String handleEncodedMessage(@Nonnull final Context context, @Nonnull EncodedMessage message) throws OtrException;
 
     /**
      * Get current authentication state from the AKE state machine.
@@ -144,7 +136,8 @@ public interface State {
      * @return Returns the encoded message initiating the AKE, either DH-Commit (OTRv2/OTRv3) or Identity message (OTRv4).
      */
     @Nonnull
-    AbstractEncodedMessage initiateAKE(int version, InstanceTag receiverInstanceTag, String queryTag);
+    AbstractEncodedMessage initiateAKE(@Nonnull final Context context, int version, InstanceTag receiverInstanceTag,
+        String queryTag);
 
     /**
      * Handle the received error message.
@@ -152,7 +145,7 @@ public interface State {
      * @param errorMessage The error message.
      * @throws OtrException In case an exception occurs.
      */
-    void handleErrorMessage(@Nonnull ErrorMessage errorMessage) throws OtrException;
+    void handleErrorMessage(@Nonnull final Context context, @Nonnull ErrorMessage errorMessage) throws OtrException;
 
     /**
      * Call to end encrypted session, if any.
@@ -162,7 +155,7 @@ public interface State {
      *
      * @throws OtrException In case an exception occurs.
      */
-    void end() throws OtrException;
+    void end(@Nonnull final Context context) throws OtrException;
 
     /**
      * Get SMP TLV handler for use in SMP negotiations.

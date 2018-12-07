@@ -171,7 +171,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // Transition to ENCRYPTED message state.
         final SecurityParameters params = new SecurityParameters(this.version, this.keypair,
                 remoteMysteriousX.getLongTermPublicKey(), remoteDHPublicKey, s);
-        context.secure(params);
+        context.secure(context, params);
         // OTR: "Reply with a Signature Message."
         // Start construction of Signature message.
         final DSAKeyPair localLongTermKeyPair = context.getLocalKeyPair();

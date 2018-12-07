@@ -23,13 +23,13 @@ abstract class AbstractStateEncrypted extends AbstractOTR4State implements State
     final Logger logger;
 
     AbstractStateEncrypted(@Nonnull final Context context, @Nonnull final AuthState authState) {
-        super(context, authState);
+        super(authState);
         final SessionID sessionID = context.getSessionID();
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
     }
 
     @Nonnull
     @Override
-    public abstract AbstractEncodedMessage transformSending(@Nonnull String msgText, @Nonnull List<TLV> tlvs, byte flags)
-            throws OtrException;
+    public abstract AbstractEncodedMessage transformSending(@Nonnull final Context context, @Nonnull String msgText,
+            @Nonnull List<TLV> tlvs, byte flags) throws OtrException;
 }

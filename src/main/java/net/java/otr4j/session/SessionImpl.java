@@ -300,8 +300,8 @@ final class SessionImpl implements Session, Context {
         expirationDate.add(Calendar.DAY_OF_YEAR, 14);
         this.profilePayload = ClientProfilePayload.sign(this.profile, expirationDate.getTimeInMillis() / 1000,
                 this.host.getLocalKeyPair(sessionID), this.host.getLongTermKeyPair(sessionID));
-        this.sessionState = new StatePlaintext(this, StateInitial.instance());
-        this.fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionState.getSessionID());
+        this.sessionState = new StatePlaintext(StateInitial.instance());
+        this.fragmenter = new OtrFragmenter(this.secureRandom, host, this.sessionID);
     }
 
     /**
@@ -331,7 +331,7 @@ final class SessionImpl implements Session, Context {
         logger.log(Level.FINE, "Transitioning to message state: " + toState);
         this.sessionState = requireNonNull(toState);
         fromState.destroy();
-        sessionStatusChanged(duplicate(listeners), toState.getSessionID(), this.receiverTag);
+        sessionStatusChanged(duplicate(listeners), this.sessionID, this.receiverTag);
     }
 
     @Override
@@ -402,7 +402,6 @@ final class SessionImpl implements Session, Context {
             offerStatus = OfferStatus.ACCEPTED;
         }
 
-        final SessionID sessionID = this.sessionState.getSessionID();
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
         if (masterSession == this && m instanceof Fragment) {
             final Fragment fragment = (Fragment) m;
@@ -419,7 +418,7 @@ final class SessionImpl implements Session, Context {
                     && fragment.getReceivertag().getValue() != this.profile.getInstanceTag().getValue()) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
-                messageFromAnotherInstanceReceived(this.host, sessionID);
+                messageFromAnotherInstanceReceived(this.host, this.sessionID);
                 return null;
             }
 
@@ -567,17 +566,15 @@ final class SessionImpl implements Session, Context {
             this.sessionState.setAuthState(this.masterSession.sessionState.getAuthState());
         } else if (message.getType() == AuthRMessage.MESSAGE_AUTH_R) {
             assert this != this.masterSession : "We expected to be working inside a slave session instead of a master session.";
-
             this.sessionState = this.masterSession.sessionState;
         }
-        return this.sessionState.handleEncodedMessage(message);
+        return this.sessionState.handleEncodedMessage(this, message);
     }
 
     private void handleQueryMessage(@Nonnull final QueryMessage queryMessage) throws OtrException {
         assert this.masterSession == this : "BUG: handleQueryMessage should only ever be called from the master session, as no instance tags are known.";
-        final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a query message from {1} through {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
+                new Object[]{this.sessionID.getAccountID(), this.sessionID.getUserID(), this.sessionID.getProtocolName()});
 
         final OtrPolicy policy = getSessionPolicy();
         if (queryMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
@@ -597,15 +594,13 @@ final class SessionImpl implements Session, Context {
     private void handleErrorMessage(@Nonnull final ErrorMessage errorMessage)
             throws OtrException {
         assert this.masterSession == this : "BUG: handleErrorMessage should only ever be called from the master session, as no instance tags are known.";
-        final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received an error message from {1} through {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
-        this.sessionState.handleErrorMessage(errorMessage);
+                new Object[]{this.sessionID.getAccountID(), this.sessionID.getUserID(), this.sessionID.getProtocolName()});
+        this.sessionState.handleErrorMessage(this, errorMessage);
     }
 
     @Override
     public void injectMessage(@Nonnull final Message m) throws OtrException {
-        final SessionID sessionId = this.sessionState.getSessionID();
         final String serialized = writeMessage(m);
         final String[] fragments;
         if (m instanceof QueryMessage) {
@@ -613,7 +608,7 @@ final class SessionImpl implements Session, Context {
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
             this.masterSession.queryTag = ((QueryMessage) m).getTag();
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
-            fragments = new String[] {serialized + getFallbackMessage(sessionId)};
+            fragments = new String[] {serialized + getFallbackMessage(this.sessionID)};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
@@ -626,7 +621,7 @@ final class SessionImpl implements Session, Context {
             fragments = new String[]{serialized};
         }
         for (final String fragment : fragments) {
-            this.host.injectMessage(sessionId, fragment);
+            this.host.injectMessage(this.sessionID, fragment);
         }
     }
 
@@ -642,10 +637,9 @@ final class SessionImpl implements Session, Context {
     @Nonnull
     private String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
         assert this.masterSession == this : "BUG: handlePlainTextMessage should only ever be called from the master session, as no instance tags are known.";
-        final SessionID sessionId = this.sessionState.getSessionID();
         logger.log(Level.FINEST, "{0} received a plaintext message from {1} through {2}.",
-                new Object[]{sessionId.getAccountID(), sessionId.getUserID(), sessionId.getProtocolName()});
-        final String messagetext = this.sessionState.handlePlainTextMessage(plainTextMessage);
+                new Object[]{this.sessionID.getAccountID(), this.sessionID.getUserID(), this.sessionID.getProtocolName()});
+        final String messagetext = this.sessionState.handlePlainTextMessage(this, plainTextMessage);
         if (plainTextMessage.getVersions().isEmpty()) {
             logger.finest("Received plaintext message without the whitespace tag.");
         } else {
@@ -720,7 +714,7 @@ final class SessionImpl implements Session, Context {
         if (masterSession == this && outgoingSession != this) {
             return outgoingSession.transformSending(msgText, tlvs);
         }
-        final Message m = this.sessionState.transformSending(msgText, tlvs, FLAG_NONE);
+        final Message m = this.sessionState.transformSending(this, msgText, tlvs, FLAG_NONE);
         if (m == null) {
             return new String[0];
         }
@@ -775,7 +769,7 @@ final class SessionImpl implements Session, Context {
             outgoingSession.endSession();
             return;
         }
-        this.sessionState.end();
+        this.sessionState.end(this);
     }
 
     /**
@@ -798,7 +792,7 @@ final class SessionImpl implements Session, Context {
             return;
         }
         final int version = this.sessionState.getVersion();
-        this.sessionState.end();
+        this.sessionState.end(this);
         if (version == 0) {
             startSession();
         } else {
@@ -835,7 +829,7 @@ final class SessionImpl implements Session, Context {
     @Override
     @Nonnull
     public OtrPolicy getSessionPolicy() {
-        return this.host.getSessionPolicy(this.sessionState.getSessionID());
+        return this.host.getSessionPolicy(this.sessionID);
     }
 
     @Override
@@ -891,12 +885,11 @@ final class SessionImpl implements Session, Context {
             // Only master session can set the outgoing session.
             throw new IllegalStateException("Only master session is allowed to set/change the outgoing session instance.");
         }
-        final SessionID sessionId = this.sessionState.getSessionID();
         if (tag.equals(this.receiverTag)) {
             // Instance tag belongs to master session, set master session as
             // outgoing session.
             outgoingSession = this;
-            outgoingSessionChanged(duplicate(listeners), sessionId);
+            outgoingSessionChanged(duplicate(listeners), this.sessionID);
             return;
         }
         final SessionImpl newActiveSession = slaveSessions.get(tag);
@@ -904,7 +897,7 @@ final class SessionImpl implements Session, Context {
             throw new NoSuchElementException("no slave session exists with provided instance tag");
         }
         outgoingSession = newActiveSession;
-        outgoingSessionChanged(duplicate(listeners), sessionId);
+        outgoingSessionChanged(duplicate(listeners), this.sessionID);
     }
 
     /**
@@ -987,7 +980,7 @@ final class SessionImpl implements Session, Context {
         // to a D-H Commit message without receiver instance tag. (This is due to the subtle workings of the
         // implementation.)
         logger.finest("Responding to Query Message, acknowledging version " + version);
-        injectMessage(this.masterSession.sessionState.initiateAKE(version, receiverTag, queryTag));
+        injectMessage(this.masterSession.sessionState.initiateAKE(this.masterSession, version, receiverTag, queryTag));
     }
 
     /**
@@ -1010,14 +1003,14 @@ final class SessionImpl implements Session, Context {
         }
         // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
         final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        injectMessage(session.transformSending("", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
+        injectMessage(session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
         if (!session.getSmpHandler().smpAbortedTLV(tlv)) {
             return;
         }
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
         // if this aborts a running SMP negotiation.
         final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        injectMessage(session.transformSending("", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
+        injectMessage(session.transformSending(this, "", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
     }
 
     /**
@@ -1071,7 +1064,7 @@ final class SessionImpl implements Session, Context {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Responding to SMP request failed, because current session is not encrypted.", e);
         }
-        final Message m = session.transformSending("", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
+        final Message m = session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
         if (m != null) {
             injectMessage(m);
         }
@@ -1095,7 +1088,7 @@ final class SessionImpl implements Session, Context {
         } catch (final IncorrectStateException e) {
             throw new OtrException("Aborting SMP is not possible, because current session is not encrypted.", e);
         }
-        final Message m = session.transformSending("", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
+        final Message m = session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE);
         if (m != null) {
             injectMessage(m);
         }

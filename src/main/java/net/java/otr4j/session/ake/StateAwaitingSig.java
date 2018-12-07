@@ -153,7 +153,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
             final SecurityParameters params = new SecurityParameters(this.version, this.localDHKeyPair,
                     remoteX.getLongTermPublicKey(), remoteDHPublicKey, this.s);
-            context.secure(params);
+            context.secure(context, params);
             return null;
         } finally {
             // Ensure transition to AUTHSTATE_NONE.

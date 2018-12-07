@@ -147,17 +147,17 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
     @Override
     @Nonnull
-    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
+    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was
         // received unencrypted.
         final String cleanText = plainTextMessage.getCleanText();
-        unencryptedMessageReceived(context.getHost(), getSessionID(), cleanText);
+        unencryptedMessageReceived(context.getHost(), context.getSessionID(), cleanText);
         return cleanText;
     }
     
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final DataMessage message)
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
             throws OtrException, ProtocolException {
         logger.finest("Message state is ENCRYPTED. Trying to decrypt message.");
         // Find matching session keys.
@@ -166,7 +166,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
             matchingKeys = sessionKeyManager.get(message.recipientKeyID, message.senderKeyID);
         } catch (final SessionKeyManager.SessionKeyUnavailableException ex) {
             logger.finest("No matching keys found.");
-            handleUnreadableMessage(message);
+            handleUnreadableMessage(context, message);
             return null;
         }
 
@@ -176,7 +176,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
         final byte[] computedMAC = sha1Hmac(encode(message.getT()), matchingKeys.receivingMAC());
         if (!constantTimeEquals(computedMAC, message.mac)) {
             logger.finest("MAC verification failed, ignoring message");
-            handleUnreadableMessage(message);
+            handleUnreadableMessage(context, message);
             return null;
         }
 
@@ -190,7 +190,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
             dmc = aesDecrypt(matchingKeys.receivingAESKey(), lengthenedReceivingCtr, message.encryptedMessage);
         } catch (final SessionKey.ReceivingCounterValidationFailed ex) {
             logger.log(Level.WARNING, "Receiving ctr value failed validation, ignoring message: {0}", ex.getMessage());
-            showError(context.getHost(), getSessionID(), "Counter value of received message failed validation.");
+            showError(context.getHost(), context.getSessionID(), "Counter value of received message failed validation.");
             context.injectMessage(new ErrorMessage("Message's counter value failed validation."));
             return null;
         }
@@ -212,7 +212,7 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
                     if (response != null) {
-                        context.injectMessage(transformSending("", singletonList(response), FLAG_IGNORE_UNREADABLE));
+                        context.injectMessage(transformSending(context, "", singletonList(response), FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final SMException e) {
                     this.logger.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
@@ -225,11 +225,11 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
-                context.transition(this, new StateFinished(this.context, getAuthState()));
+                context.transition(this, new StateFinished(getAuthState()));
                 break;
             case USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();
-                extraSymmetricKeyDiscovered(context.getHost(), getSessionID(), content.message, key, tlv.getValue());
+                extraSymmetricKeyDiscovered(context.getHost(), context.getSessionID(), content.message, key, tlv.getValue());
                 break;
             default:
                 logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
@@ -241,14 +241,14 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final DataMessage4 message) {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
         throw new IllegalStateException("BUG: OTRv2/OTRv3 encrypted message state does not handle OTRv4 data messages.");
     }
 
     @Override
-    public void handleErrorMessage(@Nonnull final ErrorMessage errorMessage)
+    public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage)
             throws OtrException {
-        super.handleErrorMessage(errorMessage);
+        super.handleErrorMessage(context, errorMessage);
         final OtrPolicy policy = context.getSessionPolicy();
         if (!policy.isErrorStartAKE()) {
             return;
@@ -262,9 +262,9 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
 
     @Override
     @Nonnull
-    public DataMessage transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags)
-            throws OtrException {
-        final SessionID sessionID = getSessionID();
+    public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs, final byte flags) throws OtrException {
+        final SessionID sessionID = context.getSessionID();
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
 
@@ -303,17 +303,18 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     }
 
     @Override
-    public void end() throws OtrException {
+    public void end(@Nonnull final Context context) throws OtrException {
         // TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of sending the data message,
         // we already include remaining MAC keys in the Data message itself.
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
-        final AbstractEncodedMessage m = transformSending("", singletonList(disconnectTlv), FLAG_IGNORE_UNREADABLE);
+        final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv),
+                FLAG_IGNORE_UNREADABLE);
         try {
             context.injectMessage(m);
         } finally {
             // Transitioning to PLAINTEXT state should not depend on host. Ensure we transition to PLAINTEXT even if we
             // have problems injecting the message into the transport.
-            context.transition(this, new StatePlaintext(this.context, getAuthState()));
+            context.transition(this, new StatePlaintext(getAuthState()));
         }
     }
 }

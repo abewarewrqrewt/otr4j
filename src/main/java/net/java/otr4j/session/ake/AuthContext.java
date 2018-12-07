@@ -8,8 +8,8 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DSAKeyPair;
+import net.java.otr4j.session.state.Context;
 
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
@@ -54,14 +54,6 @@ public interface AuthContext {
     DSAKeyPair getLocalKeyPair();
 
     /**
-     * Get session ID.
-     *
-     * @return Session ID
-     */
-    @Nonnull
-    SessionID getSessionID();
-
-    /**
      * Get the current authentication (AKE) state of the AKE state machine.
      *
      * @return Returns the AuthState instance.
@@ -85,7 +77,8 @@ public interface AuthContext {
      * @throws InteractionFailedException Thrown in case transition into
      * ENCRYPTED message state fails.
      */
-    void secure(@Nonnull SecurityParameters params) throws InteractionFailedException;
+    // FIXME use of 'Context' here is in violation of design rules (probably) and should be refactored
+    void secure(@Nonnull final Context context, @Nonnull SecurityParameters params) throws InteractionFailedException;
 
     /**
      * InteractionFailedException indicates an error happened while interacting

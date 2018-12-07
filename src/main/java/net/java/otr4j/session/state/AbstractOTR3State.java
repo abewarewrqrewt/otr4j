@@ -11,7 +11,6 @@ import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.SessionID;
-import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
@@ -29,7 +28,6 @@ import net.java.otr4j.session.ake.SecurityParameters;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
-import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,47 +54,14 @@ abstract class AbstractOTR3State implements State, AuthContext {
     // TODO is this "anonymous" logging an issue? (I.e. no session information in the log message.)
     private static final Logger LOGGER = Logger.getLogger(AbstractOTR3State.class.getName());
 
-    final Context context;
-
     /**
      * State management for the AKE negotiation.
      */
     @Nonnull
     private volatile AuthState authState;
 
-    AbstractOTR3State(@Nonnull final Context context, @Nonnull final AuthState authState) {
-        this.context = requireNonNull(context);
+    AbstractOTR3State(@Nonnull final AuthState authState) {
         this.authState = requireNonNull(authState);
-    }
-
-    @Nonnull
-    @Override
-    public SecureRandom secureRandom() {
-        return this.context.secureRandom();
-    }
-
-    @Nonnull
-    @Override
-    public InstanceTag getSenderTag() {
-        return this.context.getSenderInstanceTag();
-    }
-
-    @Nonnull
-    @Override
-    public InstanceTag getReceiverTag() {
-        return this.context.getReceiverInstanceTag();
-    }
-
-    @Nonnull
-    @Override
-    public DSAKeyPair getLocalKeyPair() {
-        return context.getHost().getLocalKeyPair(context.getSessionID());
-    }
-
-    @Nonnull
-    @Override
-    public SessionID getSessionID() {
-        return this.context.getSessionID();
     }
 
     @Nonnull
@@ -112,11 +77,13 @@ abstract class AbstractOTR3State implements State, AuthContext {
     }
 
     @Override
-    public void handleErrorMessage(@Nonnull final ErrorMessage errorMessage) throws OtrException {
-        showError(context.getHost(), this.getSessionID(), errorMessage.error);
+    public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage)
+            throws OtrException {
+        showError(context.getHost(), context.getSessionID(), errorMessage.error);
     }
 
-    void handleUnreadableMessage(@Nonnull final DataMessage message) throws OtrException {
+    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
+            throws OtrException {
         if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
             LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
             return;
@@ -124,7 +91,8 @@ abstract class AbstractOTR3State implements State, AuthContext {
         signalUnreadableMessage(context);
     }
 
-    void handleUnreadableMessage(@Nonnull final DataMessage4 message) throws OtrException {
+    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+            throws OtrException {
         if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
             LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
             return;
@@ -133,13 +101,14 @@ abstract class AbstractOTR3State implements State, AuthContext {
     }
 
     @Override
-    public void secure(@Nonnull final SecurityParameters params) throws InteractionFailedException {
+    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params)
+            throws InteractionFailedException {
         try {
-            this.context.transition(this, new StateEncrypted3(this.context, this.authState, params));
+            context.transition(this, new StateEncrypted3(context, this.authState, params));
         } catch (final OtrCryptoException e) {
             throw new InteractionFailedException(e);
         }
-        if (this.context.getSessionStatus() != ENCRYPTED) {
+        if (context.getSessionStatus() != ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
         }
         LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
@@ -156,7 +125,8 @@ abstract class AbstractOTR3State implements State, AuthContext {
 
     @Nullable
     @Override
-    public String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
+    public String handleEncodedMessage(@Nonnull final Context context, @Nonnull final EncodedMessage message)
+            throws OtrException {
         // In case of OTRv3 delegate message processing to dedicated slave session.
         final AbstractEncodedMessage encodedM;
         try {
@@ -179,16 +149,16 @@ abstract class AbstractOTR3State implements State, AuthContext {
             if (encodedM instanceof DataMessage) {
                 LOGGER.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
                         new Object[]{sessionID.getAccountID(), sessionID.getUserID(), this.getClass().getName()});
-                return handleDataMessage((DataMessage) encodedM);
+                return handleDataMessage(context, (DataMessage) encodedM);
             }
             // FIXME see if we can lift DataMessage4 handling into the AbstractOTR4State.
             if (encodedM instanceof DataMessage4) {
                 LOGGER.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
                         new Object[]{sessionID.getAccountID(), sessionID.getUserID(), this.getClass().getName()});
-                return handleDataMessage((DataMessage4) encodedM);
+                return handleDataMessage(context, (DataMessage4) encodedM);
             }
             // Anything that is not a Data message is some type of AKE message.
-            final AbstractEncodedMessage reply = handleAKEMessage(encodedM);
+            final AbstractEncodedMessage reply = handleAKEMessage(context, encodedM);
             if (reply != null) {
                 context.injectMessage(reply);
             }
@@ -200,7 +170,7 @@ abstract class AbstractOTR3State implements State, AuthContext {
     }
 
     @Nullable
-    AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage m) {
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage m) {
         final SessionID sessionID = context.getSessionID();
         LOGGER.log(Level.FINEST, "{0} received an AKE message from {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
@@ -245,7 +215,7 @@ abstract class AbstractOTR3State implements State, AuthContext {
 
     @Nonnull
     @Override
-    public AbstractEncodedMessage initiateAKE(final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
+    public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
         return this.authState.initiate(this, version, receiverInstanceTag, queryTag);
     }
 
@@ -258,7 +228,8 @@ abstract class AbstractOTR3State implements State, AuthContext {
      * @throws OtrException      In case an exception occurs.
      */
     @Nullable
-    abstract String handleDataMessage(@Nonnull DataMessage message) throws ProtocolException, OtrException;
+    abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage message)
+            throws ProtocolException, OtrException;
 
     /**
      * Handle the received data message in OTRv4 format.
@@ -269,5 +240,6 @@ abstract class AbstractOTR3State implements State, AuthContext {
      * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
      */
     @Nullable
-    abstract String handleDataMessage(@Nonnull DataMessage4 message) throws ProtocolException, OtrException;
+    abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage4 message)
+            throws ProtocolException, OtrException;
 }

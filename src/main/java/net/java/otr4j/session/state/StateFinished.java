@@ -40,8 +40,8 @@ final class StateFinished extends AbstractOTR4State {
 
     private static final Logger LOGGER = Logger.getLogger(StateFinished.class.getName());
 
-    StateFinished(@Nonnull final Context context, @Nonnull final AuthState authState) {
-        super(context, authState);
+    StateFinished(@Nonnull final AuthState authState) {
+        super(authState);
     }
 
     @Override
@@ -80,38 +80,38 @@ final class StateFinished extends AbstractOTR4State {
 
     @Override
     @Nonnull
-    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
+    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was received unencrypted.
-        unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
+        unencryptedMessageReceived(context.getHost(), context.getSessionID(), plainTextMessage.getCleanText());
         return plainTextMessage.getCleanText();
     }
 
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final DataMessage message) throws OtrException {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
-        handleUnreadableMessage(message);
+        handleUnreadableMessage(context, message);
         return null;
     }
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final DataMessage4 message) throws OtrException {
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
-        handleUnreadableMessage(message);
+        handleUnreadableMessage(context, message);
         return null;
     }
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final String msgText,
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs, final byte flags) {
-        finishedSessionMessage(context.getHost(), getSessionID(), msgText);
+        finishedSessionMessage(context.getHost(), context.getSessionID(), msgText);
         return null;
     }
 
     @Override
-    public void end() {
-        context.transition(this, new StatePlaintext(this.context, getAuthState()));
+    public void end(@Nonnull final Context context) {
+        context.transition(this, new StatePlaintext(getAuthState()));
     }
 }

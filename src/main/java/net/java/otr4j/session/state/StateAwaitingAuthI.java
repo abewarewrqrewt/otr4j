@@ -79,11 +79,11 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
 
     private final ClientProfilePayload profileBob;
 
-    StateAwaitingAuthI(@Nonnull final Context context, @Nonnull final AuthState authState,
-            @Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-            @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
-            @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
-        super(context, authState);
+    StateAwaitingAuthI(@Nonnull final AuthState authState, @Nonnull final String queryTag,
+            @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y,
+            @Nonnull final BigInteger b, @Nonnull final ClientProfilePayload ourProfile,
+            @Nonnull final ClientProfilePayload profileBob) {
+        super(authState);
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
         this.ourDHKeyPair = requireNonNull(ourDHKeyPair);
@@ -124,35 +124,36 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
 
     @Nullable
     @Override
-    public Message transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags) {
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs, final byte flags) {
         // FIXME implement transformSending
         throw new UnsupportedOperationException("To be implemented");
     }
 
     @Nonnull
     @Override
-    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
+    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
         // warn him that the message was received unencrypted.
         if (context.getSessionPolicy().isRequireEncryption()) {
-            unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
+            unencryptedMessageReceived(context.getHost(), context.getSessionID(), plainTextMessage.getCleanText());
         }
         return plainTextMessage.getCleanText();
     }
 
     @Nullable
     @Override
-    AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage message) {
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
         if (message.protocolVersion != FOUR) {
             // FIXME should we ignore any unexpected AKE message, even if valid AKE message from OTRv3. I guess so.
-            return super.handleAKEMessage(message);
+            return super.handleAKEMessage(context, message);
         }
-        if (!this.context.getSessionPolicy().isAllowV4()) {
+        if (!context.getSessionPolicy().isAllowV4()) {
             throw new IllegalStateException("BUG: How could we have entered an OTRv4 message state if OTRv4 is not allowed by policy?");
         }
         if (message instanceof IdentityMessage) {
             try {
-                return handleIdentityMessage((IdentityMessage) message);
+                return handleIdentityMessage(context, (IdentityMessage) message);
             } catch (final OtrCryptoException | ValidationException e) {
                 // FIXME consider how to handle this case and where.
                 LOGGER.log(WARNING, "Failed to process Identity message.", e);
@@ -161,7 +162,7 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
         }
         if (message instanceof AuthIMessage) {
             try {
-                handleAuthIMessage((AuthIMessage) message);
+                handleAuthIMessage(context, (AuthIMessage) message);
                 return null;
             } catch (final OtrCryptoException | ValidationException e) {
                 // FIXME consider how to handle this case and where.
@@ -173,7 +174,7 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
         // OTR: "Ignore the message."
         LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
                 message.getType());
-        return super.handleAKEMessage(message);
+        return super.handleAKEMessage(context, message);
     }
 
     /**
@@ -187,7 +188,7 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
      *                             message.
      * @throws ValidationException In case of failure to validate other party's identity message or client profile.
      */
-    private AuthRMessage handleIdentityMessage(@Nonnull final IdentityMessage message)
+    private AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
             throws OtrCryptoException, ValidationException {
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
         IdentityMessages.validate(message, theirNewClientProfile);
@@ -207,40 +208,39 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma);
-        context.transition(this, new StateAwaitingAuthI(this.context, getAuthState(), this.queryTag,
-                this.ourECDHKeyPair, this.ourDHKeyPair, message.getY(), message.getB(), ourProfile,
-                message.getClientProfile()));
+        context.transition(this, new StateAwaitingAuthI(getAuthState(), this.queryTag, this.ourECDHKeyPair,
+                this.ourDHKeyPair, message.getY(), message.getB(), ourProfile, message.getClientProfile()));
         return authRMessage;
     }
 
-    private void handleAuthIMessage(@Nonnull final AuthIMessage message)
+    private void handleAuthIMessage(@Nonnull final Context context, @Nonnull final AuthIMessage message)
             throws OtrCryptoException, ValidationException {
         final ClientProfile profileBobValidated = this.profileBob.validate();
         final ClientProfile ourProfileValidated = this.ourProfile.validate();
         validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
                 this.ourECDHKeyPair.getPublicKey(), this.y, this.ourDHKeyPair.getPublicKey(), this.b,
                 context.getSessionID().getUserID(), context.getSessionID().getAccountID());
-        secure(new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
+        secure(context, new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
                 ourProfileValidated, profileBobValidated));
         // FIXME clear queryTag?
     }
 
     @Nullable
     @Override
-    String handleDataMessage(@Nonnull final DataMessage message) {
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
         // FIXME implement handleDataMessage
         throw new UnsupportedOperationException("To be implemented");
     }
 
     @Nullable
     @Override
-    String handleDataMessage(@Nonnull final DataMessage4 message) {
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
         // FIXME implement handleDataMessage
         throw new UnsupportedOperationException("To be implemented");
     }
 
     @Override
-    public void end() {
+    public void end(@Nonnull final Context context) {
         // FIXME implement end
         throw new UnsupportedOperationException("To be implemented");
     }

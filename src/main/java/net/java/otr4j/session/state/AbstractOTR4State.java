@@ -30,34 +30,34 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractOTR4State.class.getName());
 
-    AbstractOTR4State(@Nonnull final Context context, @Nonnull final AuthState authState) {
-        super(context, authState);
+    AbstractOTR4State(@Nonnull final AuthState authState) {
+        super(authState);
     }
 
     @Nonnull
     @Override
-    public AbstractEncodedMessage initiateAKE(final int version, @Nonnull final InstanceTag receiverInstanceTag,
-            @Nonnull final String queryTag) {
+    public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version,
+            @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final String queryTag) {
         if (version != FOUR) {
-            return super.initiateAKE(version, receiverInstanceTag, queryTag);
+            return super.initiateAKE(context, version, receiverInstanceTag, queryTag);
         }
         final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
         final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
         final IdentityMessage message = new IdentityMessage(FOUR, context.getSenderInstanceTag(),
                 receiverInstanceTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.transition(this, new StateAwaitingAuthR(context, getAuthState(), ourECDHkeyPair, ourDHkeyPair,
-                profilePayload, queryTag, message));
+        context.transition(this, new StateAwaitingAuthR(getAuthState(), ourECDHkeyPair, ourDHkeyPair, profilePayload,
+                queryTag, message));
         return message;
     }
 
-    void secure(@Nonnull final SecurityParameters4 params) {
+    void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         try {
-            final StateEncrypted4 encrypted = new StateEncrypted4(this.context, params, getAuthState());
-            this.context.transition(this, encrypted);
+            final StateEncrypted4 encrypted = new StateEncrypted4(context, params, getAuthState());
+            context.transition(this, encrypted);
             if (params.getInitializationComponent() == SecurityParameters4.Component.THEIRS) {
                 LOGGER.log(Level.FINE, "We initialized THEIR component of the Double Ratchet, so it is complete. Sending heartbeat message.");
-                this.context.injectMessage(encrypted.transformSending("", Collections.<TLV>emptyList(),
+                context.injectMessage(encrypted.transformSending(context, "", Collections.<TLV>emptyList(),
                         FLAG_IGNORE_UNREADABLE));
             } else {
                 LOGGER.log(Level.FINE, "We initialized OUR component of the Double Ratchet. We are still missing the other party's public key material, hence we cannot send messages yet. Now we wait to receive a message from the other party.");
@@ -70,7 +70,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
             LOGGER.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.",
                     e);
         }
-        if (this.context.getSessionStatus() != ENCRYPTED) {
+        if (context.getSessionStatus() != ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
         }
         LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
