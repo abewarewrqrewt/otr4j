@@ -8,7 +8,6 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.ClientProfile;
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
@@ -35,7 +34,6 @@ import net.java.otr4j.session.api.SMPHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.net.ProtocolException;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,7 +55,7 @@ import static net.java.otr4j.session.state.SecurityParameters4.Component.THEIRS;
  *
  * This is a state in which Alice will be while awaiting Bob's final message.
  */
-final class StateAwaitingAuthI extends AbstractState {
+final class StateAwaitingAuthI extends AbstractOTR4State {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());
 
@@ -95,51 +93,9 @@ final class StateAwaitingAuthI extends AbstractState {
         this.profileBob = requireNonNull(profileBob);
     }
 
-    @Nullable
     @Override
-    public Message transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags) throws OtrException {
-        // FIXME implement transformSending
-        throw new UnsupportedOperationException("To be implemented");
-    }
-
-    @Nonnull
-    @Override
-    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
-        // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
-        // warn him that the message was received unencrypted.
-        if (context.getSessionPolicy().isRequireEncryption()) {
-            unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
-        }
-        return plainTextMessage.getCleanText();
-    }
-
-    @Nullable
-    @Override
-    AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage message) {
-        if (message instanceof IdentityMessage) {
-            try {
-                return handleIdentityMessage((IdentityMessage) message);
-            } catch (OtrCryptoException | ValidationException e) {
-                // FIXME consider how to handle this case and where.
-                LOGGER.log(WARNING, "Failed to process identity message.", e);
-                return null;
-            }
-        }
-        if (message instanceof AuthIMessage) {
-            try {
-                handleAuthIMessage((AuthIMessage) message);
-                return null;
-            } catch (OtrCryptoException | ValidationException e) {
-                // FIXME consider how to handle this case and where.
-                LOGGER.log(WARNING, "Failed to process Auth-R message.", e);
-                return null;
-            }
-        }
-        // FIXME how to handle unexpected other AKE messages? (Be strict)
-        // OTR: "Ignore the message."
-        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
-                message.getType());
-        return super.handleAKEMessage(message);
+    public int getVersion() {
+        return FOUR;
     }
 
     @Nonnull
@@ -164,6 +120,60 @@ final class StateAwaitingAuthI extends AbstractState {
     @Nonnull
     public SMPHandler getSmpHandler() throws IncorrectStateException {
         throw new IncorrectStateException("SMP negotiation is not available until encrypted session is fully established.");
+    }
+
+    @Nullable
+    @Override
+    public Message transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags) {
+        // FIXME implement transformSending
+        throw new UnsupportedOperationException("To be implemented");
+    }
+
+    @Nonnull
+    @Override
+    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
+        // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
+        // warn him that the message was received unencrypted.
+        if (context.getSessionPolicy().isRequireEncryption()) {
+            unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
+        }
+        return plainTextMessage.getCleanText();
+    }
+
+    @Nullable
+    @Override
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage message) {
+        if (message.protocolVersion != FOUR) {
+            // FIXME should we ignore any unexpected AKE message, even if valid AKE message from OTRv3. I guess so.
+            return super.handleAKEMessage(message);
+        }
+        if (!this.context.getSessionPolicy().isAllowV4()) {
+            throw new IllegalStateException("BUG: How could we have entered an OTRv4 message state if OTRv4 is not allowed by policy?");
+        }
+        if (message instanceof IdentityMessage) {
+            try {
+                return handleIdentityMessage((IdentityMessage) message);
+            } catch (final OtrCryptoException | ValidationException e) {
+                // FIXME consider how to handle this case and where.
+                LOGGER.log(WARNING, "Failed to process Identity message.", e);
+                return null;
+            }
+        }
+        if (message instanceof AuthIMessage) {
+            try {
+                handleAuthIMessage((AuthIMessage) message);
+                return null;
+            } catch (final OtrCryptoException | ValidationException e) {
+                // FIXME consider how to handle this case and where.
+                LOGGER.log(WARNING, "Failed to process Auth-I message.", e);
+                return null;
+            }
+        }
+        // FIXME how to handle unexpected other AKE messages? (Be strict)
+        // OTR: "Ignore the message."
+        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+                message.getType());
+        return super.handleAKEMessage(message);
     }
 
     /**
@@ -217,20 +227,20 @@ final class StateAwaitingAuthI extends AbstractState {
 
     @Nullable
     @Override
-    String handleDataMessage(@Nonnull final DataMessage message) throws ProtocolException, OtrException {
+    String handleDataMessage(@Nonnull final DataMessage message) {
         // FIXME implement handleDataMessage
         throw new UnsupportedOperationException("To be implemented");
     }
 
     @Nullable
     @Override
-    String handleDataMessage(@Nonnull final DataMessage4 message) throws ProtocolException, OtrException {
+    String handleDataMessage(@Nonnull final DataMessage4 message) {
         // FIXME implement handleDataMessage
         throw new UnsupportedOperationException("To be implemented");
     }
 
     @Override
-    public void end() throws OtrException {
+    public void end() {
         // FIXME implement end
         throw new UnsupportedOperationException("To be implemented");
     }
@@ -239,10 +249,5 @@ final class StateAwaitingAuthI extends AbstractState {
     public void destroy() {
         // FIXME implement destroy
         throw new UnsupportedOperationException("To be implemented");
-    }
-
-    @Override
-    public int getVersion() {
-        return FOUR;
     }
 }

@@ -7,22 +7,34 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
+import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AuthRMessage;
+import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
 import java.util.List;
@@ -30,9 +42,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
+import static net.java.otr4j.api.Session.Version.FOUR;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
+import static net.java.otr4j.messages.IdentityMessages.validate;
+import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
+import static net.java.otr4j.messages.MysteriousT4.encode;
 
 /**
  * Message state PLAINTEXT. This is the only message state that is publicly
@@ -42,7 +60,8 @@ import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
  * @author Danny van Heumen
  */
 // FIXME write additional unit tests for StatePlaintext
-public final class StatePlaintext extends AbstractState {
+// FIXME clean up method implementations now that we base on AbstractOTR4State.
+public final class StatePlaintext extends AbstractOTR4State {
 
     private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
 
@@ -58,7 +77,8 @@ public final class StatePlaintext extends AbstractState {
 
     @Nonnull
     @Override
-    public AbstractEncodedMessage initiateAKE(final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
+    public AbstractEncodedMessage initiateAKE(final int version, @Nonnull final InstanceTag receiverInstanceTag,
+                                              @Nonnull final String queryTag) {
         return super.initiateAKE(version, receiverInstanceTag, queryTag);
     }
 
@@ -94,6 +114,58 @@ public final class StatePlaintext extends AbstractState {
     @Override
     public void destroy() {
         // no sensitive material to destroy
+    }
+
+    @Nullable
+    @Override
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final AbstractEncodedMessage message) {
+        if (message.protocolVersion != FOUR) {
+            // FIXME should we ignore any unexpected AKE message, even if valid AKE message from OTRv3. I guess so.
+            return super.handleAKEMessage(message);
+        }
+        if (!this.context.getSessionPolicy().isAllowV4()) {
+            LOGGER.finest("ALLOW_V4 is not set, ignore this message.");
+            return null;
+        }
+        if (!(message instanceof IdentityMessage)) {
+            LOGGER.log(Level.FINE, "Ignoring unexpected DAKE message type: " + message.getType());
+            return null;
+        }
+        try {
+            return handleIdentityMessage((IdentityMessage) message);
+        } catch (final OtrCryptoException | ValidationException e) {
+            // FIXME consider how to handle this case and where.
+            LOGGER.log(WARNING, "Failed to process Identity message.", e);
+            return null;
+        }
+    }
+
+    // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
+    @Nonnull
+    private AuthRMessage handleIdentityMessage(@Nonnull final IdentityMessage message)
+            throws OtrCryptoException, ValidationException {
+        final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        validate(message, theirClientProfile);
+        final ClientProfilePayload profile = context.getClientProfilePayload();
+        final SecureRandom secureRandom = context.secureRandom();
+        final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
+        final DHKeyPair a = DHKeyPair.generate(secureRandom);
+        final SessionID sessionID = context.getSessionID();
+        final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
+        // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
+        // Generate t value and calculate sigma based on known facts and generated t value.
+        final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
+                a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
+                context.getReceiverInstanceTag().getValue(), this.queryTag, sessionID.getAccountID(),
+                sessionID.getUserID());
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
+                theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+        // Generate response message and transition into next state.
+        final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
+        this.context.transition(this, new StateAwaitingAuthI(this.context, getAuthState(), this.queryTag, x, a,
+                message.getY(), message.getB(), profile, message.getClientProfile()));
+        return authRMessage;
     }
 
     @Override

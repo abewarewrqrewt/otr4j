@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.logging.Logger;
 
-abstract class AbstractStateEncrypted extends AbstractState implements StateEncrypted {
+abstract class AbstractStateEncrypted extends AbstractOTR4State implements StateEncrypted {
 
     @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
     final Logger logger;

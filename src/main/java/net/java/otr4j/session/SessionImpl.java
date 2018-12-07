@@ -327,6 +327,7 @@ final class SessionImpl implements Session, Context {
             throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state. Expected "
                     + this.sessionState + ", but got " + fromState);
         }
+        logger.log(Level.FINE, "Transitioning to message state: " + toState);
         this.sessionState = requireNonNull(toState);
         fromState.destroy();
         sessionStatusChanged(duplicate(listeners), toState.getSessionID(), this.receiverTag);
@@ -601,7 +602,7 @@ final class SessionImpl implements Session, Context {
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
-            this.sessionState.setQueryTag(((QueryMessage) m).getTag());
+            this.sessionState.updateQueryTag(((QueryMessage) m).getTag());
             // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
             fragments = new String[] {serialized + getFallbackMessage(sessionId)};
         } else if (m instanceof AbstractEncodedMessage) {
@@ -651,7 +652,7 @@ final class SessionImpl implements Session, Context {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
-        this.sessionState.setQueryTag(plainTextMessage.getTag());
+        this.sessionState.updateQueryTag(plainTextMessage.getTag());
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
         if (plainTextMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
@@ -716,7 +717,7 @@ final class SessionImpl implements Session, Context {
         }
         final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
-            this.sessionState.setQueryTag(((PlainTextMessage) m).getTag());
+            this.sessionState.updateQueryTag(((PlainTextMessage) m).getTag());
             return new String[] {serialized};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;

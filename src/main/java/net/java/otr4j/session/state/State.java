@@ -54,7 +54,7 @@ public interface State {
      *
      * @param tag the query tag
      */
-    void setQueryTag(String tag);
+    void updateQueryTag(String tag);
 
     /**
      * Get session ID.
