@@ -137,6 +137,8 @@ public interface Context {
      */
     void setOfferStatusSent();
 
+    String getQueryTag();
+
     /**
      * Get the master session to which the instance belongs.
      *

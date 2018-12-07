@@ -78,7 +78,7 @@ public final class StatePlaintext extends AbstractOTR4State {
     @Nonnull
     @Override
     public AbstractEncodedMessage initiateAKE(final int version, @Nonnull final InstanceTag receiverInstanceTag,
-                                              @Nonnull final String queryTag) {
+            @Nonnull final String queryTag) {
         return super.initiateAKE(version, receiverInstanceTag, queryTag);
     }
 
@@ -154,16 +154,17 @@ public final class StatePlaintext extends AbstractOTR4State {
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
+        final String queryTag = context.getQueryTag();
         final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
                 a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue(), this.queryTag, sessionID.getAccountID(),
+                context.getReceiverInstanceTag().getValue(), queryTag, sessionID.getAccountID(),
                 sessionID.getUserID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
                 theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
-        this.context.transition(this, new StateAwaitingAuthI(this.context, getAuthState(), this.queryTag, x, a,
+        this.context.transition(this, new StateAwaitingAuthI(this.context, getAuthState(), queryTag, x, a,
                 message.getY(), message.getB(), profile, message.getClientProfile()));
         return authRMessage;
     }

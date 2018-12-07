@@ -16,6 +16,7 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.DataMessage;
@@ -166,8 +167,9 @@ abstract class AbstractOTR3State implements State, AuthContext {
             throw new OtrException("Invalid encoded message content.", e);
         }
 
+        // FIXME can we separate out the OTRv4 message type and distribute over the various abstract base classes
         assert !ZERO_TAG.equals(encodedM.receiverInstanceTag) || encodedM instanceof DHCommitMessage
-                || encodedM instanceof IdentityMessage
+                || encodedM instanceof IdentityMessage || encodedM instanceof AuthRMessage
                 : "BUG: receiver instance should be set for anything other than the first AKE message.";
 
         // FIXME need to do anything still, now that transitioning to slave session happens before calling this method (e.g. state management in case of DH-Key message)

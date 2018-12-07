@@ -50,13 +50,6 @@ public interface State {
     int getVersion();
 
     /**
-     * Update current query tag, such that future DAKE actions are based on latest communicated query tag.
-     *
-     * @param tag the query tag
-     */
-    void updateQueryTag(String tag);
-
-    /**
      * Get session ID.
      *
      * @return Returns session ID.

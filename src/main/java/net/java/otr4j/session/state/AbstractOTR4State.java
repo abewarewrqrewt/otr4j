@@ -1,3 +1,10 @@
+/*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.InstanceTag;
@@ -15,7 +22,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
@@ -24,23 +30,14 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractOTR4State.class.getName());
 
-    // FIXME help queryTag transition message state changes.
-    String queryTag;
-
     AbstractOTR4State(@Nonnull final Context context, @Nonnull final AuthState authState) {
         super(context, authState);
-        this.queryTag = "";
-    }
-
-    @Override
-    public void updateQueryTag(final String queryTag) {
-        this.queryTag = requireNonNull(queryTag);
     }
 
     @Nonnull
     @Override
     public AbstractEncodedMessage initiateAKE(final int version, @Nonnull final InstanceTag receiverInstanceTag,
-                                              @Nonnull final String queryTag) {
+            @Nonnull final String queryTag) {
         if (version != FOUR) {
             return super.initiateAKE(version, receiverInstanceTag, queryTag);
         }

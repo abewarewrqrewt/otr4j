@@ -87,7 +87,7 @@ final class StateAwaitingAuthR extends AbstractOTR4State {
     private final DHKeyPair dhKeyPair;
 
     StateAwaitingAuthR(@Nonnull final Context context, @Nonnull final AuthState authState,
-                       @Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
+            @Nonnull final ECDHKeyPair ecdhKeyPair, @Nonnull final DHKeyPair dhKeyPair,
             @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final String queryTag,
             @Nonnull final IdentityMessage previousMessage) {
         super(context, authState);

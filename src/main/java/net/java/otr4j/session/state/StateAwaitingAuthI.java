@@ -80,9 +80,9 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
     private final ClientProfilePayload profileBob;
 
     StateAwaitingAuthI(@Nonnull final Context context, @Nonnull final AuthState authState,
-                       @Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
-                       @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
-                       @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
+            @Nonnull final String queryTag, @Nonnull final ECDHKeyPair ourECDHKeyPair,
+            @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y, @Nonnull final BigInteger b,
+            @Nonnull final ClientProfilePayload ourProfile, @Nonnull final ClientProfilePayload profileBob) {
         super(context, authState);
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
