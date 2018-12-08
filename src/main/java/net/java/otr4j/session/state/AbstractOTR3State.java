@@ -21,7 +21,6 @@ import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.messages.IdentityMessage;
-import net.java.otr4j.session.ake.AuthContext;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 
@@ -49,7 +48,7 @@ import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
  *
  * @author Danny van Heumen
  */
-abstract class AbstractOTR3State implements State, AuthContext {
+abstract class AbstractOTR3State implements State {
 
     // TODO is this "anonymous" logging an issue? (I.e. no session information in the log message.)
     private static final Logger LOGGER = Logger.getLogger(AbstractOTR3State.class.getName());
@@ -98,29 +97,6 @@ abstract class AbstractOTR3State implements State, AuthContext {
             return;
         }
         signalUnreadableMessage(context);
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params)
-            throws InteractionFailedException {
-        try {
-            context.transition(this, new StateEncrypted3(context, this.authState, params));
-        } catch (final OtrCryptoException e) {
-            throw new InteractionFailedException(e);
-        }
-        if (context.getSessionStatus() != ENCRYPTED) {
-            throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
-        }
-        LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
-        if (context.getMasterSession().getOutgoingSession().getSessionStatus() == PLAINTEXT) {
-            // This behavior is adopted to preserve behavior between otr4j before refactoring and after. Originally,
-            // the master session would contain some fields that would indicate session status even though a slave
-            // session was created. Now we ensure that once we have secured the session, we also switch to that
-            // session such that subsequently sent messages are already encrypted, even if the client does not
-            // explicitly switch.
-            LOGGER.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
-            context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
-        }
     }
 
     @Nullable
@@ -197,15 +173,16 @@ abstract class AbstractOTR3State implements State, AuthContext {
 
         LOGGER.log(Level.FINEST, "Handling AKE message in state {0}", this.authState.getClass().getName());
         try {
-            return this.authState.handle(this, m);
+            final AuthState.Result result = this.authState.handle(context, m);
+            if (result.params != null) {
+                secure(context, result.params);
+            }
+            return result.response;
         } catch (final ProtocolException e) {
             LOGGER.log(Level.FINEST, "Ignoring message. Bad message content / incomplete message received.", e);
             return null;
         } catch (final OtrCryptoException e) {
             LOGGER.log(Level.FINEST, "Ignoring message. Exception while processing message due to cryptographic verification failure.", e);
-            return null;
-        } catch (final AuthContext.InteractionFailedException e) {
-            LOGGER.log(Level.WARNING, "Failed to transition to ENCRYPTED message state.", e);
             return null;
         } catch (final OtrException e) {
             LOGGER.log(Level.FINEST, "Ignoring message. Exception while processing message due to non-cryptographic error.", e);
@@ -213,10 +190,27 @@ abstract class AbstractOTR3State implements State, AuthContext {
         }
     }
 
+    private void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) throws OtrCryptoException {
+        context.transition(this, new StateEncrypted3(context, this.authState, params));
+        if (context.getSessionStatus() != ENCRYPTED) {
+            throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
+        }
+        LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
+        if (context.getMasterSession().getOutgoingSession().getSessionStatus() == PLAINTEXT) {
+            // This behavior is adopted to preserve behavior between otr4j before refactoring and after. Originally,
+            // the master session would contain some fields that would indicate session status even though a slave
+            // session was created. Now we ensure that once we have secured the session, we also switch to that
+            // session such that subsequently sent messages are already encrypted, even if the client does not
+            // explicitly switch.
+            LOGGER.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
+            context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
+        }
+    }
+
     @Nonnull
     @Override
     public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
-        return this.authState.initiate(this, version, receiverInstanceTag, queryTag);
+        return this.authState.initiate(context, version, receiverInstanceTag, queryTag);
     }
 
     /**

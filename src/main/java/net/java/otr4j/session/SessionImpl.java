@@ -21,6 +21,7 @@ import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.io.Fragment;
@@ -32,6 +33,7 @@ import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
+import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.StateInitial;
 import net.java.otr4j.session.state.Context;
 import net.java.otr4j.session.state.IncorrectStateException;
@@ -318,8 +320,25 @@ final class SessionImpl implements Session, Context {
 
     @Nonnull
     @Override
+    public DSAKeyPair getLocalKeyPair() {
+        return this.host.getLocalKeyPair(this.sessionID);
+    }
+
+    @Nonnull
+    @Override
     public ClientProfilePayload getClientProfilePayload() {
         return this.profilePayload;
+    }
+
+    @Nonnull
+    @Override
+    public AuthState getAuthState() {
+        return this.sessionState.getAuthState();
+    }
+
+    @Override
+    public void setAuthState(@Nonnull final AuthState state) {
+        this.sessionState.setAuthState(state);
     }
 
     @Override
@@ -549,6 +568,7 @@ final class SessionImpl implements Session, Context {
         assert this.masterSession != this || message.getVersion() == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         assert !ZERO_TAG.equals(message.getSenderInstanceTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
         // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
+        // FIXME review if we need so many message type exceptions here ...
         if (message.getType() == DHCommitMessage.MESSAGE_DH_COMMIT || message.getType() == DHKeyMessage.MESSAGE_DHKEY) {
             // Both parties need similar behavior:
             // 1. Party sending the Query/Whitespace-tagged message: the query tag is stored in the master session and
@@ -720,7 +740,7 @@ final class SessionImpl implements Session, Context {
         }
         final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
-            this.masterSession.queryTag = (((PlainTextMessage) m).getTag());
+            this.masterSession.queryTag = ((PlainTextMessage) m).getTag();
             return new String[] {serialized};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;

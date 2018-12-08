@@ -20,7 +20,6 @@ import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
-import net.java.otr4j.session.ake.SecurityParameters;
 import net.java.otr4j.session.smpv4.SMP;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
@@ -253,12 +252,6 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
     @Override
     public SMP getSmpHandler() {
         return this.smp;
-    }
-
-    @Override
-    public void secure(@Nonnull final Context context, @Nonnull final SecurityParameters params) {
-        // TODO verify if this is correct according to OTRv4 spec once released.
-        throw new IllegalStateException("Transitioning to lower protocol version ENCRYPTED message state is forbidden.");
     }
 
     @Override

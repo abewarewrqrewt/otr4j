@@ -9,7 +9,6 @@ package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.crypto.DSAKeyPair;
-import net.java.otr4j.session.state.Context;
 
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
@@ -35,7 +34,7 @@ public interface AuthContext {
      * @return Sender instance tag.
      */
     @Nonnull
-    InstanceTag getSenderTag();
+    InstanceTag getSenderInstanceTag();
 
     /**
      * Get receiver tag.
@@ -43,7 +42,7 @@ public interface AuthContext {
      * @return Receiver instance tag.
      */
     @Nonnull
-    InstanceTag getReceiverTag();
+    InstanceTag getReceiverInstanceTag();
 
     /**
      * Get local OTRv3 long-term DSA key pair.
@@ -67,39 +66,4 @@ public interface AuthContext {
      * @param state The new AKE state.
      */
     void setAuthState(@Nonnull AuthState state);
-
-    /**
-     * Transition to message state ENCRYPTED based on the provided parameters. (OTRv2/OTRv3)
-     *
-     * @param params Instance containing all parameters that are negotiated
-     * during the AKE that are relevant to setting up and maintaining the
-     * encrypted message state.
-     * @throws InteractionFailedException Thrown in case transition into
-     * ENCRYPTED message state fails.
-     */
-    // FIXME use of 'Context' here is in violation of design rules (probably) and should be refactored
-    void secure(@Nonnull final Context context, @Nonnull SecurityParameters params) throws InteractionFailedException;
-
-    /**
-     * InteractionFailedException indicates an error happened while interacting
-     * with AKE's context.
-     *
-     * This exception is defined for users of the ake package, i.e. AuthContext
-     * implementors, such that they can throw an exception in case of failure.
-     * InteractionFailedException is the only recognized checked exception which
-     * the ake package takes into account inside the implementation logic.
-     */
-    final class InteractionFailedException extends Exception {
-
-        private static final long serialVersionUID = -8731442427746963923L;
-
-        /**
-         * Constructor for InteractionFailedException.
-         *
-         * @param cause the root cause
-         */
-        public InteractionFailedException(@Nonnull final Throwable cause) {
-            super(cause);
-        }
-    }
 }

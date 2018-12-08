@@ -81,6 +81,7 @@ public interface State {
      * Transforms a message ready to be sent given the current session state of
      * OTR.
      *
+     * @param context The message state context.
      * @param msgText The message ready to be sent.
      * @param tlvs    List of TLVs.
      * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
@@ -94,6 +95,7 @@ public interface State {
     /**
      * Handle the received plaintext message.
      *
+     * @param context          The message state context.
      * @param plainTextMessage The received plaintext message.
      * @return Returns the cleaned plaintext message. (The message excluding
      * possible whitespace tags or other OTR artifacts.)
@@ -104,6 +106,7 @@ public interface State {
     /**
      * Handle the received encoded message.
      *
+     * @param context The message state context.
      * @param message the encoded message
      * @return Returns decoded, decrypted plaintext message payload, if exists, or {@code null} otherwise.
      * @throws OtrException In case of failure to process encoded message.
@@ -130,6 +133,7 @@ public interface State {
     /**
      * Initiate AKE.
      *
+     * @param context             The message state context.
      * @param version             the protocol version
      * @param receiverInstanceTag the receiver instance tag to be targeted, or {@link InstanceTag#ZERO_TAG} if unknown.
      * @param queryTag            the query tag to which we respond
@@ -137,11 +141,12 @@ public interface State {
      */
     @Nonnull
     AbstractEncodedMessage initiateAKE(@Nonnull final Context context, int version, InstanceTag receiverInstanceTag,
-        String queryTag);
+            String queryTag);
 
     /**
      * Handle the received error message.
      *
+     * @param context      The message state context.
      * @param errorMessage The error message.
      * @throws OtrException In case an exception occurs.
      */
@@ -153,6 +158,7 @@ public interface State {
      * In case an encrypted session is established, this is the moment where the final MAC codes are revealed as part of
      * the TLV DISCONNECT message.
      *
+     * @param context The message state context.
      * @throws OtrException In case an exception occurs.
      */
     void end(@Nonnull final Context context) throws OtrException;
@@ -173,6 +179,5 @@ public interface State {
     /**
      * Securely clear the content of the state after {@link Context#transition(State, State)}-ing away from it.
      */
-    // FIXME verify that 'destroy' is implemented everywhere.
     void destroy();
 }

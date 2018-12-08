@@ -247,7 +247,6 @@ final class StateAwaitingAuthI extends AbstractOTR4State {
 
     @Override
     public void destroy() {
-        // FIXME implement destroy
-        throw new UnsupportedOperationException("To be implemented");
+        // no sensitive material to destroy
     }
 }

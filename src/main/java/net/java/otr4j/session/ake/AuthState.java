@@ -27,7 +27,6 @@ import java.net.ProtocolException;
  * @author Danny van Heumen
  */
 // FIXME implement destroying AuthState data upon transitioning.
-// FIXME simplify abstraction: eliminate OTRv4 remnants
 public interface AuthState {
 
     /**
@@ -56,12 +55,38 @@ public interface AuthState {
      * instance is provided, so failures should only occur based on bad message content.)
      * @throws OtrException Throws OtrException in case of unexpected situations during message processing, such as
      * verification and validation exceptions.
-     * @throws AuthContext.InteractionFailedException Thrown in case of failure
-     * while interacting with the provided AKE context.
      */
-    @Nullable
-    AbstractEncodedMessage handle(@Nonnull AuthContext context, @Nonnull AbstractEncodedMessage message)
-            throws ProtocolException, OtrException, AuthContext.InteractionFailedException;
+    // FIXME verify that now that we transition after handling message completely, that we ensure that we *always* transition also in case some exception occurs while processing the response.
+    @Nonnull
+    Result handle(@Nonnull AuthContext context, @Nonnull AbstractEncodedMessage message)
+            throws ProtocolException, OtrException;
+
+    /**
+     * Result of AKE state handling.
+     */
+    final class Result {
+        /**
+         * The response to send to the other party, if applicable.
+         */
+        @Nullable
+        public final AbstractEncodedMessage response;
+
+        /**
+         * The security parameters on which to base the encrypted session.
+         */
+        @Nullable
+        public final SecurityParameters params;
+
+        Result() {
+            this.response = null;
+            this.params = null;
+        }
+
+        Result(@Nullable final AbstractEncodedMessage response, @Nullable final SecurityParameters params) {
+            this.response = response;
+            this.params = params;
+        }
+    }
 
     /**
      * Get active protocol version in AKE negotiation.

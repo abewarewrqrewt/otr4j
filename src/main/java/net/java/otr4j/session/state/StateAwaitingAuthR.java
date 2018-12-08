@@ -189,6 +189,9 @@ final class StateAwaitingAuthR extends AbstractOTR4State {
             // execution.
             return this.previousMessage;
         }
+        // Clear old key material, then start a new DAKE from scratch with different keys.
+        this.dhKeyPair.close();
+        this.ecdhKeyPair.close();
         // Pretend we are still in initial state and handle Identity message accordingly.
         return new StatePlaintext(getAuthState()).handleAKEMessage(context, message);
     }
@@ -238,7 +241,6 @@ final class StateAwaitingAuthR extends AbstractOTR4State {
 
     @Override
     public void destroy() {
-        // FIXME implement destroy
-//        throw new UnsupportedOperationException("To be implemented");
+        // no sensitive material to destroy
     }
 }

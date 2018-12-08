@@ -11,7 +11,6 @@ import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.Session.Version;
-import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
@@ -40,11 +39,11 @@ public class StatePlaintextTest {
                 new HashSet<>(Arrays.asList(Version.TWO, Version.THREE, Version.FOUR)),
                 "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
+        final StatePlaintext state = new StatePlaintext(StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
     }
@@ -54,11 +53,11 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv2?",
                 Collections.singleton(Version.TWO), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
+        final StatePlaintext state = new StatePlaintext(StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
     }
@@ -68,11 +67,11 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv3?",
                 Collections.singleton(Version.THREE), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
+        final StatePlaintext state = new StatePlaintext(StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3 | OtrPolicy.SEND_WHITESPACE_TAG);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, atLeastOnce()).setOfferStatusSent();
     }
@@ -86,11 +85,11 @@ public class StatePlaintextTest {
             final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
             final Context context = mock(Context.class);
-            final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
+            final StatePlaintext state = new StatePlaintext(StateInitial.instance());
             final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
             when(context.getSessionPolicy()).thenReturn(policy);
             when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-            final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+            final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
             assertEquals(expected, m);
             verify(context, never()).setOfferStatusSent();
         } finally {
@@ -103,11 +102,11 @@ public class StatePlaintextTest {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
                 Collections.<Integer>emptySet(), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
+        final StatePlaintext state = new StatePlaintext(StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.IDLE);
-        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, never()).setOfferStatusSent();
     }
@@ -116,11 +115,11 @@ public class StatePlaintextTest {
     public void testTransformAlreadySentWhitespaceTag() throws OtrException {
         final PlainTextMessage expected = new PlainTextMessage("?OTRv?",Collections.<Integer>emptySet(), "Hello world!");
         final Context context = mock(Context.class);
-        final StatePlaintext state = new StatePlaintext(context, StateInitial.instance());
+        final StatePlaintext state = new StatePlaintext(StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);
         when(context.getSessionPolicy()).thenReturn(policy);
         when(context.getOfferStatus()).thenReturn(OfferStatus.REJECTED);
-        final Message m = state.transformSending("Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
+        final Message m = state.transformSending(context, "Hello world!", Collections.<TLV>emptyList(), FLAG_NONE);
         assertEquals(expected, m);
         verify(context, never()).setOfferStatusSent();
     }

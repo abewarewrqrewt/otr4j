@@ -17,6 +17,7 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.messages.ClientProfilePayload;
+import net.java.otr4j.session.ake.AuthContext;
 
 import javax.annotation.Nonnull;
 import java.security.SecureRandom;
@@ -28,7 +29,7 @@ import java.security.SecureRandom;
  *
  * @author Danny van Heumen
  */
-public interface Context {
+public interface Context extends AuthContext {
 
     /**
      * Get engine host instance.
@@ -98,6 +99,7 @@ public interface Context {
      * @return Returns sender instance tag.
      */
     @Nonnull
+    @Override
     InstanceTag getSenderInstanceTag();
 
     /**
@@ -106,6 +108,7 @@ public interface Context {
      * @return Returns receiver instance tag.
      */
     @Nonnull
+    @Override
     InstanceTag getReceiverInstanceTag();
 
     /**
@@ -122,6 +125,7 @@ public interface Context {
      * @return Returns secure random instance.
      */
     @Nonnull
+    @Override
     SecureRandom secureRandom();
 
     /**
@@ -137,6 +141,11 @@ public interface Context {
      */
     void setOfferStatusSent();
 
+    /**
+     * Acquire the most recent query tag in use.
+     *
+     * @return Returns the query tag.
+     */
     String getQueryTag();
 
     /**

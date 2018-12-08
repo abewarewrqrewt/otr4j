@@ -21,7 +21,6 @@ import net.java.otr4j.messages.SignatureM;
 import net.java.otr4j.messages.SignatureX;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -60,9 +59,9 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         this.r = r;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException {
+    public Result handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) throws OtrCryptoException {
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
         }
@@ -74,7 +73,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         } else {
             // OTR: "Ignore the message."
             LOGGER.log(Level.FINEST, "Only expected message is DHKeyMessage. Ignoring message with type: {0}", message.getType());
-            return null;
+            return new Result();
         }
     }
 
@@ -84,7 +83,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
     }
 
     @Nonnull
-    private AbstractEncodedMessage handleDHCommitMessage(@Nonnull final AuthContext context,
+    private Result handleDHCommitMessage(@Nonnull final AuthContext context,
             @Nonnull final DHCommitMessage message) throws OtrCryptoException {
         // OTR: "This is the trickiest transition in the whole protocol. It indicates that you have already sent a D-H Commit message
         // to your correspondent, but that he either didn't receive it, or just didn't receive it yet, and has sent you one as well.
@@ -102,8 +101,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // resending D-H Commit message to every instance, now dedicate it
             // to the sender of the received D-H Commit message. That way, we do
             // not needlessly trigger other OTRv2 and OTRv3 clients.
-            return new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted, context.getSenderTag(),
-                    message.senderInstanceTag);
+            return new Result(new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted,
+                    context.getSenderInstanceTag(), message.senderInstanceTag), null);
         } else {
             // OTR: "Otherwise: Forget your old gx value that you sent (encrypted) earlier, and pretend you're in AUTHSTATE_NONE;
             // i.e. reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
@@ -111,13 +110,13 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
             final DHKeyPairOTR3 newKeypair = generateDHKeyPair(context.secureRandom());
             context.setAuthState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash, message.dhPublicKeyEncrypted));
-            return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderTag(),
-                    context.getReceiverTag());
+            return new Result(new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(),
+                    context.getSenderInstanceTag(), context.getReceiverInstanceTag()), null);
         }
     }
 
     @Nonnull
-    private RevealSignatureMessage handleDHKeyMessage(@Nonnull final AuthContext context,
+    private Result handleDHKeyMessage(@Nonnull final AuthContext context,
             @Nonnull final DHKeyMessage message) throws OtrCryptoException {
         // OTR: "Reply with a Reveal Signature Message and transition authstate to AUTHSTATE_AWAITING_SIG."
         // OTR: "Verifies that Alice's gy is a legal value (2 <= gy <= modulus-2)"
@@ -142,8 +141,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
         // OTR: "Sends Alice r, AESc(XB), MACm2(AESc(XB))"
         final RevealSignatureMessage revealSigMessage = new RevealSignatureMessage(this.version, xEncrypted,
-                xEncryptedHash, this.r, context.getSenderTag(), context.getReceiverTag());
+                xEncryptedHash, this.r, context.getSenderInstanceTag(), context.getReceiverInstanceTag());
         context.setAuthState(new StateAwaitingSig(this.version, this.keypair, message.dhPublicKey, s, revealSigMessage));
-        return revealSigMessage;
+        return new Result(revealSigMessage, null);
     }
 }

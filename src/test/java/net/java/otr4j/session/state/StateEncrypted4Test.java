@@ -84,7 +84,7 @@ public final class StateEncrypted4Test {
         final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
                 dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
         final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params, StateInitial.instance());
-        state.handleDataMessage((DataMessage) null);
+        state.handleDataMessage(CONTEXT, (DataMessage) null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -96,6 +96,6 @@ public final class StateEncrypted4Test {
         final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
                 dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
         final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params, StateInitial.instance());
-        state.handleDataMessage((DataMessage4) null);
+        state.handleDataMessage(CONTEXT, (DataMessage4) null);
     }
 }

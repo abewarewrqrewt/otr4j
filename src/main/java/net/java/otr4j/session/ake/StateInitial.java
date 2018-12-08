@@ -15,7 +15,6 @@ import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,9 +55,9 @@ public final class StateInitial extends AbstractAuthState {
         return INSTANCE;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) {
+    public Result handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message) {
         if (message.protocolVersion < Session.Version.TWO || message.protocolVersion > Version.THREE) {
             throw new IllegalArgumentException("unsupported protocol version");
         }
@@ -68,7 +67,7 @@ public final class StateInitial extends AbstractAuthState {
         // OTR: "Ignore the message."
         LOGGER.log(Level.INFO, "We only expect to receive a DH Commit message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
                 message.getType());
-        return null;
+        return new Result();
     }
 
     @Override
@@ -77,7 +76,7 @@ public final class StateInitial extends AbstractAuthState {
     }
 
     @Nonnull
-    private DHKeyMessage handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
+    private Result handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "Reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
         final DHKeyPairOTR3 keypair = generateDHKeyPair(context.secureRandom());
@@ -86,7 +85,7 @@ public final class StateInitial extends AbstractAuthState {
                 message.dhPublicKeyEncrypted));
         LOGGER.finest("Sending D-H key message.");
         // OTR: "Sends Bob gy"
-        return new DHKeyMessage(message.protocolVersion, keypair.getPublic(), context.getSenderTag(),
-                context.getReceiverTag());
+        return new Result(new DHKeyMessage(message.protocolVersion, keypair.getPublic(),
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag()), null);
     }
 }
