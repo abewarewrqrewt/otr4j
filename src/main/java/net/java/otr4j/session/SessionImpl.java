@@ -108,7 +108,6 @@ import static net.java.otr4j.util.Integers.requireInRange;
  */
 // TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
-// FIXME evaluate what data should move into session state object, e.g. SessionID?
 @SuppressWarnings("PMD.TooManyFields")
 final class SessionImpl implements Session, Context {
 
@@ -204,14 +203,9 @@ final class SessionImpl implements Session, Context {
     private final OtrFragmenter fragmenter;
 
     /**
-     * Secure random instance to be used for this Session. This single
-     * SecureRandom instance is there to be shared among the classes in
-     * this package in order to support this specific Session instance.
-     *
-     * The SecureRandom instance should not be shared between sessions.
-     *
-     * Note: Please ensure that an instance always exists, as it is also used by
-     * other classes in the package.
+     * Secure random instance to be used for this Session. This single SecureRandom instance is there to be shared among
+     * the classes in this package in order to support this specific Session instance. The SecureRandom instance should
+     * not be shared between sessions.
      */
     private final SecureRandom secureRandom;
 
@@ -445,7 +439,6 @@ final class SessionImpl implements Session, Context {
                 if (!this.slaveSessions.containsKey(fragment.getSendertag())) {
                     final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
                             fragment.getSendertag(), this.secureRandom);
-                    // FIXME how should we handle updating the queryTag in select slaveSessions?
                     newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
                     this.slaveSessions.put(fragment.getSendertag(), newSlaveSession);
                 }
@@ -476,11 +469,9 @@ final class SessionImpl implements Session, Context {
                 if (!this.slaveSessions.containsKey(message.getSenderInstanceTag())) {
                     final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
                             message.getSenderInstanceTag(), this.secureRandom);
-                    // FIXME how should we handle updating the queryTag in select slaveSessions?
                     newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
                     this.slaveSessions.put(message.getSenderInstanceTag(), newSlaveSession);
                 }
-                // FIXME how to copy authState? still needed? (from master to slave)
                 // FIXME when to detect multiple instances and signal local user with message?
                 slave = this.slaveSessions.get(message.getSenderInstanceTag());
             }
@@ -805,7 +796,7 @@ final class SessionImpl implements Session, Context {
         if (version == 0) {
             startSession();
         } else {
-            // FIXME what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message. (This is related to the OTRv4-interactive-only mode.)
+            // TODO what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message. (This is related to the OTRv4-interactive-only mode.)
             respondAuth(version, this.receiverTag, "");
         }
     }

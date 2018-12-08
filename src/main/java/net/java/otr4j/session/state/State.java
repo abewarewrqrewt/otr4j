@@ -111,7 +111,7 @@ public interface State {
      * @return Returns decoded, decrypted plaintext message payload, if exists, or {@code null} otherwise.
      * @throws OtrException In case of failure to process encoded message.
      */
-    // FIXME be more specific for OtrException, distinguish between message ignoring and actually throwing exception.
+    // TODO be more specific for OtrException, distinguish between message ignoring and actually throwing exception.
     @Nullable
     String handleEncodedMessage(@Nonnull final Context context, @Nonnull EncodedMessage message) throws OtrException;
 
