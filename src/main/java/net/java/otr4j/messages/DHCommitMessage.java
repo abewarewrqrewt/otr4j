@@ -29,7 +29,7 @@ public final class DHCommitMessage extends AbstractEncodedMessage {
     /**
      * Byte code identifier for DH-Commit message type.
      */
-    public static final int MESSAGE_DH_COMMIT = 0x02;
+    static final int MESSAGE_DH_COMMIT = 0x02;
 
     /**
      * The encrypted DH public key.

@@ -15,12 +15,10 @@ import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
-import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
-import net.java.otr4j.messages.IdentityMessage;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 
@@ -103,7 +101,6 @@ abstract class AbstractOTR3State implements State {
     @Override
     public String handleEncodedMessage(@Nonnull final Context context, @Nonnull final EncodedMessage message)
             throws OtrException {
-        // In case of OTRv3 delegate message processing to dedicated slave session.
         final AbstractEncodedMessage encodedM;
         try {
             encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderInstanceTag(),
@@ -113,12 +110,9 @@ abstract class AbstractOTR3State implements State {
             throw new OtrException("Invalid encoded message content.", e);
         }
 
-        // FIXME can we separate out the OTRv4 message type and distribute over the various abstract base classes
         assert !ZERO_TAG.equals(encodedM.receiverInstanceTag) || encodedM instanceof DHCommitMessage
-                || encodedM instanceof IdentityMessage || encodedM instanceof AuthRMessage
                 : "BUG: receiver instance should be set for anything other than the first AKE message.";
 
-        // FIXME need to do anything still, now that transitioning to slave session happens before calling this method (e.g. state management in case of DH-Key message)
         // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
         try {
             final SessionID sessionID = context.getSessionID();
@@ -126,12 +120,6 @@ abstract class AbstractOTR3State implements State {
                 LOGGER.log(Level.FINEST, "{0} received a data message (OTRv2/OTRv3) from {1}, handling in state {2}.",
                         new Object[]{sessionID.getAccountID(), sessionID.getUserID(), this.getClass().getName()});
                 return handleDataMessage(context, (DataMessage) encodedM);
-            }
-            // FIXME see if we can lift DataMessage4 handling into the AbstractOTR4State.
-            if (encodedM instanceof DataMessage4) {
-                LOGGER.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
-                        new Object[]{sessionID.getAccountID(), sessionID.getUserID(), this.getClass().getName()});
-                return handleDataMessage(context, (DataMessage4) encodedM);
             }
             // Anything that is not a Data message is some type of AKE message.
             final AbstractEncodedMessage reply = handleAKEMessage(context, encodedM);
@@ -223,17 +211,5 @@ abstract class AbstractOTR3State implements State {
      */
     @Nullable
     abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage message)
-            throws ProtocolException, OtrException;
-
-    /**
-     * Handle the received data message in OTRv4 format.
-     *
-     * @param message The received data message.
-     * @return Returns the decrypted message text.
-     * @throws ProtocolException In case of I/O reading failures.
-     * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
-     */
-    @Nullable
-    abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage4 message)
             throws ProtocolException, OtrException;
 }

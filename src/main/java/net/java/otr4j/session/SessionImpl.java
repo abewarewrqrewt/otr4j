@@ -31,7 +31,6 @@ import net.java.otr4j.io.QueryMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
-import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.StateInitial;
@@ -568,24 +567,14 @@ final class SessionImpl implements Session, Context {
         assert this.masterSession != this || message.getVersion() == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         assert !ZERO_TAG.equals(message.getSenderInstanceTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
         // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
-        // FIXME review if we need so many message type exceptions here ...
-        if (message.getType() == DHCommitMessage.MESSAGE_DH_COMMIT || message.getType() == DHKeyMessage.MESSAGE_DHKEY) {
-            // Both parties need similar behavior:
-            // 1. Party sending the Query/Whitespace-tagged message: the query tag is stored in the master session and
-            //    now has to be copied to the slave session. Now we receive AKE initiation message, and for the first
-            //    time receive the other party's instance tag. While the query tag is stored in the master session, it
-            //    has to be transferred to the slave session.
-            // 2. Party receiving the Query/Whitespace-tagged message and responding with first AKE message upon
-            //    receiving Query/Whitespace-tagged message. The Query/Whitespace-tagged message is processed in the
-            //    master session as no instance tag is available yet. The AKE initiation message is sent with only a
-            //    sender instance tag, i.e. our own instance tag. Hence we need to keep the query tag in the master
-            //    session until we have the other party's instance tag and can transfer the query tag to the
-            //    corresponding slave session.
+        if (message.getVersion() == THREE && message.getType() == DHKeyMessage.MESSAGE_DHKEY) {
+            // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             // FIXME evaluate whether this screws things up in case we *do* know the receiver instance tag in advance, as we would be copying an outdated authentication-state instance.
             // TODO verify whether this can also work if DH-Commit / Identity message is sent immediately with receiver instance tag. (As you can immediately store the query tag in the corresponding slave session.)
             this.sessionState.setAuthState(this.masterSession.sessionState.getAuthState());
         } else if (message.getType() == AuthRMessage.MESSAGE_AUTH_R) {
             assert this != this.masterSession : "We expected to be working inside a slave session instead of a master session.";
+            // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             this.sessionState = this.masterSession.sessionState;
         }
         return this.sessionState.handleEncodedMessage(this, message);

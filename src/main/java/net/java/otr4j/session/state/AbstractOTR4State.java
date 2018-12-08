@@ -9,22 +9,29 @@ package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
+import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.messages.IdentityMessage;
 import net.java.otr4j.session.ake.AuthState;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.net.ProtocolException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
+import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
 
 abstract class AbstractOTR4State extends AbstractOTR3State {
 
@@ -32,6 +39,43 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
 
     AbstractOTR4State(@Nonnull final AuthState authState) {
         super(authState);
+    }
+
+    @Nullable
+    @Override
+    public String handleEncodedMessage(@Nonnull final Context context, @Nonnull final EncodedMessage message) throws OtrException {
+        if (message.getVersion() != FOUR) {
+            // FIXME is it going to be an issue if we always delegate on message != OTRv4, even if DAKE in progress/finished?
+            return super.handleEncodedMessage(context, message);
+        }
+        final AbstractEncodedMessage encodedM;
+        try {
+            encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderInstanceTag(),
+                    message.getReceiverInstanceTag(), message.getPayload());
+        } catch (final ProtocolException e) {
+            // TODO we probably want to just drop the message, i.s.o. throwing exception.
+            throw new OtrException("Invalid encoded message content.", e);
+        }
+        assert !ZERO_TAG.equals(encodedM.receiverInstanceTag) || encodedM instanceof IdentityMessage
+                : "BUG: receiver instance should be set for anything other than the first AKE message.";
+        // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
+        try {
+            final SessionID sessionID = context.getSessionID();
+            if (encodedM instanceof DataMessage4) {
+                LOGGER.log(Level.FINEST, "{0} received a data message (OTRv4) from {1}, handling in state {2}.",
+                        new Object[]{sessionID.getAccountID(), sessionID.getUserID(), this.getClass().getName()});
+                return handleDataMessage(context, (DataMessage4) encodedM);
+            }
+            // Anything that is not a Data message is some type of AKE message.
+            final AbstractEncodedMessage reply = handleAKEMessage(context, encodedM);
+            if (reply != null) {
+                context.injectMessage(reply);
+            }
+        } catch (final ProtocolException e) {
+            LOGGER.log(Level.FINE, "An illegal message was received. Processing was aborted.", e);
+            // TODO consider how we should signal unreadable message for illegal data messages and potentially show error to client. (Where we escape handling logic through ProtocolException.)
+        }
+        return null;
     }
 
     @Nonnull
@@ -79,4 +123,16 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
             context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
         }
     }
+
+    /**
+     * Handle the received data message in OTRv4 format.
+     *
+     * @param message The received data message.
+     * @return Returns the decrypted message text.
+     * @throws ProtocolException In case of I/O reading failures.
+     * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
+     */
+    @Nullable
+    abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage4 message)
+            throws ProtocolException, OtrException;
 }

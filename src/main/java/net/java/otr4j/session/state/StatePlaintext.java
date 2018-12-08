@@ -139,6 +139,7 @@ public final class StatePlaintext extends AbstractOTR4State {
         }
     }
 
+    // FIXME evaluate whether we need to lift this to AbstractOTR4State ... may be needed in case user is in StateEncrypted3/4 and still be able to handle new DAKE process.
     // FIXME verify that message is correctly rejected + nothing responded when verification of IdentityMessage fails.
     @Nonnull
     private AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
