@@ -72,7 +72,6 @@ import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.state.State.FLAG_IGNORE_UNREADABLE;
 import static net.java.otr4j.session.state.State.FLAG_NONE;
-import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
  * Implementation of the OTR session.
@@ -415,10 +414,9 @@ final class SessionImpl implements Session, Context {
         }
 
         // FIXME evaluate inter-play between master and slave sessions. How much of certainty do we have if we reset the state from within one of the AKE states, that we actually reset sufficiently? In most cases, context.setState will manipulate the slave session, not the master session, so the influence limited.
-        if (masterSession == this && m instanceof Fragment) {
+        if (masterSession == this && m instanceof Fragment && (((Fragment) m).getVersion() == THREE
+                || ((Fragment) m).getVersion() == FOUR)) {
             final Fragment fragment = (Fragment) m;
-            // FIXME convert to ignore fragment as illegal.
-            requireInRange(THREE, FOUR, fragment.getVersion());
 
             if (ZERO_TAG.equals(fragment.getSendertag())) {
                 logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
@@ -445,10 +443,9 @@ final class SessionImpl implements Session, Context {
                 slave = this.slaveSessions.get(fragment.getSendertag());
             }
             return slave.handleFragment(fragment);
-        } else if (masterSession == this && m instanceof EncodedMessage) {
+        } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).getVersion() == THREE
+                || ((EncodedMessage) m).getVersion() == FOUR)) {
             final EncodedMessage message = (EncodedMessage) m;
-            // FIXME convert to ignore message as illegal.
-            requireInRange(THREE, FOUR, message.getVersion());
 
             if (ZERO_TAG.equals(message.getSenderInstanceTag())) {
                 // An encoded message without a sender instance tag is always bad.
@@ -524,26 +521,28 @@ final class SessionImpl implements Session, Context {
                     + fragment.getSendertag().getValue(), e);
             return null;
         }
+        final EncodedMessage message;
         try {
-            final Message message = parse(reassembledText);
-            // TODO should we verify if fragment metadata (sendertag, receivertag, etc.) matches encoded message metadata? (How to treat bad encoded messages, drop?)
-            if (message instanceof EncodedMessage) {
-                // There is no good reason why the reassembled message should have any other protocol version, sender
-                // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
-                // inconsistencies to ensure that the inconsistencies cannot be exploited.
-                // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
-                if (((EncodedMessage) message).getVersion() != fragment.getVersion()
-                        || !((EncodedMessage) message).getSenderInstanceTag().equals(fragment.getSendertag())
-                        || !((EncodedMessage) message).getReceiverInstanceTag().equals(fragment.getReceivertag())) {
-                    logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
-                    return null;
-                }
-                return handleEncodedMessage((EncodedMessage) message);
+            final Message m = parse(reassembledText);
+            if (!(m instanceof EncodedMessage)) {
+                // TODO consider returning null i.s.o. throwing OtrException.
+                throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
             }
-            throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
+            message = (EncodedMessage) m;
         } catch (final ProtocolException e) {
             throw new OtrException("Protocol violation encountered while processing reassembled OTR-encoded message.", e);
         }
+        // There is no good reason why the reassembled message should have any other protocol version, sender
+        // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
+        // inconsistencies to ensure that the inconsistencies cannot be exploited.
+        // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
+        if (message.getVersion() != fragment.getVersion()
+                || !message.getSenderInstanceTag().equals(fragment.getSendertag())
+                || !message.getReceiverInstanceTag().equals(fragment.getReceivertag())) {
+            logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
+            return null;
+        }
+        return handleEncodedMessage(message);
     }
 
     /**
