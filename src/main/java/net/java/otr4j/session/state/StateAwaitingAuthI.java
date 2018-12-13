@@ -55,7 +55,7 @@ import static net.java.otr4j.session.state.SecurityParameters4.Component.THEIRS;
  *
  * This is a state in which Alice will be while awaiting Bob's final message.
  */
-final class StateAwaitingAuthI extends AbstractOTR4State {
+final class StateAwaitingAuthI extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());
 

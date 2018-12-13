@@ -59,6 +59,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * @author Danny van Heumen
  */
 // FIXME write additional unit tests for StateEncrypted3
+// FIXME ensure that even in StateEncrypted3 we can handle DAKE messages
 final class StateEncrypted3 extends AbstractStateEncrypted {
 
     /**

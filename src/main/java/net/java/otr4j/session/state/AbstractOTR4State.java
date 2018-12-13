@@ -14,11 +14,8 @@ import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.io.EncodedMessage;
-import net.java.otr4j.io.ErrorMessage;
-import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
-import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.messages.IdentityMessage;
 import net.java.otr4j.session.ake.AuthState;
@@ -31,32 +28,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
-import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 
-// FIXME consider lifting all methods that are not strictly OTRv4 related, such as handlePlainTextMessage, handleErrorMessage, handleUnreadableMessage.
 abstract class AbstractOTR4State extends AbstractOTR3State {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractOTR4State.class.getName());
 
     AbstractOTR4State(@Nonnull final AuthState authState) {
         super(authState);
-    }
-
-    @Nonnull
-    @Override
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
-        return plainTextMessage.getCleanText();
-    }
-
-    @Override
-    public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage)
-            throws OtrException {
-        showError(context.getHost(), context.getSessionID(), errorMessage.error);
     }
 
     @Nullable
@@ -94,24 +76,6 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
             // TODO consider how we should signal unreadable message for illegal data messages and potentially show error to client. (Where we escape handling logic through ProtocolException.)
         }
         return null;
-    }
-
-    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
-            throws OtrException {
-        if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
-            LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
-            return;
-        }
-        signalUnreadableMessage(context);
-    }
-
-    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
-            throws OtrException {
-        if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
-            LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
-            return;
-        }
-        signalUnreadableMessage(context);
     }
 
     @Nonnull

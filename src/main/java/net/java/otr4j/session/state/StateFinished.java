@@ -36,7 +36,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
  */
 // FIXME clean up method implementations now that we base on AbstractOTR4State.
 // FIXME write additional unit tests for StatePlaintext
-final class StateFinished extends AbstractOTR4State {
+final class StateFinished extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StateFinished.class.getName());
 

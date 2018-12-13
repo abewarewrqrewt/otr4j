@@ -61,7 +61,7 @@ import static net.java.otr4j.messages.MysteriousT4.encode;
  */
 // FIXME write additional unit tests for StatePlaintext
 // FIXME clean up method implementations now that we base on AbstractOTR4State.
-public final class StatePlaintext extends AbstractOTR4State {
+public final class StatePlaintext extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
 

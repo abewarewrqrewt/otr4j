@@ -17,11 +17,13 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.logging.Logger;
 
-abstract class AbstractStateEncrypted extends AbstractOTR4State implements StateEncrypted {
+// FIXME consider dropping AbstractStateEncrypted. The only commonality is the logger.
+abstract class AbstractStateEncrypted extends AbstractCommonState implements StateEncrypted {
 
     @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
     final Logger logger;
 
+    // FIXME consider passing in only the SessionID instead of the full context.
     AbstractStateEncrypted(@Nonnull final Context context, @Nonnull final AuthState authState) {
         super(authState);
         final SessionID sessionID = context.getSessionID();

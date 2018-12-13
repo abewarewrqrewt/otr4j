@@ -52,7 +52,7 @@ import static net.java.otr4j.session.state.SecurityParameters4.Component.OURS;
 /**
  * OTRv4 AKE state AWAITING_AUTH_R.
  */
-final class StateAwaitingAuthR extends AbstractOTR4State {
+final class StateAwaitingAuthR extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthR.class.getName());
 
