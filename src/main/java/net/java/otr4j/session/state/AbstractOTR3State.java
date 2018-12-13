@@ -13,12 +13,10 @@ import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.EncodedMessage;
-import net.java.otr4j.io.ErrorMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.DataMessage;
-import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 
@@ -30,13 +28,11 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
-import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 
 /**
  * Abstract base implementation for session state implementations.
@@ -71,30 +67,6 @@ abstract class AbstractOTR3State implements State {
     public void setAuthState(@Nonnull final AuthState state) {
         LOGGER.fine("Transitioning authentication state to " + state);
         this.authState = requireNonNull(state);
-    }
-
-    @Override
-    public void handleErrorMessage(@Nonnull final Context context, @Nonnull final ErrorMessage errorMessage)
-            throws OtrException {
-        showError(context.getHost(), context.getSessionID(), errorMessage.error);
-    }
-
-    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
-            throws OtrException {
-        if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
-            LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
-            return;
-        }
-        signalUnreadableMessage(context);
-    }
-
-    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
-            throws OtrException {
-        if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
-            LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
-            return;
-        }
-        signalUnreadableMessage(context);
     }
 
     @Nullable
