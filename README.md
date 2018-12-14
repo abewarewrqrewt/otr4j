@@ -107,6 +107,9 @@ Development stages:
   _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
   * ☑ otr4j protects itself against `RuntimeException`s caused by callbacks into the host application.
   _Any occurrence of a `RuntimeException` is considered a bug on the host application side, and is caught and logged by otr4j._
+* Stability
+  * ☐ Profile library in execution.
+  * ☐ Measure memory usage changes under long-term use/heavy load.
 * OTRv3 - catching up:
   * ☐ In-memory representation for OTRv3.
   * ☐ Arithmetical operations on byte-arrays for OTRv2 and/or OTRv3 logic.
@@ -124,6 +127,7 @@ Development stages:
   * ☑ Introduce checkstyle at build-time to guard formatting/style
   * ☑ Introduce checkstyle _ImportControl_ module to guard the design structure
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
+  * ☐ Experiment with features of [Checker Framework](https://checkerframework.org).
 * ☐ Significant amount of unit tests to accompany the library. (Currently: 1100+)
 
 ## Architectural considerations
