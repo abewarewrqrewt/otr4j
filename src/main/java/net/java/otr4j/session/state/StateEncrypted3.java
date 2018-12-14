@@ -36,6 +36,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
@@ -60,7 +61,7 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  */
 // FIXME write additional unit tests for StateEncrypted3
 // FIXME ensure that even in StateEncrypted3 we can handle DAKE messages
-final class StateEncrypted3 extends AbstractStateEncrypted {
+final class StateEncrypted3 extends AbstractCommonState implements StateEncrypted {
 
     /**
      * TLV 8 notifies the recipient to use the extra symmetric key to set up an
@@ -83,6 +84,9 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
      */
     private final int protocolVersion;
 
+    @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
+    private final Logger logger;
+
     /**
      * The Socialist Millionaire Protocol handler.
      */
@@ -99,10 +103,12 @@ final class StateEncrypted3 extends AbstractStateEncrypted {
     private final SessionKeyManager sessionKeyManager;
 
     StateEncrypted3(@Nonnull final Context context, @Nonnull final AuthState state, @Nonnull final SecurityParameters params) throws OtrCryptoException {
-        super(context, state);
+        super(state);
+        final SessionID sessionID = context.getSessionID();
+        this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
         this.protocolVersion = params.getVersion();
-        this.smpTlvHandler = new SmpTlvHandler(context.secureRandom(), context.getSessionID(),
-                params.getRemoteLongTermPublicKey(), context.getReceiverInstanceTag(), context.getHost(), params.getS());
+        this.smpTlvHandler = new SmpTlvHandler(context.secureRandom(), sessionID, params.getRemoteLongTermPublicKey(),
+                context.getReceiverInstanceTag(), context.getHost(), params.getS());
         this.remotePublicKey = params.getRemoteLongTermPublicKey();
         this.sessionKeyManager = new SessionKeyManager(context.secureRandom(), params.getLocalDHKeyPair(),
                 params.getRemoteDHPublicKey());

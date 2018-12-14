@@ -8,7 +8,7 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.api.Session;
+import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
+import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
@@ -46,11 +47,12 @@ import static net.java.otr4j.session.smpv4.SMP.smpPayload;
  */
 // TODO signal errors in data message using ERROR_2 indicator.
 // FIXME write additional unit tests for StateEncrypted4
-final class StateEncrypted4 extends AbstractStateEncrypted {
+final class StateEncrypted4 extends AbstractCommonState implements StateEncrypted {
 
-    private static final Logger LOGGER = Logger.getLogger(StateEncrypted4.class.getName());
+    private static final int VERSION = FOUR;
 
-    private static final int VERSION = Session.Version.FOUR;
+    @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
+    private final Logger logger;
 
     private final DoubleRatchet ratchet;
 
@@ -58,7 +60,9 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
 
     StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params,
             @Nonnull final AuthState authState) {
-        super(context, authState);
+        super(authState);
+        final SessionID sessionID = context.getSessionID();
+        this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
         final byte[] exchangeK;
         final byte[] ssid;
         try (SharedSecret4 exchangeSecret = params.generateSharedSecret(context.secureRandom())) {
@@ -134,11 +138,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
-            LOGGER.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
+            this.logger.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
                     new Object[] {rotation.dhPublicKey != null, rotation.revealedMacs.length});
         } else {
             rotation = null;
-            LOGGER.log(Level.FINEST, "Sender keys rotation is not needed.");
+            this.logger.log(Level.FINEST, "Sender keys rotation is not needed.");
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
         final EncryptionResult result = this.ratchet.encrypt(msgBytes);
@@ -200,11 +204,11 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
             dmc = this.ratchet.decrypt(message.getI(), message.getJ(), encodeDataMessageSections(message),
                     message.getAuthenticator(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
-            LOGGER.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
+            this.logger.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
             handleUnreadableMessage(context, message);
             return null;
         } catch (final VerificationException e) {
-            LOGGER.log(Level.FINE, "Received message fails verification. Rejecting the message.");
+            this.logger.log(Level.FINE, "Received message fails verification. Rejecting the message.");
             handleUnreadableMessage(context, message);
             return null;
         }
@@ -223,7 +227,7 @@ final class StateEncrypted4 extends AbstractStateEncrypted {
                         context.injectMessage(transformSending(context, "", singletonList(response), FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
-                    LOGGER.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
+                    this.logger.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
                             e);
                 }
                 continue;
