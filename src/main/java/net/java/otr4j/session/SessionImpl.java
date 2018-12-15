@@ -66,6 +66,7 @@ import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
 import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.Session.Version.THREE;
+import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
@@ -507,7 +508,7 @@ final class SessionImpl implements Session, Context {
      */
     @Nullable
     private String handleFragment(@Nonnull final Fragment fragment) throws OtrException {
-        assert this.masterSession != this || fragment.getVersion() == Version.TWO
+        assert this.masterSession != this || fragment.getVersion() == TWO
             : "BUG: Expect to only handle OTRv2 message fragments on master session. All other fragments should be handled on dedicated slave session.";
         final String reassembledText;
         try {
@@ -554,7 +555,7 @@ final class SessionImpl implements Session, Context {
      */
     @Nullable
     private String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
-        assert this.masterSession != this || message.getVersion() == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
+        assert this.masterSession != this || message.getVersion() == TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         assert !ZERO_TAG.equals(message.getSenderInstanceTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
         // TODO We've started replicating current (auth)State in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
         // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
@@ -584,9 +585,9 @@ final class SessionImpl implements Session, Context {
         } else if (queryMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
             respondAuth(THREE, ZERO_TAG, queryMessage.getTag());
-        } else if (queryMessage.getVersions().contains(Version.TWO) && policy.isAllowV2()) {
+        } else if (queryMessage.getVersions().contains(TWO) && policy.isAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
-            respondAuth(Version.TWO, ZERO_TAG, queryMessage.getTag());
+            respondAuth(TWO, ZERO_TAG, queryMessage.getTag());
         } else {
             logger.info("Query message received, but none of the versions are acceptable. They are either excluded by policy or through lack of support.");
         }
@@ -672,10 +673,10 @@ final class SessionImpl implements Session, Context {
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
-        } else if (plainTextMessage.getVersions().contains(Version.TWO) && policy.isAllowV2()) {
+        } else if (plainTextMessage.getVersions().contains(TWO) && policy.isAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                respondAuth(Version.TWO, ZERO_TAG, plainTextMessage.getTag());
+                respondAuth(TWO, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
                 logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }
@@ -971,8 +972,8 @@ final class SessionImpl implements Session, Context {
      * case), specify {@link InstanceTag#ZERO_TAG}.
      * @throws OtrException In case of invalid/unsupported OTR protocol version.
      */
-    private void respondAuth(final int version, @Nonnull final InstanceTag receiverTag,
-            @Nonnull final String queryTag) throws OtrException {
+    private void respondAuth(final int version, @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag)
+            throws OtrException {
         if (!Version.SUPPORTED.contains(version)) {
             throw new OtrException("Unsupported OTR version encountered.");
         }
