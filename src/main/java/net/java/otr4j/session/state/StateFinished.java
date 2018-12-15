@@ -83,7 +83,7 @@ final class StateFinished extends AbstractCommonState {
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was received unencrypted.
         unencryptedMessageReceived(context.getHost(), context.getSessionID(), plainTextMessage.getCleanText());
-        return plainTextMessage.getCleanText();
+        return super.handlePlainTextMessage(context, plainTextMessage);
     }
 
     @Override

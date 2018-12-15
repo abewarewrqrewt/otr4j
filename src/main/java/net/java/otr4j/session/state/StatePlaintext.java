@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
-import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
@@ -60,7 +59,7 @@ import static net.java.otr4j.messages.MysteriousT4.encode;
  * @author Danny van Heumen
  */
 // FIXME write additional unit tests for StatePlaintext
-// FIXME clean up method implementations now that we base on AbstractOTR4State.
+// FIXME clean up method implementations now that we base on AbstractCommonState.
 public final class StatePlaintext extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
@@ -185,17 +184,6 @@ public final class StatePlaintext extends AbstractCommonState {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
         handleUnreadableMessage(context, message);
         return null;
-    }
-
-    @Override
-    @Nonnull
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
-        // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
-        // warn him that the message was received unencrypted.
-        if (context.getSessionPolicy().isRequireEncryption()) {
-            unencryptedMessageReceived(context.getHost(), context.getSessionID(), plainTextMessage.getCleanText());
-        }
-        return plainTextMessage.getCleanText();
     }
 
     @Override

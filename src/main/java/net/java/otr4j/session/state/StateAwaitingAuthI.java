@@ -18,7 +18,6 @@ import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.Message;
-import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthIMessage;
 import net.java.otr4j.messages.AuthRMessage;
@@ -41,7 +40,6 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
-import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
@@ -59,6 +57,9 @@ final class StateAwaitingAuthI extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());
 
+    /**
+     * The query tag in use at the time DAKE was initiated.
+     */
     private final String queryTag;
 
     /**
@@ -128,17 +129,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
             @Nonnull final List<TLV> tlvs, final byte flags) {
         // FIXME implement transformSending
         throw new UnsupportedOperationException("To be implemented");
-    }
-
-    @Nonnull
-    @Override
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
-        // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
-        // warn him that the message was received unencrypted.
-        if (context.getSessionPolicy().isRequireEncryption()) {
-            unencryptedMessageReceived(context.getHost(), context.getSessionID(), plainTextMessage.getCleanText());
-        }
-        return plainTextMessage.getCleanText();
     }
 
     @Nullable

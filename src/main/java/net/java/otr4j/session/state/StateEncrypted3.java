@@ -114,6 +114,14 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
                 params.getRemoteDHPublicKey());
     }
 
+    @Nonnull
+    @Override
+    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage message) {
+        // Display the message to the user, but warn him that the message was received unencrypted.
+        unencryptedMessageReceived(context.getHost(), context.getSessionID(), message.getCleanText());
+        return super.handlePlainTextMessage(context, message);
+    }
+
     @Override
     public int getVersion() {
         return this.protocolVersion;
@@ -152,16 +160,6 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         this.sessionKeyManager.close();
     }
 
-    @Override
-    @Nonnull
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
-        // Display the message to the user, but warn him that the message was
-        // received unencrypted.
-        final String cleanText = plainTextMessage.getCleanText();
-        unencryptedMessageReceived(context.getHost(), context.getSessionID(), cleanText);
-        return cleanText;
-    }
-    
     @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)

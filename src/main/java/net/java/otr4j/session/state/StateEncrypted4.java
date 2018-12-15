@@ -83,9 +83,17 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         params.close();
         final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK, component);
         this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
-        this.smp = new SMP(context.secureRandom(), context.getHost(), context.getSessionID(), ssid,
+        this.smp = new SMP(context.secureRandom(), context.getHost(), sessionID, ssid,
                 params.getOurProfile().getLongTermPublicKey(), params.getTheirProfile().getLongTermPublicKey(),
                 context.getReceiverInstanceTag());
+    }
+
+    @Nonnull
+    @Override
+    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage message) {
+        // Display the message to the user, but warn him that the message was received unencrypted.
+        unencryptedMessageReceived(context.getHost(), context.getSessionID(), message.getCleanText());
+        return super.handlePlainTextMessage(context, message);
     }
 
     @Override
@@ -155,15 +163,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
         return new DataMessage4(unauthenticated, authenticator);
-    }
-
-    @Nonnull
-    @Override
-    public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage message) {
-        // Display the message to the user, but warn him that the message was received unencrypted.
-        final String cleanText = message.getCleanText();
-        unencryptedMessageReceived(context.getHost(), context.getSessionID(), cleanText);
-        return cleanText;
     }
 
     @Nullable
