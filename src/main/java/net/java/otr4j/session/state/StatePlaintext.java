@@ -117,10 +117,6 @@ public final class StatePlaintext extends AbstractCommonState {
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        if (message.protocolVersion != FOUR) {
-            // FIXME should we ignore any unexpected AKE message, even if valid AKE message from OTRv3. I guess so.
-            return super.handleAKEMessage(context, message);
-        }
         if (!context.getSessionPolicy().isAllowV4()) {
             LOGGER.finest("ALLOW_V4 is not set, ignore this message.");
             return null;

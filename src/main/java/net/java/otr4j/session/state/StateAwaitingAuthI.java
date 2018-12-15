@@ -134,10 +134,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        if (message.protocolVersion != FOUR) {
-            // FIXME should we ignore any unexpected AKE message, even if valid AKE message from OTRv3. I guess so.
-            return super.handleAKEMessage(context, message);
-        }
         if (!context.getSessionPolicy().isAllowV4()) {
             throw new IllegalStateException("BUG: How could we have entered an OTRv4 message state if OTRv4 is not allowed by policy?");
         }
@@ -160,11 +156,10 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 return null;
             }
         }
-        // FIXME how to handle unexpected other AKE messages? (Be strict)
         // OTR: "Ignore the message."
         LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
                 message.getType());
-        return super.handleAKEMessage(context, message);
+        return null;
     }
 
     /**
@@ -184,10 +179,8 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         IdentityMessages.validate(message, theirNewClientProfile);
         final SessionID sessionID = context.getSessionID();
         // Note: we query the context for a new client profile, because we're responding to a new Identity message.
-        // This ensures a "fresh" profile. (May be unnecessary, but seems smart right now ... I may regret it later)
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
-        // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
             message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
@@ -212,7 +205,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 context.getSessionID().getUserID(), context.getSessionID().getAccountID());
         secure(context, new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
                 ourProfileValidated, profileBobValidated));
-        // FIXME clear queryTag?
     }
 
     @Nullable

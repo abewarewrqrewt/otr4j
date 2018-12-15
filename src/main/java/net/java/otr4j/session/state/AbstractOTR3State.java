@@ -17,6 +17,8 @@ import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DHCommitMessage;
 import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.messages.DataMessage;
+import net.java.otr4j.messages.RevealSignatureMessage;
+import net.java.otr4j.messages.SignatureMessage;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.SecurityParameters;
 
@@ -106,18 +108,24 @@ abstract class AbstractOTR3State implements State {
     }
 
     @Nullable
-    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage m) {
+    private AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
+
+        if (!(message instanceof DHCommitMessage || message instanceof DHKeyMessage
+                || message instanceof SignatureMessage || message instanceof RevealSignatureMessage)) {
+            throw new UnsupportedOperationException("Only OTRv2/OTRv3 AKE messages are supported.");
+        }
+
         final SessionID sessionID = context.getSessionID();
         LOGGER.log(Level.FINEST, "{0} received an AKE message from {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});
 
         // Verify that policy allows handling message according to protocol version.
         final OtrPolicy policy = context.getSessionPolicy();
-        if (m.protocolVersion == TWO && !policy.isAllowV2()) {
+        if (message.protocolVersion == TWO && !policy.isAllowV2()) {
             LOGGER.finest("ALLOW_V2 is not set, ignore this message.");
             return null;
         }
-        if (m.protocolVersion == THREE && !policy.isAllowV3()) {
+        if (message.protocolVersion == THREE && !policy.isAllowV3()) {
             LOGGER.finest("ALLOW_V3 is not set, ignore this message.");
             return null;
         }
@@ -125,15 +133,16 @@ abstract class AbstractOTR3State implements State {
         // Verify that we received an AKE message using the previously agreed upon protocol version. Exception to this
         // rule for DH Commit message, as this message initiates a new AKE negotiation and thus proposes a new protocol
         // version corresponding to the message's intention.
-        if (!(m instanceof DHCommitMessage) && !(m instanceof DHKeyMessage) && m.protocolVersion != this.authState.getVersion()) {
+        if (!(message instanceof DHCommitMessage) && !(message instanceof DHKeyMessage)
+                && message.protocolVersion != this.authState.getVersion()) {
             LOGGER.log(Level.INFO, "AKE message containing unexpected protocol version encountered. ({0} instead of {1}.) Ignoring.",
-                    new Object[]{m.protocolVersion, this.authState.getVersion()});
+                    new Object[]{message.protocolVersion, this.authState.getVersion()});
             return null;
         }
 
         LOGGER.log(Level.FINEST, "Handling AKE message in state {0}", this.authState.getClass().getName());
         try {
-            final AuthState.Result result = this.authState.handle(context, m);
+            final AuthState.Result result = this.authState.handle(context, message);
             if (result.params != null) {
                 secure(context, result.params);
             }

@@ -135,10 +135,6 @@ final class StateAwaitingAuthR extends AbstractCommonState {
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        if (message.protocolVersion != FOUR) {
-            // FIXME should we ignore any unexpected AKE message, even if valid AKE message from OTRv3. I guess so.
-            return super.handleAKEMessage(context, message);
-        }
         if (!context.getSessionPolicy().isAllowV4()) {
             throw new IllegalStateException("BUG: How could we have entered an OTRv4 message state if OTRv4 is not allowed by policy?");
         }
@@ -150,7 +146,8 @@ final class StateAwaitingAuthR extends AbstractCommonState {
                 LOGGER.log(WARNING, "Failed to process Identity message.", e);
                 return null;
             }
-        } else if (message instanceof AuthRMessage) {
+        }
+        if (message instanceof AuthRMessage) {
             try {
                 return handleAuthRMessage(context, (AuthRMessage) message);
             } catch (final OtrCryptoException | ValidationException e) {
@@ -194,7 +191,6 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         final SecurityParameters4 params = new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(),
                 message.getA(), ourClientProfile, theirClientProfile);
         secure(context, params);
-        // FIXME clear queryTag?
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),

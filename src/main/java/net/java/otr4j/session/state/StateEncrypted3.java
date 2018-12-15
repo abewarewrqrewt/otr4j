@@ -160,6 +160,13 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         this.sessionKeyManager.close();
     }
 
+    @Nullable
+    @Override
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
+        // FIXME implement handling DAKE messages.
+        return null;
+    }
+
     @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)

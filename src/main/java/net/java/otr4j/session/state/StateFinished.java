@@ -12,6 +12,7 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
@@ -84,6 +85,13 @@ final class StateFinished extends AbstractCommonState {
         // Display the message to the user, but warn him that the message was received unencrypted.
         unencryptedMessageReceived(context.getHost(), context.getSessionID(), plainTextMessage.getCleanText());
         return super.handlePlainTextMessage(context, plainTextMessage);
+    }
+
+    @Nullable
+    @Override
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
+        // FIXME implement handling DAKE messages.
+        return null;
     }
 
     @Override

@@ -77,6 +77,16 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         return null;
     }
 
+    /**
+     * Abstract method for handling OTRv4 (D)AKE messages.
+     *
+     * @param context the session context
+     * @param message the AKE message
+     * @return Returns the reply for the provided AKE message.
+     */
+    @Nullable
+    abstract AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message);
+
     @Nonnull
     @Override
     public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version,

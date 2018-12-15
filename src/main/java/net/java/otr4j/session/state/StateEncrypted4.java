@@ -167,6 +167,13 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
 
     @Nullable
     @Override
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
+        // FIXME implement handling DAKE messages.
+        return null;
+    }
+
+    @Nullable
+    @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
         throw new IllegalStateException("BUG: OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
