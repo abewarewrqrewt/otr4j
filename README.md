@@ -23,6 +23,7 @@ Development stages:
 * Full implementation of "OTRv3-compatible" + "OTRv4 Interactive" use-case (including all FIXMEs)
 * ... (OTRv4 Non-interactive, ...)
 * Clean up remaining TODOs
+* Review the many logging statements and verify if log levels are reasonable.
 
 ## Functionality
 

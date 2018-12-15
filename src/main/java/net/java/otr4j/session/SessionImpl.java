@@ -556,6 +556,7 @@ final class SessionImpl implements Session, Context {
     private String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
         assert this.masterSession != this || message.getVersion() == Version.TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         assert !ZERO_TAG.equals(message.getSenderInstanceTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
+        // TODO We've started replicating current (auth)State in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
         // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
         if (message.getVersion() == THREE && message.getType() == DHKeyMessage.MESSAGE_DHKEY) {
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
@@ -565,6 +566,7 @@ final class SessionImpl implements Session, Context {
         } else if (message.getType() == AuthRMessage.MESSAGE_AUTH_R) {
             assert this != this.masterSession : "We expected to be working inside a slave session instead of a master session.";
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
+            // FIXME We now copy the state whenever an Auth-R message is received. Will this screw with running encrypted sessions? (in unexpected ways, for example sudden transition to plaintext)
             this.sessionState = this.masterSession.sessionState;
         }
         return this.sessionState.handleEncodedMessage(this, message);

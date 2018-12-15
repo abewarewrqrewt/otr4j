@@ -58,7 +58,6 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         }
         assert !ZERO_TAG.equals(encodedM.receiverInstanceTag) || encodedM instanceof IdentityMessage
                 : "BUG: receiver instance should be set for anything other than the first AKE message.";
-        // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
         try {
             final SessionID sessionID = context.getSessionID();
             if (encodedM instanceof DataMessage4) {

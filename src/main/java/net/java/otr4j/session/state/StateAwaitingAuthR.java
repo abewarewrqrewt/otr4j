@@ -159,9 +159,8 @@ final class StateAwaitingAuthR extends AbstractCommonState {
                 return null;
             }
         }
-        // FIXME how to handle unexpected other AKE messages? (Be strict)
         // OTR: "Ignore the message."
-        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-R message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
                 message.getType());
         return null;
     }
