@@ -34,10 +34,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
@@ -142,8 +142,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
             try {
                 return handleIdentityMessage(context, (IdentityMessage) message);
             } catch (final OtrCryptoException | ValidationException e) {
-                // FIXME consider how to handle this case and where.
-                LOGGER.log(WARNING, "Failed to process Identity message.", e);
+                LOGGER.log(INFO, "Failed to process Identity message.", e);
                 return null;
             }
         }
@@ -151,13 +150,12 @@ final class StateAwaitingAuthR extends AbstractCommonState {
             try {
                 return handleAuthRMessage(context, (AuthRMessage) message);
             } catch (final OtrCryptoException | ValidationException e) {
-                // FIXME consider how to handle this case and where.
                 LOGGER.log(WARNING, "Failed to process Auth-R message.", e);
                 return null;
             }
         }
         // OTR: "Ignore the message."
-        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-R message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+        LOGGER.log(INFO, "We only expect to receive an Identity message or an Auth-R message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
                 message.getType());
         return null;
     }
@@ -176,6 +174,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         this.dhKeyPair.close();
         this.ecdhKeyPair.close();
         // Pretend we are still in initial state and handle Identity message accordingly.
+        // FIXME this will probably fail the "transition" sanity check, as the StatePlaintext instance isn't the current state in 'context'. (Write unit test to prove this.)
         return new StatePlaintext(getAuthState()).handleAKEMessage(context, message);
     }
 

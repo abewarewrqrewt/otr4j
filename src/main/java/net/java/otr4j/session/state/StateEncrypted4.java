@@ -43,7 +43,7 @@ import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
 
 /**
- * The OTRv4 ENCRYPTED message state.
+ * The OTRv4 ENCRYPTED_MESSAGES state.
  */
 // TODO signal errors in data message using ERROR_2 indicator.
 // FIXME write additional unit tests for StateEncrypted4

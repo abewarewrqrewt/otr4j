@@ -42,7 +42,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.INFO;
 import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 import static net.java.otr4j.api.Session.Version.FOUR;
@@ -128,8 +128,7 @@ public final class StatePlaintext extends AbstractCommonState {
         try {
             return handleIdentityMessage(context, (IdentityMessage) message);
         } catch (final OtrCryptoException | ValidationException e) {
-            // FIXME consider how to handle this case and where.
-            LOGGER.log(WARNING, "Failed to process Identity message.", e);
+            LOGGER.log(INFO, "Failed to process Identity message.", e);
             return null;
         }
     }

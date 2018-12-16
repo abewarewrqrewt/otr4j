@@ -35,10 +35,10 @@ import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
@@ -141,8 +141,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
             try {
                 return handleIdentityMessage(context, (IdentityMessage) message);
             } catch (final OtrCryptoException | ValidationException e) {
-                // FIXME consider how to handle this case and where.
-                LOGGER.log(WARNING, "Failed to process Identity message.", e);
+                LOGGER.log(INFO, "Failed to process Identity message.", e);
                 return null;
             }
         }
@@ -157,7 +156,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
             }
         }
         // OTR: "Ignore the message."
-        LOGGER.log(Level.INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
+        LOGGER.log(INFO, "We only expect to receive an Identity message or an Auth-I message or its protocol version does not match expectations. Ignoring message with messagetype: {0}",
                 message.getType());
         return null;
     }
