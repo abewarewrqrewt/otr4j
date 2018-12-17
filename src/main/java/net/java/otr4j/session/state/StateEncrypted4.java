@@ -19,6 +19,8 @@ import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.smpv4.SMP;
 import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
@@ -35,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
+import static java.util.logging.Level.INFO;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
@@ -162,7 +165,17 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        // FIXME implement handling DAKE messages.
+        if (message instanceof IdentityMessage) {
+            try {
+                // FIXME we suddenly transition out of ENCRYPTED_MESSAGES, now what do we do if user tries to send messages? We don't want them to suddenly be unencrypted.
+                return handleIdentityMessage(context, (IdentityMessage) message);
+            } catch (final OtrCryptoException | ValidationException e) {
+                logger.log(INFO, "Failed to process Identity message.", e);
+                return null;
+            }
+        }
+        logger.log(INFO, "We only expect to receive an Identity message. Ignoring message with messagetype: {0}",
+                message.getType());
         return null;
     }
 
@@ -205,7 +218,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             dmc = this.ratchet.decrypt(message.getI(), message.getJ(), encodeDataMessageSections(message),
                     message.getAuthenticator(), message.getCiphertext(), message.getNonce());
         } catch (final RotationLimitationException e) {
-            this.logger.log(Level.INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
+            this.logger.log(INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
             handleUnreadableMessage(context, message);
             return null;
         } catch (final VerificationException e) {
@@ -249,7 +262,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
-                logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
+                logger.log(INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
                 break;
             }
         }

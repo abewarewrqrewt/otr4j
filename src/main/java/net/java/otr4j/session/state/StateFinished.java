@@ -10,11 +10,14 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.logging.Level.INFO;
 import static net.java.otr4j.api.OtrEngineHostUtil.finishedSessionMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 
@@ -85,7 +89,17 @@ final class StateFinished extends AbstractCommonState {
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        // FIXME implement handling DAKE messages.
+        if (message instanceof IdentityMessage) {
+            try {
+                // FIXME we suddenly transition out of FINISHED state (which may have entered only just now), now what do we do if user tries to send messages? We don't want them to suddenly be unencrypted.
+                return handleIdentityMessage(context, (IdentityMessage) message);
+            } catch (final OtrCryptoException | ValidationException e) {
+                LOGGER.log(INFO, "Failed to process Identity message.", e);
+                return null;
+            }
+        }
+        LOGGER.log(INFO, "We only expect to receive an Identity message. Ignoring message with messagetype: {0}",
+                message.getType());
         return null;
     }
 

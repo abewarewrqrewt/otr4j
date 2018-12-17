@@ -165,6 +165,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
      * Handle Identity message.
      * <p>
      * This implementation deviates from the implementation in StateInitial as we reuse previously generated variables.
+     * Effectively it is a short-hand, because we, the local user, does not have to start from scratch.
      *
      * @param message the identity message
      * @return Returns the Auth-R message to send
@@ -172,7 +173,9 @@ final class StateAwaitingAuthI extends AbstractCommonState {
      *                             message.
      * @throws ValidationException In case of failure to validate other party's identity message or client profile.
      */
-    private AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
+    @Nonnull
+    @Override
+    AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
             throws OtrCryptoException, ValidationException {
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
         IdentityMessages.validate(message, theirNewClientProfile);
