@@ -12,7 +12,6 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
@@ -99,7 +98,7 @@ public final class StatePlaintext extends AbstractCommonState {
         }
         try {
             return handleIdentityMessage(context, (IdentityMessage) message);
-        } catch (final OtrCryptoException | ValidationException e) {
+        } catch (final ValidationException e) {
             LOGGER.log(INFO, "Failed to process Identity message.", e);
             return null;
         }

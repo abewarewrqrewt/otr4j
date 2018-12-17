@@ -14,7 +14,6 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
@@ -89,7 +88,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
     }
 
     /**
-     * Abstract method for handling OTRv4 (D)AKE messages.
+     * Method for handling OTRv4 DAKE messages.
      *
      * @param context the session context
      * @param message the AKE message
@@ -98,9 +97,17 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
     @Nullable
     abstract AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message);
 
+    /**
+     * Common implementation for handling OTRv4 Identity message that is shared among states.
+     *
+     * @param context the session context
+     * @param message the Identity message to be processed
+     * @return Returns reply to Identity message.
+     * @throws ValidationException In case of failing to validate received Identity message.
+     */
     @Nonnull
     AbstractEncodedMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
-            throws OtrCryptoException, ValidationException {
+            throws ValidationException {
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         validate(message, theirClientProfile);
         final ClientProfilePayload profile = context.getClientProfilePayload();

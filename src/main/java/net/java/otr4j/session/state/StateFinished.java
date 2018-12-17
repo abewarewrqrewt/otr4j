@@ -10,7 +10,6 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
@@ -92,7 +91,7 @@ final class StateFinished extends AbstractCommonState {
             try {
                 // FIXME we suddenly transition out of FINISHED state (which may have entered only just now), now what do we do if user tries to send messages? We don't want them to suddenly be unencrypted.
                 return handleIdentityMessage(context, (IdentityMessage) message);
-            } catch (final OtrCryptoException | ValidationException e) {
+            } catch (final ValidationException e) {
                 LOGGER.log(INFO, "Failed to process Identity message.", e);
                 return null;
             }

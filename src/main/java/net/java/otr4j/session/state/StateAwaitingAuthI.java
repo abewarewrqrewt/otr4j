@@ -137,7 +137,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         if (message instanceof IdentityMessage) {
             try {
                 return handleIdentityMessage(context, (IdentityMessage) message);
-            } catch (final OtrCryptoException | ValidationException e) {
+            } catch (final ValidationException e) {
                 LOGGER.log(INFO, "Failed to process Identity message.", e);
                 return null;
             }
@@ -166,14 +166,12 @@ final class StateAwaitingAuthI extends AbstractCommonState {
      *
      * @param message the identity message
      * @return Returns the Auth-R message to send
-     * @throws OtrCryptoException  In case of failure to validate cryptographic components in other party's identity
-     *                             message.
      * @throws ValidationException In case of failure to validate other party's identity message or client profile.
      */
     @Nonnull
     @Override
     AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
-            throws OtrCryptoException, ValidationException {
+            throws ValidationException {
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
         IdentityMessages.validate(message, theirNewClientProfile);
         final SessionID sessionID = context.getSessionID();

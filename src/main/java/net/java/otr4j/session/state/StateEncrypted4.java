@@ -171,7 +171,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             try {
                 // FIXME we suddenly transition out of ENCRYPTED_MESSAGES, now what do we do if user tries to send messages? We don't want them to suddenly be unencrypted.
                 return handleIdentityMessage(context, (IdentityMessage) message);
-            } catch (final OtrCryptoException | ValidationException e) {
+            } catch (final ValidationException e) {
                 logger.log(INFO, "Failed to process Identity message.", e);
                 return null;
             }
