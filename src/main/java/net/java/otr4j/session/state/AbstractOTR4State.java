@@ -7,22 +7,29 @@
 
 package net.java.otr4j.session.state;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
+import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthState;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +38,11 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
+import static net.java.otr4j.messages.IdentityMessages.validate;
+import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
+import static net.java.otr4j.messages.MysteriousT4.encode;
 
 abstract class AbstractOTR4State extends AbstractOTR3State {
 
@@ -86,6 +97,34 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
      */
     @Nullable
     abstract AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message);
+
+    @Nonnull
+    AbstractEncodedMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
+            throws OtrCryptoException, ValidationException {
+        final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        validate(message, theirClientProfile);
+        final ClientProfilePayload profile = context.getClientProfilePayload();
+        final SecureRandom secureRandom = context.secureRandom();
+        final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
+        final DHKeyPair a = DHKeyPair.generate(secureRandom);
+        final SessionID sessionID = context.getSessionID();
+        final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
+        // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
+        // Generate t value and calculate sigma based on known facts and generated t value.
+        final String queryTag = context.getQueryTag();
+        final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
+                a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
+                context.getReceiverInstanceTag().getValue(), queryTag, sessionID.getAccountID(),
+                sessionID.getUserID());
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
+                theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+        // Generate response message and transition into next state.
+        final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
+        context.transition(this, new StateAwaitingAuthI(getAuthState(), queryTag, x, a, message.getY(), message.getB(),
+                profile, message.getClientProfile()));
+        return authRMessage;
+    }
 
     @Nonnull
     @Override
