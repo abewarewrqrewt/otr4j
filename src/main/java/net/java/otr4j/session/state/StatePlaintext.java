@@ -8,7 +8,6 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.ClientProfile;
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
@@ -59,7 +58,6 @@ import static net.java.otr4j.messages.MysteriousT4.encode;
  * @author Danny van Heumen
  */
 // FIXME write additional unit tests for StatePlaintext
-// FIXME clean up method implementations now that we base on AbstractCommonState.
 public final class StatePlaintext extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
@@ -71,13 +69,6 @@ public final class StatePlaintext extends AbstractCommonState {
      */
     public StatePlaintext(@Nonnull final AuthState authState) {
         super(authState);
-    }
-
-    @Nonnull
-    @Override
-    public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version,
-            @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final String queryTag) {
-        return super.initiateAKE(context, version, receiverInstanceTag, queryTag);
     }
 
     @Override
