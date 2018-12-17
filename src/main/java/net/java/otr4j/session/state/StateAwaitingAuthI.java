@@ -134,9 +134,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        if (!context.getSessionPolicy().isAllowV4()) {
-            throw new IllegalStateException("BUG: How could we have entered an OTRv4 message state if OTRv4 is not allowed by policy?");
-        }
         if (message instanceof IdentityMessage) {
             try {
                 return handleIdentityMessage(context, (IdentityMessage) message);
