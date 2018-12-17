@@ -33,11 +33,13 @@ import javax.annotation.Nullable;
 import java.net.ProtocolException;
 import java.security.interfaces.DSAPublicKey;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.crypto.SharedSecret4.initialize;
@@ -143,11 +145,11 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();
-            this.logger.log(Level.FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
+            this.logger.log(FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
                     new Object[] {rotation.dhPublicKey != null, rotation.revealedMacs.length});
         } else {
             rotation = null;
-            this.logger.log(Level.FINEST, "Sender keys rotation is not needed.");
+            this.logger.log(FINEST, "Sender keys rotation is not needed.");
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
         final EncryptionResult result = this.ratchet.encrypt(msgBytes);
@@ -222,7 +224,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             handleUnreadableMessage(context, message);
             return null;
         } catch (final VerificationException e) {
-            this.logger.log(Level.FINE, "Received message fails verification. Rejecting the message.");
+            this.logger.log(FINE, "Received message fails verification. Rejecting the message.");
             handleUnreadableMessage(context, message);
             return null;
         }
@@ -230,10 +232,10 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
-            logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
+            logger.log(FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
                 if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
-                    logger.log(Level.WARNING, "Other party is using a faulty OTR client: all SMP messages are expected to have the IGNORE_UNREADABLE flag set.");
+                    logger.log(WARNING, "Other party is using a faulty OTR client: all SMP messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
                 try {
                     final TLV response = this.smp.process(tlv);
@@ -241,7 +243,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                         context.injectMessage(transformSending(context, "", singletonList(response), FLAG_IGNORE_UNREADABLE));
                     }
                 } catch (final ProtocolException | OtrCryptoException e) {
-                    this.logger.log(Level.WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
+                    this.logger.log(WARNING, "Illegal, bad or corrupt SMP TLV encountered. Stopped processing. This may indicate a bad implementation of OTR at the other party.",
                             e);
                 }
                 continue;
@@ -252,7 +254,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 break;
             case TLV.DISCONNECTED: // TLV1
                 if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
-                    logger.log(Level.WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
+                    logger.log(WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
                 if (!content.message.isEmpty()) {
                     logger.warning("Expected other party to send TLV type 1 with empty human-readable message.");
