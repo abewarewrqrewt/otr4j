@@ -169,7 +169,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
         if (message instanceof IdentityMessage) {
             try {
-                // FIXME we suddenly transition out of ENCRYPTED_MESSAGES, now what do we do if user tries to send messages? We don't want them to suddenly be unencrypted.
                 return handleIdentityMessage(context, (IdentityMessage) message);
             } catch (final ValidationException e) {
                 logger.log(INFO, "Failed to process Identity message.", e);

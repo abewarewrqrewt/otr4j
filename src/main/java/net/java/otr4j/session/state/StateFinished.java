@@ -38,7 +38,7 @@ import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
  *
  * @author Danny van Heumen
  */
-// FIXME write additional unit tests for StatePlaintext
+// FIXME write additional unit tests for StateFinished
 final class StateFinished extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StateFinished.class.getName());
@@ -89,7 +89,6 @@ final class StateFinished extends AbstractCommonState {
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
         if (message instanceof IdentityMessage) {
             try {
-                // FIXME we suddenly transition out of FINISHED state (which may have entered only just now), now what do we do if user tries to send messages? We don't want them to suddenly be unencrypted.
                 return handleIdentityMessage(context, (IdentityMessage) message);
             } catch (final ValidationException e) {
                 LOGGER.log(INFO, "Failed to process Identity message.", e);
@@ -104,7 +103,7 @@ final class StateFinished extends AbstractCommonState {
     @Override
     @Nullable
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
-        LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
+        LOGGER.log(Level.FINEST, "Received OTRv2/3 data message in FINISHED state. Message cannot be read.");
         handleUnreadableMessage(context, message);
         return null;
     }

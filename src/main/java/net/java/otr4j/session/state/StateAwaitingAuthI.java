@@ -126,7 +126,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     @Override
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs, final byte flags) {
-        // FIXME implement transformSending
+        // FIXME queue messages to send, such that we do not unintentionally send unencrypted.
         throw new UnsupportedOperationException("To be implemented");
     }
 
@@ -146,7 +146,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 handleAuthIMessage(context, (AuthIMessage) message);
                 return null;
             } catch (final ValidationException e) {
-                // FIXME consider how to handle this case and where.
                 LOGGER.log(WARNING, "Failed to process Auth-I message.", e);
                 return null;
             }

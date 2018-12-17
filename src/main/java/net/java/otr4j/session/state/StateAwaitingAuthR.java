@@ -127,7 +127,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
     @Override
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final List<TLV> tlvs, final byte flags) {
-        // FIXME implement transformSending
+        // FIXME queue messages to send, such that we do not unintentionally send unencrypted.
         throw new UnsupportedOperationException("To be implemented");
     }
 

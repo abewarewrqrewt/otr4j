@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
+import static java.util.logging.Level.FINE;
 import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
 import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
@@ -60,7 +61,6 @@ import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
  * @author Danny van Heumen
  */
 // FIXME write additional unit tests for StateEncrypted3
-// FIXME ensure that even in StateEncrypted3 we can handle DAKE messages
 final class StateEncrypted3 extends AbstractCommonState implements StateEncrypted {
 
     /**
@@ -157,7 +157,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
-        // FIXME implement handling DAKE messages.
+        logger.log(FINE, " Ignoring OTRv4 DAKE message as we are in OTRv3 encrypted message state.");
         return null;
     }
 
@@ -213,7 +213,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         // Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
-            logger.log(Level.FINE, "Received TLV type {0}", tlv.getType());
+            logger.log(FINE, "Received TLV type {0}", tlv.getType());
             if (smpPayload(tlv)) {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
