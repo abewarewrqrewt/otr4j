@@ -14,7 +14,6 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.Message;
@@ -146,7 +145,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         if (message instanceof AuthRMessage) {
             try {
                 return handleAuthRMessage(context, (AuthRMessage) message);
-            } catch (final OtrCryptoException | ValidationException e) {
+            } catch (final ValidationException e) {
                 LOGGER.log(WARNING, "Failed to process Auth-R message.", e);
                 return null;
             }
@@ -177,7 +176,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
 
     @Nonnull
     private AuthIMessage handleAuthRMessage(@Nonnull final Context context, @Nonnull final AuthRMessage message)
-            throws OtrCryptoException, ValidationException {
+            throws ValidationException {
         final SessionID sessionID = context.getSessionID();
         final EdDSAKeyPair ourLongTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         final ClientProfile ourClientProfile = this.ourProfilePayload.validate();
