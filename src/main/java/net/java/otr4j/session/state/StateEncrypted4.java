@@ -179,6 +179,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     }
 
     // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...) - should fix itself once extra DAKE state is introduced.
+    // FIXME handle case where first data messages (Data messages with ratchet id 0) arrive before very first message is received, hence Double Ratchet not yet fully initialized.
     // FIXME write tests for SMP_ABORT sets UNREADABLE flag, SMP payload corrupted, SMP payload incomplete, ...
     @Nullable
     @Override
