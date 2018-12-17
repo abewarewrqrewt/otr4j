@@ -247,6 +247,9 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
                     logger.log(Level.WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
+                if (!content.message.isEmpty()) {
+                    logger.warning("Expected other party to send TLV type 1 with empty human-readable message.");
+                }
                 this.ratchet.forgetRemainingMACsToReveal();
                 context.transition(this, new StateFinished(getAuthState()));
                 break;

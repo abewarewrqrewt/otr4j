@@ -237,6 +237,9 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
+                if (!content.message.isEmpty()) {
+                    logger.warning("Expected other party to send TLV type 1 with empty human-readable message.");
+                }
                 context.transition(this, new StateFinished(getAuthState()));
                 break;
             case USE_EXTRA_SYMMETRIC_KEY:
