@@ -13,7 +13,6 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -146,7 +145,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
             try {
                 handleAuthIMessage(context, (AuthIMessage) message);
                 return null;
-            } catch (final OtrCryptoException | ValidationException e) {
+            } catch (final ValidationException e) {
                 // FIXME consider how to handle this case and where.
                 LOGGER.log(WARNING, "Failed to process Auth-I message.", e);
                 return null;
@@ -194,7 +193,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     }
 
     private void handleAuthIMessage(@Nonnull final Context context, @Nonnull final AuthIMessage message)
-            throws OtrCryptoException, ValidationException {
+            throws ValidationException {
         final ClientProfile profileBobValidated = this.profileBob.validate();
         final ClientProfile ourProfileValidated = this.ourProfile.validate();
         validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,

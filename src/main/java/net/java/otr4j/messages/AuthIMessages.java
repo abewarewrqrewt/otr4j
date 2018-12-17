@@ -42,15 +42,13 @@ public final class AuthIMessages {
      * @param b                 ephemeral DH public key 'B'
      * @param senderAccountID   sender account ID
      * @param receiverAccountID receiver account ID
-     * @throws OtrCryptoException  In case of failure during ring signature verification.
      * @throws ValidationException In case validation fails.
      */
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
             @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfilePayload profileBobPayload, @Nonnull final ClientProfile profileBob,
             @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
-            @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID)
-            throws OtrCryptoException, ValidationException {
+            @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID) throws ValidationException {
         if (!message.senderInstanceTag.equals(profileBob.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
@@ -59,6 +57,10 @@ public final class AuthIMessages {
         final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
                 message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
                 receiverAccountID);
-        ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.getSigma(), t);
+        try {
+            ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.getSigma(), t);
+        } catch (final OtrCryptoException e) {
+            throw new ValidationException("Ring signature verification failed.", e);
+        }
     }
 }
