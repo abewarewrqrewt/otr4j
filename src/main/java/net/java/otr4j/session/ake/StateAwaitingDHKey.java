@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session.ake;
 
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine;
@@ -48,7 +49,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     StateAwaitingDHKey(final int version, @Nonnull final DHKeyPairOTR3 keypair, @Nonnull final byte[] r) {
         super();
-        if (version < 2 || version > 3) {
+        if (version < Version.TWO || version > Version.THREE) {
             throw new IllegalArgumentException("unsupported version specified");
         }
         this.version = version;

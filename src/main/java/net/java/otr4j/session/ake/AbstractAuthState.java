@@ -8,7 +8,6 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
@@ -41,16 +40,13 @@ abstract class AbstractAuthState implements AuthState {
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
             @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
-        if (!Version.SUPPORTED.contains(version)) {
-            throw new IllegalArgumentException("unknown or unsupported protocol version");
-        }
-        if (version == Version.TWO || version == Session.Version.THREE) {
+        if (version == Version.TWO || version == Version.THREE) {
             return initiateVersion3(context, version, receiverTag);
-        } else if (version == Version.FOUR) {
-            throw new IllegalArgumentException("protocol version 4 is handled outside of AKE package, as part of message state machine.");
-        } else {
-            throw new UnsupportedOperationException("Unsupported protocol version.");
         }
+        if (version == Version.FOUR) {
+            throw new IllegalArgumentException("Protocol version 4 is handled outside of AKE package, as part of message state machine.");
+        }
+        throw new UnsupportedOperationException("Unsupported protocol version.");
     }
 
     @Nonnull

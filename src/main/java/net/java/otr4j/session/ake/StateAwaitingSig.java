@@ -8,6 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -58,7 +59,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             @Nonnull final DHPublicKey remoteDHPublicKey, @Nonnull final SharedSecret s,
             @Nonnull final RevealSignatureMessage previousRevealSigMessage) {
         super();
-        if (version < 2 || version > 3) {
+        if (version < Version.TWO || version > Version.THREE) {
             throw new IllegalArgumentException("unsupported version specified");
         }
         this.version = version;
