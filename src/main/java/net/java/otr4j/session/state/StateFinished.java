@@ -75,11 +75,6 @@ final class StateFinished extends AbstractCommonState {
     }
 
     @Override
-    public void destroy() {
-        // no sensitive material to destroy
-    }
-
-    @Override
     @Nonnull
     public String handlePlainTextMessage(@Nonnull final Context context, @Nonnull final PlainTextMessage plainTextMessage) {
         // Display the message to the user, but warn him that the message was received unencrypted.
@@ -121,5 +116,10 @@ final class StateFinished extends AbstractCommonState {
     @Override
     public void end(@Nonnull final Context context) {
         context.transition(this, new StatePlaintext(getAuthState()));
+    }
+
+    @Override
+    public void destroy() {
+        // no sensitive material to destroy
     }
 }

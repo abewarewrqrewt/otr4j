@@ -154,12 +154,6 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         return this.sessionKeyManager.extraSymmetricKey();
     }
 
-    @Override
-    public void destroy() {
-        this.smpTlvHandler.close();
-        this.sessionKeyManager.close();
-    }
-
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
@@ -331,5 +325,11 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
             // have problems injecting the message into the transport.
             context.transition(this, new StatePlaintext(getAuthState()));
         }
+    }
+
+    @Override
+    public void destroy() {
+        this.smpTlvHandler.close();
+        this.sessionKeyManager.close();
     }
 }

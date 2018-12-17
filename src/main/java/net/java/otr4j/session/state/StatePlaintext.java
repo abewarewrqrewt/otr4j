@@ -109,11 +109,6 @@ public final class StatePlaintext extends AbstractCommonState {
         throw new IncorrectStateException("Extra symmetric key is not available in plaintext state.");
     }
 
-    @Override
-    public void destroy() {
-        // no sensitive material to destroy
-    }
-
     @Nullable
     @Override
     AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
@@ -215,5 +210,10 @@ public final class StatePlaintext extends AbstractCommonState {
     @Override
     public void end(@Nonnull final Context context) {
         // already in "ended" state
+    }
+
+    @Override
+    public void destroy() {
+        // no sensitive material to destroy
     }
 }

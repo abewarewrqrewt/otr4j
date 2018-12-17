@@ -97,12 +97,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     }
 
     @Override
-    public void destroy() {
-        this.ratchet.close();
-        this.smp.close();
-    }
-
-    @Override
     public int getVersion() {
         return VERSION;
     }
@@ -280,5 +274,11 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             // have problems injecting the message into the transport.
             context.transition(this, new StatePlaintext(getAuthState()));
         }
+    }
+
+    @Override
+    public void destroy() {
+        this.ratchet.close();
+        this.smp.close();
     }
 }

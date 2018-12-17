@@ -216,12 +216,13 @@ final class StateAwaitingAuthR extends AbstractCommonState {
 
     @Override
     public void end(@Nonnull final Context context) {
-        // FIXME implement end
-        throw new UnsupportedOperationException("To be implemented");
+        this.dhKeyPair.close();
+        this.ecdhKeyPair.close();
+        context.transition(this, new StatePlaintext(getAuthState()));
     }
 
     @Override
     public void destroy() {
-        // no sensitive material to destroy
+        // no sensitive material to destroy (i.e. we need to destroy different material for different transitions)
     }
 }
