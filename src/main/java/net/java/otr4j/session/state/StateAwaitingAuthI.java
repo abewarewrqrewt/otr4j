@@ -10,13 +10,11 @@ package net.java.otr4j.session.state;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
-import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
-import net.java.otr4j.io.Message;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthIMessage;
 import net.java.otr4j.messages.AuthRMessage;
@@ -33,7 +31,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.interfaces.DSAPublicKey;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
@@ -120,14 +117,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     @Nonnull
     public SMPHandler getSmpHandler() throws IncorrectStateException {
         throw new IncorrectStateException("SMP negotiation is not available until encrypted session is fully established.");
-    }
-
-    @Nullable
-    @Override
-    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) {
-        // FIXME queue messages to send, such that we do not unintentionally send unencrypted.
-        throw new UnsupportedOperationException("To be implemented");
     }
 
     @Nullable

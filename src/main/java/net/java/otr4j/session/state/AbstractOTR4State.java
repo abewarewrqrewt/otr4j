@@ -17,6 +17,7 @@ import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
+import net.java.otr4j.io.Message;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -150,6 +152,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         return message;
     }
 
+    // FIXME send queued up messages after the secure session has been established.
     void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         try {
             final StateEncrypted4 encrypted = new StateEncrypted4(context, params, getAuthState());
@@ -190,4 +193,22 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
     @Nullable
     abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage4 message)
             throws ProtocolException, OtrException;
+
+    /**
+     * Implementation of {@code transformSending(Context, String, List, byte)} that queues up messages until a OTRv4
+     * `ENCRYPTED_MESSAGES` state is acquired. Then sends all queued up messages.
+     *
+     * @param context The message state context.
+     * @param msgText The message ready to be sent.
+     * @param tlvs    List of TLVs to attach to the message.
+     * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
+     * @return Returns null as there is nothing to send immediately.
+     */
+    @Nullable
+    @Override
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final List<TLV> tlvs, final byte flags) {
+        // FIXME queue messages to send, such that we do not unintentionally send unencrypted.
+        throw new UnsupportedOperationException("To be implemented");
+    }
 }

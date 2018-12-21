@@ -27,8 +27,8 @@ public interface StateEncrypted extends State {
     @Override
     SMPHandler getSmpHandler();
 
-    @Override
     @Nonnull
-    AbstractEncodedMessage transformSending(@Nonnull final Context context, @Nonnull String msgText,
-            @Nonnull List<TLV> tlvs, byte flags) throws OtrException;
+    @Override
+    AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
+            byte flags) throws OtrException;
 }

@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 /**
  * Class representing OTR Type-Length-Value tuples.
  */
+//FIXME consider going back to public final fields such that getter is unnecessary and PMD warning is mitigated.
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class TLV {
 

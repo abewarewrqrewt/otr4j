@@ -88,8 +88,9 @@ public interface State {
      * @return Returns message to be sent over IM transport.
      * @throws OtrException In case an exception occurs.
      */
+    // FIXME consider reducing collection for tlvs to Collection or Iterable, i.s.o. List. We don't really care about the order if the user doesn't.
     @Nullable
-    Message transformSending(@Nonnull final Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
+    Message transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
             final byte flags) throws OtrException;
 
     /**
