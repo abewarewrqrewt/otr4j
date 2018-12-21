@@ -22,7 +22,6 @@ import net.java.otr4j.session.api.SMPHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
-import java.util.List;
 
 /**
  * Interface to the Message state.
@@ -83,14 +82,13 @@ public interface State {
      *
      * @param context The message state context.
      * @param msgText The message ready to be sent.
-     * @param tlvs    List of TLVs.
+     * @param tlvs    TLVs.
      * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
      * @return Returns message to be sent over IM transport.
      * @throws OtrException In case an exception occurs.
      */
-    // FIXME consider reducing collection for tlvs to Collection or Iterable, i.s.o. List. We don't really care about the order if the user doesn't.
     @Nullable
-    Message transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull List<TLV> tlvs,
+    Message transformSending(@Nonnull Context context, @Nonnull String msgText, @Nonnull Iterable<TLV> tlvs,
             final byte flags) throws OtrException;
 
     /**

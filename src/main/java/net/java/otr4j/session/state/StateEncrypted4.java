@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
 import java.security.interfaces.DSAPublicKey;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
@@ -141,7 +140,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Nonnull
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) {
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) {
         final RotationResult rotation;
         if (this.ratchet.isNeedSenderKeyRotation()) {
             rotation = this.ratchet.rotateSenderKeys();

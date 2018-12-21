@@ -31,7 +31,6 @@ import javax.annotation.Nullable;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -203,11 +202,12 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
      * @param tlvs    List of TLVs to attach to the message.
      * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
      * @return Returns null as there is nothing to send immediately.
+     * @throws OtrException In case an exception occurs.
      */
     @Nullable
     @Override
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) {
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) throws OtrException {
         // FIXME queue messages to send, such that we do not unintentionally send unencrypted.
         throw new UnsupportedOperationException("To be implemented");
     }

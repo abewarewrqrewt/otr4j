@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,7 +124,7 @@ public final class StatePlaintext extends AbstractCommonState {
     @Override
     @Nullable
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) throws OtrException {
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) throws OtrException {
         final OtrPolicy otrPolicy = context.getSessionPolicy();
         if (otrPolicy.isRequireEncryption()) {
             // Prevent original message from being sent. Start AKE.

@@ -23,7 +23,6 @@ import net.java.otr4j.session.api.SMPHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -119,7 +118,7 @@ final class StateFinished extends AbstractCommonState {
     @Override
     @Nullable
     public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final List<TLV> tlvs, final byte flags) {
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) {
         finishedSessionMessage(context.getHost(), context.getSessionID(), msgText);
         return null;
     }
