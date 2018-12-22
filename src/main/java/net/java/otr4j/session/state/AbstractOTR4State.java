@@ -13,7 +13,7 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
-import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.io.EncodedMessage;
@@ -124,8 +124,8 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
                 a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
                 context.getReceiverInstanceTag().getValue(), queryTag, sessionID.getAccountID(),
                 sessionID.getUserID());
-        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, longTermKeyPair,
-                theirClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+        final Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getForgingKey(),
+                longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
