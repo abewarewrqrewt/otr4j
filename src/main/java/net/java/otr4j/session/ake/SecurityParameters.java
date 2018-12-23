@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session.ake;
 
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
@@ -35,7 +36,7 @@ public final class SecurityParameters {
     SecurityParameters(final int version, @Nonnull final DHKeyPairOTR3 localDHKeyPair,
             @Nonnull final DSAPublicKey remoteLongTermPublicKey, @Nonnull final DHPublicKey remoteDHPublicKey,
             @Nonnull final SharedSecret s) {
-        if (version < 2 || version > 3) {
+        if (version < Version.TWO || version > Version.THREE) {
             throw new IllegalArgumentException("Illegal version value specified.");
         }
         this.version = version;

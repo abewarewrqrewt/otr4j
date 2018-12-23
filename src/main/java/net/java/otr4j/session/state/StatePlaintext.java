@@ -14,8 +14,11 @@ import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
+import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
+import net.java.otr4j.messages.IdentityMessage;
+import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.api.SMPHandler;
 
@@ -23,13 +26,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.logging.Level.INFO;
 import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
-import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
 
 /**
@@ -40,18 +42,17 @@ import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
  * @author Danny van Heumen
  */
 // FIXME write additional unit tests for StatePlaintext
-public final class StatePlaintext extends AbstractState {
+public final class StatePlaintext extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StatePlaintext.class.getName());
 
     /**
      * Constructor for the Plaintext message state.
      *
-     * @param context   the Message state machine context instance.
      * @param authState the initial authentication (AKE) state instance.
      */
-    public StatePlaintext(@Nonnull final Context context, @Nonnull final AuthState authState) {
-        super(context, authState);
+    public StatePlaintext(@Nonnull final AuthState authState) {
+        super(authState);
     }
 
     @Override
@@ -83,42 +84,47 @@ public final class StatePlaintext extends AbstractState {
         throw new IncorrectStateException("Extra symmetric key is not available in plaintext state.");
     }
 
-    @Override
-    public void destroy() {
-        // no sensitive material to destroy
-    }
-
-    @Override
-    @Nullable
-    public String handleDataMessage(@Nonnull final DataMessage message) throws OtrException {
-        LOGGER.log(Level.FINEST, "Received OTRv3 data message in PLAINTEXT state. Message cannot be read.");
-        handleUnreadableMessage(message);
-        return null;
-    }
-
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final DataMessage4 message) throws OtrException {
-        LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
-        handleUnreadableMessage(message);
-        return null;
-    }
-
-    @Override
-    @Nonnull
-    public String handlePlainTextMessage(@Nonnull final PlainTextMessage plainTextMessage) {
-        // Simply display the message to the user. If REQUIRE_ENCRYPTION is set,
-        // warn him that the message was received unencrypted.
-        if (context.getSessionPolicy().isRequireEncryption()) {
-            unencryptedMessageReceived(context.getHost(), getSessionID(), plainTextMessage.getCleanText());
+    AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message) {
+        if (!context.getSessionPolicy().isAllowV4()) {
+            LOGGER.finest("ALLOW_V4 is not set, ignore this message.");
+            return null;
         }
-        return plainTextMessage.getCleanText();
+        if (!(message instanceof IdentityMessage)) {
+            LOGGER.log(Level.FINE, "Ignoring unexpected DAKE message type: " + message.getType());
+            return null;
+        }
+        try {
+            return handleIdentityMessage(context, (IdentityMessage) message);
+        } catch (final ValidationException e) {
+            LOGGER.log(INFO, "Failed to process Identity message.", e);
+            return null;
+        }
     }
 
     @Override
     @Nullable
-    public Message transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs, final byte flags)
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
             throws OtrException {
+        LOGGER.log(Level.FINEST, "Received OTRv3 data message in PLAINTEXT state. Message cannot be read.");
+        handleUnreadableMessage(context, message);
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+            throws OtrException {
+        LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
+        handleUnreadableMessage(context, message);
+        return null;
+    }
+
+    @Override
+    @Nullable
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) throws OtrException {
         final OtrPolicy otrPolicy = context.getSessionPolicy();
         if (otrPolicy.isRequireEncryption()) {
             // Prevent original message from being sent. Start AKE.
@@ -126,7 +132,7 @@ public final class StatePlaintext extends AbstractState {
                 throw new OtrException("OTR policy disallows all versions of the OTR protocol. We cannot initiate a new OTR session.");
             }
             context.startSession();
-            requireEncryptedMessage(context.getHost(), getSessionID(), msgText);
+            requireEncryptedMessage(context.getHost(), context.getSessionID(), msgText);
             return null;
         }
         if (!otrPolicy.isSendWhitespaceTag() || context.getOfferStatus() == OfferStatus.REJECTED) {
@@ -147,7 +153,12 @@ public final class StatePlaintext extends AbstractState {
     }
 
     @Override
-    public void end() {
+    public void end(@Nonnull final Context context) {
         // already in "ended" state
+    }
+
+    @Override
+    public void destroy() {
+        // no sensitive material to destroy
     }
 }

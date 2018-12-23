@@ -13,25 +13,27 @@ Development stages:
 
 * ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
 * ✔ Socialist Millionaire's Protocol for OTRv4.
+* ✔ Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * ⌛ Migrate Ed448-Goldilocks implementation to Bouncy Castle.
   * ✔ EdDSA long-term keypair
   * ECDH keypair  
   _Requires additions to the BouncyCastle API, as certain necessary operations are not currently supplied._
   * Verify if implementation is still concise and simple, given recent modifications to Point and Scalar internals.
-* Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * Support for skipped messages, keeping track of skipped message keys.
 * Full implementation of "OTRv3-compatible" + "OTRv4 Interactive" use-case (including all FIXMEs)
 * ... (OTRv4 Non-interactive, ...)
 * Clean up remaining TODOs
+* Review the many logging statements and verify if log levels are reasonable.
 
 ## Functionality
 
 * General Off-the-record operation:
   * ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
   * ☑ Persistent instance tags
+  * ☑ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
   * ☐ OTRv4 extension to OTR Error messages
-  * ☐ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
   * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
+  * ☐ Queueing of messages while not in `ENCRYPTED_MESSAGES` state.
 * Cryptographic primitives:
   * Edd448-Goldilocks elliptic curve (temporary solution)
     * ☑ Temporary working solution
@@ -132,7 +134,7 @@ Development stages:
 
 ## Architectural considerations
 
-* Correctness of protocol implementation. (Obviously)
+* Correctness of protocol implementation.
 * Encapsulation of cryptographic material to prevent mistakes, misuse, excessive exposure.
 * Design/structure that prevents or makes obvious programming errors.
 * Restricted implementation, only as much abstraction as needed. (Simplicity)

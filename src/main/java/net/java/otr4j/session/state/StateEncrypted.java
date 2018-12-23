@@ -13,7 +13,6 @@ import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * StateEncrypted represents the <i>Encrypted</i> messaging states.
@@ -27,8 +26,8 @@ public interface StateEncrypted extends State {
     @Override
     SMPHandler getSmpHandler();
 
-    @Override
     @Nonnull
-    AbstractEncodedMessage transformSending(@Nonnull String msgText, @Nonnull List<TLV> tlvs, byte flags)
-            throws OtrException;
+    @Override
+    AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText,
+            @Nonnull Iterable<TLV> tlvs, byte flags) throws OtrException;
 }

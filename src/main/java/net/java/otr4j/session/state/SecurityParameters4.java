@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package net.java.otr4j.session.ake;
+package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.crypto.DHKeyPair;
@@ -24,8 +24,7 @@ import static java.util.Objects.requireNonNull;
  * <p>
  * Container that contains the negotiated security parameters during an OTRv4 Interactive DAKE session.
  */
-// FIXME migrate into Message State state machine.
-public final class SecurityParameters4 implements AutoCloseable {
+final class SecurityParameters4 implements AutoCloseable {
 
     private final Component initializationComponent;
     private final ECDHKeyPair ecdhKeyPair;
@@ -70,7 +69,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * @return Returns initialization component.
      */
     @Nonnull
-    public Component getInitializationComponent() {
+    Component getInitializationComponent() {
         return initializationComponent;
     }
 
@@ -80,7 +79,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * @return Returns ECDH public key.
      */
     @Nonnull
-    public Point getTheirECDHPublicKey() {
+    Point getTheirECDHPublicKey() {
         return theirECDHPublicKey;
     }
 
@@ -90,7 +89,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * @return Returns DH public key.
      */
     @Nonnull
-    public BigInteger getTheirDHPublicKey() {
+    BigInteger getTheirDHPublicKey() {
         return theirDHPublicKey;
     }
 
@@ -100,7 +99,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * @return Returns our client profile.
      */
     @Nonnull
-    public ClientProfile getOurProfile() {
+    ClientProfile getOurProfile() {
         return ourProfile;
     }
 
@@ -110,7 +109,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * @return Returns their client profile.
      */
     @Nonnull
-    public ClientProfile getTheirProfile() {
+    ClientProfile getTheirProfile() {
         return theirProfile;
     }
 
@@ -121,7 +120,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * @return Returns a newly generated SharedSecret4 instance based on contained keys.
      */
     @Nonnull
-    public SharedSecret4 generateSharedSecret(@Nonnull final SecureRandom random) {
+    SharedSecret4 generateSharedSecret(@Nonnull final SecureRandom random) {
         return new SharedSecret4(random, this.dhKeyPair, this.ecdhKeyPair, this.theirDHPublicKey, this.theirECDHPublicKey);
     }
 
@@ -142,7 +141,7 @@ public final class SecurityParameters4 implements AutoCloseable {
      * value r, it will use : r = KDF_1(0x14 || K, 80). Securely replaces our_dh with the outputs.
      * </pre>
      */
-    public enum Component {
+    enum Component {
         /**
          * OURS, indicating that we are representing <i>Bob</i>, as defined in the spec. This means that we will
          * generate crafted values for our (i.e. Bob's) side of the double ratchet.

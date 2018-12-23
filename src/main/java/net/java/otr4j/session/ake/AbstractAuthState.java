@@ -8,18 +8,13 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
-import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.messages.AbstractEncodedMessage;
-import net.java.otr4j.messages.ClientProfilePayload;
 import net.java.otr4j.messages.DHCommitMessage;
-import net.java.otr4j.messages.IdentityMessage;
 
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
@@ -45,16 +40,13 @@ abstract class AbstractAuthState implements AuthState {
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
             @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
-        if (!Version.SUPPORTED.contains(version)) {
-            throw new IllegalArgumentException("unknown or unsupported protocol version");
-        }
-        if (version == Version.TWO || version == Session.Version.THREE) {
+        if (version == Version.TWO || version == Version.THREE) {
             return initiateVersion3(context, version, receiverTag);
-        } else if (version == Version.FOUR) {
-            return initiateVersion4(context, receiverTag, queryTag);
-        } else {
-            throw new UnsupportedOperationException("Unsupported protocol version.");
         }
+        if (version == Version.FOUR) {
+            throw new IllegalArgumentException("Protocol version 4 is handled outside of AKE package, as part of message state machine.");
+        }
+        throw new UnsupportedOperationException("Unsupported protocol version.");
     }
 
     @Nonnull
@@ -85,21 +77,9 @@ abstract class AbstractAuthState implements AuthState {
         final byte[] publicKeyHash = sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"
         final DHCommitMessage dhcommit = new DHCommitMessage(version, publicKeyHash, publicKeyEncrypted,
-                context.getSenderTag(), receiverTag);
+                context.getSenderInstanceTag(), receiverTag);
         LOGGER.finest("Sending DH commit message.");
         context.setAuthState(new StateAwaitingDHKey(version, keypair, r));
         return dhcommit;
-    }
-
-    @Nonnull
-    private IdentityMessage initiateVersion4(@Nonnull final AuthContext context, @Nonnull final InstanceTag receiverTag,
-            @Nonnull final String queryTag) {
-        final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
-        final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
-        final ClientProfilePayload profilePayload = context.getClientProfilePayload();
-        final IdentityMessage message = new IdentityMessage(Version.FOUR, context.getSenderTag(),
-                receiverTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.setAuthState(new StateAwaitingAuthR(ourECDHkeyPair, ourDHkeyPair, profilePayload, queryTag, message));
-        return message;
     }
 }

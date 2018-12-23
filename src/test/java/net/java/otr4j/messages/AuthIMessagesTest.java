@@ -7,7 +7,6 @@ import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
-import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -30,7 +29,7 @@ public final class AuthIMessagesTest {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test
-    public void testValidateSuccessful() throws OtrCryptoException, ValidationException {
+    public void testValidateSuccessful() throws ValidationException {
         // Our client profile
         final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
@@ -61,8 +60,8 @@ public final class AuthIMessagesTest {
                 theirY, ourA, theirB, "alice@network", "bob@network");
     }
 
-    @Test(expected = OtrCryptoException.class)
-    public void testValidateIllegalDHPublicKey() throws OtrCryptoException, ValidationException {
+    @Test(expected = ValidationException.class)
+    public void testValidateIllegalDHPublicKey() throws ValidationException {
         // Our client profile
         final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
@@ -94,7 +93,7 @@ public final class AuthIMessagesTest {
     }
 
     @Test(expected = ValidationException.class)
-    public void testValidateBadSenderTag() throws OtrCryptoException, ValidationException {
+    public void testValidateBadSenderTag() throws ValidationException {
         // Our client profile
         final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
@@ -125,8 +124,8 @@ public final class AuthIMessagesTest {
                 theirY, ourA, theirB, "alice@network", "bob@network");
     }
 
-    @Test(expected = OtrCryptoException.class)
-    public void testValidateBadQueryTag() throws OtrCryptoException, ValidationException {
+    @Test(expected = ValidationException.class)
+    public void testValidateBadQueryTag() throws ValidationException {
         // Our client profile
         final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();

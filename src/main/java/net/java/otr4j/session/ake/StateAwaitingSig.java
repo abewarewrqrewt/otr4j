@@ -8,6 +8,7 @@
 package net.java.otr4j.session.ake;
 
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -23,7 +24,6 @@ import net.java.otr4j.messages.SignatureMessage;
 import net.java.otr4j.messages.SignatureX;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.crypto.interfaces.DHPublicKey;
 import java.net.ProtocolException;
 import java.util.logging.Level;
@@ -50,8 +50,8 @@ final class StateAwaitingSig extends AbstractAuthState {
     private final SharedSecret s;
 
     /**
-     * Saved copy of the Reveal Signature Message for retransmission in case we
-     * receive a DH Key message with the exact same DH public key.
+     * Saved copy of the Reveal Signature message for retransmission in case we receive a DH-Key message with the exact
+     * same DH public key.
      */
     private final RevealSignatureMessage previousRevealSigMessage;
 
@@ -59,7 +59,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             @Nonnull final DHPublicKey remoteDHPublicKey, @Nonnull final SharedSecret s,
             @Nonnull final RevealSignatureMessage previousRevealSigMessage) {
         super();
-        if (version < 2 || version > 3) {
+        if (version < Version.TWO || version > Version.THREE) {
             throw new IllegalArgumentException("unsupported version specified");
         }
         this.version = version;
@@ -73,10 +73,10 @@ final class StateAwaitingSig extends AbstractAuthState {
         this.previousRevealSigMessage = requireNonNull(previousRevealSigMessage);
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public AbstractEncodedMessage handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
-            throws OtrException, AuthContext.InteractionFailedException, ProtocolException {
+    public Result handle(@Nonnull final AuthContext context, @Nonnull final AbstractEncodedMessage message)
+            throws OtrException, ProtocolException {
 
         if (message instanceof DHCommitMessage) {
             return handleDHCommitMessage(context, (DHCommitMessage) message);
@@ -94,7 +94,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             }
         } else {
             LOGGER.log(Level.FINEST, "Only expected message types are DHKeyMessage and SignatureMessage. Ignoring message with type: {0}", message.getType());
-            return null;
+            return new Result(null, null);
         }
     }
 
@@ -104,7 +104,7 @@ final class StateAwaitingSig extends AbstractAuthState {
     }
 
     @Nonnull
-    private DHKeyMessage handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
+    private Result handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "Reply with a new D-H Key message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."
         LOGGER.finest("Generating local D-H key pair.");
         // OTR: "Choose a random value y (at least 320 bits), and calculate gy."
@@ -112,28 +112,30 @@ final class StateAwaitingSig extends AbstractAuthState {
         LOGGER.finest("Ignoring AWAITING_SIG state and sending a new DH key message.");
         context.setAuthState(new StateAwaitingRevealSig(message.protocolVersion, newKeypair, message.dhPublicKeyHash,
                 message.dhPublicKeyEncrypted));
-        return new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderTag(),
-                context.getReceiverTag());
+        return new Result(
+                new DHKeyMessage(message.protocolVersion, newKeypair.getPublic(), context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag()), null);
     }
 
-    @Nullable
-    private RevealSignatureMessage handleDHKeyMessage(@Nonnull final DHKeyMessage message) {
+    @Nonnull
+    private Result handleDHKeyMessage(@Nonnull final DHKeyMessage message) {
         // OTR: "If this D-H Key message is the same the one you received earlier (when you entered AUTHSTATE_AWAITING_SIG):
         // Retransmit your Reveal Signature Message. Otherwise: Ignore the message."
         if (!this.localDHKeyPair.getPublic().getY().equals(message.dhPublicKey.getY())) {
             // DH keypair is not the same as local pair, this message is either
             // fake or not intended for this session.
             LOGGER.info("DHKeyMessage contains different DH public key. Ignoring message.");
-            return null;
+            return new Result(null, null);
         }
         // DH keypair is the same, so other side apparently didn't receive our
         // first reveal signature message, let's send the message again.
-        return this.previousRevealSigMessage;
+        return new Result(this.previousRevealSigMessage, null);
     }
 
-    @Nullable
-    private SignatureMessage handleSignatureMessage(@Nonnull final AuthContext context, @Nonnull final SignatureMessage message)
-            throws OtrCryptoException, AuthContext.InteractionFailedException, ProtocolException, UnsupportedTypeException {
+    @Nonnull
+    private Result handleSignatureMessage(@Nonnull final AuthContext context,
+            @Nonnull final SignatureMessage message) throws OtrCryptoException, ProtocolException,
+            UnsupportedTypeException {
         // OTR: "Decrypt the encrypted signature, and verify the signature and the MACs."
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"
@@ -153,13 +155,12 @@ final class StateAwaitingSig extends AbstractAuthState {
             // OTR: "Transition msgstate to MSGSTATE_ENCRYPTED."
             final SecurityParameters params = new SecurityParameters(this.version, this.localDHKeyPair,
                     remoteX.getLongTermPublicKey(), remoteDHPublicKey, this.s);
-            context.secure(params);
-            return null;
+            return new Result(null, params);
         } finally {
             // Ensure transition to AUTHSTATE_NONE.
             // OTR: "Transition authstate to AUTHSTATE_NONE."
             // OTR: "Regardless of whether the signature verifications succeed, the authstate variable is transitioned to AUTHSTATE_NONE."
-            context.setAuthState(StateInitial.empty());
+            context.setAuthState(StateInitial.instance());
         }
     }
 }

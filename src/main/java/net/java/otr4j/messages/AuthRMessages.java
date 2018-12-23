@@ -41,29 +41,30 @@ public final class AuthRMessages {
      * @param receiverECDHPublicKey   the receiver's ECDH public key
      * @param receiverDHPublicKey     the receiver's DH public key
      * @param queryTag                the query tag
-     * @throws OtrCryptoException  In case any cryptographic verification failed, such as ephemeral
-     *                             public keys or the ring signature.
-     * @throws ValidationException In case any part fails validation.
+     * @throws ValidationException In case the message fails validation.
      */
     public static void validate(@Nonnull final AuthRMessage message,
             @Nonnull final ClientProfilePayload ourClientProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfile theirProfile, @Nonnull final String senderAccountID,
             @Nonnull final String receiverAccountID, @Nonnull final Point receiverECDHPublicKey,
-            @Nonnull final BigInteger receiverDHPublicKey, @Nonnull final String queryTag) throws OtrCryptoException,
-            ValidationException {
+            @Nonnull final BigInteger receiverDHPublicKey, @Nonnull final String queryTag) throws ValidationException {
         try {
             verifyECDHPublicKey(message.getX());
-        } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
-            throw new ValidationException("Illegal ECDH public key.", e);
+            verifyDHPublicKey(message.getA());
+        } catch (final net.java.otr4j.crypto.ed448.ValidationException | OtrCryptoException e) {
+            throw new ValidationException("Illegal ephemeral public key.", e);
         }
-        verifyDHPublicKey(message.getA());
         if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
                 receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag.getValue(),
                 message.receiverInstanceTag.getValue(), queryTag, senderAccountID, receiverAccountID);
-        ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
-                message.getSigma(), t);
+        try {
+            ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
+                    message.getSigma(), t);
+        } catch (final OtrCryptoException e) {
+            throw new ValidationException("Ring signature failed verification.", e);
+        }
     }
 }

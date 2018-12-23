@@ -27,6 +27,7 @@ import static net.java.otr4j.util.Integers.requireInRange;
  * The OTRv4 data message.
  */
 // TODO two constants defined in duplicate, due to value needed in multiple packages: XSALSA20_IV_LENGTH_BYTES, MAC_LENGTH_BYTES
+//FIXME consider going back to public final fields such that getter is unnecessary and PMD warning is mitigated.
 @SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 

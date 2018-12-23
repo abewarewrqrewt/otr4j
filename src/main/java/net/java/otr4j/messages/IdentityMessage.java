@@ -28,7 +28,7 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     /**
      * Byte code identifier for Identity message type.
      */
-    public static final int MESSAGE_IDENTITY = 0x35;
+    static final int MESSAGE_IDENTITY = 0x35;
 
     private final ClientProfilePayload clientProfile;
     private final Point y;

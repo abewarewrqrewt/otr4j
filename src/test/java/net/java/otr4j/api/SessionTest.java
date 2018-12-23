@@ -60,6 +60,8 @@ import static org.junit.Assert.fail;
 
 // TODO handle case where we store skipped message keys such that we can decrypt message that is received out-of-order, i.e. later than it was supposed to arrive.
 // FIXME test what happens when fragments are dropped.
+// FIXME add test to prove that we can start new (D)AKE in encrypted/finished Message state.
+// TODO add method to assert OTR-encoded data over communication channel as opposed to "not equals to original message".
 public class SessionTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -667,7 +669,41 @@ public class SessionTest {
         // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
         assertNull(c.clientBob.receiveMessage());
         c.clientBob.sendMessage("Hello Alice!");
+        assertNotEquals("Hello Alice!", c.clientAlice.receiptChannel.peek());
         assertEquals("Hello Alice!", c.clientAlice.receiveMessage());
+        c.clientAlice.session.endSession();
+        assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(FINISHED, c.clientBob.session.getSessionStatus());
+    }
+
+    @Test
+    public void testEstablishOTR4SessionThenDisallowSendingQueryMessage() throws OtrException {
+        final Conversation c = new Conversation(1);
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
+        assertNull(c.clientBob.receiveMessage());
+        c.clientBob.sendMessage("Hello Alice!");
+        assertNotEquals("Hello Alice!", c.clientAlice.receiptChannel.peek());
+        assertEquals("Hello Alice!", c.clientAlice.receiveMessage());
+        // Even though encrypted now, start a new session. This should not follow through.
+        c.clientBob.session.startSession();
+        assertTrue(c.clientAlice.receiptChannel.isEmpty());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
         c.clientAlice.session.endSession();
         assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
         assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());

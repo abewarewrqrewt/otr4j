@@ -30,19 +30,18 @@ public final class IdentityMessages {
      * @param message      The identity message.
      * @param theirProfile Their profile. The one shipped in the identity message. The message is passed in
      *                     independently such that we can avoid validating the profile multiple times.
-     * @throws OtrCryptoException  Validation failure of cryptographic components.
      * @throws ValidationException Validation failure of parts of the Identity message.
      */
     public static void validate(@Nonnull final IdentityMessage message, @Nonnull final ClientProfile theirProfile)
-            throws OtrCryptoException, ValidationException {
+            throws ValidationException {
         if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         try {
             verifyECDHPublicKey(message.getY());
-        } catch (final net.java.otr4j.crypto.ed448.ValidationException e) {
-            throw new ValidationException("Illegal ECDH public key.", e);
+            verifyDHPublicKey(message.getB());
+        } catch (final net.java.otr4j.crypto.ed448.ValidationException | OtrCryptoException e) {
+            throw new ValidationException("Illegal ephemeral public key.", e);
         }
-        verifyDHPublicKey(message.getB());
     }
 }

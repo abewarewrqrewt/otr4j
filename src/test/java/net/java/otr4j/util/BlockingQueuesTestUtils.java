@@ -8,11 +8,9 @@
 package net.java.otr4j.util;
 
 import net.java.otr4j.api.Session;
-import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.io.MessageParser;
-import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.Fragment;
 import net.java.otr4j.io.Message;
+import net.java.otr4j.io.MessageParser;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
@@ -21,12 +19,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 
+import static java.util.Collections.sort;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.Arrays.contains;
 
 public final class BlockingQueuesTestUtils {
 
-    public static void rearrangeFragments(@Nonnull final BlockingQueue<String> queue, @Nonnull final SecureRandom random) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public static void rearrangeFragments(@Nonnull final BlockingQueue<String> queue, @Nonnull final SecureRandom random)
+            throws ProtocolException {
         shuffle(queue, random);
         reorderOTRv3Fragments(queue);
     }
@@ -57,7 +57,7 @@ public final class BlockingQueuesTestUtils {
         queue.addAll(list);
     }
 
-    public static void reorderOTRv3Fragments(@Nonnull final BlockingQueue<String> queue) throws ProtocolException, OtrCryptoException, OtrInputStream.UnsupportedLengthException {
+    public static void reorderOTRv3Fragments(@Nonnull final BlockingQueue<String> queue) throws ProtocolException {
         final ArrayList<String> messages = new ArrayList<>();
         queue.drainTo(messages);
         final ArrayList<FragmentEntry> fragments = new ArrayList<>();
@@ -68,7 +68,7 @@ public final class BlockingQueuesTestUtils {
                 fragments.add(new FragmentEntry(i, ((Fragment) m).getIndex(), msg));
             }
         }
-        java.util.Collections.sort(fragments, new Comparator<FragmentEntry>() {
+        sort(fragments, new Comparator<FragmentEntry>() {
 
             @Override
             public int compare(final FragmentEntry o1, final FragmentEntry o2) {
