@@ -39,10 +39,10 @@ import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
+import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
- * AKE state Awaiting Reveal Signature message, a.k.a.
- * AUTHSTATE_AWAITING_REVEALSIG.
+ * AKE state Awaiting Reveal Signature message, a.k.a. AUTHSTATE_AWAITING_REVEALSIG.
  *
  * @author Danny van Heumen
  */
@@ -60,10 +60,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
     StateAwaitingRevealSig(final int version, @Nonnull final DHKeyPairOTR3 keypair,
             @Nonnull final byte[] remotePublicKeyHash, @Nonnull final byte[] remotePublicKeyEncrypted) {
         super();
-        if (version < Version.TWO || version > Version.THREE) {
-            throw new IllegalArgumentException("unsupported version specified");
-        }
-        this.version = version;
+        this.version = requireInRange(Version.TWO, Version.THREE, version);
         this.keypair = Objects.requireNonNull(keypair);
         this.remotePublicKeyHash = requireLengthExactly(SHA256_DIGEST_LENGTH_BYTES, remotePublicKeyHash);
         // TODO can we make this argument verification more strict/accurate?

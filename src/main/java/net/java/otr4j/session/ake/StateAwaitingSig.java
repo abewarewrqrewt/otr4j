@@ -50,8 +50,8 @@ final class StateAwaitingSig extends AbstractAuthState {
     private final SharedSecret s;
 
     /**
-     * Saved copy of the Reveal Signature Message for retransmission in case we
-     * receive a DH Key message with the exact same DH public key.
+     * Saved copy of the Reveal Signature message for retransmission in case we receive a DH-Key message with the exact
+     * same DH public key.
      */
     private final RevealSignatureMessage previousRevealSigMessage;
 

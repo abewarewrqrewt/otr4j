@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 
-// FIXME update javadoc everywhere relating to OTRv4 DAKE move
 /**
  * Initial AKE state, a.k.a. NONE.
  * <p>
