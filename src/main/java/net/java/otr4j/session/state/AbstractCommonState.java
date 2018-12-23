@@ -8,15 +8,19 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrException;
+import net.java.otr4j.api.TLV;
 import net.java.otr4j.io.ErrorMessage;
+import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.AuthState;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.logging.Logger;
 
+import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
 import static net.java.otr4j.api.OtrEngineHostUtil.showError;
 import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 
@@ -56,5 +60,24 @@ abstract class AbstractCommonState extends AbstractOTR4State {
             return;
         }
         signalUnreadableMessage(context);
+    }
+
+    /**
+     * Implementation of {@code transformSending(Context, String, List, byte)} that prevents sending messages as we have
+     * not yet transitioned into `ENCRYPTED_MESSAGES` state.
+     *
+     * @param context The message state context.
+     * @param msgText The message to be sent.
+     * @param tlvs    List of TLVs to attach to the message.
+     * @param flags   (Encoded) message flags, see constants in {@link State}, such as {@link #FLAG_IGNORE_UNREADABLE}.
+     * @return Returns null as there is nothing to send immediately.
+     * @throws OtrException In case an exception occurs.
+     */
+    @Nullable
+    @Override
+    public Message transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) throws OtrException {
+        requireEncryptedMessage(context.getHost(), context.getSessionID(), msgText);
+        return null;
     }
 }
