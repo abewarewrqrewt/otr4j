@@ -26,7 +26,7 @@ import java.net.ProtocolException;
  *
  * @author Danny van Heumen
  */
-// FIXME consider implementing destroying AuthState data upon transitioning. (It this really applicable for generic handling, or should it be handled on a case-by-case basis?)
+// TODO consider implementing destroying AuthState data upon transitioning. (It this really applicable for generic handling, or should it be handled on a case-by-case basis?)
 public interface AuthState {
 
     /**

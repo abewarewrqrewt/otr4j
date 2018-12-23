@@ -152,7 +152,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
     }
 
     // FIXME send queued up messages after the secure session has been established.
-    void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
+    final void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         try {
             final StateEncrypted4 encrypted = new StateEncrypted4(context, params, getAuthState());
             context.transition(this, encrypted);
