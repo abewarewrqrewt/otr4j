@@ -8,6 +8,7 @@
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.ClientProfile;
+import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.crypto.DHKeyPair;
@@ -34,6 +35,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.Session.Version.FOUR;
@@ -49,6 +51,7 @@ import static net.java.otr4j.session.state.SecurityParameters4.Component.THEIRS;
  *
  * This is a state in which Alice will be while awaiting Bob's final message.
  */
+// TODO check OTRv4 spec for instructions on temporarily storing recently received messages while negotiating.
 final class StateAwaitingAuthI extends AbstractCommonState {
 
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());
@@ -193,16 +196,18 @@ final class StateAwaitingAuthI extends AbstractCommonState {
 
     @Nullable
     @Override
-    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
-        // FIXME implement handleDataMessage
-        throw new UnsupportedOperationException("To be implemented");
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
+        LOGGER.log(FINEST, "Received OTRv3 data message in state WAITING_AUTH_I. Message cannot be read.");
+        handleUnreadableMessage(context, message);
+        return null;
     }
 
     @Nullable
     @Override
-    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
-        // FIXME implement handleDataMessage
-        throw new UnsupportedOperationException("To be implemented");
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
+        LOGGER.log(FINEST, "Received OTRv4 data message in state WAITING_AUTH_I. Message cannot be read.");
+        handleUnreadableMessage(context, message);
+        return null;
     }
 
     @Override
