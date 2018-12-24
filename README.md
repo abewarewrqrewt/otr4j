@@ -11,7 +11,8 @@ Current work should be considered __at most__ _prototype-quality and guaranteed 
 
 Development stages:
 
-* ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving) a.k.a. "at least the bugs are symmetric :-)"
+* ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving)  
+_a.k.a. "at least the bugs are symmetric in nature :-)"_
 * ✔ Socialist Millionaire's Protocol for OTRv4.
 * ✔ Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
 * ⌛ Migrate Ed448-Goldilocks implementation to Bouncy Castle.
@@ -31,7 +32,7 @@ Development stages:
   * ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
   * ☑ Persistent instance tags
   * ☑ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
-  * ☐ OTRv4 extension to OTR Error messages
+  * ☐ OTRv4 extension to OTR error messages
   * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
   * ☐ Queueing of messages while not in `ENCRYPTED_MESSAGES` state.
 * Cryptographic primitives:
@@ -78,10 +79,15 @@ Development stages:
   * OTRv4
     * ☐ Base "Extra Symmetric Key" available for use.
     * ☐ Derived keys based on OTRv4 prescribed key derivation
+* API support:
+  * ☐ verify if API still fully suitable for clients to adopt.
+  * ☐ ability to import/export EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
+  * ☐ `OtrKeyManager` was removed. Evaluate whether this is a problem for adopters. (I prefer to leave it out or put it in its own repository.)
 * Misc
   * ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  
   _Although not explicitly document that this is necessary, it should not break any existing applications. This makes implementations of OTRv3 and OTRv4 more similar and promotes better behavior in general, being: the other party is not needlessly warned for (lost) messages that do not contain valuable content, i.e. they are part of the OTR process, but do not contain user content themselves._
-  * ☐ Ability to define own, customized per network, `phi` (shared session state) implementer addition for the `t` value calculation.
+  * ☐ Ability to define own, customized-per-network `phi` (shared session state) implementer addition for the `t` value calculation.  
+  _Under consideration as part of the [OTRv4 client implementation recommendations](https://github.com/otrv4/otrv4-client-imp-recommendations/issues/3)._
 
 ## Operational
 
@@ -131,15 +137,18 @@ Development stages:
   * ☐ Introduce [Animal sniffer](https://www.mojohaus.org/animal-sniffer/) build plug-in to verify that we do not break backwards-compatibility, once released.
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
   * ☐ Experiment with features of [Checker Framework](https://checkerframework.org).
-* ☐ Significant amount of unit tests to accompany the library. (Currently: 1100+)
 * ⌛ Issue: some tests fail on a rare occasion due to the `assert` checks that are embedded in the code. These tests should be updated to assume successful execution if input would trigger the assertion.
+* ☐ Significant amount of unit tests to accompany the library. (Currently: 1100+)
+* ☐ Interoperability testing with other OTRv4 implementations.
 
 ## Architectural considerations
 
-* Correctness of protocol implementation.
-* Encapsulation of cryptographic material to prevent mistakes, misuse, excessive exposure.
-* Design/structure that prevents or makes obvious programming errors.
-* Restricted implementation, only as much abstraction as needed. (Simplicity)
+Architectural constraints that are taken into consideration for the design.
+
+1. Correctness of protocol implementation.
+1. Encapsulation of cryptographic material to prevent mistakes, misuse, excessive exposure.
+1. Design/structure that prevents or makes obvious programming errors.
+1. Simplicity: restricted implementation with only as much complexity and abstraction as needed.
 
 # Synopsis
 
@@ -151,8 +160,28 @@ fragmenting outgoing messages.
 
 Support for OTRv1 is removed, as is recommended by the OTR team.
 
-For a quick introduction on how to use the library have a look at the
-[DummyClient](src/test/java/net/java/otr4j/test/dummyclient/DummyClient.java).
+# Using otr4j
+
+_Note: otr4j with OTRv4 support is not backwards-compatible with older releases. Although the API has not changed significantly, some restructuring has been performed and the interfaces extended to be able to support client requirements of OTRv4._
+
+`TODO: describe adoption information`
+
+# Contributing / Help needed
+
+- Helping with implementation work:
+  - see the Functional/Operational/Developmental action points above.
+  - look for `FIXME`/`TODO` in the code. (there are plenty to find)
+- Peer-reviewing (for correctness, security and improvements in general)
+- Integration into chat clients
+  - adoption
+  - feedback on the API from the usage perspective
+
+## Setting up your IDE: IntelliJ IDEA
+
+1. Load the otr4j pom.xml file as a maven module.
+1. Load `codecheck/checkstyle.xml` as the code style in IntelliJ (you will need to have the Checkstyle plug-in installed)
+1. ... (I'm not sure if anything else is needed, but I'll update when I find out.)
+
 
 # Limitations
 
@@ -160,11 +189,6 @@ For a quick introduction on how to use the library have a look at the
 Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed integer types, this implementation currently uses a signed integer. Therefore, the highest bit of the message length is interpreted as sign bit. Lengths over 2^31 are unsupported.
 * _Message are not queued up._  
 Messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
-
-# Contributing / Help needed
-
-* Peer-reviewing (for correctness, security and improvements in general)
-* Integration into chat clients
 
   [OTR]: https://otr.cypherpunks.ca/
   [jitsi]: https://jitsi.org/
