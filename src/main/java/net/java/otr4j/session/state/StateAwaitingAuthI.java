@@ -71,6 +71,14 @@ final class StateAwaitingAuthI extends AbstractCommonState {
      */
     private final DHKeyPair ourDHKeyPair;
 
+    private final ECDHKeyPair ourFirstECDHKeyPair;
+
+    private final DHKeyPair ourFirstDHKeyPair;
+
+    private final Point theirFirstECDHPublicKey;
+
+    private final BigInteger theirFirstDHPublicKey;
+
     private final Point y;
 
     private final BigInteger b;
@@ -80,13 +88,19 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     private final ClientProfilePayload profileBob;
 
     StateAwaitingAuthI(@Nonnull final AuthState authState, @Nonnull final String queryTag,
-            @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final DHKeyPair ourDHKeyPair, @Nonnull final Point y,
-            @Nonnull final BigInteger b, @Nonnull final ClientProfilePayload ourProfile,
+            @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final DHKeyPair ourDHKeyPair,
+            @Nonnull final ECDHKeyPair ourFirstECDHKeyPair, @Nonnull final DHKeyPair ourFirstDHKeyPair,
+            @Nonnull final Point theirFirstECDHPublicKey, @Nonnull final BigInteger theirFirstDHPublicKey,
+            @Nonnull final Point y, @Nonnull final BigInteger b, @Nonnull final ClientProfilePayload ourProfile,
             @Nonnull final ClientProfilePayload profileBob) {
         super(authState);
         this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
         this.ourDHKeyPair = requireNonNull(ourDHKeyPair);
+        this.ourFirstECDHKeyPair = requireNonNull(ourFirstECDHKeyPair);
+        this.ourFirstDHKeyPair = requireNonNull(ourFirstDHKeyPair);
+        this.theirFirstECDHPublicKey = requireNonNull(theirFirstECDHPublicKey);
+        this.theirFirstDHPublicKey = requireNonNull(theirFirstDHPublicKey);
         this.y = requireNonNull(y);
         this.b = requireNonNull(b);
         this.ourProfile = requireNonNull(ourProfile);
@@ -170,16 +184,22 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
-            message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
-            context.getReceiverInstanceTag().getValue(), this.queryTag, sessionID.getUserID(), sessionID.getAccountID());
+                message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(),
+                this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(),
+                message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
+                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(), this.queryTag,
+                sessionID.getUserID(), sessionID.getAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
                 theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
-                this.ourDHKeyPair.getPublicKey(), sigma);
+                this.ourDHKeyPair.getPublicKey(), sigma, this.ourFirstECDHKeyPair.getPublicKey(),
+                this.ourFirstDHKeyPair.getPublicKey());
         context.transition(this, new StateAwaitingAuthI(getAuthState(), this.queryTag, this.ourECDHKeyPair,
-                this.ourDHKeyPair, message.getY(), message.getB(), ourProfile, message.getClientProfile()));
+                this.ourDHKeyPair, this.ourFirstECDHKeyPair, this.ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(),
+                message.getOurFirstDHPublicKey(), message.getY(), message.getB(), ourProfile,
+                message.getClientProfile()));
         return authRMessage;
     }
 
@@ -189,7 +209,9 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final ClientProfile ourProfileValidated = this.ourProfile.validate();
         validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
                 this.ourECDHKeyPair.getPublicKey(), this.y, this.ourDHKeyPair.getPublicKey(), this.b,
-                context.getSessionID().getUserID(), context.getSessionID().getAccountID());
+                this.theirFirstECDHPublicKey, this.theirFirstDHPublicKey, this.ourFirstECDHKeyPair.getPublicKey(),
+                this.ourFirstDHKeyPair.getPublicKey(), context.getSessionID().getUserID(),
+                context.getSessionID().getAccountID());
         secure(context, new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
                 ourProfileValidated, profileBobValidated));
     }

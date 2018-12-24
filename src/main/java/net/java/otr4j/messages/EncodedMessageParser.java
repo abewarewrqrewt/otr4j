@@ -146,7 +146,10 @@ public final class EncodedMessageParser {
             final ClientProfilePayload profile = ClientProfilePayload.readFrom(payload);
             final Point y = payload.readPoint();
             final BigInteger b = payload.readBigInt();
-            return new IdentityMessage(version, senderInstanceTag, receiverInstanceTag, profile, y, b);
+            final Point ourFirstECDHPublicKey = payload.readPoint();
+            final BigInteger ourFirstDHPublicKey = payload.readBigInt();
+            return new IdentityMessage(version, senderInstanceTag, receiverInstanceTag, profile, y, b,
+                    ourFirstECDHPublicKey, ourFirstDHPublicKey);
         }
         case MESSAGE_AUTH_R: {
             requireOTR4(version);
@@ -154,7 +157,10 @@ public final class EncodedMessageParser {
             final Point x = payload.readPoint();
             final BigInteger a = payload.readBigInt();
             final Sigma sigma = Sigma.readFrom(payload);
-            return new AuthRMessage(version, senderInstanceTag, receiverInstanceTag, profile, x, a, sigma);
+            final Point ourFirstECDHPublicKey = payload.readPoint();
+            final BigInteger ourFirstDHPublicKey = payload.readBigInt();
+            return new AuthRMessage(version, senderInstanceTag, receiverInstanceTag, profile, x, a, sigma,
+                    ourFirstECDHPublicKey, ourFirstDHPublicKey);
         }
         case MESSAGE_AUTH_I: {
             requireOTR4(version);

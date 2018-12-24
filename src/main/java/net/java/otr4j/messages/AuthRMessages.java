@@ -47,10 +47,14 @@ public final class AuthRMessages {
             @Nonnull final ClientProfilePayload ourClientProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfile theirProfile, @Nonnull final String senderAccountID,
             @Nonnull final String receiverAccountID, @Nonnull final Point receiverECDHPublicKey,
-            @Nonnull final BigInteger receiverDHPublicKey, @Nonnull final String queryTag) throws ValidationException {
+            @Nonnull final BigInteger receiverDHPublicKey, @Nonnull final Point receiverFirstECDHPublicKey,
+            @Nonnull final BigInteger receiverFirstDHPublicKey, @Nonnull final String queryTag)
+            throws ValidationException {
         try {
             verifyECDHPublicKey(message.getX());
             verifyDHPublicKey(message.getA());
+            verifyECDHPublicKey(message.getOurFirstECDHPublicKey());
+            verifyDHPublicKey(message.getOurFirstDHPublicKey());
         } catch (final net.java.otr4j.crypto.ed448.ValidationException | OtrCryptoException e) {
             throw new ValidationException("Illegal ephemeral public key.", e);
         }
@@ -58,8 +62,10 @@ public final class AuthRMessages {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
-                receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.senderInstanceTag.getValue(),
-                message.receiverInstanceTag.getValue(), queryTag, senderAccountID, receiverAccountID);
+                receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.getOurFirstECDHPublicKey(),
+                message.getOurFirstDHPublicKey(), receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
+                message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
+                receiverAccountID);
         try {
             ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
                     message.getSigma(), t);

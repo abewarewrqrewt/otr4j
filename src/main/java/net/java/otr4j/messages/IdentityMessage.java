@@ -33,6 +33,8 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     private final ClientProfilePayload clientProfile;
     private final Point y;
     private final BigInteger b;
+    private final Point ourFirstECDHPublicKey;
+    private final BigInteger ourFirstDHPublicKey;
 
     /**
      * Identity message type of OTRv4.
@@ -46,11 +48,14 @@ public final class IdentityMessage extends AbstractEncodedMessage {
      */
     public IdentityMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
-            @Nonnull final Point y, @Nonnull final BigInteger b) {
+            @Nonnull final Point y, @Nonnull final BigInteger b, @Nonnull final Point ourFirstECDHPublicKey,
+            @Nonnull final BigInteger ourFirstDHPublicKey) {
         super(requireInRange(Version.FOUR, Version.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.y = requireNonNull(y);
         this.b = requireNonNull(b);
+        this.ourFirstECDHPublicKey = requireNonNull(ourFirstECDHPublicKey);
+        this.ourFirstDHPublicKey = requireNonNull(ourFirstDHPublicKey);
     }
 
     @Override
@@ -88,11 +93,23 @@ public final class IdentityMessage extends AbstractEncodedMessage {
         return b;
     }
 
+    @Nonnull
+    public Point getOurFirstECDHPublicKey() {
+        return ourFirstECDHPublicKey;
+    }
+
+    @Nonnull
+    public BigInteger getOurFirstDHPublicKey() {
+        return ourFirstDHPublicKey;
+    }
+
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
         writer.write(clientProfile);
         writer.writePoint(this.y);
         writer.writeBigInt(this.b);
+        writer.writePoint(this.ourFirstECDHPublicKey);
+        writer.writeBigInt(this.ourFirstDHPublicKey);
     }
 }

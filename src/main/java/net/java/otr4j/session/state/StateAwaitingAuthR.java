@@ -83,12 +83,19 @@ final class StateAwaitingAuthR extends AbstractCommonState {
      */
     private final DHKeyPair dhKeyPair;
 
+    private final ECDHKeyPair ourFirstECDHKeyPair;
+
+    private final DHKeyPair ourFirstDHKeyPair;
+
     StateAwaitingAuthR(@Nonnull final AuthState authState, @Nonnull final ECDHKeyPair ecdhKeyPair,
-            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final ClientProfilePayload ourProfilePayload,
+            @Nonnull final DHKeyPair dhKeyPair, @Nonnull final ECDHKeyPair ourFirstECDHKeyPair,
+            @Nonnull final DHKeyPair ourFirstDHKeyPair, @Nonnull final ClientProfilePayload ourProfilePayload,
             @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
         super(authState);
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
+        this.ourFirstECDHKeyPair = requireNonNull(ourFirstECDHKeyPair);
+        this.ourFirstDHKeyPair = requireNonNull(ourFirstDHKeyPair);
         this.ourProfilePayload = requireNonNull(ourProfilePayload);
         this.queryTag = requireNonNull(queryTag);
         this.previousMessage = requireNonNull(previousMessage);
@@ -174,14 +181,17 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         final ClientProfile ourClientProfile = this.ourProfilePayload.validate();
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, sessionID.getUserID(),
-                sessionID.getAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(), this.queryTag);
+                sessionID.getAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(),
+                this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(), this.queryTag);
         final SecurityParameters4 params = new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(),
                 message.getA(), ourClientProfile, theirClientProfile);
         secure(context, params);
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),
-                this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(), senderTag.getValue(),
+                this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(),
+                this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(),
+                message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(), senderTag.getValue(),
                 receiverTag.getValue(), this.queryTag, sessionID.getAccountID(), sessionID.getUserID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
                 ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.getX(), t);

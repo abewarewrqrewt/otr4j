@@ -37,6 +37,10 @@ public final class AuthRMessage extends AbstractEncodedMessage {
 
     private final Sigma sigma;
 
+    private final Point ourFirstECDHPublicKey;
+
+    private final BigInteger ourFirstDHPublicKey;
+
     /**
      * Auth-R Message as used in OTRv4.
      *
@@ -50,12 +54,15 @@ public final class AuthRMessage extends AbstractEncodedMessage {
      */
     public AuthRMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
-            @Nonnull final Point x, @Nonnull final BigInteger a, @Nonnull final Sigma sigma) {
+            @Nonnull final Point x, @Nonnull final BigInteger a, @Nonnull final Sigma sigma,
+            @Nonnull final Point ourFirstECDHPublicKey, @Nonnull final BigInteger ourFirstDHPublicKey) {
         super(requireInRange(Version.FOUR, Version.FOUR, protocolVersion), senderInstance, receiverInstance);
         this.clientProfile = requireNonNull(clientProfile);
         this.x = requireNonNull(x);
         this.a = requireNonNull(a);
         this.sigma = requireNonNull(sigma);
+        this.ourFirstECDHPublicKey = requireNonNull(ourFirstECDHPublicKey);
+        this.ourFirstDHPublicKey = requireNonNull(ourFirstDHPublicKey);
     }
 
     @Override
@@ -103,6 +110,16 @@ public final class AuthRMessage extends AbstractEncodedMessage {
         return sigma;
     }
 
+    @Nonnull
+    public Point getOurFirstECDHPublicKey() {
+        return ourFirstECDHPublicKey;
+    }
+
+    @Nonnull
+    public BigInteger getOurFirstDHPublicKey() {
+        return ourFirstDHPublicKey;
+    }
+
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
@@ -110,5 +127,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
         writer.writePoint(this.x);
         writer.writeBigInt(this.a);
         writer.write(this.sigma);
+        writer.writePoint(this.ourFirstECDHPublicKey);
+        writer.writeBigInt(this.ourFirstDHPublicKey);
     }
 }

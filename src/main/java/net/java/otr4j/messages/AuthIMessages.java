@@ -48,6 +48,8 @@ public final class AuthIMessages {
             @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfilePayload profileBobPayload, @Nonnull final ClientProfile profileBob,
             @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
+            @Nonnull final Point senderFirstECDHPublicKey, @Nonnull final BigInteger senderFirstDHPublicKey,
+            @Nonnull final Point receiverFirstECDHPublicKey, @Nonnull final BigInteger receiverFirstDHPublicKey,
             @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID) throws ValidationException {
         if (!message.senderInstanceTag.equals(profileBob.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
@@ -55,6 +57,7 @@ public final class AuthIMessages {
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
         final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
+                senderFirstECDHPublicKey, senderFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
                 message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
                 receiverAccountID);
         try {

@@ -114,22 +114,27 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         final SecureRandom secureRandom = context.secureRandom();
         final ECDHKeyPair x = ECDHKeyPair.generate(secureRandom);
         final DHKeyPair a = DHKeyPair.generate(secureRandom);
+        final ECDHKeyPair ourFirstECDHKeyPair = ECDHKeyPair.generate(secureRandom);
+        final DHKeyPair ourFirstDHKeyPair = DHKeyPair.generate(secureRandom);
         final SessionID sessionID = context.getSessionID();
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final String queryTag = context.getQueryTag();
         final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
-                a.getPublicKey(), message.getB(), context.getSenderInstanceTag().getValue(),
-                context.getReceiverInstanceTag().getValue(), queryTag, sessionID.getAccountID(),
-                sessionID.getUserID());
+                a.getPublicKey(), message.getB(), ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey(),
+                message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
+                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(), queryTag,
+                sessionID.getAccountID(), sessionID.getUserID());
         final Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getForgingKey(),
                 longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma);
-        context.transition(this, new StateAwaitingAuthI(getAuthState(), queryTag, x, a, message.getY(), message.getB(),
-                profile, message.getClientProfile()));
+                context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma,
+                ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey());
+        context.transition(this, new StateAwaitingAuthI(getAuthState(), queryTag, x, a, ourFirstECDHKeyPair,
+                ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(), message.getY(),
+                message.getB(), profile, message.getClientProfile()));
         return authRMessage;
     }
 
@@ -140,17 +145,20 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         if (version != FOUR) {
             return super.initiateAKE(context, version, receiverInstanceTag, queryTag);
         }
-        final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(context.secureRandom());
-        final DHKeyPair ourDHkeyPair = DHKeyPair.generate(context.secureRandom());
+        final SecureRandom secureRandom = context.secureRandom();
+        final ECDHKeyPair ourECDHkeyPair = ECDHKeyPair.generate(secureRandom);
+        final DHKeyPair ourDHkeyPair = DHKeyPair.generate(secureRandom);
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
+        final ECDHKeyPair ourFirstECDHKeyPair = ECDHKeyPair.generate(secureRandom);
+        final DHKeyPair ourFirstDHKeyPair = DHKeyPair.generate(secureRandom);
         final IdentityMessage message = new IdentityMessage(FOUR, context.getSenderInstanceTag(),
-                receiverInstanceTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey());
-        context.transition(this, new StateAwaitingAuthR(getAuthState(), ourECDHkeyPair, ourDHkeyPair, profilePayload,
-                queryTag, message));
+                receiverInstanceTag, profilePayload, ourECDHkeyPair.getPublicKey(), ourDHkeyPair.getPublicKey(),
+                ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey());
+        context.transition(this, new StateAwaitingAuthR(getAuthState(), ourECDHkeyPair, ourDHkeyPair,
+                ourFirstECDHKeyPair, ourFirstDHKeyPair, profilePayload, queryTag, message));
         return message;
     }
 
-    // FIXME send queued up messages after the secure session has been established.
     final void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
         try {
             final StateEncrypted4 encrypted = new StateEncrypted4(context, params, getAuthState());

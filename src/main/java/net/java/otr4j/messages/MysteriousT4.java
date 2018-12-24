@@ -70,7 +70,9 @@ public final class MysteriousT4 {
     @Nonnull
     public static byte[] encode(@Nonnull final Purpose purpose, @Nonnull final ClientProfilePayload profileAlice,
             @Nonnull final ClientProfilePayload profileBob, @Nonnull final Point x, @Nonnull final Point y,
-            @Nonnull final BigInteger a, @Nonnull final BigInteger b, final int senderInstanceTag,
+            @Nonnull final BigInteger a, @Nonnull final BigInteger b, @Nonnull final Point senderFirstECDHPublicKey,
+            @Nonnull final BigInteger senderFirstDHPublicKey, @Nonnull final Point receiverFirstECDHPublicKey,
+            @Nonnull final BigInteger receiverFirstDHPublicKey, final int senderInstanceTag,
             final int receiverInstanceTag, @Nonnull final String queryTag, @Nonnull final String senderContactID,
             @Nonnull final String receiverContactID) {
         final KDFUsage bobsProfileUsage;
@@ -101,7 +103,9 @@ public final class MysteriousT4 {
         final byte[] xEncoded = x.encode();
         final byte[] bEncoded = new OtrOutputStream().writeBigInt(b).toByteArray();
         final byte[] aEncoded = new OtrOutputStream().writeBigInt(a).toByteArray();
-        final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, queryTag, senderContactID, receiverContactID);
+        final byte[] phi = generatePhi(senderInstanceTag, receiverInstanceTag, senderFirstECDHPublicKey,
+                senderFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey, queryTag, senderContactID,
+                receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
         return concatenate(new byte[][] {prefix, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
                 bEncoded, aEncoded, sharedSessionDerivative});
@@ -123,12 +127,17 @@ public final class MysteriousT4 {
      */
     // TODO generatePhi is package-private only for purpose of testing. Consider if we want to make this private and test only through MysteriousT4-encoding.
     @Nonnull
-    static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag, @Nonnull final String queryTag,
-            @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
+    static byte[] generatePhi(final int senderInstanceTag, final int receiverInstanceTag,
+            @Nonnull final Point senderFirstECDHPublicKey, @Nonnull final BigInteger senderFirstDHPublicKey,
+            @Nonnull final Point receiverFirstECDHPublicKey, @Nonnull final BigInteger receiverFirstDHPublicKey,
+            @Nonnull final String queryTag, @Nonnull final String senderContactID,
+            @Nonnull final String receiverContactID) {
         final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
         final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
-        return new OtrOutputStream().writeInt(senderInstanceTag).writeInt(receiverInstanceTag).writeData(queryTagBytes)
+        return new OtrOutputStream().writeInt(senderInstanceTag).writeInt(receiverInstanceTag)
+                .writePoint(senderFirstECDHPublicKey).writeBigInt(senderFirstDHPublicKey)
+                .writePoint(receiverFirstECDHPublicKey).writeBigInt(receiverFirstDHPublicKey).writeData(queryTagBytes)
                 .writeData(senderIDBytes).writeData(receiverIDBytes).toByteArray();
     }
 }
