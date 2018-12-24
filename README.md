@@ -76,7 +76,7 @@ Development stages:
 * Extra Symmetric Key support:
   * ☑ OTRv3
   * OTRv4
-    * ☑ Base "Extra Symmetric Key" available for use.
+    * ☐ Base "Extra Symmetric Key" available for use.
     * ☐ Derived keys based on OTRv4 prescribed key derivation
 * Misc
   * ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  
