@@ -1,6 +1,6 @@
 **NOTE**: *This version of otr4j is in active development for the adoption of the [OTRv4][OTRv4] specification that is being developed at this moment.*
 
-The repository for otr4j OTRv4 development is [gitlab.com/cobratbq/otr4j][gitlab-repo] and is mirrored to [github.com/cobratbq/otr4j][github-repo].
+The repository for otr4j OTRv4 development is [github.com/otr4j/otr4j][otr4j/otr4j].
 
 # otr4j
 
@@ -149,8 +149,6 @@ fragmenting outgoing messages.
 
 Support for OTRv1 is removed, as is recommended by the OTR team.
 
-A short attempt was made to establish a independent, community-supported (friendly) fork of [otr4j][otr4j/otr4j].
-
 For a quick introduction on how to use the library have a look at the
 [DummyClient](src/test/java/net/java/otr4j/test/dummyclient/DummyClient.java).
 
@@ -172,5 +170,3 @@ Messages will be rejected while the connection is being established. Once the se
   [OTRv3]: https://otr.cypherpunks.ca/Protocol-v3-4.1.1.html
   [OTRv4]: https://github.com/otrv4/otrv4
   [otr4j/otr4j]: https://github.com/otr4j/otr4j
-  [gitlab-repo]: https://gitlab.com/cobratbq/otr4j
-  [github-repo]: https://github.com/cobratbq/otr4j
