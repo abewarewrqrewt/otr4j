@@ -128,9 +128,11 @@ Development stages:
   * ☑ Introduce SpotBugs analysis at build-time
   * ☑ Introduce checkstyle at build-time to guard formatting/style
   * ☑ Introduce checkstyle _ImportControl_ module to guard the design structure
+  * ☐ Introduce [Animal sniffer](https://www.mojohaus.org/animal-sniffer/) build plug-in to verify that we do not break backwards-compatibility, once released.
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
   * ☐ Experiment with features of [Checker Framework](https://checkerframework.org).
 * ☐ Significant amount of unit tests to accompany the library. (Currently: 1100+)
+* ⌛ Issue: some tests fail on a rare occasion due to the `assert` checks that are embedded in the code. These tests should be updated to assume successful execution if input would trigger the assertion.
 
 ## Architectural considerations
 
