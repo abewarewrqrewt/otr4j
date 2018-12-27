@@ -713,7 +713,7 @@ public class SessionTest {
 
     @Test
     public void testEstablishOTR4SessionFragmented() throws OtrException {
-        final Conversation c = new Conversation(20, 150);
+        final Conversation c = new Conversation(21, 150);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -1019,7 +1019,7 @@ public class SessionTest {
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentation() throws OtrException {
-        final Conversation c = new Conversation(20, 150);
+        final Conversation c = new Conversation(21, 150);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
@@ -1052,7 +1052,7 @@ public class SessionTest {
 
     @Test
     public void testOTR4ExtensiveMessagingFragmentationShuffled() throws OtrException {
-        final Conversation c = new Conversation(20, 150);
+        final Conversation c = new Conversation(21, 150);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
         // Initiate OTR by sending query message.
