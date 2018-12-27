@@ -30,18 +30,22 @@ public final class AuthIMessages {
     /**
      * Validate an Auth-I message.
      *
-     * @param message           the Auth-I message to be validated
-     * @param queryTag          the query tag
-     * @param ourProfilePayload our client profile (non-validated, as payload)
-     * @param ourProfile        our client profile
-     * @param profileBobPayload other party's client profile (as payload)
-     * @param profileBob        other party's client profile, validated
-     * @param x                 ephemeral ECDH public key 'X'
-     * @param y                 ephemeral ECDH public key 'Y'
-     * @param a                 ephemeral DH public key 'A'
-     * @param b                 ephemeral DH public key 'B'
-     * @param senderAccountID   sender account ID
-     * @param receiverAccountID receiver account ID
+     * @param message                    the Auth-I message to be validated
+     * @param queryTag                   the query tag
+     * @param ourProfilePayload          our client profile (non-validated, as payload)
+     * @param ourProfile                 our client profile
+     * @param profileBobPayload          other party's client profile (as payload)
+     * @param profileBob                 other party's client profile, validated
+     * @param x                          ephemeral ECDH public key 'X'
+     * @param y                          ephemeral ECDH public key 'Y'
+     * @param a                          ephemeral DH public key 'A'
+     * @param b                          ephemeral DH public key 'B'
+     * @param senderAccountID            sender account ID
+     * @param receiverAccountID          receiver account ID
+     * @param senderFirstECDHPublicKey   the sender's first ECDH public key to use after DAKE completes
+     * @param senderFirstDHPublicKey     the sender's first DH public key to use after DAKE completes
+     * @param receiverFirstECDHPublicKey the receiver's first ECDH public key to use after DAKE completes
+     * @param receiverFirstDHPublicKey   the receiver's first DH public key to use after DAKE completes
      * @throws ValidationException In case validation fails.
      */
     public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,

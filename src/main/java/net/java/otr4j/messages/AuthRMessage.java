@@ -44,13 +44,15 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     /**
      * Auth-R Message as used in OTRv4.
      *
-     * @param protocolVersion   the protocol version
-     * @param senderInstance    the sender instance tag
-     * @param receiverInstance the receiver instance tag
-     * @param clientProfile     the client profile (as payload)
-     * @param x                 the ECDH public key 'X'
-     * @param a                 the DH public key 'A'
-     * @param sigma             the ring signature
+     * @param protocolVersion       the protocol version
+     * @param senderInstance        the sender instance tag
+     * @param receiverInstance      the receiver instance tag
+     * @param clientProfile         the client profile (as payload)
+     * @param x                     the ECDH public key 'X'
+     * @param a                     the DH public key 'A'
+     * @param sigma                 the ring signature
+     * @param ourFirstECDHPublicKey the first ECDH public key to be used once DAKE has completed
+     * @param ourFirstDHPublicKey   the first DH public key to be used once DAKE has completed
      */
     public AuthRMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
@@ -110,11 +112,21 @@ public final class AuthRMessage extends AbstractEncodedMessage {
         return sigma;
     }
 
+    /**
+     * Get the first ECDH public key to be used after DAKE completes.
+     *
+     * @return ECDH public key
+     */
     @Nonnull
     public Point getOurFirstECDHPublicKey() {
         return ourFirstECDHPublicKey;
     }
 
+    /**
+     * Get the first DH public key to be used after DAKE completes.
+     *
+     * @return DH public key
+     */
     @Nonnull
     public BigInteger getOurFirstDHPublicKey() {
         return ourFirstDHPublicKey;

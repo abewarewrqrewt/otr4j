@@ -53,18 +53,22 @@ public final class MysteriousT4 {
     /**
      * Encode provided parameters in an byte-array representation of the mysterious 'T' value.
      *
-     * @param purpose             the purpose for the mysterious 'T' value
-     * @param profileAlice        the client profile of Alice
-     * @param profileBob          the client profile of Bob
-     * @param x                   the ECDH public key 'X'
-     * @param y                   the ECDH public key 'Y'
-     * @param a                   the DH public key 'A'
-     * @param b                   the DH public key 'B'
-     * @param senderInstanceTag   the sender instance tag
-     * @param receiverInstanceTag the receiver instance tag
-     * @param queryTag            the query tag
-     * @param senderContactID     the sender contact ID
-     * @param receiverContactID   the receiver contact ID
+     * @param purpose                    the purpose for the mysterious 'T' value
+     * @param profileAlice               the client profile of Alice
+     * @param profileBob                 the client profile of Bob
+     * @param x                          the ECDH public key 'X'
+     * @param y                          the ECDH public key 'Y'
+     * @param a                          the DH public key 'A'
+     * @param b                          the DH public key 'B'
+     * @param senderFirstECDHPublicKey   the sender's first ECDH public key to use after DAKE completes
+     * @param senderFirstDHPublicKey     the sender's first DH public key to use after DAKE completes
+     * @param receiverFirstECDHPublicKey the receiver's first ECDH public key to use after DAKE completes
+     * @param receiverFirstDHPublicKey   the receiver's first DH public key to use after DAKE completes
+     * @param senderInstanceTag          the sender instance tag
+     * @param receiverInstanceTag        the receiver instance tag
+     * @param queryTag                   the query tag
+     * @param senderContactID            the sender contact ID
+     * @param receiverContactID          the receiver contact ID
      * @return Returns the byte-array representing the mysterious 'T' value based on provided arguments.
      */
     @Nonnull
@@ -118,11 +122,17 @@ public final class MysteriousT4 {
      * NOTE: the generated phi value is the value defined by the OTRv4 spec, and additional contact ID values which
      * would be part of the implementer contribution.
      *
-     * @param senderInstanceTag   The sender instance tag.
-     * @param receiverInstanceTag The receiver instance tag.
-     * @param queryTag            The query message.
-     * @param senderContactID     The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
-     * @param receiverContactID   The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's bare JID.)
+     * @param senderInstanceTag          The sender instance tag.
+     * @param receiverInstanceTag        The receiver instance tag.
+     * @param senderFirstECDHPublicKey   The sender's first ECDH public key to use after DAKE completes
+     * @param senderFirstDHPublicKey     The sender's first DH public key to use after DAKE completes
+     * @param receiverFirstECDHPublicKey The receiver's first ECDH public key to use after DAKE completes
+     * @param receiverFirstDHPublicKey   The receiver's first DH public key to use after DAKE completes
+     * @param queryTag                   The query message.
+     * @param senderContactID            The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's
+     *                                   bare JID.)
+     * @param receiverContactID          The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's
+     *                                   bare JID.)
      * @return Returns generate Phi value.
      */
     // TODO generatePhi is package-private only for purpose of testing. Consider if we want to make this private and test only through MysteriousT4-encoding.

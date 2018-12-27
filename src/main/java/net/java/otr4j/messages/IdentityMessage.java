@@ -39,12 +39,14 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     /**
      * Identity message type of OTRv4.
      *
-     * @param protocolVersion  the protocol version
-     * @param senderInstance   the sender instance tag
-     * @param receiverInstance the receiver instance tag
-     * @param clientProfile    the client profile (as payload)
-     * @param y                the ECDH public key 'Y'
-     * @param b                the DH public key 'B'
+     * @param protocolVersion       the protocol version
+     * @param senderInstance        the sender instance tag
+     * @param receiverInstance      the receiver instance tag
+     * @param clientProfile         the client profile (as payload)
+     * @param y                     the ECDH public key 'Y'
+     * @param b                     the DH public key 'B'
+     * @param ourFirstECDHPublicKey the first ECDH public key to be used after DAKE completes
+     * @param ourFirstDHPublicKey   the first DH public key to be used after DAKE completes
      */
     public IdentityMessage(final int protocolVersion, @Nonnull final InstanceTag senderInstance,
             @Nonnull final InstanceTag receiverInstance, @Nonnull final ClientProfilePayload clientProfile,
@@ -93,11 +95,21 @@ public final class IdentityMessage extends AbstractEncodedMessage {
         return b;
     }
 
+    /**
+     * Get the first ECDH public key to be used after DAKE completes.
+     *
+     * @return Returns first ECDH public key.
+     */
     @Nonnull
     public Point getOurFirstECDHPublicKey() {
         return ourFirstECDHPublicKey;
     }
 
+    /**
+     * Get the first DH public key to be used after DAKE completes.
+     *
+     * @return Returns first DH public key.
+     */
     @Nonnull
     public BigInteger getOurFirstDHPublicKey() {
         return ourFirstDHPublicKey;

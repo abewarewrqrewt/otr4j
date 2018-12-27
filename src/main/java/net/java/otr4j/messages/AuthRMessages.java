@@ -32,15 +32,17 @@ public final class AuthRMessages {
     /**
      * Validate an AuthRMessage, using additional parameters to provide required data.
      *
-     * @param message                 the AUTH_R message
-     * @param ourClientProfilePayload our ClientProfile payload instance (non-validated)
-     * @param ourProfile              our Client Profile instance (the same as the payload, but validated)
-     * @param theirProfile            their Client Profile instance
-     * @param senderAccountID         the sender's account ID
-     * @param receiverAccountID       the Receiver's account ID
-     * @param receiverECDHPublicKey   the receiver's ECDH public key
-     * @param receiverDHPublicKey     the receiver's DH public key
-     * @param queryTag                the query tag
+     * @param message                    the AUTH_R message
+     * @param ourClientProfilePayload    our ClientProfile payload instance (non-validated)
+     * @param ourProfile                 our Client Profile instance (the same as the payload, but validated)
+     * @param theirProfile               their Client Profile instance
+     * @param senderAccountID            the sender's account ID
+     * @param receiverAccountID          the Receiver's account ID
+     * @param receiverECDHPublicKey      the receiver's ECDH public key
+     * @param receiverDHPublicKey        the receiver's DH public key
+     * @param receiverFirstECDHPublicKey the receiver's first ECDH public key after DAKE completes
+     * @param receiverFirstDHPublicKey   the receiver's first DH public key after DAKE completes
+     * @param queryTag                   the query tag
      * @throws ValidationException In case the message fails validation.
      */
     public static void validate(@Nonnull final AuthRMessage message,
