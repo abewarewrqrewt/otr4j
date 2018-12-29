@@ -149,9 +149,8 @@ public final class ECDHKeyPair implements AutoCloseable {
     /**
      * Clear the secret key of the ECDH key pair.
      */
-    // TODO clearing secret key does not guarantee secret key material is lost. Just that reference is gone.
     @Override
     public void close() {
-        this.secretKey = null;
+        this.secretKey.close();
     }
 }

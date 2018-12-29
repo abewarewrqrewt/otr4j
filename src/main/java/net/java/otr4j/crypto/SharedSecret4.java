@@ -99,6 +99,7 @@ public final class SharedSecret4 implements AutoCloseable {
         this.dhKeyPair = ourDHKeyPair;
         this.theirDHPublicKey = theirDHPublicKey;
         if (this.ecdhKeyPair != null && this.dhKeyPair != null && this.theirECDHPublicKey != null && this.theirDHPublicKey != null) {
+            // FIXME review if key generation works correctly like this.
             regenerateK(Rotation.SENDER_KEYS, true);
         }
     }
