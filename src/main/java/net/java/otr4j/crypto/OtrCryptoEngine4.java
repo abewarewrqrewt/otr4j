@@ -117,53 +117,57 @@ public final class OtrCryptoEngine4 {
          */
         AUTH_I_PHI((byte) 0x0A),
         /**
+         * Usage First Root Key.
+         */
+        FIRST_ROOT_KEY((byte) 0x0B),
+        /**
          * Usage ID for generating the first ephemeral ECDH key, to initialize the Double Ratchet.
          */
-        ECDH_FIRST_EPHEMERAL((byte) 0x11),
+        ECDH_FIRST_EPHEMERAL((byte) 0x12),
         /**
          * Usage ID for generating the first ephemeral DH key, to initialize the Double Ratchet.
          */
-        DH_FIRST_EPHEMERAL((byte) 0x12),
+        DH_FIRST_EPHEMERAL((byte) 0x13),
         /**
          * Usage ID for generating a root key.
          */
-        ROOT_KEY((byte) 0x13),
+        ROOT_KEY((byte) 0x14),
         /**
          * Usage ID for generating a chain key.
          */
-        CHAIN_KEY((byte) 0x14),
+        CHAIN_KEY((byte) 0x15),
         /**
          * Usage ID for generating the next chain key.
          */
-        NEXT_CHAIN_KEY((byte) 0x15),
+        NEXT_CHAIN_KEY((byte) 0x16),
         /**
          * Usage ID for generating a message key.
          */
-        MESSAGE_KEY((byte) 0x16),
+        MESSAGE_KEY((byte) 0x17),
         /**
          * Usage ID for generating a MAC key.
          */
-        MAC_KEY((byte) 0x17),
+        MAC_KEY((byte) 0x18),
         /**
          * Usage ID for generating the Extra Symmetric Key.
          */
-        EXTRA_SYMMETRIC_KEY((byte) 0x18),
+        EXTRA_SYMMETRIC_KEY((byte) 0x19),
         /**
          * Usage ID for generating the hash for the Data Message sections.
          */
-        DATA_MESSAGE_SECTIONS((byte) 0x19),
+        DATA_MESSAGE_SECTIONS((byte) 0x1A),
         /**
          * Usage ID for generating the Authenticator MAC value.
          */
-        AUTHENTICATOR((byte) 0x1A),
+        AUTHENTICATOR((byte) 0x1B),
         /**
          * Usage ID for generating the secret used in the SMP negotiation.
          */
-        SMP_SECRET((byte) 0x1B),
+        SMP_SECRET((byte) 0x1C),
         /**
          * Usage ID for generating the authentication code for the ring signatures.
          */
-        AUTH((byte) 0x1C),
+        AUTH((byte) 0x1D),
         /**
          * Usage ID for SMP value 0x01.
          */
