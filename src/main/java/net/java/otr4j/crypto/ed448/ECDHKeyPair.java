@@ -29,7 +29,7 @@ public final class ECDHKeyPair implements AutoCloseable {
     /**
      * Length of the secret key in bytes.
      */
-    public static final int SECRET_KEY_LENGTH_BYTES = 57;
+    private static final int SECRET_KEY_LENGTH_BYTES = 57;
 
     private Scalar secretKey;
 
@@ -151,6 +151,9 @@ public final class ECDHKeyPair implements AutoCloseable {
      */
     @Override
     public void close() {
-        this.secretKey.close();
+        if (this.secretKey != null) {
+            this.secretKey.close();
+            this.secretKey = null;
+        }
     }
 }
