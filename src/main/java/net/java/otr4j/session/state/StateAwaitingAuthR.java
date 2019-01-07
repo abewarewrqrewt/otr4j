@@ -47,7 +47,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.AuthRMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_I;
 import static net.java.otr4j.messages.MysteriousT4.encode;
-import static net.java.otr4j.session.state.DoubleRatchet.Purpose.RECEIVER;
+import static net.java.otr4j.session.state.DoubleRatchet.Role.BOB;
 
 /**
  * OTRv4 AKE state AWAITING_AUTH_R.
@@ -212,8 +212,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         final SharedSecret4 firstRatchetSecret = new SharedSecret4(secureRandom, ourFirstDHKeyPair, ourFirstECDHKeyPair,
                 message.getOurFirstDHPublicKey(), message.getOurFirstECDHPublicKey());
         final DoubleRatchet ratchet = new DoubleRatchet(secureRandom, firstRatchetSecret, kdf1(FIRST_ROOT_KEY, k, 64),
-                RECEIVER);
-        ratchet.rotateSenderKeys();
+                BOB);
         // FIXME do we need to do something with the result of `rotateSenderKeys`? (We don't have to send the DH or ECDH keys anymore, as the other side would've generated them theirselves.)
         secure(context, ssid, ratchet, ourClientProfile.getLongTermPublicKey(), theirClientProfile.getLongTermPublicKey());
         return reply;

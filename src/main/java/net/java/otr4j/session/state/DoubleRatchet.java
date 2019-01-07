@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import static java.lang.Integer.MIN_VALUE;
 import static java.util.Objects.requireNonNull;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTHENTICATOR;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.CHAIN_KEY;
@@ -96,7 +97,7 @@ final class DoubleRatchet implements AutoCloseable {
      * NOTE: 'i' is incremented as soon as a rotation has finished. For typical use outside of this class, one would use
      * need value 'i - 1', instead of 'i'.
      */
-    private int i = 0;
+    private int i;
 
     /**
      * The number of messages in the previous ratchet, i.e. sender ratchet message number.
@@ -104,16 +105,24 @@ final class DoubleRatchet implements AutoCloseable {
     private int pn = 0;
 
     DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret,
-            @Nonnull final byte[] initialRootKey, @Nonnull final Purpose purpose) {
+            @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
+        requireNonNull(role);
         this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
         this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);
         assert !allZeroBytes(this.rootKey) : "Expected random data, instead of all zero-bytes. There might be something severely wrong.";
-        generateRatchetKeys(purpose);
-        this.senderRatchet.needsRotation = purpose == Purpose.RECEIVER;
-        // FIXME trial below: what if we start with message IDs (j and k) set to 1, and "pretend" that we already sent the message with the public keys for this ratchet.
-        this.senderRatchet.messageID = 1;
-        this.receiverRatchet.messageID = 1;
+        switch (role) {
+        case BOB:
+            generateRatchetKeys(Purpose.RECEIVING);
+            this.senderRatchet.needsRotation = true;
+            break;
+        case ALICE:
+            generateRatchetKeys(Purpose.SENDING);
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported purpose.");
+        }
+        this.i = 1;
     }
 
     @Override
@@ -192,7 +201,7 @@ final class DoubleRatchet implements AutoCloseable {
         LOGGER.log(FINEST, "Rotating root key and sending chain key for ratchet " + this.i);
         final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateOurKeys(performDHRatchet);
-        generateRatchetKeys(Purpose.SENDER);
+        generateRatchetKeys(Purpose.SENDING);
         this.i += 1;
         // Extract MACs to reveal.
         final byte[] revealedMacs = this.macsToReveal.toByteArray();
@@ -368,9 +377,18 @@ final class DoubleRatchet implements AutoCloseable {
         LOGGER.log(FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});
         final boolean performDHRatchet = this.i % 3 == 0;
+        // FIXME do we want to check DH and ECDH public keys individually and immediately decide to return early? (or check both and only then decide)
+        if (nextECDH.equals(this.sharedSecret.getTheirECDHPublicKey())) {
+            LOGGER.log(FINE, "Skipping rotating receiver keys as ECDH public key is already known.");
+            return;
+        }
+        if (nextDH != null && nextDH.equals(this.sharedSecret.getTheirDHPublicKey())) {
+            LOGGER.log(FINE, "Skipping rotating receiver keys as DH public key is already known.");
+            return;
+        }
         this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
         this.pn = this.senderRatchet.messageID;
-        generateRatchetKeys(Purpose.RECEIVER);
+        generateRatchetKeys(Purpose.RECEIVING);
         this.senderRatchet.needsRotation = true;
         this.i += 1;
     }
@@ -381,10 +399,10 @@ final class DoubleRatchet implements AutoCloseable {
         final byte[] concatPreviousRootKeyNewK = concatenate(previousRootKey, newK);
         kdf1(this.rootKey, 0, ROOT_KEY, concatPreviousRootKeyNewK, ROOT_KEY_LENGTH_BYTES);
         switch (purpose) {
-        case SENDER:
+        case SENDING:
             this.senderRatchet.rotateKeys(concatPreviousRootKeyNewK);
             break;
-        case RECEIVER:
+        case RECEIVING:
             this.receiverRatchet.rotateKeys(concatPreviousRootKeyNewK);
             break;
         default:
@@ -721,7 +739,11 @@ final class DoubleRatchet implements AutoCloseable {
         }
     }
 
-    enum Purpose {
-        SENDER, RECEIVER
+    enum Role {
+        ALICE, BOB
+    }
+
+    private enum Purpose {
+        SENDING, RECEIVING;
     }
 }

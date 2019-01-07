@@ -183,7 +183,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             // receiving ratchet are stored. A new DH ratchet is performed.
             // TODO generate and store skipped message for previous chain key.
             // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
-            if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
+            if (message.getI() > 1 && message.getRevealedMacs().length == 0) {
                 // FIXME review the conditions for the assertion. Due to Double Ratchet init changing, we may be able to tighten conditions.
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");

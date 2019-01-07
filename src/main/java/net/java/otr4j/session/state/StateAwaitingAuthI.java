@@ -48,7 +48,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.AuthIMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
 import static net.java.otr4j.messages.MysteriousT4.encode;
-import static net.java.otr4j.session.state.DoubleRatchet.Purpose.SENDER;
+import static net.java.otr4j.session.state.DoubleRatchet.Role.ALICE;
 
 /**
  * The state AWAITING_AUTH_I.
@@ -240,7 +240,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourFirstDHKeyPair,
                 this.ourFirstECDHKeyPair, this.theirFirstDHPublicKey, this.theirFirstECDHPublicKey);
         final DoubleRatchet ratchet = new DoubleRatchet(secureRandom, sharedSecret, kdf1(FIRST_ROOT_KEY, this.k, 64),
-                SENDER);
+                ALICE);
         secure(context, this.ssid, ratchet, ourProfileValidated.getLongTermPublicKey(),
                 profileBobValidated.getLongTermPublicKey());
     }

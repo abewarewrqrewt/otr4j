@@ -61,7 +61,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet, StateInitial.instance());
     }
 
@@ -76,7 +76,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         new StateEncrypted4(CONTEXT, null, myPublicKey, theirPublicKey, ratchet, StateInitial.instance());
     }
 
@@ -91,7 +91,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         new StateEncrypted4(CONTEXT, ssid, null, theirPublicKey, ratchet, StateInitial.instance());
     }
 
@@ -106,7 +106,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         new StateEncrypted4(CONTEXT, ssid, myPublicKey, null, ratchet, StateInitial.instance());
     }
 
@@ -122,7 +122,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         new StateEncrypted4(null, ssid, myPublicKey, theirPublicKey, ratchet, StateInitial.instance());
     }
 
@@ -138,7 +138,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         final StateEncrypted4 state = new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet,
                 StateInitial.instance());
         state.handleDataMessage(CONTEXT, (DataMessage) null);
@@ -156,7 +156,7 @@ public final class StateEncrypted4Test {
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
                 theirECDHPublicKey);
-        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
         final StateEncrypted4 state = new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet,
                 StateInitial.instance());
         state.handleDataMessage(CONTEXT, (DataMessage4) null);
