@@ -115,7 +115,6 @@ final class DoubleRatchet implements AutoCloseable {
         case BOB:
             generateRatchetKeys(Purpose.RECEIVING);
             this.senderRatchet.needsRotation = true;
-            // FIXME need to call rotateSenderKeys() here with DH ratchet, but also ensure that
             break;
         case ALICE:
             generateRatchetKeys(Purpose.SENDING);
@@ -123,7 +122,7 @@ final class DoubleRatchet implements AutoCloseable {
         default:
             throw new UnsupportedOperationException("Unsupported purpose.");
         }
-        this.i = 1;
+        // FIXME need to ensure/confirm that we indeed use the pregenerated RECEIVING/SENDING key and need to confirm that rotation of SENDER key is exactly the same as in normal sender key rotation. (Otherwise we may be misbehaving.)
     }
 
     @Override
