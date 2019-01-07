@@ -88,9 +88,9 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param theirDHPublicKey   their DH public key
      * @param theirECDHPublicKey their ECDH public key
      */
-    public SharedSecret4(@Nonnull final SecureRandom random, @Nullable final DHKeyPair ourDHKeyPair,
-            @Nullable final ECDHKeyPair ourECDHKeyPair, @Nullable final BigInteger theirDHPublicKey,
-            @Nullable final Point theirECDHPublicKey) {
+    public SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
+            @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final BigInteger theirDHPublicKey,
+            @Nonnull final Point theirECDHPublicKey) {
         this.random = requireNonNull(random);
         this.ecdhKeyPair = requireNonNull(ourECDHKeyPair);
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);

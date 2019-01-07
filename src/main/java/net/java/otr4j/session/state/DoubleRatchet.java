@@ -115,6 +115,7 @@ final class DoubleRatchet implements AutoCloseable {
         case BOB:
             generateRatchetKeys(Purpose.RECEIVING);
             this.senderRatchet.needsRotation = true;
+            // FIXME need to call rotateSenderKeys() here with DH ratchet, but also ensure that
             break;
         case ALICE:
             generateRatchetKeys(Purpose.SENDING);
@@ -376,7 +377,6 @@ final class DoubleRatchet implements AutoCloseable {
         requireNotClosed();
         LOGGER.log(FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});
-        final boolean performDHRatchet = this.i % 3 == 0;
         // FIXME do we want to check DH and ECDH public keys individually and immediately decide to return early? (or check both and only then decide)
         if (nextECDH.equals(this.sharedSecret.getTheirECDHPublicKey())) {
             LOGGER.log(FINE, "Skipping rotating receiver keys as ECDH public key is already known.");
@@ -386,6 +386,7 @@ final class DoubleRatchet implements AutoCloseable {
             LOGGER.log(FINE, "Skipping rotating receiver keys as DH public key is already known.");
             return;
         }
+        final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
         this.pn = this.senderRatchet.messageID;
         generateRatchetKeys(Purpose.RECEIVING);

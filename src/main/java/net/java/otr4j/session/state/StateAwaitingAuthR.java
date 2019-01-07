@@ -213,7 +213,6 @@ final class StateAwaitingAuthR extends AbstractCommonState {
                 message.getOurFirstDHPublicKey(), message.getOurFirstECDHPublicKey());
         final DoubleRatchet ratchet = new DoubleRatchet(secureRandom, firstRatchetSecret, kdf1(FIRST_ROOT_KEY, k, 64),
                 BOB);
-        // FIXME do we need to do something with the result of `rotateSenderKeys`? (We don't have to send the DH or ECDH keys anymore, as the other side would've generated them theirselves.)
         secure(context, ssid, ratchet, ourClientProfile.getLongTermPublicKey(), theirClientProfile.getLongTermPublicKey());
         return reply;
     }
