@@ -9,18 +9,21 @@ package net.java.otr4j.crypto;
 
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.bouncycastle.util.Arrays.fill;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * The SharedSecret4 tests currently do not perform a test that binary-exactly verifies that the right values are
@@ -47,69 +50,42 @@ public class SharedSecret4Test {
         new SharedSecret4(null, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructionNullDHKeyPair() {
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, null, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructionNullECDHKeyPair() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, null, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructionNullECDHandDHKeyPair() {
         new SharedSecret4(RANDOM, null, null, theirDHPublicKey, theirECDHPublicKey);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructionNullTheirDHPublicKey() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, theirECDHPublicKey);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructionNullTheirECDHPublicKey() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, null);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructionNullTheirECDHandDHPublicKey() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructionNullTooManyKeys1() {
-        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
-        new SharedSecret4(RANDOM, ourDHKeyPair, null, null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructionNullTooManyKeys2() {
-        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
-        new SharedSecret4(RANDOM, null, ourECDHKeyPair, null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructionNullTooManyKeys3() {
-        new SharedSecret4(RANDOM, null, null, theirDHPublicKey, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructionNullTooManyKeys4() {
-        new SharedSecret4(RANDOM, null, null, null, theirECDHPublicKey);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructionNullAllKeys() {
-        new SharedSecret4(RANDOM, null, null, null, null);
     }
 
     @Test
@@ -117,8 +93,10 @@ public class SharedSecret4Test {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
-        assertNotNull(ss.getECDHPublicKey());
-        assertNotNull(ss.getDHPublicKey());
+        assertEquals(ourECDHKeyPair.getPublicKey(), ss.getECDHPublicKey());
+        assertEquals(ourDHKeyPair.getPublicKey(), ss.getDHPublicKey());
+        assertEquals(theirECDHPublicKey, ss.getTheirECDHPublicKey());
+        assertEquals(theirDHPublicKey, ss.getTheirDHPublicKey());
         assertNotNull(ss.getK());
     }
 
@@ -180,10 +158,12 @@ public class SharedSecret4Test {
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
         final SharedSecret4 ss = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey, theirECDHPublicKey);
         final byte[] firstK = ss.getK();
+        final byte[] firstSSID = ss.generateSSID();
         // Rotate their public keys.
         ss.rotateTheirKeys(false, theirNextECDHPublicKey, null);
         // Ensure that k and ssid actually change after rotation.
         assertFalse(Arrays.equals(firstK, ss.getK()));
+        assertFalse(Arrays.equals(firstSSID, ss.generateSSID()));
     }
 
     @Test(expected = NullPointerException.class)
@@ -238,29 +218,15 @@ public class SharedSecret4Test {
         assertFalse(Arrays.equals(firstK, ss.getK()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testRotateOurKeysWithoutTheirKeysNoDHKeyPairRotation() {
         final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
         final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
-        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, null);
-        shared.rotateOurKeys(false);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testRotateOurKeysWithoutTheirKeysWithDHKeyPairRotation() {
-        final DHKeyPair ourDHKeyPair = DHKeyPair.generate(RANDOM);
-        final ECDHKeyPair ourECDHKeyPair = ECDHKeyPair.generate(RANDOM);
-        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, null, null);
-        shared.rotateOurKeys(true);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testRotateTheirKeysWithoutOurs() throws OtrCryptoException {
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final SharedSecret4 shared = new SharedSecret4(RANDOM, null, null, theirDHPublicKey, theirECDHPublicKey);
-        shared.rotateTheirKeys(true, ECDHKeyPair.generate(RANDOM).getPublicKey(),
-                DHKeyPair.generate(RANDOM).getPublicKey());
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, ourDHKeyPair, ourECDHKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        shared.rotateOurKeys(false);
     }
 
     @Test(expected = NullPointerException.class)
@@ -317,5 +283,33 @@ public class SharedSecret4Test {
         final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
                 theirDHPublicKey, theirECDHPublicKey);
         shared.rotateTheirKeys(true, ECDHKeyPair.generate(RANDOM).getPublicKey(), theirDHPublicKey);
+    }
+
+    @Test
+    public void testCloseSharedSecret4() {
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.close();
+        assertTrue(allZeroBytes(shared.getK()));
+    }
+
+    @Ignore("FIXME Need to check current state to discover that SharedSecret4 is closed already.")
+    @Test(expected = IllegalStateException.class)
+    public void testRotateTheirKeysAfterClosing() throws OtrCryptoException {
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.close();
+        assertTrue(allZeroBytes(shared.getK()));
+        shared.rotateTheirKeys(true, ECDHKeyPair.generate(RANDOM).getPublicKey(), theirDHPublicKey);
+    }
+
+    @Ignore("FIXME Need to check current state to discover that SharedSecret4 is closed already.")
+    @Test(expected = IllegalStateException.class)
+    public void testRotateOurKeysAfterClosing() {
+        final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
+                theirDHPublicKey, theirECDHPublicKey);
+        shared.close();
+        assertTrue(allZeroBytes(shared.getK()));
+        shared.rotateOurKeys(true);
     }
 }

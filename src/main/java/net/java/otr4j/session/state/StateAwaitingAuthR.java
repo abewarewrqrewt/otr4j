@@ -14,6 +14,7 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.messages.AbstractEncodedMessage;
@@ -30,6 +31,7 @@ import net.java.otr4j.session.api.SMPHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 import java.util.logging.Logger;
 
@@ -39,11 +41,13 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FIRST_ROOT_KEY;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.AuthRMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_I;
 import static net.java.otr4j.messages.MysteriousT4.encode;
-import static net.java.otr4j.session.state.SecurityParameters4.Component.OURS;
+import static net.java.otr4j.session.state.DoubleRatchet.Purpose.RECEIVER;
 
 /**
  * OTRv4 AKE state AWAITING_AUTH_R.
@@ -178,14 +182,14 @@ final class StateAwaitingAuthR extends AbstractCommonState {
             throws ValidationException {
         final SessionID sessionID = context.getSessionID();
         final EdDSAKeyPair ourLongTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
+        // Validate received Auth-R message.
         final ClientProfile ourClientProfile = this.ourProfilePayload.validate();
         final ClientProfile theirClientProfile = message.getClientProfile().validate();
         validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, sessionID.getUserID(),
                 sessionID.getAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(),
                 this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(), this.queryTag);
-        final SecurityParameters4 params = new SecurityParameters4(OURS, ecdhKeyPair, dhKeyPair, message.getX(),
-                message.getA(), ourClientProfile, theirClientProfile);
-        secure(context, params);
+        final SecureRandom secureRandom = context.secureRandom();
+        // Prepare Auth-I message to be sent.
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
         final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),
@@ -193,9 +197,26 @@ final class StateAwaitingAuthR extends AbstractCommonState {
                 this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(),
                 message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(), senderTag.getValue(),
                 receiverTag.getValue(), this.queryTag, sessionID.getAccountID(), sessionID.getUserID());
-        final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), ourLongTermKeyPair,
+        final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, ourLongTermKeyPair,
                 ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.getX(), t);
-        return new AuthIMessage(FOUR, senderTag, receiverTag, sigma);
+        final AuthIMessage reply = new AuthIMessage(FOUR, senderTag, receiverTag, sigma);
+        // Calculate mixed shared secret and SSID.
+        final byte[] k;
+        final byte[] ssid;
+        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.dhKeyPair, this.ecdhKeyPair,
+                message.getA(), message.getX())) {
+            k = sharedSecret.getK();
+            ssid = sharedSecret.generateSSID();
+        }
+        // Initialize Double Ratchet.
+        final SharedSecret4 firstRatchetSecret = new SharedSecret4(secureRandom, ourFirstDHKeyPair, ourFirstECDHKeyPair,
+                message.getOurFirstDHPublicKey(), message.getOurFirstECDHPublicKey());
+        final DoubleRatchet ratchet = new DoubleRatchet(secureRandom, firstRatchetSecret, kdf1(FIRST_ROOT_KEY, k, 64),
+                RECEIVER);
+        ratchet.rotateSenderKeys();
+        // FIXME do we need to do something with the result of `rotateSenderKeys`? (We don't have to send the DH or ECDH keys anymore, as the other side would've generated them theirselves.)
+        secure(context, ssid, ratchet, ourClientProfile.getLongTermPublicKey(), theirClientProfile.getLongTermPublicKey());
+        return reply;
     }
 
     @Nullable

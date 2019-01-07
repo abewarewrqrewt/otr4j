@@ -28,6 +28,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
  * implementation details.
  */
 // FIXME implement arithmetic operations that operate directly on byte-arrays. ('toBigInteger' is workaround to make current implementation work.)
+// FIXME check that close is called where appropriate
 public final class Scalar implements Comparable<Scalar>, AutoCloseable {
 
     /**

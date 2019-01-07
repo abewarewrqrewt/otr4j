@@ -163,10 +163,8 @@ public class SessionTest {
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(c.clientBob.session.getSenderInstanceTag()));
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus(bob2.session.getSenderInstanceTag()));
-        // Expecting DAKE data message, Reveal Signature message from Alice.
+        // Expecting Reveal Signature message from Alice.
         assertNull(c.clientBob.receiveMessage());
-        assertNull(c.clientBob.receiveMessage());
-        assertNull(bob2.receiveMessage());
         assertNull(bob2.receiveMessage());
         assertEquals(ENCRYPTED, bob2.session.getSessionStatus());
         assertEquals(Version.THREE, bob2.session.getOutgoingSession().getProtocolVersion());
@@ -595,10 +593,9 @@ public class SessionTest {
         c.clientBob.receiveMessage();
         c.clientAlice.receiveMessage();
         c.clientBob.receiveMessage();
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
         c.clientAlice.receiveMessage();
         assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        c.clientBob.receiveMessage();
-        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
         for (final String line : NULL_LINES) {
             c.clientAlice.sendMessage(line);
             final String sanitizedLine = line.replace('\0', '?');
@@ -624,10 +621,9 @@ public class SessionTest {
         c.clientBob.receiveMessage();
         c.clientAlice.receiveMessage();
         c.clientBob.receiveMessage();
+        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
         c.clientAlice.receiveMessage();
         assertEquals(SessionStatus.ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        c.clientBob.receiveMessage();
-        assertEquals(SessionStatus.ENCRYPTED, c.clientBob.session.getSessionStatus());
         for (final String message : UNICODE_LINES) {
             c.clientAlice.sendMessage(message);
             assertNotEquals(message, c.clientBob.receiptChannel.peek());
@@ -666,8 +662,7 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
+        // Start sending messages
         c.clientBob.sendMessage("Hello Alice!");
         assertNotEquals("Hello Alice!", c.clientAlice.receiptChannel.peek());
         assertEquals("Hello Alice!", c.clientAlice.receiveMessage());
@@ -694,8 +689,7 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
+        // Start sending messages
         c.clientBob.sendMessage("Hello Alice!");
         assertNotEquals("Hello Alice!", c.clientAlice.receiptChannel.peek());
         assertEquals("Hello Alice!", c.clientAlice.receiveMessage());
@@ -727,8 +721,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
     }
 
     @Test
@@ -747,8 +739,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
@@ -778,8 +768,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         final String[] messages = new String[25];
         for (int i = 0; i < messages.length; i++) {
@@ -814,8 +802,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         final String[] messages = new String[25];
         for (int i = 0; i < messages.length; i++) {
@@ -860,8 +846,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         final String[] messages = new String[25];
         for (int i = 0; i < messages.length; i++) {
@@ -907,8 +891,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         // Initiate SMP negotiation
         assertFalse(c.clientBob.session.isSmpInProgress());
@@ -956,8 +938,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         // Initiate SMP negotiation
         c.clientBob.session.initSmp("What's the secret?", "Nobody knows!");
@@ -991,8 +971,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         for (int i = 0; i < UNICODE_LINES.length; ++i) {
             c.clientBob.verified.clear();
@@ -1033,8 +1011,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertEquals(0, c.clientBob.receiveAllMessages(true).length);
 
         for (int i = 0; i < 25; i++) {
             // Bob sending a message (alternating, to enable ratchet)
@@ -1105,8 +1081,6 @@ public class SessionTest {
         // Expecting AUTH_I message from Bob.
         assertNull(c.clientAlice.receiveMessage());
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
-        // Expecting heartbeat message from Alice to enable Bob to complete the Double Ratchet initialization.
-        assertNull(c.clientBob.receiveMessage());
 
         for (int i = 0; i < 5; i++) {
             // Bob sending a message (alternating, to enable ratchet)

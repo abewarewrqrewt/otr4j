@@ -13,6 +13,7 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
+import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -31,6 +32,7 @@ import net.java.otr4j.session.api.SMPHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 import java.util.logging.Logger;
 
@@ -40,11 +42,13 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.FIRST_ROOT_KEY;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.AuthIMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
 import static net.java.otr4j.messages.MysteriousT4.encode;
-import static net.java.otr4j.session.state.SecurityParameters4.Component.THEIRS;
+import static net.java.otr4j.session.state.DoubleRatchet.Purpose.SENDER;
 
 /**
  * The state AWAITING_AUTH_I.
@@ -87,7 +91,12 @@ final class StateAwaitingAuthI extends AbstractCommonState {
 
     private final ClientProfilePayload profileBob;
 
+    private final byte[] ssid;
+
+    private final byte[] k;
+
     StateAwaitingAuthI(@Nonnull final AuthState authState, @Nonnull final String queryTag,
+            @Nonnull final byte[] k, @Nonnull final byte[] ssid,
             @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final DHKeyPair ourDHKeyPair,
             @Nonnull final ECDHKeyPair ourFirstECDHKeyPair, @Nonnull final DHKeyPair ourFirstDHKeyPair,
             @Nonnull final Point theirFirstECDHPublicKey, @Nonnull final BigInteger theirFirstDHPublicKey,
@@ -105,6 +114,8 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         this.b = requireNonNull(b);
         this.ourProfile = requireNonNull(ourProfile);
         this.profileBob = requireNonNull(profileBob);
+        this.k = requireNonNull(k);
+        this.ssid = requireNonNull(ssid);
     }
 
     @Override
@@ -172,6 +183,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
      * @return Returns the Auth-R message to send
      * @throws ValidationException In case of failure to validate other party's identity message or client profile.
      */
+    // FIXME rewrite `handleIdentityMessage` to accommodate our_ecdh_first and our_dh_first keys.
     @Nonnull
     @Override
     AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
@@ -179,14 +191,24 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
         IdentityMessages.validate(message, theirNewClientProfile);
         final SessionID sessionID = context.getSessionID();
+        final SecureRandom secureRandom = context.secureRandom();
         // Note: we query the context for a new client profile, because we're responding to a new Identity message.
         final ClientProfilePayload profilePayload = context.getClientProfilePayload();
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
+        final byte[] newK;
+        final byte[] newSSID;
+        // FIXME we cannot reuse ourDHKeyPair and ourECDHKeyPair as they will have been closed already.
+        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourDHKeyPair, this.ourECDHKeyPair,
+                message.getB(), message.getY())) {
+            newK = sharedSecret.getK();
+            newSSID = sharedSecret.generateSSID();
+        }
+        this.ourECDHKeyPair.close();
+        this.ourDHKeyPair.close();
         // Generate t value and calculate sigma based on known facts and generated t value.
         final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
-                message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(),
-                this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(),
-                message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
+                message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), this.ourFirstECDHKeyPair.getPublicKey(),
+                this.ourFirstDHKeyPair.getPublicKey(), message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
                 context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(), this.queryTag,
                 sessionID.getUserID(), sessionID.getAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
@@ -196,7 +218,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma, this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey());
-        context.transition(this, new StateAwaitingAuthI(getAuthState(), this.queryTag, this.ourECDHKeyPair,
+        context.transition(this, new StateAwaitingAuthI(getAuthState(), this.queryTag, newK, newSSID, this.ourECDHKeyPair,
                 this.ourDHKeyPair, this.ourFirstECDHKeyPair, this.ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(),
                 message.getOurFirstDHPublicKey(), message.getY(), message.getB(), ourProfile,
                 message.getClientProfile()));
@@ -205,6 +227,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
 
     private void handleAuthIMessage(@Nonnull final Context context, @Nonnull final AuthIMessage message)
             throws ValidationException {
+        // Validate message.
         final ClientProfile profileBobValidated = this.profileBob.validate();
         final ClientProfile ourProfileValidated = this.ourProfile.validate();
         validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
@@ -212,8 +235,14 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 this.theirFirstECDHPublicKey, this.theirFirstDHPublicKey, this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey(), context.getSessionID().getUserID(),
                 context.getSessionID().getAccountID());
-        secure(context, new SecurityParameters4(THEIRS, this.ourECDHKeyPair, this.ourDHKeyPair, this.y, this.b,
-                ourProfileValidated, profileBobValidated));
+        final SecureRandom secureRandom = context.secureRandom();
+        // Initialize Double Ratchet.
+        final SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourFirstDHKeyPair,
+                this.ourFirstECDHKeyPair, this.theirFirstDHPublicKey, this.theirFirstECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(secureRandom, sharedSecret, kdf1(FIRST_ROOT_KEY, this.k, 64),
+                SENDER);
+        secure(context, this.ssid, ratchet, ourProfileValidated.getLongTermPublicKey(),
+                profileBobValidated.getLongTermPublicKey());
     }
 
     @Nullable

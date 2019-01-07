@@ -11,11 +11,12 @@ import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
-import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
+import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.messages.AuthRMessage;
@@ -29,7 +30,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,6 +118,15 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         final DHKeyPair ourFirstDHKeyPair = DHKeyPair.generate(secureRandom);
         final SessionID sessionID = context.getSessionID();
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
+        final byte[] k;
+        final byte[] ssid;
+        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, a, x, message.getB(), message.getY())) {
+            k = sharedSecret.getK();
+            ssid = sharedSecret.generateSSID();
+        }
+        // Securely delete the private components after use.
+        a.close();
+        x.close();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final String queryTag = context.getQueryTag();
@@ -132,9 +141,9 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma,
                 ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey());
-        context.transition(this, new StateAwaitingAuthI(getAuthState(), queryTag, x, a, ourFirstECDHKeyPair,
-                ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(), message.getY(),
-                message.getB(), profile, message.getClientProfile()));
+        context.transition(this, new StateAwaitingAuthI(getAuthState(), queryTag, k, ssid, x, a,
+                ourFirstECDHKeyPair, ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(),
+                message.getOurFirstDHPublicKey(), message.getY(), message.getB(), profile, message.getClientProfile()));
         return authRMessage;
     }
 
@@ -159,25 +168,22 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         return message;
     }
 
-    final void secure(@Nonnull final Context context, @Nonnull final SecurityParameters4 params) {
-        try {
-            final StateEncrypted4 encrypted = new StateEncrypted4(context, params, getAuthState());
-            context.transition(this, encrypted);
-            if (params.getInitializationComponent() == SecurityParameters4.Component.THEIRS) {
-                LOGGER.log(Level.FINE, "We initialized THEIR component of the Double Ratchet, so it is complete. Sending heartbeat message.");
-                context.injectMessage(encrypted.transformSending(context, "", Collections.<TLV>emptyList(),
-                        FLAG_IGNORE_UNREADABLE));
-            } else {
-                LOGGER.log(Level.FINE, "We initialized OUR component of the Double Ratchet. We are still missing the other party's public key material, hence we cannot send messages yet. Now we wait to receive a message from the other party.");
-            }
-        } catch (final OtrException e) {
-            // We failed to transmit the heartbeat message. This is not critical, although it is annoying for the other
-            // party as they will have to wait for the first (user) message from us to complete the Double Ratchet.
-            // Without it, they do not have access to the Message Keys that they need to send encrypted messages. (For
-            // now, just log the incident and assume things will be alright.)
-            LOGGER.log(Level.WARNING, "Failed to send heartbeat message. We need to send a message before the other party can complete their Double Ratchet initialization.",
-                    e);
-        }
+    /**
+     * Secure existing session, i.e. transition to `ENCRYPTED_MESSAGES`. This ensures that, apart from transitioning to
+     * the encrypted messages state, that we also set the default outgoing session to this instance, if the current
+     * outgoing session is not secured yet.
+     *
+     * @param context                the session context
+     * @param ssid                   the session's SSID
+     * @param ratchet                the initialized double ratchet
+     * @param ourLongTermPublicKey   our long-term public key as used in the DAKE
+     * @param theirLongTermPublicKey their long-term public key as used in the DAKE
+     */
+    final void secure(@Nonnull final Context context, @Nonnull final byte[] ssid, @Nonnull final DoubleRatchet ratchet,
+            @Nonnull final Point ourLongTermPublicKey, @Nonnull final Point theirLongTermPublicKey) {
+        final StateEncrypted4 encrypted = new StateEncrypted4(context, ssid, ourLongTermPublicKey,
+                theirLongTermPublicKey, ratchet, getAuthState());
+        context.transition(this, encrypted);
         if (context.getSessionStatus() != ENCRYPTED) {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
         }

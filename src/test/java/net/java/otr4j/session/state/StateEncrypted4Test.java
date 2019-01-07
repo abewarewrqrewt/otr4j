@@ -6,6 +6,7 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -21,7 +22,7 @@ import java.security.SecureRandom;
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.session.state.SecurityParameters4TestUtils.createSecurityParameters4;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,52 +51,114 @@ public final class StateEncrypted4Test {
 
     @Test
     public void testConstructStateEncrypted4() {
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
         final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
-                dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        new StateEncrypted4(CONTEXT, params, StateInitial.instance());
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet, StateInitial.instance());
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructStateEncrypted4NullParams() {
-        new StateEncrypted4(CONTEXT, null, StateInitial.instance());
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
+        final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        new StateEncrypted4(CONTEXT, null, myPublicKey, theirPublicKey, ratchet, StateInitial.instance());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructStateEncrypted4NullOurLongTermPublicKey() {
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
+        final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        new StateEncrypted4(CONTEXT, ssid, null, theirPublicKey, ratchet, StateInitial.instance());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructStateEncrypted4NullTheirrLongTermPublicKey() {
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
+        final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        new StateEncrypted4(CONTEXT, ssid, myPublicKey, null, ratchet, StateInitial.instance());
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructStateEncrypted4NullContext() {
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
         final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
-                dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        new StateEncrypted4(null, params, StateInitial.instance());
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        new StateEncrypted4(null, ssid, myPublicKey, theirPublicKey, ratchet, StateInitial.instance());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testConstructStateEncrypted4HandleNullDataMessage() {
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
         final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
-                dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params, StateInitial.instance());
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet,
+                StateInitial.instance());
         state.handleDataMessage(CONTEXT, (DataMessage) null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructStateEncrypted4HandleNullDataMessage4() throws OtrException, ProtocolException {
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
         final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
         final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final SecurityParameters4 params = createSecurityParameters4(SecurityParameters4.Component.OURS, ecdhKeyPair,
-                dhKeyPair, theirECDHPublicKey, theirDHPublicKey, MY_PROFILE, THEIR_PROFILE);
-        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, params, StateInitial.instance());
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Purpose.SENDER);
+        final StateEncrypted4 state = new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet,
+                StateInitial.instance());
         state.handleDataMessage(CONTEXT, (DataMessage4) null);
     }
 }

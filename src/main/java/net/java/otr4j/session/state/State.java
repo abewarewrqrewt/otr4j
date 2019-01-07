@@ -26,6 +26,7 @@ import java.security.interfaces.DSAPublicKey;
 /**
  * Interface to the Message state.
  */
+// TODO the whole class-hierarchy of implementation logic is not very easy to reason about. See if we can get rid of it.
 public interface State {
 
     /**

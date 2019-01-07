@@ -71,6 +71,7 @@ public final class MysteriousT4 {
      * @param receiverContactID          the receiver contact ID
      * @return Returns the byte-array representing the mysterious 'T' value based on provided arguments.
      */
+    // FIXME adopt InstanceTag type instead of using primitive int.
     @Nonnull
     public static byte[] encode(@Nonnull final Purpose purpose, @Nonnull final ClientProfilePayload profileAlice,
             @Nonnull final ClientProfilePayload profileBob, @Nonnull final Point x, @Nonnull final Point y,

@@ -182,6 +182,7 @@ final class SessionImpl implements Session, Context {
     // TODO refresh client profile payload after it is expired. (Maybe leave until after initial use, as expiration date is recommended for 2+ weeks.)
     // TODO consider keeping an internal class-level cache of signed payload per client profile, such that we do not keep constructing it again and again
     // TODO ability for user to specify amount of expiration time on a profile
+    // FIXME requirement to publish the same ClientProfilePayload as is in use, therefore we cannot generate on-the-fly on every execution.
     private final ClientProfilePayload profilePayload;
 
     /**

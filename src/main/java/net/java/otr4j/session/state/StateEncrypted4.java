@@ -12,7 +12,7 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.SharedSecret4;
+import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.EncryptedMessage.Content;
 import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.PlainTextMessage;
@@ -35,13 +35,13 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
-import static net.java.otr4j.crypto.SharedSecret4.initialize;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
@@ -51,6 +51,7 @@ import static net.java.otr4j.session.smpv4.SMP.smpPayload;
  */
 // TODO signal errors in data message using ERROR_2 indicator.
 // FIXME write additional unit tests for StateEncrypted4
+// TODO decide whether or not we can drop the AuthState instance. Relies on fact that we need to know up to what point we should handle OTRv2/3 AKE messages.
 final class StateEncrypted4 extends AbstractCommonState implements StateEncrypted {
 
     private static final int VERSION = FOUR;
@@ -62,34 +63,15 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
 
     private final SMP smp;
 
-    StateEncrypted4(@Nonnull final Context context, @Nonnull final SecurityParameters4 params,
-            @Nonnull final AuthState authState) {
+    StateEncrypted4(@Nonnull final Context context, @Nonnull final byte[] ssid,
+            @Nonnull final Point ourLongTermPublicKey, @Nonnull final Point theirLongTermPublicKey,
+            @Nonnull final DoubleRatchet ratchet, @Nonnull final AuthState authState) {
         super(authState);
         final SessionID sessionID = context.getSessionID();
         this.logger = Logger.getLogger(sessionID.getAccountID() + "-->" + sessionID.getUserID());
-        final byte[] exchangeK;
-        final byte[] ssid;
-        try (SharedSecret4 exchangeSecret = params.generateSharedSecret(context.secureRandom())) {
-            ssid = exchangeSecret.generateSSID();
-            exchangeK = exchangeSecret.getK();
-        }
-        final SharedSecret4.Rotation component;
-        switch (params.getInitializationComponent()) {
-        case THEIRS:
-            component = SharedSecret4.Rotation.RECEIVER_KEYS;
-            break;
-        case OURS:
-            component = SharedSecret4.Rotation.SENDER_KEYS;
-            break;
-        default:
-            throw new UnsupportedOperationException("Unknown initialization component.");
-        }
-        params.close();
-        final SharedSecret4 preparedSecret = initialize(context.secureRandom(), exchangeK, component);
-        this.ratchet = new DoubleRatchet(context.secureRandom(), preparedSecret, exchangeK);
-        this.smp = new SMP(context.secureRandom(), context.getHost(), sessionID, ssid,
-                params.getOurProfile().getLongTermPublicKey(), params.getTheirProfile().getLongTermPublicKey(),
-                context.getReceiverInstanceTag());
+        this.ratchet = requireNonNull(ratchet);
+        this.smp = new SMP(context.secureRandom(), context.getHost(), sessionID, ssid, ourLongTermPublicKey,
+                theirLongTermPublicKey, context.getReceiverInstanceTag());
     }
 
     @Nonnull
@@ -202,6 +184,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             // TODO generate and store skipped message for previous chain key.
             // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
             if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
+                // FIXME review the conditions for the assertion. Due to Double Ratchet init changing, we may be able to tighten conditions.
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
             }
