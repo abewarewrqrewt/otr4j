@@ -183,7 +183,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
      * @return Returns the Auth-R message to send
      * @throws ValidationException In case of failure to validate other party's identity message or client profile.
      */
-    // FIXME rewrite `handleIdentityMessage` to accommodate our_ecdh_first and our_dh_first keys.
+    // TODO eventually write a test case that demonstrates responses by multiple sessions, such that correct handling of ephemeral keys is mandatory or it will expose the bug.
     @Nonnull
     @Override
     AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
@@ -197,7 +197,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         final byte[] newK;
         final byte[] newSSID;
-        // FIXME we cannot reuse ourDHKeyPair and ourECDHKeyPair as they will have been closed already.
+        // FIXME we cannot reuse ourDHKeyPair and ourECDHKeyPair as they will have been closed already. (As of yet unresolved issue in Double Ratchet init redesign.)
         try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourDHKeyPair, this.ourECDHKeyPair,
                 message.getB(), message.getY())) {
             newK = sharedSecret.getK();

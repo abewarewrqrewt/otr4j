@@ -124,9 +124,6 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
             k = sharedSecret.getK();
             ssid = sharedSecret.generateSSID();
         }
-        // Securely delete the private components after use.
-        a.close();
-        x.close();
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final String queryTag = context.getQueryTag();

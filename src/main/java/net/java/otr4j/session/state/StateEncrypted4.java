@@ -167,8 +167,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         throw new IllegalStateException("BUG: OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
-    // FIXME prevent case where data message arrives before first data message is sent. (Handle, signal, ...) - should fix itself once extra DAKE state is introduced.
-    // FIXME handle case where first data messages (Data messages with ratchet id 0) arrive before very first message is received, hence Double Ratchet not yet fully initialized.
+    // FIXME handle case where first data messages (Data messages with ratchet id 0) arrive before very first message is received, hence Double Ratchet not yet fully initialized. (Redesigned Double Ratchet init mentions something about keeping messages for something like 50 minutes, until DAKE is completed.)
     // FIXME write tests for SMP_ABORT sets UNREADABLE flag, SMP payload corrupted, SMP payload incomplete, ...
     @Nullable
     @Override
@@ -184,7 +183,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             // TODO generate and store skipped message for previous chain key.
             // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
             if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
-                // FIXME review the conditions for the assertion. Due to Double Ratchet init changing, we may be able to tighten conditions.
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
             }

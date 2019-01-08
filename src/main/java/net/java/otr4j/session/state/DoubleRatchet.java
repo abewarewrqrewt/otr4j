@@ -56,8 +56,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * DoubleRatchet is NOT thread-safe.
  */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
-// FIXME review changes to double ratchet (https://github.com/otrv4/otrv4/commit/f199b3b88fc5479ac0f6dd464092eb42d26a13bc)
-// FIXME review changes to clearing sensitive data given changed procedure for DoubleRatchet initialization.
 final class DoubleRatchet implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
@@ -97,7 +95,7 @@ final class DoubleRatchet implements AutoCloseable {
      * NOTE: 'i' is incremented as soon as a rotation has finished. For typical use outside of this class, one would use
      * need value 'i - 1', instead of 'i'.
      */
-    private int i;
+    private int i = 0;
 
     /**
      * The number of messages in the previous ratchet, i.e. sender ratchet message number.
@@ -115,14 +113,19 @@ final class DoubleRatchet implements AutoCloseable {
         case BOB:
             generateRatchetKeys(Purpose.RECEIVING);
             this.senderRatchet.needsRotation = true;
+            // As we set the `needsRotation` flag on the sender ratchet, next time a message is sent new ratchet keys
+            // will be generated. According to the Double Ratchet initialization in OTRv4 spec, we should do this
+            // immediately. However, the steps are exactly the same and generating them here means we need to find a way
+            // to put the public keys into the next data message. This makes things a lot more complicated and in the
+            // end achieves the exact same effect.
             break;
         case ALICE:
             generateRatchetKeys(Purpose.SENDING);
+            this.senderRatchet.needsRotation = false;
             break;
         default:
             throw new UnsupportedOperationException("Unsupported purpose.");
         }
-        // FIXME need to ensure/confirm that we indeed use the pregenerated RECEIVING/SENDING key and need to confirm that rotation of SENDER key is exactly the same as in normal sender key rotation. (Otherwise we may be misbehaving.)
     }
 
     @Override
@@ -739,6 +742,9 @@ final class DoubleRatchet implements AutoCloseable {
         }
     }
 
+    /**
+     * The role which is fulfilled according to the OTRv4 specification.
+     */
     enum Role {
         ALICE, BOB
     }
