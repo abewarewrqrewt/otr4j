@@ -198,7 +198,7 @@ Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed inte
 * _Message are not queued up._  
 Messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
-# Temporary dependency on [`joldilocks`][joldilocks]
+# Temporary dependency on [joldilocks][joldilocks]
 
 Due to initial lack of support for Ed448-Goldilocks, a _very_ basic, limited Java library was written to support Ed448-Goldilocks. This library is by no means production-ready, does not provide any of the operational requirements necessary for security purposes and is not even guaranteed to be functionally correct. It did however enable further implementation of otr4j. We aim to completely migrate away from [joldilocks][joldilocks] for otr4j, although we may keep it as a second opinion in unit testing code. `joldilocks` needs Java 9 to compile so this dependency also raises are minimum compatible Java version for otr4j.
 
