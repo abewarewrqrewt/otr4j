@@ -11,6 +11,8 @@ Current work should be considered __at most__ _prototype-quality and guaranteed 
 
 Development stages:
 
+_Note: temporary dependency on [gitlab.com/cobratbq/joldilocks](https://gitlab.com/cobratbq/joldilocks): see bottom of the document.__
+
 * ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving)  
 _a.k.a. "at least the bugs are symmetric in nature :-)"_
 * ✔ Socialist Millionaire's Protocol for OTRv4.
@@ -176,6 +178,12 @@ _Note: otr4j with OTRv4 support is not backwards-compatible with older releases.
   - adoption
   - feedback on the API from the usage perspective
 
+## Build support and code style
+
+The code is built using maven. The build configuration fails on compiler warnings and performs several types of static analysis. Checkstyle verifies the coding style and the same checkstyle configuration file can be used to configure your IDE. Although this does not catch all potential issues, I hope it will serve to provide early feedback for code contributions.
+
+In addition to syntactic correctness checking, we enforce javadoc for anything that is part of the *public* API: _public_ and _protected_ classes methods and fields. The rationale for this is that the user of otr4j should expect reasonable information on the logic its able to call. Although some javadoc may still be limited in usefulness, we should aim to use it to clarify everything the user should know in using otr4j.
+
 ## Setting up your IDE: IntelliJ IDEA
 
 1. Load the otr4j pom.xml file as a maven module.
@@ -190,9 +198,15 @@ Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed inte
 * _Message are not queued up._  
 Messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
+# Temporary dependency on `[gitlab.com/cobratbq/joldilocks][joldilocks]`
+
+Due to initial lack of support for Ed448-Goldilocks, a _very_ basic, limited Java library was written to support Ed448-Goldilocks. This library is by no means production-ready, does not provide any of the operational requirements necessary for security purposes and is not even guaranteed to be functionally correct. It did however enable further implementation of otr4j. We aim to completely migrate away from [joldilocks][joldilocks] for otr4j, although we may keep it as a second opinion in unit testing code. `joldilocks` needs Java 9 to compile so this dependency also raises are minimum compatible Java version for otr4j.
+
+
   [OTR]: https://otr.cypherpunks.ca/
   [jitsi]: https://jitsi.org/
   [OTRv2]: https://otr.cypherpunks.ca/Protocol-v2-3.1.0.html
   [OTRv3]: https://otr.cypherpunks.ca/Protocol-v3-4.1.1.html
   [OTRv4]: https://github.com/otrv4/otrv4
   [otr4j/otr4j]: https://github.com/otr4j/otr4j
+  [joldilocks]: https://gitlab.com/cobratbq/joldilocks
