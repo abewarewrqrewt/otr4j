@@ -11,7 +11,7 @@ Current work should be considered __at most__ _prototype-quality and guaranteed 
 
 Development stages:
 
-_Note: temporary dependency on [gitlab.com/cobratbq/joldilocks](https://gitlab.com/cobratbq/joldilocks): see bottom of the document._
+_Note: temporary dependency on [github.com/otr4j/joldilocks][joldilocks]: see bottom of README.md_
 
 * ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving)  
 _a.k.a. "at least the bugs are symmetric in nature :-)"_
@@ -23,6 +23,9 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   _Requires additions to the BouncyCastle API, as certain necessary operations are not currently supplied._
   * Verify if implementation is still concise and simple, given recent modifications to Point and Scalar internals.
 * Support for skipped messages, keeping track of skipped message keys.
+* OTRv4 maintenance tasks:
+  - clean up old (abandoned) message fragments
+  - clean up old sessions and reveal memorized MACs
 * Full implementation of "OTRv3-compatible" + "OTRv4 Interactive" use-case (including all FIXMEs)
 * ... (OTRv4 Non-interactive, ...)
 * Clean up remaining TODOs
@@ -170,6 +173,8 @@ _Note: otr4j with OTRv4 support is not backwards-compatible with older releases.
 
 # Contributing / Help needed
 
+Please open an issue to discuss contributions early. As OTRv4 is still in draft and work on otr4j is active, things might change quickly.
+
 - Helping with implementation work:
   - see the Functional/Operational/Developmental action points above.
   - look for `FIXME`/`TODO` in the code. (there are plenty to find)
@@ -198,9 +203,9 @@ Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed inte
 * _Message are not queued up._  
 Messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
-# Temporary dependency on [joldilocks][joldilocks]
+# Dependency on [joldilocks][joldilocks]
 
-Due to initial lack of support for Ed448-Goldilocks, a _very_ basic, limited Java library was written to support Ed448-Goldilocks. This library is by no means production-ready, does not provide any of the operational requirements necessary for security purposes and is not even guaranteed to be functionally correct. It did however enable further implementation of otr4j. We aim to completely migrate away from [joldilocks][joldilocks] for otr4j, although we may keep it as a second opinion in unit testing code. `joldilocks` needs Java 9 to compile so this dependency also raises are minimum compatible Java version for otr4j.
+Due to initial lack of support for Ed448-Goldilocks, a _very_ basic, limited Java library was written to support Ed448-Goldilocks. This library is by no means production-ready, does not provide any of the operational requirements necessary for security purposes and is not even guaranteed to be functionally correct. It did however enable further implementation of otr4j. We aim to completely migrate away from _joldilocks_ for otr4j. At most, we may keep it as a second opinion in unit testing code. _joldilocks_ needs Java 9 to compile so this dependency also raises our minimum required Java version for otr4j.
 
 
   [OTR]: https://otr.cypherpunks.ca/
@@ -209,4 +214,4 @@ Due to initial lack of support for Ed448-Goldilocks, a _very_ basic, limited Jav
   [OTRv3]: https://otr.cypherpunks.ca/Protocol-v3-4.1.1.html
   [OTRv4]: https://github.com/otrv4/otrv4
   [otr4j/otr4j]: https://github.com/otr4j/otr4j
-  [joldilocks]: https://gitlab.com/cobratbq/joldilocks
+  [joldilocks]: https://github.com/otr4j/joldilocks
