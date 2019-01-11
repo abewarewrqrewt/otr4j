@@ -189,7 +189,7 @@ public class ByteArraysTest {
 
     @Test
     public void testByteArrayToHexStringSmallArray() {
-        assertEquals("616230212F", toHexString(new byte[] { 'a', 'b', '0', '!', '/'}));
+        assertEquals("616230212F", toHexString(new byte[] {'a', 'b', '0', '!', '/'}));
     }
 
     @Test

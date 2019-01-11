@@ -148,7 +148,7 @@ public final class StateExpect2Test {
 
     @Test
     public void testProcessSMPSucceeded() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -171,7 +171,7 @@ public final class StateExpect2Test {
 
     @Test
     public void testProcessMessageBadSecret() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -192,7 +192,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBada2() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -205,7 +205,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBada3() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -218,7 +218,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalg2b() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -231,7 +231,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg2b() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -244,7 +244,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalg3b() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -257,7 +257,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadg3b() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -270,7 +270,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalpb() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -283,7 +283,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadpb() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -296,7 +296,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageIllegalqb() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -309,7 +309,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadqb() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -322,7 +322,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadc2() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -335,7 +335,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd2() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -348,7 +348,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadc3() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -361,7 +361,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd3() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -374,7 +374,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadcp() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -387,7 +387,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd5() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);
@@ -400,7 +400,7 @@ public final class StateExpect2Test {
 
     @Test(expected = SMPAbortException.class)
     public void testProcessMessageBadd6() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[4*57];
+        final byte[] fakeRandomData = new byte[4 * 57];
         r4.encodeTo(fakeRandomData, 0);
         r5.encodeTo(fakeRandomData, 57);
         r6.encodeTo(fakeRandomData, 114);

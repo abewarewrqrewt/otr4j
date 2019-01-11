@@ -1,3 +1,10 @@
+/*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
 package net.java.otr4j.session.state;
 
 import net.java.otr4j.api.OtrEngineHost;
@@ -17,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings( {"ConstantConditions", "unchecked"})
+@SuppressWarnings({"ConstantConditions", "unchecked"})
 public final class ContextsTest {
 
     @Test(expected = NullPointerException.class)

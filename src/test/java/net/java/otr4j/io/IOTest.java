@@ -46,8 +46,8 @@ public class IOTest {
         String QueryMessage_V14x = "?OTRv24x?";
         String QueryMessage_V124x = "?OTR?v24x?";
         String QueryMessage_CommonRequest = "?OTR?v2? Bob has requested an Off-the-Record private conversation &lt;http://otr.cypherpunks.ca/&gt;.  However, you do not have a plugin to support that. See http://otr.cypherpunks.ca/ for more information.";
-        String PlainText_V12 = "This is a plain text that has hidden support for V1 and V2! 	  				 	 	 	    		  	  	 	  	 ";
-        String PlainText_V1 = "This is a plain text that has hidden support for V1! 	  				 	 	 	    		  	 ";
+        String PlainText_V12 = "This is a plain text that has hidden support for V1 and V2! \t  \t\t\t\t \t \t \t    \t\t  \t  \t \t  \t ";
+        String PlainText_V1 = "This is a plain text that has hidden support for V1! \t  \t\t\t\t \t \t \t    \t\t  \t ";
         String PlainText_UTF8 = "Αυτό είναι απλό UTF-8 κείμενο!";
     }
 

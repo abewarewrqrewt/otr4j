@@ -52,7 +52,7 @@ public final class OtrAssemblerTest {
         final OtrAssembler ass = new OtrAssembler();
         assertNull(ass.accumulate((Fragment) parse(String.format("?OTR|ff123456|%08x,00001,00002,abcdef,", tag.getValue()))));
         assertEquals("abcdeffedcba", ass.accumulate((Fragment) parse(
-            String.format("?OTR|ff123456|%08x,00002,00002,fedcba,", tag.getValue()))));
+                String.format("?OTR|ff123456|%08x,00002,00002,fedcba,", tag.getValue()))));
     }
 
     @Test
@@ -105,29 +105,29 @@ public final class OtrAssemblerTest {
 
     @Test
     public void testAssembleSixteenPartMessage() throws ProtocolException {
-        final String[] parts = new String[]{
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,00016,S,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00002,00016,G,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00003,00016,V,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00004,00016,s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00005,00016,b,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00006,00016,G,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00007,00016,8,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00008,00016,g,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00009,00016,V,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00010,00016,2,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00011,00016,9,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00012,00016,y,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00013,00016,b,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00014,00016,G,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00015,00016,Q,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00016,00016,h,",
+        final String[] parts = new String[] {
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,00016,S,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00002,00016,G,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00003,00016,V,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00004,00016,s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00005,00016,b,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00006,00016,G,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00007,00016,8,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00008,00016,g,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00009,00016,V,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00010,00016,2,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00011,00016,9,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00012,00016,y,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00013,00016,b,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00014,00016,G,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00015,00016,Q,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00016,00016,h,",
         };
         final OtrAssembler assembler = new OtrAssembler();
-        for (int i = 0; i < parts.length-1; i++) {
+        for (int i = 0; i < parts.length - 1; i++) {
             assertNull(assembler.accumulate((Fragment) parse(parts[i])));
         }
-        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parse(parts[parts.length-1])));
+        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parse(parts[parts.length - 1])));
         assertTrue(((Map<?, ?>) Whitebox.getInternalState(Whitebox.getInternalState(assembler, "outOfOrder"),
                 "fragments")).isEmpty());
     }
@@ -135,28 +135,28 @@ public final class OtrAssemblerTest {
     @Test
     public void testAssembleSixteenPartMessageShuffled() throws ProtocolException {
         final List<String> parts = asList(
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,00016,S,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00002,00016,G,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00003,00016,V,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00004,00016,s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00005,00016,b,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00006,00016,G,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00007,00016,8,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00008,00016,g,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00009,00016,V,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00010,00016,2,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00011,00016,9,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00012,00016,y,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00013,00016,b,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00014,00016,G,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00015,00016,Q,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00016,00016,h,");
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,00016,S,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00002,00016,G,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00003,00016,V,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00004,00016,s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00005,00016,b,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00006,00016,G,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00007,00016,8,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00008,00016,g,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00009,00016,V,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00010,00016,2,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00011,00016,9,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00012,00016,y,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00013,00016,b,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00014,00016,G,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00015,00016,Q,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00016,00016,h,");
         shuffle(parts);
         final OtrAssembler assembler = new OtrAssembler();
-        for (int i = 0; i < parts.size()-1; i++) {
+        for (int i = 0; i < parts.size() - 1; i++) {
             assertNull(assembler.accumulate((Fragment) parse(parts.get(i))));
         }
-        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parse(parts.get(parts.size()-1))));
+        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parse(parts.get(parts.size() - 1))));
         assertTrue(((Map<?, ?>) Whitebox.getInternalState(Whitebox.getInternalState(assembler, "outOfOrder"),
                 "fragments")).isEmpty());
     }

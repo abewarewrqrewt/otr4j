@@ -42,28 +42,28 @@ public class OtrFragmenterTest {
     private final int receiverTagOTRv4 = 0x27e31597;
 
     private static final String getSpecV4MessageFull = "?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8vjPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2ipkTtquknfx6HodLvk3RAAAAAA==.";
-    private static final String[] specV4MessageParts208 = new String[]{
-        "?OTR|3c5b5f03|5a73a599|27e31597,00001,00003,?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8v,",
-        "?OTR|3c5b5f03|5a73a599|27e31597,00002,00003,jPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2i,",
-        "?OTR|3c5b5f03|5a73a599|27e31597,00003,00003,pkTtquknfx6HodLvk3RAAAAAA==.,"
+    private static final String[] specV4MessageParts208 = new String[] {
+            "?OTR|3c5b5f03|5a73a599|27e31597,00001,00003,?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8v,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00002,00003,jPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2i,",
+            "?OTR|3c5b5f03|5a73a599|27e31597,00003,00003,pkTtquknfx6HodLvk3RAAAAAA==.,"
     };
 
     private final int senderTagOTRv3 = 0x5a73a599;
     private final int receiverTagOTRv3 = 0x27e31597;
 
     private static final String specV3MessageFull = "?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8vjPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2ipkTtquknfx6HodLvk3RAAAAAA==.";
-    private static final String[] specV3MessageParts199 = new String[]{
-        "?OTR|5a73a599|27e31597,00001,00003,?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8v,",
-        "?OTR|5a73a599|27e31597,00002,00003,jPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2i,",
-        "?OTR|5a73a599|27e31597,00003,00003,pkTtquknfx6HodLvk3RAAAAAA==.,"
+    private static final String[] specV3MessageParts199 = new String[] {
+            "?OTR|5a73a599|27e31597,00001,00003,?OTR:AAMDJ+MVmSfjFZcAAAAAAQAAAAIAAADA1g5IjD1ZGLDVQEyCgCyn9hbrL3KAbGDdzE2ZkMyTKl7XfkSxh8YJnudstiB74i4BzT0W2haClg6dMary/jo9sMudwmUdlnKpIGEKXWdvJKT+hQ26h9nzMgEditLB8v,",
+            "?OTR|5a73a599|27e31597,00002,00003,jPEWAJ6gBXvZrY6ZQrx3gb4v0UaSMOMiR5sB7Eaulb2Yc6RmRnnlxgUUC2alosg4WIeFN951PLjScajVba6dqlDi+q1H5tPvI5SWMN7PCBWIJ41+WvF+5IAZzQZYgNaVLbAAAAAAAAAAEAAAAHwNiIi5Ms+4PsY/L2i,",
+            "?OTR|5a73a599|27e31597,00003,00003,pkTtquknfx6HodLvk3RAAAAAA==.,"
     };
 
     private static final String specV2MessageFull = "?OTR:AAEDAAAAAQAAAAEAAADAVf3Ei72ZgFeKqWvLMnuVPVCwxktsOZ1QdjeLp6jn62mCVtlY9nS6sRkecpjuLYHRxyTdRu2iEVtSsjZqK55ovZ35SfkOPHeFYa9BIuxWi9djHMVKQ8KOVGAVLibjZ6P8LreDSKtWDv9YQjIEnkwFVGCPfpBq2SX4VTQfJAQXHggR8izKxPvluXUdG9rIPh4cac98++VLdIuFMiEXjUIoTX2rEzunaCLMy0VIfowlRsgsKGrwhCCv7hBWyglbzwz+AAAAAAAAAAQAAAF2SOrJvPUerB9mtf4bqQDFthfoz/XepysnYuReHHEXKe+BFkaEoMNGiBl4TCLZx72DvmZwKCewWRH1+W66ggrXKw2VdVl+vLsmzxNyWChGLfBTL5/3SUF09BfmCEl03Ckk7htAgyAQcBf90RJznZndv7HwVAi3syupi0sQDdOKNPyObR5FRtqyqudttWmSdmGCGFcZ/fZqxQNsHB8QuYaBiGL7CDusES+wwfn8Q7BGtoJzOPDDx6KyIyox/flPx2DZDJIZrMz9b0V70a9kqKLo/wcGhvHO6coCyMxenBAacLJ1DiINLKoYOoJTM7zcxsGnvCxaDZCvsmjx3j8Yc5r3i3ylllCQH2/lpr/xCvXFarGtG7+wts+UqstS9SThLBQ9Ojq4oPsX7HBHKvq19XU3/ChIgWMy+bczc5gpkC/eLAIGfJ0D5DJsl68vMXSmCoFK0HTwzzNa7lnZK4IutYPBNBCv0pWORQqDpskEz96YOGyB8+gtpFgCrkuV1bSB9SRVmEBfDtKPQFhKowAAAAA=.";
 
-    private static final String[] specV2MessageParts318 = new String[]{
-        "?OTR,1,3,?OTR:AAEDAAAAAQAAAAEAAADAVf3Ei72ZgFeKqWvLMnuVPVCwxktsOZ1QdjeLp6jn62mCVtlY9nS6sRkecpjuLYHRxyTdRu2iEVtSsjZqK55ovZ35SfkOPHeFYa9BIuxWi9djHMVKQ8KOVGAVLibjZ6P8LreDSKtWDv9YQjIEnkwFVGCPfpBq2SX4VTQfJAQXHggR8izKxPvluXUdG9rIPh4cac98++VLdIuFMiEXjUIoTX2rEzunaCLMy0VIfowlRsgsKGrwhCCv7hBWyglbzwz+AAAAAAAAAAQAAAF2SOr,",
-        "?OTR,2,3,JvPUerB9mtf4bqQDFthfoz/XepysnYuReHHEXKe+BFkaEoMNGiBl4TCLZx72DvmZwKCewWRH1+W66ggrXKw2VdVl+vLsmzxNyWChGLfBTL5/3SUF09BfmCEl03Ckk7htAgyAQcBf90RJznZndv7HwVAi3syupi0sQDdOKNPyObR5FRtqyqudttWmSdmGCGFcZ/fZqxQNsHB8QuYaBiGL7CDusES+wwfn8Q7BGtoJzOPDDx6KyIyox/flPx2DZDJIZrMz9b0V70a9kqKLo/wcGhvHO6coCyMxenBAacLJ1DiI,",
-        "?OTR,3,3,NLKoYOoJTM7zcxsGnvCxaDZCvsmjx3j8Yc5r3i3ylllCQH2/lpr/xCvXFarGtG7+wts+UqstS9SThLBQ9Ojq4oPsX7HBHKvq19XU3/ChIgWMy+bczc5gpkC/eLAIGfJ0D5DJsl68vMXSmCoFK0HTwzzNa7lnZK4IutYPBNBCv0pWORQqDpskEz96YOGyB8+gtpFgCrkuV1bSB9SRVmEBfDtKPQFhKowAAAAA=.,"
+    private static final String[] specV2MessageParts318 = new String[] {
+            "?OTR,1,3,?OTR:AAEDAAAAAQAAAAEAAADAVf3Ei72ZgFeKqWvLMnuVPVCwxktsOZ1QdjeLp6jn62mCVtlY9nS6sRkecpjuLYHRxyTdRu2iEVtSsjZqK55ovZ35SfkOPHeFYa9BIuxWi9djHMVKQ8KOVGAVLibjZ6P8LreDSKtWDv9YQjIEnkwFVGCPfpBq2SX4VTQfJAQXHggR8izKxPvluXUdG9rIPh4cac98++VLdIuFMiEXjUIoTX2rEzunaCLMy0VIfowlRsgsKGrwhCCv7hBWyglbzwz+AAAAAAAAAAQAAAF2SOr,",
+            "?OTR,2,3,JvPUerB9mtf4bqQDFthfoz/XepysnYuReHHEXKe+BFkaEoMNGiBl4TCLZx72DvmZwKCewWRH1+W66ggrXKw2VdVl+vLsmzxNyWChGLfBTL5/3SUF09BfmCEl03Ckk7htAgyAQcBf90RJznZndv7HwVAi3syupi0sQDdOKNPyObR5FRtqyqudttWmSdmGCGFcZ/fZqxQNsHB8QuYaBiGL7CDusES+wwfn8Q7BGtoJzOPDDx6KyIyox/flPx2DZDJIZrMz9b0V70a9kqKLo/wcGhvHO6coCyMxenBAacLJ1DiI,",
+            "?OTR,3,3,NLKoYOoJTM7zcxsGnvCxaDZCvsmjx3j8Yc5r3i3ylllCQH2/lpr/xCvXFarGtG7+wts+UqstS9SThLBQ9Ojq4oPsX7HBHKvq19XU3/ChIgWMy+bczc5gpkC/eLAIGfJ0D5DJsl68vMXSmCoFK0HTwzzNa7lnZK4IutYPBNBCv0pWORQqDpskEz96YOGyB8+gtpFgCrkuV1bSB9SRVmEBfDtKPQFhKowAAAAA=.,"
     };
 
     private final SessionID sessionID = new SessionID("bob@chatnetwork", "alice@chatnetwork", "chat");
@@ -112,7 +112,7 @@ public class OtrFragmenterTest {
         final String message = "?OTR:" + toBase64String("Some message that shouldn't be fragmented.".getBytes(UTF_8)) + ".";
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
         final String[] fragments = fragmenter.fragment(3, senderTagOTRv3, receiverTagOTRv3, message);
-        assertArrayEquals(new String[]{message}, fragments);
+        assertArrayEquals(new String[] {message}, fragments);
         verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
     }
 
@@ -122,7 +122,7 @@ public class OtrFragmenterTest {
 
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
         String[] msg = fragmenter.fragment(3, senderTagOTRv3, receiverTagOTRv3, specV3MessageFull);
-        assertArrayEquals(new String[]{specV3MessageFull}, msg);
+        assertArrayEquals(new String[] {specV3MessageFull}, msg);
         verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
     }
 
@@ -132,7 +132,7 @@ public class OtrFragmenterTest {
 
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
         String[] msg = fragmenter.fragment(2, ZERO_VALUE, ZERO_VALUE, specV2MessageFull);
-        assertArrayEquals(new String[]{specV2MessageFull}, msg);
+        assertArrayEquals(new String[] {specV2MessageFull}, msg);
         verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
     }
 
@@ -142,7 +142,7 @@ public class OtrFragmenterTest {
 
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
         String[] msg = fragmenter.fragment(3, senderTagOTRv3, receiverTagOTRv3, specV3MessageFull);
-        assertArrayEquals(new String[]{specV3MessageFull}, msg);
+        assertArrayEquals(new String[] {specV3MessageFull}, msg);
         verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
     }
 
@@ -152,7 +152,7 @@ public class OtrFragmenterTest {
 
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
         String[] msg = fragmenter.fragment(2, ZERO_VALUE, ZERO_VALUE, specV2MessageFull);
-        assertArrayEquals(new String[]{specV2MessageFull}, msg);
+        assertArrayEquals(new String[] {specV2MessageFull}, msg);
         verify(host, times(1)).getMaxFragmentSize(any(SessionID.class));
     }
 
@@ -239,7 +239,7 @@ public class OtrFragmenterTest {
     @Test(expected = UnsupportedOperationException.class)
     public void testV1MessageToSplit() throws ProtocolException {
         OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host(310), this.sessionID);
-        assertArrayEquals(new String[]{specV2MessageFull}, fragmenter.fragment(1, ZERO_VALUE, ZERO_VALUE, specV2MessageFull));
+        assertArrayEquals(new String[] {specV2MessageFull}, fragmenter.fragment(1, ZERO_VALUE, ZERO_VALUE, specV2MessageFull));
     }
 
     @Test(expected = ProtocolException.class)
@@ -290,7 +290,7 @@ public class OtrFragmenterTest {
     public void testPreventFragmentationOfPlainTextMessage() throws ProtocolException {
         final OtrEngineHost host = host(150);
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
-        assertArrayEquals(new String[]{"Hello world!"}, fragmenter.fragment(3, senderTagOTRv3, receiverTagOTRv3, "Hello world!"));
+        assertArrayEquals(new String[] {"Hello world!"}, fragmenter.fragment(3, senderTagOTRv3, receiverTagOTRv3, "Hello world!"));
     }
 
     @Test
@@ -325,7 +325,7 @@ public class OtrFragmenterTest {
         };
         final OtrFragmenter fragmenter = new OtrFragmenter(fakeRandom, host, this.sessionID);
         assertArrayEquals(specV4MessageParts208, fragmenter.fragment(4, senderTagOTRv4, receiverTagOTRv4,
-            getSpecV4MessageFull));
+                getSpecV4MessageFull));
     }
 
     @Test(expected = ProtocolException.class)
@@ -347,7 +347,7 @@ public class OtrFragmenterTest {
         final String message = "?OTR:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
         final OtrEngineHost host = host(46);
         final OtrFragmenter fragmenter = new OtrFragmenter(RANDOM, host, this.sessionID);
-        assertArrayEquals(new String[]{message}, fragmenter.fragment(4, senderTagOTRv4, receiverTagOTRv4, message));
+        assertArrayEquals(new String[] {message}, fragmenter.fragment(4, senderTagOTRv4, receiverTagOTRv4, message));
     }
 
     @Test
@@ -373,7 +373,7 @@ public class OtrFragmenterTest {
     private OtrEngineHost host(final int maxFragmentSize) {
         final OtrEngineHost host = mock(OtrEngineHost.class);
         when(host.getMaxFragmentSize(any(SessionID.class)))
-            .thenReturn(maxFragmentSize);
+                .thenReturn(maxFragmentSize);
         return host;
     }
 }

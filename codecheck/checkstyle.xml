@@ -58,7 +58,7 @@
             <property name="caseIndent" value="0"/>
             <property name="lineWrappingIndentation" value="8"/>
             <property name="throwsIndent" value="8"/>
-            <property name="forceStrictCondition" value="true"/>
+            <property name="forceStrictCondition" value="false"/>
         </module>
     </module>
 </module>

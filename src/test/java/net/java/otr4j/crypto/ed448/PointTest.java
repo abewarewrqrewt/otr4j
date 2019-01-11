@@ -1,3 +1,10 @@
+/*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
 package net.java.otr4j.crypto.ed448;
 
 import nl.dannyvanheumen.joldilocks.Points;
@@ -85,7 +92,7 @@ public final class PointTest {
     @Test
     public void testEncodeTo() throws ValidationException, IOException {
         final Point p = decodePoint(BASE_POINT_ENCODED.clone());
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()){
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             p.encodeTo(out);
             assertArrayEquals(BASE_POINT_ENCODED, out.toByteArray());
         }

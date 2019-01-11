@@ -36,7 +36,7 @@ import static org.junit.Assert.assertSame;
  */
 @SuppressWarnings("ConstantConditions")
 public class SMTest {
-    
+
     private final SecureRandom sr = new SecureRandom();
 
     static {
@@ -57,16 +57,14 @@ public class SMTest {
 
     @Test
     public void testConstructSMExceptionThrowable() {
-        @SuppressWarnings({"ThrowableInstanceNotThrown", "ThrowableInstanceNeverThrown"})
-        final Throwable t = new Throwable("bad stuff happened");
+        @SuppressWarnings({"ThrowableInstanceNotThrown", "ThrowableInstanceNeverThrown"}) final Throwable t = new Throwable("bad stuff happened");
         final SMException e = new SMException(t);
         assertSame(t, e.getCause());
     }
 
     @Test
     public void testConstructSMExceptionMessageThrowable() {
-        @SuppressWarnings({"ThrowableInstanceNotThrown", "ThrowableInstanceNeverThrown"})
-        final Throwable t = new Throwable("bad stuff happened");
+        @SuppressWarnings({"ThrowableInstanceNotThrown", "ThrowableInstanceNeverThrown"}) final Throwable t = new Throwable("bad stuff happened");
         final SMException e = new SMException("Hello world!", t);
         assertEquals("Hello world!", e.getMessage());
         assertSame(t, e.getCause());
@@ -184,17 +182,17 @@ public class SMTest {
     @Test
     public void testUnserializeSerializedBigIntArray() throws SMException {
         final BigInteger[] target = new BigInteger[] {
-            BigInteger.ZERO,
-            BigInteger.ONE,
-            BigInteger.valueOf(125L),
-            BigInteger.valueOf(2500000L),
+                BigInteger.ZERO,
+                BigInteger.ONE,
+                BigInteger.valueOf(125L),
+                BigInteger.valueOf(2500000L),
         };
         assertArrayEquals(target, SM.deserialize(SM.serialize(target)));
     }
 
     @Test
     public void testUnserializeZeroLength() throws SMException {
-        final byte[] data = new byte[] { 0, 0, 0, 0 };
+        final byte[] data = new byte[] {0, 0, 0, 0};
         final BigInteger[] result = SM.deserialize(data);
         assertNotNull(result);
         assertEquals(0, result.length);
@@ -202,7 +200,7 @@ public class SMTest {
 
     @Test(expected = SMException.class)
     public void testUnserializeLargeSignedLength() throws SMException {
-        final byte[] data = new byte[] { (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff };
+        final byte[] data = new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
         SM.deserialize(data);
     }
 
@@ -234,7 +232,7 @@ public class SMTest {
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Shared secret
-        final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
+        final byte[] secret = new byte[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
         final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
 
@@ -284,8 +282,8 @@ public class SMTest {
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Shared secret
-        final byte[] aliceSecret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
-        final byte[] bobSecret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 't' };
+        final byte[] aliceSecret = new byte[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
+        final byte[] bobSecret = new byte[] {'p', 'a', 's', 's', 'w', 'o', 'r', 't'};
         final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytesAlice = combinedSecret(alicePublic, bobPublic, s, aliceSecret);
         final byte[] combinedSecretBytesBob = combinedSecret(alicePublic, bobPublic, s, bobSecret);
@@ -481,8 +479,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2a(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex);
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -515,8 +512,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2a(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -550,8 +546,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2b(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex);
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -585,8 +580,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2b(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -620,8 +614,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step3(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex);
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -655,8 +648,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step3(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -690,8 +682,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step4(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex);
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -725,8 +716,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step4(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -759,8 +749,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step5(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex);
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -793,8 +782,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step5(input);
-        }
-        catch (SMException ex) {
+        } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
         assertEquals(SMPStatus.CHEATED, sm.status());
@@ -813,7 +801,7 @@ public class SMTest {
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Prepare sm instance for StateExpect3.
-        final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
+        final byte[] secret = new byte[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
         final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
         final byte[] msg1 = alice.step1(combinedSecretBytes);
@@ -836,7 +824,7 @@ public class SMTest {
         final byte[] bobPublic = getFingerprintRaw(bobKeyPair.getPublic());
 
         // Prepare sm instance for StateExpect3.
-        final byte[] secret = new byte[] { 'p', 'a', 's', 's', 'w', 'o', 'r', 'd' };
+        final byte[] secret = new byte[] {'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
         final SharedSecret s = aliceDHKeyPair.generateSharedSecret(bobDHKeyPair.getPublic());
         final byte[] combinedSecretBytes = combinedSecret(alicePublic, bobPublic, s, secret);
         final byte[] msg1 = alice.step1(combinedSecretBytes);
@@ -850,9 +838,9 @@ public class SMTest {
         final byte[] combinedSecret = new byte[1 + alicePublic.length + bobPublic.length + sessionBytes.length + secret.length];
         combinedSecret[0] = 1;
         System.arraycopy(alicePublic, 0, combinedSecret, 1, alicePublic.length);
-        System.arraycopy(bobPublic, 0, combinedSecret, 1+alicePublic.length, bobPublic.length);
-        System.arraycopy(sessionBytes, 0, combinedSecret, 1+alicePublic.length+bobPublic.length, sessionBytes.length);
-        System.arraycopy(secret, 0, combinedSecret, 1+alicePublic.length+bobPublic.length+sessionBytes.length, secret.length);
+        System.arraycopy(bobPublic, 0, combinedSecret, 1 + alicePublic.length, bobPublic.length);
+        System.arraycopy(sessionBytes, 0, combinedSecret, 1 + alicePublic.length + bobPublic.length, sessionBytes.length);
+        System.arraycopy(secret, 0, combinedSecret, 1 + alicePublic.length + bobPublic.length + sessionBytes.length, secret.length);
         return MessageDigest.getInstance("SHA-256").digest(combinedSecret);
     }
 }

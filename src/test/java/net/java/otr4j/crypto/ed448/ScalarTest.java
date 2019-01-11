@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
-@SuppressWarnings( {"ConstantConditions", "EqualsWithItself"})
+@SuppressWarnings({"ConstantConditions", "EqualsWithItself"})
 public final class ScalarTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -155,7 +155,7 @@ public final class ScalarTest {
 
     @Test
     public void testScalarModulo() {
-        assertArrayEquals(Scalars.zero().encode(), decodeScalar(new byte[]{8}).mod(decodeScalar(new byte[]{4})).encode());
+        assertArrayEquals(Scalars.zero().encode(), decodeScalar(new byte[] {8}).mod(decodeScalar(new byte[] {4})).encode());
     }
 
     @Test
@@ -243,7 +243,7 @@ public final class ScalarTest {
         assertFalse(scalar.equals(null));
     }
 
-    @SuppressWarnings( {"EqualsBetweenInconvertibleTypes", "SimplifiableJUnitAssertion"})
+    @SuppressWarnings({"EqualsBetweenInconvertibleTypes", "SimplifiableJUnitAssertion"})
     @Test
     public void testScalarNotEqualsDifferentType() {
         final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));

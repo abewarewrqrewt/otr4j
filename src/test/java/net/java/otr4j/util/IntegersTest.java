@@ -12,7 +12,7 @@ import org.junit.Test;
 import static net.java.otr4j.util.Integers.parseUnsignedInt;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static net.java.otr4j.util.Integers.requireInRange;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
 public class IntegersTest {

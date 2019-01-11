@@ -83,7 +83,7 @@ public class StatePlaintextTest {
         try {
             logger.setLevel(Level.OFF);
             final PlainTextMessage expected = new PlainTextMessage("?OTRv?",
-                Collections.<Integer>emptySet(), "Hello world!");
+                    Collections.<Integer>emptySet(), "Hello world!");
             final Context context = mock(Context.class);
             final StatePlaintext state = new StatePlaintext(StateInitial.instance());
             final OtrPolicy policy = new OtrPolicy(OtrPolicy.SEND_WHITESPACE_TAG);
@@ -113,7 +113,7 @@ public class StatePlaintextTest {
 
     @Test
     public void testTransformAlreadySentWhitespaceTag() throws OtrException {
-        final PlainTextMessage expected = new PlainTextMessage("?OTRv?",Collections.<Integer>emptySet(), "Hello world!");
+        final PlainTextMessage expected = new PlainTextMessage("?OTRv?", Collections.<Integer>emptySet(), "Hello world!");
         final Context context = mock(Context.class);
         final StatePlaintext state = new StatePlaintext(StateInitial.instance());
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OPPORTUNISTIC);

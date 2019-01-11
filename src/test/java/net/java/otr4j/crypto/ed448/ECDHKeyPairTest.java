@@ -21,7 +21,7 @@ import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
+@SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public class ECDHKeyPairTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();

@@ -1,3 +1,10 @@
+/*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.ClientProfile;
@@ -38,7 +45,7 @@ public final class AuthIMessagesTest {
         final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();
@@ -76,7 +83,7 @@ public final class AuthIMessagesTest {
         final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Session.Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();
@@ -114,7 +121,7 @@ public final class AuthIMessagesTest {
         final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();
@@ -152,7 +159,7 @@ public final class AuthIMessagesTest {
         final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();

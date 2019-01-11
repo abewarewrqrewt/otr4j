@@ -6,10 +6,12 @@
  */
 package net.java.otr4j.api;
 
+import org.junit.Test;
+
 import java.util.Set;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for OtrPolicyUtil.

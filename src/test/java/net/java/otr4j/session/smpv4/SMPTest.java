@@ -50,7 +50,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
+@SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public final class SMPTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -67,7 +67,7 @@ public final class SMPTest {
     @Test
     public void testSMPStraightforwardSuccessful() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SmpEngineHost hostBob = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
@@ -153,7 +153,7 @@ public final class SMPTest {
         final SMP smpBob = new SMP(RANDOM, hostBob, sessionIDBob, ssid, publicKeyBob, publicKeyAlice, tagAlice);
         assertEquals(UNDECIDED, smpAlice.getStatus());
         assertEquals(UNDECIDED, smpBob.getStatus());
-        final TLV smp1 = smpAlice.initiate(question, new byte[] {'a', 'l', 'i', 'c', 'e' });
+        final TLV smp1 = smpAlice.initiate(question, new byte[] {'a', 'l', 'i', 'c', 'e'});
         assertNotNull(smp1);
         assertNull(smpBob.process(smp1));
         verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
@@ -173,7 +173,7 @@ public final class SMPTest {
     @Test
     public void testSMPFailsBadSSID() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final byte[] ssid1 = randomBytes(RANDOM, new byte[8]);
         final byte[] ssid2 = randomBytes(RANDOM, new byte[8]);
         assumeTrue("With all the luck in the world, the same ssid is generated randomly twice.",
@@ -204,7 +204,7 @@ public final class SMPTest {
     @Test
     public void testSMPAbortsRunningSMP() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SmpEngineHost hostBob = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
@@ -224,7 +224,7 @@ public final class SMPTest {
     @Test
     public void testSMPRespondBeforeSMP1() {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
         assertEquals(UNDECIDED, smpAlice.getStatus());
@@ -234,7 +234,7 @@ public final class SMPTest {
     @Test
     public void testSMPRespondDifferentQuestion() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SmpEngineHost hostBob = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
@@ -259,7 +259,7 @@ public final class SMPTest {
     @Test
     public void testSMPProcessAbortTLVInProgress() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
         assertEquals(UNDECIDED, smpAlice.getStatus());
@@ -272,7 +272,7 @@ public final class SMPTest {
     @Test
     public void testSMPUnexpectedTLVAborts() throws OtrCryptoException, ProtocolException {
         final String question = "Who am I? (I know it's a lousy question ...)";
-        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e' };
+        final byte[] answer = new byte[] {'a', 'l', 'i', 'c', 'e'};
         final SmpEngineHost hostAlice = mock(SmpEngineHost.class);
         final SMP smpAlice = new SMP(RANDOM, hostAlice, sessionIDAlice, ssid, publicKeyAlice, publicKeyBob, tagBob);
         assertEquals(UNDECIDED, smpAlice.getStatus());

@@ -95,7 +95,7 @@ public final class FragmentTest {
         assertEquals(1, fragment.getIndex());
         assertEquals(3, fragment.getTotal());
         assertEquals("?OTR:AAEDAAAAAQAAAAEAAADAVf3Ei72ZgFeKqWvLMnuVPVCwxktsOZ1QdjeLp6jn62mCVtlY9nS6sRkecpjuLYHRxyTdRu2iEVtSsjZqK55ovZ35SfkOPHeFYa9BIuxWi9djHMVKQ8KOVGAVLibjZ6P8LreDSKtWDv9YQjIEnkwFVGCPfpBq2SX4VTQfJAQXHggR8izKxPvluXUdG9rIPh4cac98++VLdIuFMiEXjUIoTX2rEzunaCLMy0VIfowlRsgsKGrwhCCv7hBWyglbzwz+AAAAAAAAAAQAAAF2SOr",
-            fragment.getContent());
+                fragment.getContent());
     }
 
     @Test
@@ -209,7 +209,7 @@ public final class FragmentTest {
     @Test
     public void testIncompleteFragmentParsing() throws ProtocolException {
         final String source = String.format("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64);
-        for (int i = 0; i < source.length()-1; i++) {
+        for (int i = 0; i < source.length() - 1; i++) {
             try {
                 parse(source.substring(0, i));
                 fail("Did not expect incomplete fragment to be processed successfully.");
@@ -222,37 +222,37 @@ public final class FragmentTest {
 
     @Test
     public void testFragmentationFormatLegalVariations() throws ProtocolException {
-        final String[] variants = new String[]{
-            "?OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|C5B5F03|5A73A599|27E31597,00001,00001,%s,",
-            "?OTR|5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|3|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|a73a599|27e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|73a599|27e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|3a599|27e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|a599|27e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|599|27e31597,00001,00001,%s,",
+        final String[] variants = new String[] {
+                "?OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|C5B5F03|5A73A599|27E31597,00001,00001,%s,",
+                "?OTR|5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|3|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|a73a599|27e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|73a599|27e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|3a599|27e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|a599|27e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|599|27e31597,00001,00001,%s,",
 //            "?OTR|3c5b5f03|99|27e31597,00001,00001,%s,", // illegal because of too small instance tag
 //            "?OTR|3c5b5f03|9|27e31597,00001,00001,%s,", // illegal because of too small instance tag
-            "?OTR|3c5b5f03|5a73a599|7e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|e31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|31597,00001,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|1597,00001,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|597,00001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|7e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|e31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|31597,00001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|1597,00001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|597,00001,00001,%s,",
 //            "?OTR|3c5b5f03|5a73a599|97,00001,00001,%s,", // illegal because of too small instance tag
 //            "?OTR|3c5b5f03|5a73a599|7,00001,00001,%s,", // illegal because of too small instance tag
-            "?OTR|3c5b5f03|5a73a599|27e31597,0001,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,001,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,01,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,1,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,0001,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,001,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,01,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,1,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,0001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,001,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,01,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,1,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,0001,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,001,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,01,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,1,%s,",
         };
         for (final String variant : variants) {
             assertNotNull(parse(String.format(variant, helloWorldBase64)));
@@ -261,37 +261,37 @@ public final class FragmentTest {
 
     @Test
     public void testFragmentationFormatIllegalVariations() {
-        final String[] variants = new String[]{
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s",
-            "?OTR|3c5b5f03|5a73a599|27e31597,00001,,%s,",
-            "?OTR|3c5b5f03|5a73a599|27e31597,,00001,%s,",
-            "?OTR|3c5b5f03|5a73a599|,00001,00001,%s,",
-            "?OTR|3c5b5f03||27e31597,00001,00001,%s,",
-            "?OTR||5a73a599|27e31597,00001,00001,%s,",
-            "?OT|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?O|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?TR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?R|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "TR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "R|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTRc5b5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|c5b5f035a73a599|27e31597,00001,00001,%s,",
-            "?OTR|c5b5f03|5a73a59927e31597,00001,00001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e3159700001,00001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e31597,0000100001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e31597,00001,00001%s,",
-            "?OTR|c5g5f03|5a73a599|27e31597,00001,00001,%s,",
-            "?OTR|c5b5f03|5a73g599|27e31597,00001,00001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e315g7,00001,00001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e31597,00a01,00001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e31597,00001,000b1,%s,",
-            "?OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s.",
-            "?OTR|c5b5f03|5a73a599|27e31597,00001,-0001,%s,",
-            "?OTR|c5b5f03|5a73a599|27e31597,-0001,00001,%s,",
+        final String[] variants = new String[] {
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s",
+                "?OTR|3c5b5f03|5a73a599|27e31597,00001,,%s,",
+                "?OTR|3c5b5f03|5a73a599|27e31597,,00001,%s,",
+                "?OTR|3c5b5f03|5a73a599|,00001,00001,%s,",
+                "?OTR|3c5b5f03||27e31597,00001,00001,%s,",
+                "?OTR||5a73a599|27e31597,00001,00001,%s,",
+                "?OT|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?O|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?TR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?R|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "TR|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "R|c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTRc5b5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|c5b5f035a73a599|27e31597,00001,00001,%s,",
+                "?OTR|c5b5f03|5a73a59927e31597,00001,00001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e3159700001,00001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e31597,0000100001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e31597,00001,00001%s,",
+                "?OTR|c5g5f03|5a73a599|27e31597,00001,00001,%s,",
+                "?OTR|c5b5f03|5a73g599|27e31597,00001,00001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e315g7,00001,00001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e31597,00a01,00001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e31597,00001,000b1,%s,",
+                "?OTR|c5b5f03|5a73a599|27e31597,00001,00001,%s.",
+                "?OTR|c5b5f03|5a73a599|27e31597,00001,-0001,%s,",
+                "?OTR|c5b5f03|5a73a599|27e31597,-0001,00001,%s,",
         };
         for (final String variant : variants) {
             try {

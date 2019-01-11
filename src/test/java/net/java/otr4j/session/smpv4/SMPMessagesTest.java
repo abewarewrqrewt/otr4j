@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-@SuppressWarnings( {"ConstantConditions", "CatchMayIgnoreException"})
+@SuppressWarnings({"ConstantConditions", "CatchMayIgnoreException"})
 public final class SMPMessagesTest {
 
     private static final Point ILLEGAL_POINT = createPoint(ONE, ONE);

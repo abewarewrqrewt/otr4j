@@ -238,7 +238,7 @@ public class SessionTest {
         assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
         assertNotEquals(msg1, bob2.receiptChannel.peek());
         rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
-        assertArrayEquals(new String[]{msg1}, c.clientBob.receiveAllMessages(true));
+        assertArrayEquals(new String[] {msg1}, c.clientBob.receiveAllMessages(true));
         rearrangeFragments(bob2.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], bob2.receiveAllMessages(true));
         c.clientAlice.session.setOutgoingSession(bob2.session.getSenderInstanceTag());
@@ -246,7 +246,7 @@ public class SessionTest {
         assertNotEquals(msg1, c.clientBob.receiptChannel.peek());
         assertNotEquals(msg1, bob2.receiptChannel.peek());
         rearrangeFragments(bob2.receiptChannel, RANDOM);
-        assertArrayEquals(new String[]{msg1}, bob2.receiveAllMessages(true));
+        assertArrayEquals(new String[] {msg1}, bob2.receiveAllMessages(true));
         rearrangeFragments(c.clientBob.receiptChannel, RANDOM);
         assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
 
@@ -813,10 +813,10 @@ public class SessionTest {
         }
         // Determine three messages to drop. Avoid dropping first message as this is a known limitation that cannot be
         // mitigated.
-        final int drop1 = RANDOM.nextInt(messages.length-1) + 1;
-        final int drop2 = RANDOM.nextInt(messages.length-1) + 1;
-        final int drop3 = RANDOM.nextInt(messages.length-1) + 1;
-        drop(new int[]{drop1, drop2, drop3}, c.clientAlice.receiptChannel);
+        final int drop1 = RANDOM.nextInt(messages.length - 1) + 1;
+        final int drop2 = RANDOM.nextInt(messages.length - 1) + 1;
+        final int drop3 = RANDOM.nextInt(messages.length - 1) + 1;
+        drop(new int[] {drop1, drop2, drop3}, c.clientAlice.receiptChannel);
         for (int i = 0; i < messages.length; i++) {
             if (i == drop1 || i == drop2 || i == drop3) {
                 continue;
@@ -1017,12 +1017,12 @@ public class SessionTest {
             final String messageBob = randomMessage(1, 500);
             c.clientBob.sendMessage(messageBob);
             assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
-                new String[]{messageBob}, c.clientAlice.receiveAllMessages(true));
+                    new String[] {messageBob}, c.clientAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1, 500);
             c.clientAlice.sendMessage(messageAlice);
             assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
-                new String[]{messageAlice}, c.clientBob.receiveAllMessages(true));
+                    new String[] {messageAlice}, c.clientBob.receiveAllMessages(true));
         }
     }
 
@@ -1055,13 +1055,13 @@ public class SessionTest {
             c.clientBob.sendMessage(messageBob);
             shuffle(c.clientAlice.receiptChannel, RANDOM);
             assertArrayEquals("Iteration: " + i + ", message Bob: " + messageBob,
-                new String[]{messageBob}, c.clientAlice.receiveAllMessages(true));
+                    new String[] {messageBob}, c.clientAlice.receiveAllMessages(true));
             // Alice sending a message (alternating, to enable ratchet)
             final String messageAlice = randomMessage(1, 500);
             c.clientAlice.sendMessage(messageAlice);
             shuffle(c.clientBob.receiptChannel, RANDOM);
             assertArrayEquals("Iteration: " + i + ", message Alice: " + messageAlice,
-                new String[]{messageAlice}, c.clientBob.receiveAllMessages(true));
+                    new String[] {messageAlice}, c.clientBob.receiveAllMessages(true));
         }
     }
 
@@ -1137,13 +1137,13 @@ public class SessionTest {
             submitterBob = new BlockingSubmitter<>();
             submitterBob.addQueue(directChannelBob);
             this.sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
-                "InMemoryNetwork4");
+                    "InMemoryNetwork4");
             this.sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
-                "InMemoryNetwork4");
+                    "InMemoryNetwork4");
             this.clientBob = new Client("Bob", sessionIDBob, new OtrPolicy(OTRL_POLICY_MANUAL), RANDOM,
-                submitterAlice, directChannelBob);
+                    submitterAlice, directChannelBob);
             this.clientAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OTRL_POLICY_MANUAL),
-                RANDOM, submitterBob, directChannelAlice);
+                    RANDOM, submitterBob, directChannelAlice);
         }
 
         /**
@@ -1156,22 +1156,22 @@ public class SessionTest {
         private Conversation(final int channelCapacity, final int maxMessageSize) {
             final Predicate<String> condition = new MaxMessageSize(maxMessageSize);
             final ConditionalBlockingQueue<String> directChannelAlice = new ConditionalBlockingQueue<>(condition,
-                new LinkedBlockingQueue<String>(channelCapacity));
+                    new LinkedBlockingQueue<String>(channelCapacity));
             submitterAlice = new BlockingSubmitter<>();
             submitterAlice.addQueue(directChannelAlice);
             final ConditionalBlockingQueue<String> directChannelBob = new ConditionalBlockingQueue<>(condition,
-                new LinkedBlockingQueue<String>(channelCapacity));
+                    new LinkedBlockingQueue<String>(channelCapacity));
             submitterBob = new BlockingSubmitter<>();
             submitterBob.addQueue(directChannelBob);
             this.sessionIDBob = new SessionID("bob@InMemoryNetwork4", "alice@InMemoryNetwork4",
-                "InMemoryNetwork4");
+                    "InMemoryNetwork4");
             this.sessionIDAlice = new SessionID("alice@InMemoryNetwork4", "bob@InMemoryNetwork4",
-                "InMemoryNetwork4");
+                    "InMemoryNetwork4");
             this.clientBob = new Client("Bob", sessionIDBob, new OtrPolicy(OTRL_POLICY_MANUAL), RANDOM,
-                submitterAlice, directChannelBob);
+                    submitterAlice, directChannelBob);
             this.clientBob.setMessageSize(maxMessageSize);
             this.clientAlice = new Client("Alice", sessionIDAlice, new OtrPolicy(OTRL_POLICY_MANUAL),
-                RANDOM, submitterBob, directChannelAlice);
+                    RANDOM, submitterBob, directChannelAlice);
             this.clientAlice.setMessageSize(maxMessageSize);
         }
     }
@@ -1223,8 +1223,8 @@ public class SessionTest {
         private int messageSize = MAX_VALUE;
 
         private Client(@Nonnull final String id, @Nonnull final SessionID sessionID, @Nonnull final OtrPolicy policy,
-                       @Nonnull final SecureRandom random, @Nonnull final BlockingSubmitter<String> sendChannel,
-                       @Nonnull final BlockingQueue<String> receiptChannel) {
+                @Nonnull final SecureRandom random, @Nonnull final BlockingSubmitter<String> sendChannel,
+                @Nonnull final BlockingQueue<String> receiptChannel) {
             this.logger = Logger.getLogger(Client.class.getName() + ":" + id);
             this.ed448KeyPair = EdDSAKeyPair.generate(random);
             this.dsaKeyPair = generateDSAKeyPair();

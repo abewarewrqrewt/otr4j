@@ -67,7 +67,7 @@ public class DHKeyPairTest {
         final DHKeyPair keypairA = DHKeyPair.generate(RANDOM);
         final DHKeyPair keypairB = DHKeyPair.generate(RANDOM);
         assertEquals(keypairA.generateSharedSecret(keypairB.getPublicKey()),
-            keypairB.generateSharedSecret(keypairA.getPublicKey()));
+                keypairB.generateSharedSecret(keypairA.getPublicKey()));
     }
 
     @Test

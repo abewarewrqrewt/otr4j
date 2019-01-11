@@ -45,7 +45,7 @@ public final class EncryptedMessageTest {
         final byte[] textBytes = "Hello world!".getBytes(UTF_8);
         final byte[] messageBytes = new byte[textBytes.length + 5];
         System.arraycopy(textBytes, 0, messageBytes, 0, textBytes.length);
-        messageBytes[textBytes.length+2] = 1;
+        messageBytes[textBytes.length + 2] = 1;
         final Content content = extractContents(messageBytes);
         assertNotNull(content);
         assertNotNull(content.message);
@@ -72,7 +72,7 @@ public final class EncryptedMessageTest {
         assertNotNull(content.tlvs);
         assertEquals(1, content.tlvs.size());
         assertEquals(0, content.tlvs.get(0).getType());
-        assertArrayEquals(new byte[]{'a', 'b'}, content.tlvs.get(0).getValue());
+        assertArrayEquals(new byte[] {'a', 'b'}, content.tlvs.get(0).getValue());
     }
 
     @Test
@@ -92,7 +92,7 @@ public final class EncryptedMessageTest {
         assertNotNull(content.tlvs);
         assertEquals(2, content.tlvs.size());
         assertEquals(0, content.tlvs.get(0).getType());
-        assertArrayEquals(new byte[]{'a', 'b'}, content.tlvs.get(0).getValue());
+        assertArrayEquals(new byte[] {'a', 'b'}, content.tlvs.get(0).getValue());
         assertEquals(1, content.tlvs.get(1).getType());
         assertArrayEquals(new byte[0], content.tlvs.get(1).getValue());
     }

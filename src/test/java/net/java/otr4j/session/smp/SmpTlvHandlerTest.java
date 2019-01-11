@@ -14,7 +14,7 @@ import static net.java.otr4j.session.smp.SmpTlvHandler.smpPayload;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
+@SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public final class SmpTlvHandlerTest {
 
     @Test(expected = NullPointerException.class)

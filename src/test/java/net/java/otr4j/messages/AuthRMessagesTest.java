@@ -1,3 +1,10 @@
+/*
+ * otr4j, the open source java otr library.
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.ClientProfile;
@@ -55,7 +62,7 @@ public final class AuthRMessagesTest {
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Session.Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX.getPublicKey(), ourY.getPublicKey(),
@@ -94,7 +101,7 @@ public final class AuthRMessagesTest {
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Session.Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
@@ -132,7 +139,7 @@ public final class AuthRMessagesTest {
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Session.Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
@@ -170,7 +177,7 @@ public final class AuthRMessagesTest {
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Session.Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
@@ -208,7 +215,7 @@ public final class AuthRMessagesTest {
         final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
         final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
                 ourForgingKey, singleton(Session.Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE/1000,
+        final ClientProfilePayload ourPayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
                 ourDSAKeyPair, ourLongTermKeyPair);
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,

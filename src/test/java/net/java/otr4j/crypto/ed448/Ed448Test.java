@@ -26,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-@SuppressWarnings( {"ConstantConditions", "ResultOfMethodCallIgnored"})
+@SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public final class Ed448Test {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -72,7 +72,7 @@ public final class Ed448Test {
     public void testCheckIdentityRandomPoint() {
         final byte[] data = new byte[57];
         final Point randomPoint = new Point(randomBytes(RANDOM, data));
-        assumeFalse(Arrays.equals(data, new byte[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+        assumeFalse(Arrays.equals(data, new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
         assertFalse(checkIdentity(randomPoint));
     }
 

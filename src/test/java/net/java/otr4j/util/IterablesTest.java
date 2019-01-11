@@ -13,7 +13,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static net.java.otr4j.util.Iterables.findByType;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @SuppressWarnings("ConstantConditions")
 public final class IterablesTest {
