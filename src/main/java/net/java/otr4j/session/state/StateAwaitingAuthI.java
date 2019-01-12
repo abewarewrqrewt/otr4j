@@ -189,7 +189,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     @Override
     AuthRMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
             throws ValidationException {
-        final ClientProfile theirNewClientProfile = message.getClientProfile().validate();
+        final ClientProfile theirNewClientProfile = message.clientProfile.validate();
         IdentityMessages.validate(message, theirNewClientProfile);
         final SessionID sessionID = context.getSessionID();
         final SecureRandom secureRandom = context.secureRandom();
@@ -200,29 +200,28 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final byte[] newSSID;
         // FIXME we cannot reuse ourDHKeyPair and ourECDHKeyPair as they will have been closed already. (As of yet unresolved issue in Double Ratchet init redesign.)
         try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourDHKeyPair, this.ourECDHKeyPair,
-                message.getB(), message.getY())) {
+                message.b, message.y)) {
             newK = sharedSecret.getK();
             newSSID = sharedSecret.generateSSID();
         }
         this.ourECDHKeyPair.close();
         this.ourDHKeyPair.close();
         // Generate t value and calculate sigma based on known facts and generated t value.
-        final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
-                message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), this.ourFirstECDHKeyPair.getPublicKey(),
-                this.ourFirstDHKeyPair.getPublicKey(), message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
+        final byte[] t = encode(AUTH_R, profilePayload, message.clientProfile, this.ourECDHKeyPair.getPublicKey(),
+                message.y, this.ourDHKeyPair.getPublicKey(), message.b, this.ourFirstECDHKeyPair.getPublicKey(),
+                this.ourFirstDHKeyPair.getPublicKey(), message.ourFirstECDHPublicKey, message.ourFirstDHPublicKey,
                 context.getSenderInstanceTag(), context.getReceiverInstanceTag(), this.queryTag, sessionID.getUserID(),
                 sessionID.getAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
-                theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
+                theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.y, t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma, this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey());
         context.transition(this, new StateAwaitingAuthI(getAuthState(), this.queryTag, newK, newSSID, this.ourECDHKeyPair,
-                this.ourDHKeyPair, this.ourFirstECDHKeyPair, this.ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(),
-                message.getOurFirstDHPublicKey(), message.getY(), message.getB(), ourProfile,
-                message.getClientProfile()));
+                this.ourDHKeyPair, this.ourFirstECDHKeyPair, this.ourFirstDHKeyPair, message.ourFirstECDHPublicKey,
+                message.ourFirstDHPublicKey, message.y, message.b, ourProfile, message.clientProfile));
         return authRMessage;
     }
 

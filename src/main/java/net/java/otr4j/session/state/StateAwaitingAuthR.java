@@ -163,9 +163,9 @@ final class StateAwaitingAuthR extends AbstractCommonState {
     @Override
     AbstractEncodedMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
             throws ValidationException {
-        final ClientProfile theirProfile = message.getClientProfile().validate();
+        final ClientProfile theirProfile = message.clientProfile.validate();
         IdentityMessages.validate(message, theirProfile);
-        if (this.previousMessage.getB().compareTo(message.getB()) > 0) {
+        if (this.previousMessage.b.compareTo(message.b) > 0) {
             // No state change necessary, we assume that by resending other party will still follow existing protocol
             // execution.
             return this.previousMessage;

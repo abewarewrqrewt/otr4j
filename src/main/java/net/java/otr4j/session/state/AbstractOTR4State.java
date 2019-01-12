@@ -108,7 +108,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
     @Nonnull
     AbstractEncodedMessage handleIdentityMessage(@Nonnull final Context context, @Nonnull final IdentityMessage message)
             throws ValidationException {
-        final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        final ClientProfile theirClientProfile = message.clientProfile.validate();
         validate(message, theirClientProfile);
         final ClientProfilePayload profile = context.getClientProfilePayload();
         final SecureRandom secureRandom = context.secureRandom();
@@ -120,27 +120,26 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         final byte[] k;
         final byte[] ssid;
-        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, a, x, message.getB(), message.getY())) {
+        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, a, x, message.b, message.y)) {
             k = sharedSecret.getK();
             ssid = sharedSecret.generateSSID();
         }
         // TODO should we verify that long-term key pair matches with long-term public key from user profile? (This would be an internal sanity check.)
         // Generate t value and calculate sigma based on known facts and generated t value.
         final String queryTag = context.getQueryTag();
-        final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
-                a.getPublicKey(), message.getB(), ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey(),
-                message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), queryTag, sessionID.getAccountID(),
-                sessionID.getUserID());
+        final byte[] t = encode(AUTH_R, profile, message.clientProfile, x.getPublicKey(), message.y, a.getPublicKey(),
+                message.b, ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey(),
+                message.ourFirstECDHPublicKey, message.ourFirstDHPublicKey, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag(), queryTag, sessionID.getAccountID(), sessionID.getUserID());
         final Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getForgingKey(),
-                longTermKeyPair.getPublicKey(), message.getY(), t);
+                longTermKeyPair.getPublicKey(), message.y, t);
         // Generate response message and transition into next state.
         final AuthRMessage authRMessage = new AuthRMessage(FOUR, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), profile, x.getPublicKey(), a.getPublicKey(), sigma,
                 ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey());
         context.transition(this, new StateAwaitingAuthI(getAuthState(), queryTag, k, ssid, x, a,
-                ourFirstECDHKeyPair, ourFirstDHKeyPair, message.getOurFirstECDHPublicKey(),
-                message.getOurFirstDHPublicKey(), message.getY(), message.getB(), profile, message.getClientProfile()));
+                ourFirstECDHKeyPair, ourFirstDHKeyPair, message.ourFirstECDHPublicKey, message.ourFirstDHPublicKey,
+                message.y, message.b, profile, message.clientProfile));
         return authRMessage;
     }
 

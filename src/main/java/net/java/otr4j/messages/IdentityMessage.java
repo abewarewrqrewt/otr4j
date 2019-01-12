@@ -31,11 +31,35 @@ public final class IdentityMessage extends AbstractEncodedMessage {
      */
     static final int MESSAGE_IDENTITY = 0x35;
 
-    private final ClientProfilePayload clientProfile;
-    private final Point y;
-    private final BigInteger b;
-    private final Point ourFirstECDHPublicKey;
-    private final BigInteger ourFirstDHPublicKey;
+    /**
+     * Client profile (as payload).
+     */
+    @Nonnull
+    public final ClientProfilePayload clientProfile;
+
+    /**
+     * ECDH public key 'Y'.
+     */
+    @Nonnull
+    public final Point y;
+
+    /**
+     * DH public key 'B'.
+     */
+    @Nonnull
+    public final BigInteger b;
+
+    /**
+     * The first ECDH public key to be used after DAKE completes.
+     */
+    @Nonnull
+    public final Point ourFirstECDHPublicKey;
+
+    /**
+     * The first DH public key to be used after DAKE completes.
+     */
+    @Nonnull
+    public final BigInteger ourFirstDHPublicKey;
 
     /**
      * Identity message type of OTRv4.
@@ -64,56 +88,6 @@ public final class IdentityMessage extends AbstractEncodedMessage {
     @Override
     public int getType() {
         return MESSAGE_IDENTITY;
-    }
-
-    /**
-     * Get client profile (as payload).
-     *
-     * @return Returns the client profile payload.
-     */
-    @Nonnull
-    public ClientProfilePayload getClientProfile() {
-        return clientProfile;
-    }
-
-    /**
-     * Get ECDH public key 'Y'.
-     *
-     * @return Returns ECDH public key 'Y'.
-     */
-    @Nonnull
-    public Point getY() {
-        return y;
-    }
-
-    /**
-     * Get DH public key 'B'.
-     *
-     * @return Returns DH public key 'B'.
-     */
-    @Nonnull
-    public BigInteger getB() {
-        return b;
-    }
-
-    /**
-     * Get the first ECDH public key to be used after DAKE completes.
-     *
-     * @return Returns first ECDH public key.
-     */
-    @Nonnull
-    public Point getOurFirstECDHPublicKey() {
-        return ourFirstECDHPublicKey;
-    }
-
-    /**
-     * Get the first DH public key to be used after DAKE completes.
-     *
-     * @return Returns first DH public key.
-     */
-    @Nonnull
-    public BigInteger getOurFirstDHPublicKey() {
-        return ourFirstDHPublicKey;
     }
 
     @Override

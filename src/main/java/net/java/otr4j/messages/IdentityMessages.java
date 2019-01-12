@@ -38,10 +38,10 @@ public final class IdentityMessages {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         try {
-            verifyECDHPublicKey(message.getY());
-            verifyDHPublicKey(message.getB());
-            verifyECDHPublicKey(message.getOurFirstECDHPublicKey());
-            verifyDHPublicKey(message.getOurFirstDHPublicKey());
+            verifyECDHPublicKey(message.y);
+            verifyDHPublicKey(message.b);
+            verifyECDHPublicKey(message.ourFirstECDHPublicKey);
+            verifyDHPublicKey(message.ourFirstDHPublicKey);
         } catch (final net.java.otr4j.crypto.ed448.ValidationException | OtrCryptoException e) {
             throw new ValidationException("Illegal ephemeral public key.", e);
         }

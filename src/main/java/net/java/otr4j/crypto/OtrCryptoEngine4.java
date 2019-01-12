@@ -511,6 +511,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Data structure that captures all related data for 'sigma' in the Ring Signature.
      */
+    // FIXME move Sigma out of crypto package to enforce proper design structure. (Should move to 'messages' probably.)
     public static final class Sigma implements OtrEncodable {
         private final Scalar c1;
         private final Scalar r1;
