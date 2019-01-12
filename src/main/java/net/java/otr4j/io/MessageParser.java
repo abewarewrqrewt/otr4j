@@ -8,7 +8,6 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
 
 import javax.annotation.CheckReturnValue;
@@ -40,7 +39,6 @@ import static org.bouncycastle.util.encoders.Base64.decode;
  * The parser for the general OTR message structure. The parser processes the text representation of an OTR message and
  * returns a message instance.
  */
-// TODO remove OTRv2 support in due time
 public final class MessageParser {
 
     /**
@@ -129,7 +127,7 @@ public final class MessageParser {
                 final byte messageType = input.readByte();
                 final InstanceTag senderInstanceTag;
                 final InstanceTag receiverInstanceTag;
-                if (protocolVersion == Session.Version.THREE || protocolVersion == Session.Version.FOUR) {
+                if (protocolVersion == Version.THREE || protocolVersion == Version.FOUR) {
                     senderInstanceTag = input.readInstanceTag();
                     receiverInstanceTag = input.readInstanceTag();
                 } else {
@@ -154,7 +152,7 @@ public final class MessageParser {
                 v2 = true;
             }
             if (!v3 && matcher.start(3) > -1) {
-                versions.add(Session.Version.THREE);
+                versions.add(Version.THREE);
                 v3 = true;
             }
             if (!v4 && matcher.start(4) > -1) {

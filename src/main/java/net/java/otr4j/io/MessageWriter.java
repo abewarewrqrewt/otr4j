@@ -7,6 +7,8 @@
 
 package net.java.otr4j.io;
 
+import net.java.otr4j.api.Session.Version;
+
 import javax.annotation.Nonnull;
 import java.io.StringWriter;
 
@@ -45,7 +47,7 @@ public final class MessageWriter {
             writer.write(plaintxt.getTag());
         } else if (m instanceof QueryMessage) {
             final QueryMessage query = (QueryMessage) m;
-            if (query.getVersions().size() == 1 && query.getVersions().contains(1)) {
+            if (query.getVersions().size() == 1 && query.getVersions().contains(Version.ONE)) {
                 throw new UnsupportedOperationException("OTR v1 is no longer supported. Support in the library has been removed, so the query message should not contain a version 1 entry.");
             }
             writer.write(query.getTag());
