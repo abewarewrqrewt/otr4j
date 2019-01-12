@@ -8,7 +8,6 @@
 package net.java.otr4j.messages;
 
 import net.java.otr4j.api.InstanceTag;
-import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.io.Message;
 import net.java.otr4j.io.OtrEncodable;
@@ -90,7 +89,7 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
             // skipping serializing instance tags
             break;
         case Version.THREE:
-        case Session.Version.FOUR:
+        case Version.FOUR:
             writer.writeInstanceTag(this.senderInstanceTag);
             writer.writeInstanceTag(this.receiverInstanceTag);
             break;

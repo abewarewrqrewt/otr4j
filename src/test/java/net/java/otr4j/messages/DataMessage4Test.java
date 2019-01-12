@@ -49,16 +49,16 @@ public final class DataMessage4Test {
         assertEquals(Version.FOUR, message.protocolVersion);
         assertEquals(SMALLEST_TAG, message.senderInstanceTag);
         assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
-        assertEquals(0, message.getFlags());
-        assertEquals(0, message.getPn());
-        assertEquals(0, message.getI());
-        assertEquals(0, message.getJ());
-        assertEquals(ECDH_PUBLIC_KEY, message.getEcdhPublicKey());
-        assertEquals(DH_PUBLIC_KEY, message.getDhPublicKey());
-        assertEquals(nonce, message.getNonce());
-        assertEquals(content, message.getCiphertext());
-        assertEquals(authenticator, message.getAuthenticator());
-        assertEquals(revealedMACs, message.getRevealedMacs());
+        assertEquals(0, message.flags);
+        assertEquals(0, message.pn);
+        assertEquals(0, message.i);
+        assertEquals(0, message.j);
+        assertEquals(ECDH_PUBLIC_KEY, message.ecdhPublicKey);
+        assertEquals(DH_PUBLIC_KEY, message.dhPublicKey);
+        assertEquals(nonce, message.nonce);
+        assertEquals(content, message.ciphertext);
+        assertEquals(authenticator, message.authenticator);
+        assertEquals(revealedMACs, message.revealedMacs);
     }
 
     @Test
@@ -72,16 +72,16 @@ public final class DataMessage4Test {
         assertEquals(Version.FOUR, message.protocolVersion);
         assertEquals(SMALLEST_TAG, message.senderInstanceTag);
         assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
-        assertEquals(0, message.getFlags());
-        assertEquals(0, message.getPn());
-        assertEquals(0, message.getI());
-        assertEquals(0, message.getJ());
-        assertEquals(ECDH_PUBLIC_KEY, message.getEcdhPublicKey());
-        assertNull(message.getDhPublicKey());
-        assertEquals(nonce, message.getNonce());
-        assertEquals(content, message.getCiphertext());
-        assertEquals(authenticator, message.getAuthenticator());
-        assertEquals(revealedMACs, message.getRevealedMacs());
+        assertEquals(0, message.flags);
+        assertEquals(0, message.pn);
+        assertEquals(0, message.i);
+        assertEquals(0, message.j);
+        assertEquals(ECDH_PUBLIC_KEY, message.ecdhPublicKey);
+        assertNull(message.dhPublicKey);
+        assertEquals(nonce, message.nonce);
+        assertEquals(content, message.ciphertext);
+        assertEquals(authenticator, message.authenticator);
+        assertEquals(revealedMACs, message.revealedMacs);
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -173,8 +173,8 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Override
     public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException, ProtocolException {
-        if (message.getJ() == 0) {
-            if (message.getI() < this.ratchet.getI()) {
+        if (message.j == 0) {
+            if (message.i < this.ratchet.getI()) {
                 // Ratchet ID < our current ratchet ID. This is technically impossible, so should not be supported.
                 throw new ProtocolException("The double ratchet does not allow for first messages of previous ratchet ID to arrive at a later time. This is an illegal message.");
             }
@@ -182,11 +182,11 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             // receiving ratchet are stored. A new DH ratchet is performed.
             // TODO generate and store skipped message for previous chain key.
             // The Double Ratchet prescribes alternate rotations, so after a single rotation for each we expect to reveal MAC codes.
-            if (message.getI() > 0 && message.getRevealedMacs().length == 0) {
+            if (message.i > 0 && message.revealedMacs.length == 0) {
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
             }
-            this.ratchet.rotateReceiverKeys(message.getEcdhPublicKey(), message.getDhPublicKey());
+            this.ratchet.rotateReceiverKeys(message.ecdhPublicKey, message.dhPublicKey);
         }
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.
@@ -196,8 +196,8 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         // message key and the next receiving chain key. The message is then verified and decrypted.
         final byte[] dmc;
         try {
-            dmc = this.ratchet.decrypt(message.getI(), message.getJ(), encodeDataMessageSections(message),
-                    message.getAuthenticator(), message.getCiphertext(), message.getNonce());
+            dmc = this.ratchet.decrypt(message.i, message.j, encodeDataMessageSections(message), message.authenticator,
+                    message.ciphertext, message.nonce);
         } catch (final RotationLimitationException e) {
             this.logger.log(INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
             handleUnreadableMessage(context, message);
@@ -213,7 +213,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         for (final TLV tlv : content.tlvs) {
             logger.log(FINE, "Received TLV type {0}", tlv.type);
             if (smpPayload(tlv)) {
-                if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
+                if ((message.flags & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
                     logger.log(WARNING, "Other party is using a faulty OTR client: all SMP messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
                 try {
@@ -232,7 +232,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 // nothing to do here, just ignore the padding
                 break;
             case TLV.DISCONNECTED: // TLV1
-                if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
+                if ((message.flags & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
                     logger.log(WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
                 if (!content.message.isEmpty()) {

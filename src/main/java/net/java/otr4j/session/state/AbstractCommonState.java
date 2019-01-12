@@ -55,7 +55,7 @@ abstract class AbstractCommonState extends AbstractOTR4State {
 
     void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException {
-        if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
+        if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
             LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
             return;
         }

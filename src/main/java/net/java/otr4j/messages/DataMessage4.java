@@ -27,8 +27,6 @@ import static net.java.otr4j.util.Integers.requireInRange;
  * The OTRv4 data message.
  */
 // TODO two constants defined in duplicate, due to value needed in multiple packages: XSALSA20_IV_LENGTH_BYTES, MAC_LENGTH_BYTES
-//FIXME consider going back to public final fields such that getter is unnecessary and PMD warning is mitigated.
-@SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class DataMessage4 extends AbstractEncodedMessage {
 
     static final int MESSAGE_DATA = 0x03;
@@ -36,16 +34,61 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     private static final int XSALSA20_IV_LENGTH_BYTES = 24;
     private static final int MAC_LENGTH_BYTES = 64;
 
-    private final byte flags;
-    private final int pn;
-    private final int i;
-    private final int j;
-    private final Point ecdhPublicKey;
-    private final BigInteger dhPublicKey;
-    private final byte[] nonce;
-    private final byte[] ciphertext;
-    private final byte[] authenticator;
-    private final byte[] revealedMacs;
+    /**
+     * Message flags.
+     */
+    public final byte flags;
+
+    /**
+     * Number of messages in previous ratchet.
+     */
+    public final int pn;
+
+    /**
+     * Ratchet ID.
+     */
+    public final int i;
+
+    /**
+     * Message ID.
+     */
+    public final int j;
+
+    /**
+     * The ECDH public key.
+     */
+    @Nonnull
+    public final Point ecdhPublicKey;
+
+    /**
+     * The DH public key.
+     */
+    @Nullable
+    public final BigInteger dhPublicKey;
+
+    /**
+     * Nonce used in the data message.
+     */
+    @Nonnull
+    public final byte[] nonce;
+
+    /**
+     * Ciphertext contained in the data message.
+     */
+    @Nonnull
+    public final byte[] ciphertext;
+
+    /**
+     * The authenticator for the data message.
+     */
+    @Nonnull
+    public final byte[] authenticator;
+
+    /**
+     * Revealed MAC codes as a byte-array.
+     */
+    @Nonnull
+    public final byte[] revealedMacs;
 
     /**
      * Construct a new instance of DataMessage4 with the authenticator replaced by the provided one.
@@ -96,102 +139,6 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     @Override
     public int getType() {
         return MESSAGE_DATA;
-    }
-
-    /**
-     * Get message flags.
-     *
-     * @return Returns flags value.
-     */
-    public byte getFlags() {
-        return flags;
-    }
-
-    /**
-     * Get number of messages in previous ratchet.
-     *
-     * @return Returns the number.
-     */
-    public int getPn() {
-        return pn;
-    }
-
-    /**
-     * Get ratchet ID.
-     *
-     * @return Returns the ID.
-     */
-    public int getI() {
-        return i;
-    }
-
-    /**
-     * Get the message ID.
-     *
-     * @return Returns the ID.
-     */
-    public int getJ() {
-        return j;
-    }
-
-    /**
-     * Get the ECDH public key.
-     *
-     * @return Returns the public key.
-     */
-    @Nonnull
-    public Point getEcdhPublicKey() {
-        return ecdhPublicKey;
-    }
-
-    /**
-     * Get the DH public key.
-     *
-     * @return Returns the public key.
-     */
-    @Nullable
-    public BigInteger getDhPublicKey() {
-        return dhPublicKey;
-    }
-
-    /**
-     * Get the nonce used in the data message.
-     *
-     * @return Returns the nonce.
-     */
-    @Nonnull
-    public byte[] getNonce() {
-        return nonce;
-    }
-
-    /**
-     * Get the ciphertext contained in the data message.
-     *
-     * @return Returns the ciphertext.
-     */
-    @Nonnull
-    public byte[] getCiphertext() {
-        return ciphertext;
-    }
-
-    /**
-     * Get the authenticator.
-     *
-     * @return Returns the authenticator.
-     */
-    @Nonnull
-    public byte[] getAuthenticator() {
-        return authenticator;
-    }
-
-    /**
-     * Get the revealed MAC codes as a byte-array.
-     *
-     * @return Returns the MAC codes.
-     */
-    @Nonnull
-    public byte[] getRevealedMacs() {
-        return revealedMacs;
     }
 
     @Override
