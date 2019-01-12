@@ -119,7 +119,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeTLV(@Nonnull final Iterable<TLV> tlvs) {
         for (final TLV tlv : tlvs) {
-            this.writeShort(tlv.getType()).writeTlvData(tlv.getValue());
+            this.writeShort(tlv.type).writeTlvData(tlv.value);
         }
         return this;
     }

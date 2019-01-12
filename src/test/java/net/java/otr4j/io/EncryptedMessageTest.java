@@ -52,8 +52,8 @@ public final class EncryptedMessageTest {
         assertEquals("Hello world!", content.message);
         assertNotNull(content.tlvs);
         assertEquals(1, content.tlvs.size());
-        assertEquals(1, content.tlvs.get(0).getType());
-        assertArrayEquals(new byte[0], content.tlvs.get(0).getValue());
+        assertEquals(1, content.tlvs.get(0).type);
+        assertArrayEquals(new byte[0], content.tlvs.get(0).value);
     }
 
     @Test
@@ -71,8 +71,8 @@ public final class EncryptedMessageTest {
         assertEquals("Hello world!", content.message);
         assertNotNull(content.tlvs);
         assertEquals(1, content.tlvs.size());
-        assertEquals(0, content.tlvs.get(0).getType());
-        assertArrayEquals(new byte[] {'a', 'b'}, content.tlvs.get(0).getValue());
+        assertEquals(0, content.tlvs.get(0).type);
+        assertArrayEquals(new byte[] {'a', 'b'}, content.tlvs.get(0).value);
     }
 
     @Test
@@ -91,9 +91,9 @@ public final class EncryptedMessageTest {
         assertEquals("Hello world!", content.message);
         assertNotNull(content.tlvs);
         assertEquals(2, content.tlvs.size());
-        assertEquals(0, content.tlvs.get(0).getType());
-        assertArrayEquals(new byte[] {'a', 'b'}, content.tlvs.get(0).getValue());
-        assertEquals(1, content.tlvs.get(1).getType());
-        assertArrayEquals(new byte[0], content.tlvs.get(1).getValue());
+        assertEquals(0, content.tlvs.get(0).type);
+        assertArrayEquals(new byte[] {'a', 'b'}, content.tlvs.get(0).value);
+        assertEquals(1, content.tlvs.get(1).type);
+        assertArrayEquals(new byte[0], content.tlvs.get(1).value);
     }
 }

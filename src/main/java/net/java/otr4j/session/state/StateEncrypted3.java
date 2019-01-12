@@ -212,7 +212,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         // Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
-            logger.log(FINE, "Received TLV type {0}", tlv.getType());
+            logger.log(FINE, "Received TLV type {0}", tlv.type);
             if (smpPayload(tlv)) {
                 try {
                     final TLV response = this.smpTlvHandler.process(tlv);
@@ -225,7 +225,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
                 }
                 continue;
             }
-            switch (tlv.getType()) {
+            switch (tlv.type) {
             case TLV.PADDING: // TLV0
                 // nothing to do here, just ignore the padding
                 break;
@@ -237,10 +237,10 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
                 break;
             case USE_EXTRA_SYMMETRIC_KEY:
                 final byte[] key = matchingKeys.extraSymmetricKey();
-                extraSymmetricKeyDiscovered(context.getHost(), context.getSessionID(), content.message, key, tlv.getValue());
+                extraSymmetricKeyDiscovered(context.getHost(), context.getSessionID(), content.message, key, tlv.value);
                 break;
             default:
-                logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
+                logger.log(Level.INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.type);
                 break;
             }
         }

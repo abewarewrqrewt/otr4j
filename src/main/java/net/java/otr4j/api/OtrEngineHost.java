@@ -19,17 +19,22 @@ import javax.annotation.Nonnull;
  *
  * @author George Politis
  */
-// FIXME consider if we need to add a method to delegate to the OtrEngineHost the publication of the ClientProfilePayload.
+// FIXME we need to add a method to delegate to the OtrEngineHost the publication of the ClientProfilePayload. (Violates deniability partially otherwise)
 public interface OtrEngineHost extends SmpEngineHost {
 
     /**
      * Request host to inject a new message into the IM communication stream
      * upon which the OTR session is built.
+     * <p>
+     * Calls to {@code injectMessage} are expected to always succeed, as there is no way to mitigate not being able to
+     * send arbitrary messages in the protocol. On the side of the OtrEngineHost implementation, if it is possible to
+     * retry or to implement mitigations, such as queueing to retry sending later, this is acceptable. Such decisions
+     * should be made depending on the characteristics and state of the underlying chat protocol.
      *
      * @param sessionID The session ID
      * @param msg       The message to inject
      */
-    // TODO consider adding IOException to method signature. The whole protocol is intended for networking-like purposes, so it is reasonable to expect that an IOException might occur at some point.
+    // TODO Evaluate behavior of the implementation in case of failure to inject messages in transport network. (Will it leave the protocol in an inconsistent state? In which cases?)
     void injectMessage(@Nonnull SessionID sessionID, @Nonnull String msg);
 
     /**

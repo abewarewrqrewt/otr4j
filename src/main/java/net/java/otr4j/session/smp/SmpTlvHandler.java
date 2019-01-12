@@ -104,8 +104,8 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
      * @return Returns true iff TLV contains SMP payload.
      */
     public static boolean smpPayload(@Nonnull final TLV tlv) {
-        final int type = tlv.getType();
-        return type == SMP1 || type == SMP1Q || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
+        return tlv.type == SMP1 || tlv.type == SMP1Q || tlv.type == SMP2 || tlv.type == SMP3 || tlv.type == SMP4
+                || tlv.type == SMP_ABORT;
     }
 
     @Nonnull
@@ -188,7 +188,7 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
 
     @Override
     public boolean smpAbortedTLV(@Nonnull final TLV tlv) {
-        return tlv.getType() == SMP_ABORT;
+        return tlv.type == SMP_ABORT;
     }
 
     @Nonnull
@@ -207,7 +207,7 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
     @Nullable
     public TLV process(@Nonnull final TLV tlv) throws SMException {
         try {
-            switch (tlv.getType()) {
+            switch (tlv.type) {
             case SMP_ABORT:
                 abort();
                 return null;
@@ -222,13 +222,13 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
             case SMP4:
                 return processTlvSMP4(tlv);
             default:
-                throw new IllegalStateException("Unknown SMP TLV type: " + tlv.getType() + ". Cannot process this TLV.");
+                throw new IllegalStateException("Unknown SMP TLV type: " + tlv.type + ". Cannot process this TLV.");
             }
         } catch (final SMAbortedException e) {
             smpAborted(this.host, this.sessionID);
             return new TLV(SMP_ABORT, TLV.EMPTY_BODY);
         } catch (final SMException e) {
-            smpError(this.host, this.sessionID, tlv.getType(), this.sm.status() == CHEATED);
+            smpError(this.host, this.sessionID, tlv.type, this.sm.status() == CHEATED);
             throw e;
         }
     }
@@ -238,7 +238,7 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
         // We can only do the verification half now.
         // We must wait for the secret to be entered
         // to continue.
-        final byte[] question = tlv.getValue();
+        final byte[] question = tlv.value;
         int qlen = 0;
         while (qlen != question.length && question[qlen] != 0) {
             qlen++;
@@ -263,20 +263,20 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
     @Nullable
     private TLV processTlvSMP1(@Nonnull final TLV tlv) throws SMException {
         // We can only do the verification half now. We must wait for the secret to be entered to continue.
-        sm.step2a(tlv.getValue());
+        sm.step2a(tlv.value);
         askForSecret(host, this.sessionID, this.receiverTag, null);
         return null;
     }
 
     @Nonnull
     private TLV processTlvSMP2(@Nonnull final TLV tlv) throws SMException {
-        final byte[] nextmsg = sm.step3(tlv.getValue());
+        final byte[] nextmsg = sm.step3(tlv.value);
         return new TLV(SMP3, nextmsg);
     }
 
     @Nonnull
     private TLV processTlvSMP3(@Nonnull final TLV tlv) throws SMException {
-        final byte[] nextmsg = sm.step4(tlv.getValue());
+        final byte[] nextmsg = sm.step4(tlv.value);
         // Set trust level based on result.
         if (this.sm.status() == SUCCEEDED) {
             verify(host, this.sessionID, getFingerprint());
@@ -288,7 +288,7 @@ public final class SmpTlvHandler implements SMPHandler, AutoCloseable {
 
     @Nullable
     private TLV processTlvSMP4(@Nonnull final TLV tlv) throws SMException {
-        sm.step5(tlv.getValue());
+        sm.step5(tlv.value);
         if (this.sm.status() == SUCCEEDED) {
             verify(host, this.sessionID, getFingerprint());
         } else {

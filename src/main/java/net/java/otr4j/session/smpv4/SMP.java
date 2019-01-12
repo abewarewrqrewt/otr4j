@@ -108,8 +108,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      * @return Returns true iff TLV contains SMP payload.
      */
     public static boolean smpPayload(@Nonnull final TLV tlv) {
-        final int type = tlv.getType();
-        return type == SMP1 || type == SMP2 || type == SMP3 || type == SMP4 || type == SMP_ABORT;
+        return tlv.type == SMP1 || tlv.type == SMP2 || tlv.type == SMP3 || tlv.type == SMP4 || tlv.type == SMP_ABORT;
     }
 
     @Override
@@ -191,7 +190,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
      */
     @Nullable
     public TLV process(@Nonnull final TLV tlv) throws ProtocolException, OtrCryptoException {
-        if (tlv.getType() == SMP_ABORT) {
+        if (tlv.type == SMP_ABORT) {
             abort();
             return null;
         }
@@ -232,6 +231,6 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     @Override
     public boolean smpAbortedTLV(@Nonnull final TLV tlv) {
-        return tlv.getType() == SMP_ABORT;
+        return tlv.type == SMP_ABORT;
     }
 }

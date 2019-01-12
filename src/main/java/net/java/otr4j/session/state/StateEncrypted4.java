@@ -211,7 +211,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         // Process decrypted message contents. Extract and process TLVs.
         final Content content = extractContents(dmc);
         for (final TLV tlv : content.tlvs) {
-            logger.log(FINE, "Received TLV type {0}", tlv.getType());
+            logger.log(FINE, "Received TLV type {0}", tlv.type);
             if (smpPayload(tlv)) {
                 if ((message.getFlags() & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
                     logger.log(WARNING, "Other party is using a faulty OTR client: all SMP messages are expected to have the IGNORE_UNREADABLE flag set.");
@@ -227,7 +227,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 }
                 continue;
             }
-            switch (tlv.getType()) {
+            switch (tlv.type) {
             case TLV.PADDING: // TLV0
                 // nothing to do here, just ignore the padding
                 break;
@@ -243,7 +243,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 break;
             // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
-                logger.log(INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.getType());
+                logger.log(INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.type);
                 break;
             }
         }

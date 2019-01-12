@@ -7,14 +7,13 @@
 
 package net.java.otr4j.api;
 
-import java.util.Objects;
 import javax.annotation.Nonnull;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Class representing OTR Type-Length-Value tuples.
  */
-//FIXME consider going back to public final fields such that getter is unnecessary and PMD warning is mitigated.
-@SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class TLV {
 
     /**
@@ -31,8 +30,15 @@ public final class TLV {
      */
     public static final int DISCONNECTED = 0x0001;
 
-    private final int type;
-    private final byte[] value;
+    /**
+     * The TLV type
+     */
+    public final int type;
+
+    /**
+     * The TLV length and value.
+     */
+    public final byte[] value;
 
     /**
      * Constructor for the TLV.
@@ -42,25 +48,6 @@ public final class TLV {
      */
     public TLV(final int type, @Nonnull final byte[] value) {
         this.type = type;
-        this.value = Objects.requireNonNull(value);
-    }
-
-    /**
-     * Get the type.
-     *
-     * @return type value
-     */
-    public int getType() {
-        return type;
-    }
-
-    /**
-     * Get the TLV embedded value.
-     *
-     * @return Value as byte-array.
-     */
-    @Nonnull
-    public byte[] getValue() {
-        return value;
+        this.value = requireNonNull(value);
     }
 }

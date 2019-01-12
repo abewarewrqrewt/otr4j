@@ -180,8 +180,8 @@ public class OtrInputStreamTest {
         final byte[] data = new byte[] {0x0, 0x2, 0x0, 0x2, 0x1, 0x2};
         final OtrInputStream ois = new OtrInputStream(data);
         final TLV tlv = ois.readTLV();
-        assertEquals(0x02, tlv.getType());
-        assertArrayEquals(new byte[] {0x1, 0x2}, tlv.getValue());
+        assertEquals(0x02, tlv.type);
+        assertArrayEquals(new byte[] {0x1, 0x2}, tlv.value);
     }
 
     @Test

@@ -216,9 +216,9 @@ public final class SMPTest {
         assertNull(smpBob.process(smp1));
         verify(hostBob).askForSecret(sessionIDBob, tagAlice, question);
         final TLV abortTLV = smpAlice.initiate(question, answer);
-        assertEquals(SMP_ABORT, abortTLV.getType());
+        assertEquals(SMP_ABORT, abortTLV.type);
         final TLV initTLV = smpAlice.initiate(question, answer);
-        assertEquals(SMP1, initTLV.getType());
+        assertEquals(SMP1, initTLV.type);
     }
 
     @Test
@@ -281,7 +281,7 @@ public final class SMPTest {
         final byte[] tlvPayload = encode(new SMPMessage4(basePoint(), generateRandomValueInZq(RANDOM),
                 generateRandomValueInZq(RANDOM)));
         final TLV abortTLV = smpAlice.process(new TLV(SMP4, tlvPayload));
-        assertEquals(SMP_ABORT, abortTLV.getType());
+        assertEquals(SMP_ABORT, abortTLV.type);
         assertEquals(UNDECIDED, smpAlice.getStatus());
     }
 

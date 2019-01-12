@@ -31,8 +31,8 @@ final class SMPMessages {
 
     @Nonnull
     static SMPMessage parse(@Nonnull final TLV tlv) throws ProtocolException, OtrCryptoException {
-        final OtrInputStream in = new OtrInputStream(tlv.getValue());
-        switch (tlv.getType()) {
+        final OtrInputStream in = new OtrInputStream(tlv.value);
+        switch (tlv.type) {
         case SMP1: {
             final String question;
             try {
@@ -82,7 +82,7 @@ final class SMPMessages {
         case SMP_ABORT:
             throw new UnsupportedOperationException("SMP_Abort (TLV 6) should not be processed as SMP message, but instead handled outside of the SMP logic.");
         default:
-            throw new IllegalArgumentException("No other TLV type can be processed as SMP message: " + tlv.getType());
+            throw new IllegalArgumentException("No other TLV type can be processed as SMP message: " + tlv.type);
         }
     }
 }
