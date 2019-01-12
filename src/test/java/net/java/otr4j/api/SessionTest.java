@@ -59,7 +59,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 // TODO handle case where we store skipped message keys such that we can decrypt message that is received out-of-order, i.e. later than it was supposed to arrive.
-// FIXME test what happens when fragments are dropped.
 // FIXME add test to prove that we can start new (D)AKE in encrypted/finished Message state.
 // TODO add method to assert OTR-encoded data over communication channel as opposed to "not equals to original message".
 public class SessionTest {
@@ -724,6 +723,33 @@ public class SessionTest {
     }
 
     @Test
+    public void testEstablishOTR4SessionFragmentedMessageFragmentDropped() throws OtrException {
+        final Conversation c = new Conversation(21, 150);
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        // Expecting AUTH_R message from Alice.
+        assertArrayEquals(new String[0], c.clientBob.receiveAllMessages(true));
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        // Expecting AUTH_I message from Bob.
+        assertArrayEquals(new String[0], c.clientAlice.receiveAllMessages(true));
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        assertTrue(c.clientAlice.receiptChannel.isEmpty());
+        assertTrue(c.clientBob.receiptChannel.isEmpty());
+        c.clientAlice.sendMessage("Hello Bob!");
+        assertNotEquals("Hello Bob!", c.clientBob.receiptChannel.peek());
+        assertArrayEquals(new String[] {"Hello Bob!"}, c.clientBob.receiveAllMessages(true));
+        c.clientAlice.sendMessage("Hello Bob - this messages gets partially dropped ............................");
+        drop(new int[] {RANDOM.nextInt(4)}, c.clientBob.receiptChannel);
+        c.clientAlice.sendMessage("You should be able to receive this message.");
+        assertArrayEquals(new String[] {"You should be able to receive this message."}, c.clientBob.receiveAllMessages(true));
+    }
+
+    @Test
     public void testOTR4ExtensiveMessagingToVerifyRatcheting() throws OtrException {
         final Conversation c = new Conversation(1);
         c.clientBob.sendMessage("Hi Alice");
@@ -1195,7 +1221,6 @@ public class SessionTest {
     /**
      * Dummy client implementation for use with OTRv4 protocol tests.
      */
-    // FIXME naming for consistency between field name, method name, type name.
     private static final class Client implements OtrEngineHost {
 
         private final Logger logger;
@@ -1248,7 +1273,7 @@ public class SessionTest {
             return this.session.transformReceiving(msg);
         }
 
-        String[] receiveAllMessages(final boolean skipNulls) throws OtrException {
+        String[] receiveAllMessages(@SuppressWarnings("SameParameterValue") final boolean skipNulls) throws OtrException {
             final ArrayList<String> messages = new ArrayList<>();
             this.receiptChannel.drainTo(messages);
             final ArrayList<String> results = new ArrayList<>();

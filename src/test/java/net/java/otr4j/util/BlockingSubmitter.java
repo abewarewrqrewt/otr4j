@@ -24,7 +24,6 @@ import static java.util.Objects.requireNonNull;
  *
  * @param <E> The type of elements contained in the blocking queue.
  */
-// FIXME write unit tests for BlockingSubmitter
 public final class BlockingSubmitter<E> {
 
     private final ArrayList<BlockingQueue<E>> queues;
