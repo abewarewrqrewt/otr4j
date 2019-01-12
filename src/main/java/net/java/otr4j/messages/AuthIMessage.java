@@ -20,14 +20,17 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.Integers.requireInRange;
 
 /**
- * OTRv4 Interactive DAKE Auth I Message.
+ * OTRv4 Interactive DAKE Auth-I Message.
  */
 public final class AuthIMessage extends AbstractEncodedMessage {
 
     static final byte MESSAGE_AUTH_I = (byte) 0x37;
 
+    /**
+     * The ring signature (sigma).
+     */
     @Nonnull
-    private final Sigma sigma;
+    public final Sigma sigma;
 
     /**
      * Constructor for Auth-I message.
@@ -46,16 +49,6 @@ public final class AuthIMessage extends AbstractEncodedMessage {
     @Override
     public int getType() {
         return MESSAGE_AUTH_I;
-    }
-
-    /**
-     * Get the ring signature (sigma).
-     *
-     * @return Returns sigma.
-     */
-    @Nonnull
-    public Sigma getSigma() {
-        return sigma;
     }
 
     @Override

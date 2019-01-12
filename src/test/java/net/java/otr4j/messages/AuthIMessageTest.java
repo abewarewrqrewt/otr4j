@@ -47,7 +47,7 @@ public final class AuthIMessageTest {
         assertEquals(INSTANCE_TAG, m.senderInstanceTag);
         assertEquals(INSTANCE_TAG, m.receiverInstanceTag);
         assertEquals(MESSAGE_AUTH_I, m.getType());
-        assertSame(SIG, m.getSigma());
+        assertSame(SIG, m.sigma);
     }
 
     @Test(expected = IllegalArgumentException.class)

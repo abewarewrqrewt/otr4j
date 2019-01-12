@@ -64,7 +64,7 @@ public final class AuthIMessages {
                 senderFirstECDHPublicKey, senderFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
                 message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         try {
-            ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.getSigma(), t);
+            ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.sigma, t);
         } catch (final OtrCryptoException e) {
             throw new ValidationException("Ring signature verification failed.", e);
         }
