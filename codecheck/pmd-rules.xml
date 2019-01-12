@@ -54,7 +54,6 @@
         <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="NullAssignment"/>
-        <!-- TODO may need to reconsider later. Currently gives too many results that are useless/false positives. -->
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="AvoidDuplicateLiterals"/>
     </rule>
