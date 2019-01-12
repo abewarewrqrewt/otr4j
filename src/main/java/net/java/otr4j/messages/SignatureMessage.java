@@ -75,10 +75,7 @@ public final class SignatureMessage extends AbstractEncodedMessage {
             return false;
         }
         final SignatureMessage other = (SignatureMessage) obj;
-        if (!constantTimeEquals(xEncrypted, other.xEncrypted)) {
-            return false;
-        }
-        return constantTimeEquals(xEncryptedMAC, other.xEncryptedMAC);
+        return constantTimeEquals(xEncrypted, other.xEncrypted) & constantTimeEquals(xEncryptedMAC, other.xEncryptedMAC);
     }
 
     @Override

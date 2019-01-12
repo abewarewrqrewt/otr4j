@@ -48,7 +48,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-// TODO Need to add tests for parsing various type of encoded messages.
 @SuppressWarnings("ConstantConditions")
 public class EncodedMessageParserTest {
 
@@ -153,6 +152,46 @@ public class EncodedMessageParserTest {
     }
 
     @Test
+    public void testConstructAndParseDHCommitMessage() throws ProtocolException, UnsupportedLengthException, OtrCryptoException, ValidationException {
+        final byte[] dhPublicKeyHash = randomBytes(RANDOM, new byte[40]);
+        final byte[] dhPublicKeyEncrypted = randomBytes(RANDOM, new byte[55]);
+        final DHCommitMessage message = new DHCommitMessage(Version.THREE, dhPublicKeyHash, dhPublicKeyEncrypted,
+                SMALLEST_TAG, HIGHEST_TAG);
+        final String content = writeMessage(message);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final DHCommitMessage parsed = (DHCommitMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
+                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+        assertEquals(message, parsed);
+    }
+
+    @Test
+    public void testConstructAndParseRevealSignatureMessage() throws ProtocolException, UnsupportedLengthException, OtrCryptoException, ValidationException {
+        final byte[] xEncrypted = randomBytes(RANDOM, new byte[40]);
+        final byte[] xEncryptedMAC = randomBytes(RANDOM, new byte[20]);
+        final byte[] revealedKey = randomBytes(RANDOM, new byte[40]);
+        final RevealSignatureMessage message = new RevealSignatureMessage(Version.THREE, xEncrypted, xEncryptedMAC,
+                revealedKey, SMALLEST_TAG, HIGHEST_TAG);
+        final String content = writeMessage(message);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final RevealSignatureMessage parsed = (RevealSignatureMessage) parseEncodedMessage(encoded.getVersion(),
+                encoded.getType(), encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+        assertEquals(message, parsed);
+    }
+
+    @Test
+    public void testConstructAndParseSignatureMessage() throws ProtocolException, UnsupportedLengthException, OtrCryptoException, ValidationException {
+        final byte[] xEncrypted = randomBytes(RANDOM, new byte[40]);
+        final byte[] xEncryptedMAC = randomBytes(RANDOM, new byte[20]);
+        final SignatureMessage message = new SignatureMessage(Version.THREE, xEncrypted, xEncryptedMAC, SMALLEST_TAG,
+                HIGHEST_TAG);
+        final String content = writeMessage(message);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final SignatureMessage parsed = (SignatureMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
+                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+        assertEquals(message, parsed);
+    }
+
+    @Test
     public void testParsingDataMessage() throws ProtocolException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         final DHKeyPairOTR3 dhKeyPair = generateDHKeyPair(RANDOM);
         final int senderKeyID = RANDOM.nextInt();
@@ -165,7 +204,8 @@ public class EncodedMessageParserTest {
                 dhKeyPair.getPublic(), ctr, message, mac, oldMacKeys, SMALLEST_TAG, HIGHEST_TAG);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parseEncodedMessage(3, DataMessage.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parseEncodedMessage(3, DataMessage.MESSAGE_DATA, SMALLEST_TAG,
+                HIGHEST_TAG, new OtrInputStream(payload));
         assertEquals(input, result);
     }
 
@@ -179,7 +219,8 @@ public class EncodedMessageParserTest {
                 randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG,
+                HIGHEST_TAG, new OtrInputStream(payload));
         assertEquals(input, result);
     }
 
@@ -192,7 +233,8 @@ public class EncodedMessageParserTest {
                 randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG,
+                HIGHEST_TAG, new OtrInputStream(payload));
         assertEquals(input, result);
     }
 
@@ -250,7 +292,8 @@ public class EncodedMessageParserTest {
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
                 theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "", "alice@network", "bob@network");
-        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(), ourForgingKey, ourX, m);
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
+                ourForgingKey, ourX, m);
         // Prepare Auth-R message and test parsing result.
         final AuthRMessage message = new AuthRMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, ourProfilePayload, ourX,
                 ourA, sigma, ourFirstECDHPublicKey, ourFirstDHPublicKey);

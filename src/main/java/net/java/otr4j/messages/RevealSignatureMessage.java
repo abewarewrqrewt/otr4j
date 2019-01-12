@@ -13,8 +13,8 @@ import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.Integers.requireInRange;
 
@@ -55,32 +55,9 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
             @Nonnull final byte[] xEncryptedMAC, @Nonnull final byte[] revealedKey,
             @Nonnull final InstanceTag senderInstance, @Nonnull final InstanceTag receiverInstance) {
         super(requireInRange(Version.TWO, Version.THREE, protocolVersion), senderInstance, receiverInstance);
-        this.xEncrypted = Objects.requireNonNull(xEncrypted);
-        this.xEncryptedMAC = Objects.requireNonNull(xEncryptedMAC);
-        this.revealedKey = Objects.requireNonNull(revealedKey);
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + Arrays.hashCode(revealedKey);
-        return result;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RevealSignatureMessage other = (RevealSignatureMessage) obj;
-        return constantTimeEquals(revealedKey, other.revealedKey);
+        this.xEncrypted = requireNonNull(xEncrypted);
+        this.xEncryptedMAC = requireNonNull(xEncryptedMAC);
+        this.revealedKey = requireNonNull(revealedKey);
     }
 
     @Override
@@ -94,5 +71,30 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
     @Override
     public int getType() {
         return MESSAGE_REVEALSIG;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final RevealSignatureMessage that = (RevealSignatureMessage) o;
+        return constantTimeEquals(revealedKey, that.revealedKey) & constantTimeEquals(xEncrypted, that.xEncrypted)
+                & constantTimeEquals(xEncryptedMAC, that.xEncryptedMAC);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + Arrays.hashCode(revealedKey);
+        result = 31 * result + Arrays.hashCode(xEncrypted);
+        result = 31 * result + Arrays.hashCode(xEncryptedMAC);
+        return result;
     }
 }

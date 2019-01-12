@@ -62,7 +62,6 @@ public final class EncodedMessageParser {
      * @throws ValidationException        In case a message was successfully read and parsed but the contents of the
      *                                    message do not result in a valid composition.
      */
-    // FIXME unit test deserialization of OTRv4 (data) messages.
     // TODO consider making a hard split between OTRv2, OTRv3 and OTRv4 parsing based on protocol version to prevent unsupported message types from being parsed.
     @Nonnull
     public static AbstractEncodedMessage parseEncodedMessage(final int version, final int type,
