@@ -237,6 +237,8 @@ final class StateAwaitingAuthR extends AbstractCommonState {
     public void end(@Nonnull final Context context) {
         this.dhKeyPair.close();
         this.ecdhKeyPair.close();
+        this.ourFirstDHKeyPair.close();
+        this.ourFirstECDHKeyPair.close();
         context.transition(this, new StatePlaintext(getAuthState()));
     }
 

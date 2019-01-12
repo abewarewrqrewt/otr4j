@@ -49,6 +49,7 @@ import static net.java.otr4j.messages.AuthIMessages.validate;
 import static net.java.otr4j.messages.MysteriousT4.Purpose.AUTH_R;
 import static net.java.otr4j.messages.MysteriousT4.encode;
 import static net.java.otr4j.session.state.DoubleRatchet.Role.ALICE;
+import static org.bouncycastle.util.Arrays.clear;
 
 /**
  * The state AWAITING_AUTH_I.
@@ -265,6 +266,10 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     public void end(@Nonnull final Context context) {
         this.ourDHKeyPair.close();
         this.ourECDHKeyPair.close();
+        this.ourFirstDHKeyPair.close();
+        this.ourFirstECDHKeyPair.close();
+        clear(this.k);
+        clear(this.ssid);
         context.transition(this, new StatePlaintext(getAuthState()));
     }
 
