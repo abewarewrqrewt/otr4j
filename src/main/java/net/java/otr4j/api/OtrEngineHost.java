@@ -19,7 +19,6 @@ import javax.annotation.Nonnull;
  *
  * @author George Politis
  */
-// FIXME we need to add a method to delegate to the OtrEngineHost the publication of the ClientProfilePayload. (Violates deniability partially otherwise)
 public interface OtrEngineHost extends SmpEngineHost {
 
     /**

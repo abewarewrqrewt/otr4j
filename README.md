@@ -40,6 +40,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   * ☐ OTRv4 extension to OTR error messages
   * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
   * ☐ Queueing of messages while not in `ENCRYPTED_MESSAGES` state.
+  * ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost
 * Cryptographic primitives:
   * Edd448-Goldilocks elliptic curve (temporary solution)
     * ☑ Temporary working solution
