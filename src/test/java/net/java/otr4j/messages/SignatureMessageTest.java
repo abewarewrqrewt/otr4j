@@ -48,7 +48,7 @@ public class SignatureMessageTest {
         for (int i = 1; i <= 10000000; i *= 10) {
             byte[] fakeEncrypted = randomBytes(RANDOM, new byte[i]);
             RANDOM.nextBytes(fakeEncryptedMAC);
-            current = new SignatureMessage(Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            current = new SignatureMessage(Version.THREE, fakeEncrypted, fakeEncryptedMAC.clone(), ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
             assertNotEquals(current, previous);
             if (previous != null) {
@@ -60,7 +60,7 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[100];
             fill(fakeEncrypted, (byte) i);
             fill(fakeEncryptedMAC, (byte) i);
-            current = new SignatureMessage(Session.Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            current = new SignatureMessage(Session.Version.THREE, fakeEncrypted, fakeEncryptedMAC.clone(), ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
             assertNotEquals(current.hashCode(), previous.hashCode());
             previous = current;
@@ -76,7 +76,7 @@ public class SignatureMessageTest {
         for (int i = 1; i <= 10000000; i *= 10) {
             final byte[] fakeEncrypted = randomBytes(RANDOM, new byte[i]);
             RANDOM.nextBytes(fakeEncryptedMAC);
-            SignatureMessage sm = new SignatureMessage(Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            SignatureMessage sm = new SignatureMessage(Version.THREE, fakeEncrypted, fakeEncryptedMAC.clone(), ZERO_TAG, ZERO_TAG);
             assertNotNull(sm);
             final byte[] fakeEncrypted2 = new byte[i];
             System.arraycopy(fakeEncrypted, 0, fakeEncrypted2, 0, fakeEncrypted.length);
@@ -96,7 +96,8 @@ public class SignatureMessageTest {
             byte[] fakeEncrypted = new byte[1000];
             fill(fakeEncrypted, (byte) i);
             fill(fakeEncryptedMAC, (byte) i);
-            SignatureMessage current = new SignatureMessage(Session.Version.THREE, fakeEncrypted, fakeEncryptedMAC, ZERO_TAG, ZERO_TAG);
+            SignatureMessage current = new SignatureMessage(Session.Version.THREE, fakeEncrypted,
+                    fakeEncryptedMAC.clone(), ZERO_TAG, ZERO_TAG);
             assertNotNull(current);
             assertNotEquals(current, previous);
             previous = current;
