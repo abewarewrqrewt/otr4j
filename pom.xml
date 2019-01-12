@@ -54,12 +54,6 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
             <version>[1.60,)</version>
@@ -69,6 +63,12 @@
             <artifactId>jsr305</artifactId>
             <version>3.0.2</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -91,8 +91,7 @@
                     <artifactId>maven-pmd-plugin</artifactId>
                     <version>3.11.0</version>
                     <configuration>
-                        <!--linkXRef seems to require org.apache.maven.plugins:maven-jxr-plugin, which is not currently
-                        available. -->
+                        <!--linkXRef seems to require org.apache.maven.plugins:maven-jxr-plugin, which is not currently available. -->
                         <linkXRef>false</linkXRef>
                         <analysisCache>false</analysisCache>
                         <!--<analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation> &lt;!&ndash; Optional: points to this location by default &ndash;&gt;-->
@@ -179,7 +178,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -189,7 +188,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -218,7 +217,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>3.0.0-M3</version>
                 <configuration>
                     <enableAssertions>true</enableAssertions>
                     <systemPropertyVariables>
