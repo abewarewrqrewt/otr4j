@@ -24,13 +24,13 @@ public final class InstanceTag {
     /**
      * The smallest possible valid tag value.
      */
-    public static final int SMALLEST_VALUE = 0x00000100;
+    static final int SMALLEST_VALUE = 0x00000100;
 
     /**
      * The largest possible tag value.
      * Note that this is -1 in the decimal representation.
      */
-    public static final int HIGHEST_VALUE = 0xffffffff;
+    static final int HIGHEST_VALUE = 0xffffffff;
 
     /**
      * Zero-value instance tag.

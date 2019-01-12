@@ -130,8 +130,8 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         final byte[] t = encode(AUTH_R, profile, message.getClientProfile(), x.getPublicKey(), message.getY(),
                 a.getPublicKey(), message.getB(), ourFirstECDHKeyPair.getPublicKey(), ourFirstDHKeyPair.getPublicKey(),
                 message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
-                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(), queryTag,
-                sessionID.getAccountID(), sessionID.getUserID());
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), queryTag, sessionID.getAccountID(),
+                sessionID.getUserID());
         final Sigma sigma = ringSign(secureRandom, longTermKeyPair, theirClientProfile.getForgingKey(),
                 longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.

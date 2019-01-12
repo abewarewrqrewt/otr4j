@@ -62,8 +62,7 @@ public final class AuthIMessages {
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
         final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
                 senderFirstECDHPublicKey, senderFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
-                message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
-                receiverAccountID);
+                message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.getSigma(), t);
         } catch (final OtrCryptoException e) {

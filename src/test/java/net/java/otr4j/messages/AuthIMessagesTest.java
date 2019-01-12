@@ -25,9 +25,7 @@ import java.security.SecureRandom;
 import static java.math.BigInteger.ZERO;
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
-import static net.java.otr4j.api.InstanceTag.HIGHEST_VALUE;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
-import static net.java.otr4j.api.InstanceTag.SMALLEST_VALUE;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.AuthIMessages.validate;
 
@@ -64,7 +62,7 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "alice@network", "bob@network");
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
@@ -102,7 +100,7 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                ourFirstDHPublicKey, SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "alice@network", "bob@network");
+                ourFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
@@ -140,7 +138,7 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, SMALLEST_VALUE, HIGHEST_VALUE, "?OTRv4?", "alice@network", "bob@network");
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
@@ -178,7 +176,7 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, SMALLEST_VALUE, HIGHEST_VALUE, "", "alice@network", "bob@network");
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "", "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);

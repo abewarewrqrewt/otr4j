@@ -209,8 +209,8 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final byte[] t = encode(AUTH_R, profilePayload, message.getClientProfile(), this.ourECDHKeyPair.getPublicKey(),
                 message.getY(), this.ourDHKeyPair.getPublicKey(), message.getB(), this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey(), message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(),
-                context.getSenderInstanceTag().getValue(), context.getReceiverInstanceTag().getValue(), this.queryTag,
-                sessionID.getUserID(), sessionID.getAccountID());
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), this.queryTag, sessionID.getUserID(),
+                sessionID.getAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
                 theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.getY(), t);
         // Generate response message and transition into next state.

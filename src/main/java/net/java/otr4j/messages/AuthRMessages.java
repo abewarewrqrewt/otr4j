@@ -66,8 +66,7 @@ public final class AuthRMessages {
         final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
                 receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.getOurFirstECDHPublicKey(),
                 message.getOurFirstDHPublicKey(), receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
-                message.senderInstanceTag.getValue(), message.receiverInstanceTag.getValue(), queryTag, senderAccountID,
-                receiverAccountID);
+                message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
                     message.getSigma(), t);
