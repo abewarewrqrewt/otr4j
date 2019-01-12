@@ -53,23 +53,23 @@ public final class AuthRMessages {
             @Nonnull final BigInteger receiverFirstDHPublicKey, @Nonnull final String queryTag)
             throws ValidationException {
         try {
-            verifyECDHPublicKey(message.getX());
-            verifyDHPublicKey(message.getA());
-            verifyECDHPublicKey(message.getOurFirstECDHPublicKey());
-            verifyDHPublicKey(message.getOurFirstDHPublicKey());
+            verifyECDHPublicKey(message.x);
+            verifyDHPublicKey(message.a);
+            verifyECDHPublicKey(message.ourFirstECDHPublicKey);
+            verifyDHPublicKey(message.ourFirstDHPublicKey);
         } catch (final net.java.otr4j.crypto.ed448.ValidationException | OtrCryptoException e) {
             throw new ValidationException("Illegal ephemeral public key.", e);
         }
         if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
-        final byte[] t = encode(AUTH_R, message.getClientProfile(), ourClientProfilePayload, message.getX(),
-                receiverECDHPublicKey, message.getA(), receiverDHPublicKey, message.getOurFirstECDHPublicKey(),
-                message.getOurFirstDHPublicKey(), receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
+        final byte[] t = encode(AUTH_R, message.clientProfile, ourClientProfilePayload, message.x,
+                receiverECDHPublicKey, message.a, receiverDHPublicKey, message.ourFirstECDHPublicKey,
+                message.ourFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
                 message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
-                    message.getSigma(), t);
+                    message.sigma, t);
         } catch (final OtrCryptoException e) {
             throw new ValidationException("Ring signature failed verification.", e);
         }

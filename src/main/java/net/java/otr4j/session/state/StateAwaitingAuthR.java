@@ -184,7 +184,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         final EdDSAKeyPair ourLongTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         // Validate received Auth-R message.
         final ClientProfile ourClientProfile = this.ourProfilePayload.validate();
-        final ClientProfile theirClientProfile = message.getClientProfile().validate();
+        final ClientProfile theirClientProfile = message.clientProfile.validate();
         validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, sessionID.getUserID(),
                 sessionID.getAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(),
                 this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(), this.queryTag);
@@ -192,25 +192,25 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         // Prepare Auth-I message to be sent.
         final InstanceTag senderTag = context.getSenderInstanceTag();
         final InstanceTag receiverTag = context.getReceiverInstanceTag();
-        final byte[] t = encode(AUTH_I, message.getClientProfile(), this.ourProfilePayload, message.getX(),
-                this.ecdhKeyPair.getPublicKey(), message.getA(), this.dhKeyPair.getPublicKey(),
+        final byte[] t = encode(AUTH_I, message.clientProfile, this.ourProfilePayload, message.x,
+                this.ecdhKeyPair.getPublicKey(), message.a, this.dhKeyPair.getPublicKey(),
                 this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(),
-                message.getOurFirstECDHPublicKey(), message.getOurFirstDHPublicKey(), senderTag, receiverTag,
+                message.ourFirstECDHPublicKey, message.ourFirstDHPublicKey, senderTag, receiverTag,
                 this.queryTag, sessionID.getAccountID(), sessionID.getUserID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, ourLongTermKeyPair,
-                ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.getX(), t);
+                ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.x, t);
         final AuthIMessage reply = new AuthIMessage(FOUR, senderTag, receiverTag, sigma);
         // Calculate mixed shared secret and SSID.
         final byte[] k;
         final byte[] ssid;
-        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.dhKeyPair, this.ecdhKeyPair,
-                message.getA(), message.getX())) {
+        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.dhKeyPair, this.ecdhKeyPair, message.a,
+                message.x)) {
             k = sharedSecret.getK();
             ssid = sharedSecret.generateSSID();
         }
         // Initialize Double Ratchet.
         final SharedSecret4 firstRatchetSecret = new SharedSecret4(secureRandom, ourFirstDHKeyPair, ourFirstECDHKeyPair,
-                message.getOurFirstDHPublicKey(), message.getOurFirstECDHPublicKey());
+                message.ourFirstDHPublicKey, message.ourFirstECDHPublicKey);
         final DoubleRatchet ratchet = new DoubleRatchet(secureRandom, firstRatchetSecret, kdf1(FIRST_ROOT_KEY, k, 64),
                 BOB);
         secure(context, ssid, ratchet, ourClientProfile.getLongTermPublicKey(), theirClientProfile.getLongTermPublicKey());

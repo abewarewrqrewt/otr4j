@@ -30,17 +30,41 @@ public final class AuthRMessage extends AbstractEncodedMessage {
      */
     public static final byte MESSAGE_AUTH_R = (byte) 0x36;
 
-    private final ClientProfilePayload clientProfile;
+    /**
+     * The client profile payload.
+     */
+    @Nonnull
+    public final ClientProfilePayload clientProfile;
 
-    private final Point x;
+    /**
+     * ECDH public key 'X'.
+     */
+    @Nonnull
+    public final Point x;
 
-    private final BigInteger a;
+    /**
+     * DH public key 'A'.
+     */
+    @Nonnull
+    public final BigInteger a;
 
-    private final Sigma sigma;
+    /**
+     * The ring signature.
+     */
+    @Nonnull
+    public final Sigma sigma;
 
-    private final Point ourFirstECDHPublicKey;
+    /**
+     * The first ECDH public key to be used after DAKE completes.
+     */
+    @Nonnull
+    public final Point ourFirstECDHPublicKey;
 
-    private final BigInteger ourFirstDHPublicKey;
+    /**
+     * The first DH public key to be used after DAKE completes.
+     */
+    @Nonnull
+    public final BigInteger ourFirstDHPublicKey;
 
     /**
      * Auth-R Message as used in OTRv4.
@@ -71,66 +95,6 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     @Override
     public int getType() {
         return MESSAGE_AUTH_R;
-    }
-
-    /**
-     * Get the client profile payload.
-     *
-     * @return Returns the client profile payload.
-     */
-    @Nonnull
-    public ClientProfilePayload getClientProfile() {
-        return clientProfile;
-    }
-
-    /**
-     * Get ECDH public key 'X'.
-     *
-     * @return Returns the public key 'X'.
-     */
-    @Nonnull
-    public Point getX() {
-        return x;
-    }
-
-    /**
-     * Get DH public key 'A'.
-     *
-     * @return Returns the public key 'A'.
-     */
-    @Nonnull
-    public BigInteger getA() {
-        return a;
-    }
-
-    /**
-     * Get the ring signature.
-     *
-     * @return Returns the ring signature.
-     */
-    @Nonnull
-    public Sigma getSigma() {
-        return sigma;
-    }
-
-    /**
-     * Get the first ECDH public key to be used after DAKE completes.
-     *
-     * @return ECDH public key
-     */
-    @Nonnull
-    public Point getOurFirstECDHPublicKey() {
-        return ourFirstECDHPublicKey;
-    }
-
-    /**
-     * Get the first DH public key to be used after DAKE completes.
-     *
-     * @return DH public key
-     */
-    @Nonnull
-    public BigInteger getOurFirstDHPublicKey() {
-        return ourFirstDHPublicKey;
     }
 
     @Override

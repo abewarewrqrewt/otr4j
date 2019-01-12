@@ -67,12 +67,12 @@ public final class AuthRMessageTest {
         assertEquals(Session.Version.FOUR, message.protocolVersion);
         assertEquals(SMALLEST_TAG, message.senderInstanceTag);
         assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
-        assertEquals(PAYLOAD, message.getClientProfile());
-        assertEquals(X, message.getX());
-        assertEquals(A, message.getA());
-        assertEquals(FIRST_ECDH_PUBLIC_KEY, message.getOurFirstECDHPublicKey());
-        assertEquals(FIRST_DH_PUBLIC_KEY, message.getOurFirstDHPublicKey());
-        assertEquals(sigma, message.getSigma());
+        assertEquals(PAYLOAD, message.clientProfile);
+        assertEquals(X, message.x);
+        assertEquals(A, message.a);
+        assertEquals(FIRST_ECDH_PUBLIC_KEY, message.ourFirstECDHPublicKey);
+        assertEquals(FIRST_DH_PUBLIC_KEY, message.ourFirstDHPublicKey);
+        assertEquals(sigma, message.sigma);
     }
 
     @Test(expected = IllegalArgumentException.class)
