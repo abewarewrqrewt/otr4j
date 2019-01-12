@@ -7,13 +7,17 @@
 
 package net.java.otr4j.messages;
 
+import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
+import net.java.otr4j.crypto.DSAKeyPair;
+import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
+import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.MessageParser;
@@ -31,10 +35,13 @@ import java.security.SecureRandom;
 
 import static java.util.Arrays.copyOf;
 import static java.util.Arrays.copyOfRange;
+import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
+import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
@@ -187,5 +194,110 @@ public class EncodedMessageParserTest {
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
         final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload));
         assertEquals(input, result);
+    }
+
+    @Test
+    public void testParseIdentityMessage() throws ProtocolException, UnsupportedLengthException, OtrCryptoException, ValidationException {
+        // Our client profile
+        final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final DSAKeyPair ourDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
+        final Point ourFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
+                ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
+                ourDSAKeyPair, ourLongTermKeyPair);
+        final Point ourY = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger ourB = DHKeyPair.generate(RANDOM).getPublicKey();
+        // Generate Identity message and parse result.
+        final IdentityMessage message = new IdentityMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, ourProfilePayload,
+                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
+        final String content = writeMessage(message);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final IdentityMessage parsed = (IdentityMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
+                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+        assertEquals(message, parsed);
+    }
+
+    @Test
+    public void testParseAuthRMessage() throws ProtocolException, UnsupportedLengthException, OtrCryptoException, ValidationException {
+        // Our client profile
+        final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final DSAKeyPair ourDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
+        final Point ourFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
+                ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
+                ourDSAKeyPair, ourLongTermKeyPair);
+        final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();
+        // Their client profile
+        final EdDSAKeyPair theirLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point theirFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger theirFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final DSAKeyPair theirDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
+        final Point theirForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final ClientProfile theirProfile = new ClientProfile(SMALLEST_TAG, theirLongTermKeyPair.getPublicKey(),
+                theirForgingKey, singleton(Session.Version.FOUR), theirDSAKeyPair.getPublic());
+        final ClientProfilePayload theirProfilePayload = ClientProfilePayload.sign(theirProfile, Long.MAX_VALUE / 1000,
+                theirDSAKeyPair, theirLongTermKeyPair);
+        final Point theirY = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger theirB = DHKeyPair.generate(RANDOM).getPublicKey();
+        // The ring signature
+        final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
+                theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "", "alice@network", "bob@network");
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(), ourForgingKey, ourX, m);
+        // Prepare Auth-R message and test parsing result.
+        final AuthRMessage message = new AuthRMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, ourProfilePayload, ourX,
+                ourA, sigma, ourFirstECDHPublicKey, ourFirstDHPublicKey);
+        final String content = writeMessage(message);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final AuthRMessage parsed = (AuthRMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
+                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+        assertEquals(message, parsed);
+    }
+
+    @Test
+    public void testParseAuthIMessage() throws ProtocolException, UnsupportedLengthException, OtrCryptoException, ValidationException {
+        // Our client profile
+        final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final DSAKeyPair ourDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
+        final Point ourFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
+                ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
+        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
+                ourDSAKeyPair, ourLongTermKeyPair);
+        final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();
+        // Their client profile
+        final EdDSAKeyPair theirLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point theirFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger theirFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final DSAKeyPair theirDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
+        final Point theirForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final ClientProfile theirProfile = new ClientProfile(SMALLEST_TAG, theirLongTermKeyPair.getPublicKey(),
+                theirForgingKey, singleton(Session.Version.FOUR), theirDSAKeyPair.getPublic());
+        final ClientProfilePayload theirProfilePayload = ClientProfilePayload.sign(theirProfile, Long.MAX_VALUE / 1000,
+                theirDSAKeyPair, theirLongTermKeyPair);
+        final Point theirY = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final BigInteger theirB = DHKeyPair.generate(RANDOM).getPublicKey();
+        // The Auth-I message
+        final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
+                theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "", "alice@network", "bob@network");
+        final OtrCryptoEngine4.Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
+                ourForgingKey, ourX, m);
+        final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
+        final String content = writeMessage(message);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final AuthIMessage parsed = (AuthIMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
+                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+        assertEquals(message, parsed);
     }
 }

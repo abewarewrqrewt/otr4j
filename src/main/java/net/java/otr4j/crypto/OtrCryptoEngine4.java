@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTH;
@@ -558,6 +559,24 @@ public final class OtrCryptoEngine4 {
             out.writeScalar(this.r2);
             out.writeScalar(this.c3);
             out.writeScalar(this.r3);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final Sigma sigma = (Sigma) o;
+            return c1.equals(sigma.c1) & r1.equals(sigma.r1) & c2.equals(sigma.c2) & r2.equals(sigma.r2)
+                    & c3.equals(sigma.c3) & r3.equals(sigma.r3);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(c1, r1, c2, r2, c3, r3);
         }
     }
 }

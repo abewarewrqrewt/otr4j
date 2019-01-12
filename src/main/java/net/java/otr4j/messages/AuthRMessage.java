@@ -15,6 +15,7 @@ import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.Integers.requireInRange;
@@ -141,5 +142,27 @@ public final class AuthRMessage extends AbstractEncodedMessage {
         writer.write(this.sigma);
         writer.writePoint(this.ourFirstECDHPublicKey);
         writer.writeBigInt(this.ourFirstDHPublicKey);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final AuthRMessage that = (AuthRMessage) o;
+        return clientProfile.equals(that.clientProfile) && x.equals(that.x) && a.equals(that.a)
+                && sigma.equals(that.sigma) && ourFirstECDHPublicKey.equals(that.ourFirstECDHPublicKey)
+                && ourFirstDHPublicKey.equals(that.ourFirstDHPublicKey);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), clientProfile, x, a, sigma, ourFirstECDHPublicKey, ourFirstDHPublicKey);
     }
 }

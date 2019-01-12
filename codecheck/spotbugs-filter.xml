@@ -9,6 +9,10 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
     </And>
     <And>
+        <Class name="net.java.otr4j.crypto.OtrCryptoEngine4$Sigma"/>
+        <Bug pattern="NS_DANGEROUS_NON_SHORT_CIRCUIT"/>
+    </And>
+    <And>
         <Bug category="BAD_PRACTICE"/>
         <Bug code="Nm"/>
         <Bug pattern="NM_CONFUSING"/>

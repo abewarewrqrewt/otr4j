@@ -14,6 +14,8 @@ import net.java.otr4j.io.OtrOutputStream;
 
 import javax.annotation.Nonnull;
 
+import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.Integers.requireInRange;
 
@@ -24,6 +26,7 @@ public final class AuthIMessage extends AbstractEncodedMessage {
 
     static final byte MESSAGE_AUTH_I = (byte) 0x37;
 
+    @Nonnull
     private final Sigma sigma;
 
     /**
@@ -59,5 +62,25 @@ public final class AuthIMessage extends AbstractEncodedMessage {
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         super.writeTo(writer);
         writer.write(this.sigma);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final AuthIMessage that = (AuthIMessage) o;
+        return sigma.equals(that.sigma);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), sigma);
     }
 }
