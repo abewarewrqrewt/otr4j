@@ -19,7 +19,6 @@ import static net.java.otr4j.crypto.ed448.Ed448.checkIdentity;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -106,7 +105,13 @@ public final class Ed448Test {
     }
 
     @Test
-    public void testContainsSomePoint() {
-        assertTrue(containsPoint(multiplyByBase(fromBigInteger(BigInteger.valueOf(42L)))));
+    public void testContainsDoubleBasePoint() {
+        assertTrue(containsPoint(multiplyByBase(Scalar.fromBigInteger(BigInteger.valueOf(2L)))));
+    }
+
+    @Test
+    public void testContainsArbitraryPoint() {
+        final Point p = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        assertTrue(containsPoint(p));
     }
 }
