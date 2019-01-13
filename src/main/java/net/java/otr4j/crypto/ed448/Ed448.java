@@ -11,8 +11,10 @@ import nl.dannyvanheumen.joldilocks.Points;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import static java.math.BigInteger.ONE;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.constantTimeEqualsOrSame;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
@@ -30,6 +32,11 @@ public final class Ed448 {
     private static final Point IDENTITY = new Point(new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
     /**
+     * Prime p of the Ed448-Goldilocks curve. (Used as modulus.)
+     */
+    private static final BigInteger MODULUS = new BigInteger("fffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16);
+
+    /**
      * Base Point of the curve.
      */
     private static final Point G = new Point(new byte[] {20, -6, 48, -14, 91, 121, 8, -104, -83, -56, -41, 78, 44, 19, -67, -3, -60, 57, 124, -26, 28, -1, -45, 58, -41, -62, -96, 5, 30, -100, 120, -121, 64, -104, -93, 108, 115, 115, -22, 75, 98, -57, -55, 86, 55, 32, 118, -120, 36, -68, -74, 110, 113, 70, 63, 105, 0});
@@ -38,6 +45,11 @@ public final class Ed448 {
      * Prime order.
      */
     private static final Scalar Q = new Scalar(new byte[] {-13, 68, 88, -85, -110, -62, 120, 35, 85, -113, -59, -115, 114, -62, 108, 33, -112, 54, -42, -82, 73, -37, 78, -60, -23, 35, -54, 124, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 63, 0});
+
+    /**
+     * Edwards constant d.
+     */
+    private static final BigInteger D = BigInteger.valueOf(-39081L);
 
     private Ed448() {
         // No need to instantiate utility class.
@@ -114,16 +126,25 @@ public final class Ed448 {
     /**
      * Verify that given point is contained in the curve.
      *
-     * @param p The point to verify.
+     * @param point The point to verify.
      * @return Returns true if it is contained in the curve.
      */
-    // TODO: According to otrv4 spec, we can verify point is on the curve with: Given point X = (x,y), check X != Identity & x in range [0, q-1] & y in range [0, q-1] & q * X = Identity.
-    // (https://github.com/otrv4/otrv4/blob/master/otrv4.md#verifying-that-a-point-is-on-the-curve)
+    // TODO According to otrv4 spec (https://github.com/otrv4/otrv4/issues/200), we can verify point is on the curve with: Given point X = (x,y), check X != Identity & x in range [0, q-1] & y in range [0, q-1] & q * X = Identity.
     @CheckReturnValue
-    public static boolean containsPoint(@Nonnull final Point p) {
+    public static boolean containsPoint(@Nonnull final Point point) {
         try {
-            // FIXME does it even make sense to call 'contains'? I suspect that 'Points.decode' already does a point validity check, but maybe not identity check.
-            return nl.dannyvanheumen.joldilocks.Ed448.contains(Points.decode(p.getEncoded()));
+            final nl.dannyvanheumen.joldilocks.Point p = Points.decode(point.getEncoded());
+            final BigInteger x = p.x();
+            final BigInteger xx = x.multiply(x).mod(MODULUS);
+            final BigInteger y = p.y();
+            final BigInteger yy = y.multiply(y).mod(MODULUS);
+
+            final BigInteger dxx = D.multiply(xx).mod(MODULUS);
+            final BigInteger dxxyy = dxx.multiply(yy).mod(MODULUS);
+
+            final BigInteger left =  xx.add(yy).mod(MODULUS);
+            final BigInteger right = ONE.add(dxxyy).mod(MODULUS);
+            return left.compareTo(right) == 0;
         } catch (final Points.InvalidDataException e) {
             return false;
         }
