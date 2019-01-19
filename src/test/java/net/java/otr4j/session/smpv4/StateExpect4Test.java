@@ -17,7 +17,7 @@ import java.security.SecureRandom;
 
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.PointTestUtils.createPoint;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.ScalarTestUtils.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

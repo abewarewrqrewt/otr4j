@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.ScalarTestUtils.fromBigInteger;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 

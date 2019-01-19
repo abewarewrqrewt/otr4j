@@ -63,7 +63,7 @@ public final class Scalar implements Comparable<Scalar>, AutoCloseable {
      * @return Returns scalar instance.
      */
     @Nonnull
-    public static Scalar fromBigInteger(@Nonnull final BigInteger value) {
+    static Scalar fromBigInteger(@Nonnull final BigInteger value) {
         return new Scalar(reverse(asUnsignedByteArray(SCALAR_LENGTH_BYTES, value.mod(primeOrder()))));
     }
 

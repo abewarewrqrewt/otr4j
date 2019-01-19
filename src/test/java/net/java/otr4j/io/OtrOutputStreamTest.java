@@ -36,7 +36,7 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
-import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.ScalarTestUtils.fromBigInteger;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
