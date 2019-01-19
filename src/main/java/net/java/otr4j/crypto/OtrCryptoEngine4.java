@@ -292,7 +292,6 @@ public final class OtrCryptoEngine4 {
      * @throws OtrCryptoException Thrown in case point is illegal, i.e. does not lie on the Ed448-Goldilocks curve.
      */
     public static void verifyEdDSAPublicKey(@Nonnull final Point point) throws OtrCryptoException {
-        // FIXME should we do more input verification here? Somehow it seems unlikely that identity is considered a EdDSA key pair.
         if (!containsPoint(point)) {
             throw new OtrCryptoException("Illegal public key.");
         }
@@ -399,64 +398,64 @@ public final class OtrCryptoEngine4 {
         final boolean eq2 = longTermPublicKey.equals(A2);
         final boolean eq3 = longTermPublicKey.equals(A3);
         // "Pick random values t1, c2, c3, r2, r3 in q."
-        final Scalar ti = generateRandomValueInZq(random);
-        final Scalar cj = generateRandomValueInZq(random);
-        final Scalar rj = generateRandomValueInZq(random);
-        final Scalar ck = generateRandomValueInZq(random);
-        final Scalar rk = generateRandomValueInZq(random);
-        final Point T1;
-        final Point T2;
-        final Point T3;
-        // TODO replace with constant-time selection
-        if (eq1) {
-            // "Compute T1 = G * t1."
-            T1 = multiplyByBase(ti);
-            // "Compute T2 = G * r2 + A2 * c2."
-            T2 = multiplyByBase(rj).add(A2.multiply(cj));
-            // "Compute T3 = G * r3 + A3 * c3."
-            T3 = multiplyByBase(rk).add(A3.multiply(ck));
-        } else if (eq2) {
-            T1 = multiplyByBase(rj).add(A1.multiply(cj));
-            T2 = multiplyByBase(ti);
-            T3 = multiplyByBase(rk).add(A3.multiply(ck));
-        } else if (eq3) {
-            T1 = multiplyByBase(rj).add(A1.multiply(cj));
-            T2 = multiplyByBase(rk).add(A2.multiply(ck));
-            T3 = multiplyByBase(ti);
-        } else {
-            throw new IllegalArgumentException("Long-term key pair should match at least one of the public keys.");
-        }
-        // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
-        final Scalar q = primeOrder();
-        final Scalar c;
-        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-            basePoint().encodeTo(buffer);
-            q.encodeTo(buffer);
-            A1.encodeTo(buffer);
-            A2.encodeTo(buffer);
-            A3.encodeTo(buffer);
-            T1.encodeTo(buffer);
-            T2.encodeTo(buffer);
-            T3.encodeTo(buffer);
-            buffer.write(m, 0, m.length);
-            c = hashToScalar(AUTH, buffer.toByteArray());
+        try (Scalar ti = generateRandomValueInZq(random)) {
+            final Scalar cj = generateRandomValueInZq(random);
+            final Scalar rj = generateRandomValueInZq(random);
+            final Scalar ck = generateRandomValueInZq(random);
+            final Scalar rk = generateRandomValueInZq(random);
+            final Point T1;
+            final Point T2;
+            final Point T3;
+            // TODO replace with constant-time selection
+            if (eq1) {
+                // "Compute T1 = G * t1."
+                T1 = multiplyByBase(ti);
+                // "Compute T2 = G * r2 + A2 * c2."
+                T2 = multiplyByBase(rj).add(A2.multiply(cj));
+                // "Compute T3 = G * r3 + A3 * c3."
+                T3 = multiplyByBase(rk).add(A3.multiply(ck));
+            } else if (eq2) {
+                T1 = multiplyByBase(rj).add(A1.multiply(cj));
+                T2 = multiplyByBase(ti);
+                T3 = multiplyByBase(rk).add(A3.multiply(ck));
+            } else if (eq3) {
+                T1 = multiplyByBase(rj).add(A1.multiply(cj));
+                T2 = multiplyByBase(rk).add(A2.multiply(ck));
+                T3 = multiplyByBase(ti);
+            } else {
+                throw new IllegalArgumentException("Long-term key pair should match at least one of the public keys.");
+            }
+            // "Compute c = HashToScalar(0x1D || G || q || A1 || A2 || A3 || T1 || T2 || T3 || m)."
+            final Scalar q = primeOrder();
+            final Scalar c;
+            try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+                basePoint().encodeTo(buffer);
+                q.encodeTo(buffer);
+                A1.encodeTo(buffer);
+                A2.encodeTo(buffer);
+                A3.encodeTo(buffer);
+                T1.encodeTo(buffer);
+                T2.encodeTo(buffer);
+                T3.encodeTo(buffer);
+                buffer.write(m, 0, m.length);
+                c = hashToScalar(AUTH, buffer.toByteArray());
+            }
+            // "Compute c1 = c - c2 - c3 (mod q)."
+            final Scalar ci = c.subtract(cj).subtract(ck).mod(q);
+            // "Compute r1 = t1 - c1 * a1 (mod q)."
+            final Scalar ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
+            // TODO replace with constant-time selection
+            if (eq1) {
+                // "Send sigma = (c1, r1, c2, r2, c3, r3)."
+                return new Sigma(ci, ri, cj, rj, ck, rk);
+            } else if (eq2) {
+                return new Sigma(cj, rj, ci, ri, ck, rk);
+            } else if (eq3) {
+                return new Sigma(cj, rj, ck, rk, ci, ri);
+            }
+            throw new IllegalStateException("BUG: eq1 or eq2 or e3 should always be true.");
         } catch (final IOException e) {
             throw new IllegalStateException("Failed to write point to buffer.", e);
-        }
-        // "Compute c1 = c - c2 - c3 (mod q)."
-        final Scalar ci = c.subtract(cj).subtract(ck).mod(q);
-        // "Compute r1 = t1 - c1 * a1 (mod q)."
-        final Scalar ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
-        // TODO replace with constant-time selection
-        if (eq1) {
-            // "Send sigma = (c1, r1, c2, r2, c3, r3)."
-            return new Sigma(ci, ri, cj, rj, ck, rk);
-        } else if (eq2) {
-            return new Sigma(cj, rj, ci, ri, ck, rk);
-        } else if (eq3) {
-            return new Sigma(cj, rj, ck, rk, ci, ri);
-        } else {
-            throw new IllegalStateException("BUG: eq1 or eq2 or e3 should always be true.");
         }
     }
 
@@ -511,7 +510,6 @@ public final class OtrCryptoEngine4 {
     /**
      * Data structure that captures all related data for 'sigma' in the Ring Signature.
      */
-    // FIXME move Sigma out of crypto package to enforce proper design structure. (Should move to 'messages' probably.)
     public static final class Sigma implements OtrEncodable {
         private final Scalar c1;
         private final Scalar r1;
