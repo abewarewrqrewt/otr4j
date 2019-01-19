@@ -153,7 +153,7 @@ Architectural constraints that are taken into consideration for the design.
 
 1. Correctness of protocol implementation.
 1. Encapsulation of cryptographic material to prevent mistakes, misuse, excessive exposure.
-1. Design/structure that prevents or makes obvious programming errors.
+1. Design that prevents or makes obvious programming errors.
 1. Simplicity: restricted implementation with only as much complexity and abstraction as needed.
 
 # Synopsis
