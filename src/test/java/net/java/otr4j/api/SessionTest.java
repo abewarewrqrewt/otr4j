@@ -672,6 +672,85 @@ public class SessionTest {
         assertEquals(FINISHED, c.clientBob.session.getSessionStatus());
     }
 
+    // TODO make this test work once Double Ratchet algorithm is redesigned.
+    @Ignore("As of yet unsupported use case. Depends on redesign of Double Ratchet algorithm.")
+    @Test
+    public void testEstablishOTR4SessionEaryMessaging() throws OtrException {
+        final Conversation c = new Conversation(3);
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        c.clientBob.sendMessage("Bob's early message 1");
+        c.clientBob.sendMessage("Bob's early message 2");
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        c.clientAlice.sendMessage("Alice's early message 1");
+        c.clientAlice.sendMessage("Alice's early message 2");
+        // Start sending messages
+        assertEquals("Bob's early message 1", c.clientAlice.receiveMessage());
+        assertEquals("Bob's early message 2", c.clientAlice.receiveMessage());
+        assertEquals("Alice's early message 1", c.clientBob.receiveMessage());
+        assertEquals("Alice's early message 2", c.clientBob.receiveMessage());
+        c.clientBob.sendMessage("Hello Alice, I got your messages.");
+        assertEquals("Hello Alice, I got your messages.", c.clientAlice.receiveMessage());
+        assertEquals(0, c.clientBob.receiptChannel.size());
+        assertEquals(0, c.clientAlice.receiptChannel.size());
+        c.clientAlice.session.endSession();
+        assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(FINISHED, c.clientBob.session.getSessionStatus());
+    }
+
+    // TODO make this test work once Double Ratchet algorithm is redesigned.
+    @Ignore("As of yet unsupported use case. Depends on redesign of Double Ratchet algorithm.")
+    @Test
+    public void testEstablishOTR4SessionEaryMessagingOutOfOrder() throws OtrException {
+        final Conversation c = new Conversation(3);
+        c.clientBob.sendMessage("Hi Alice");
+        assertEquals("Hi Alice", c.clientAlice.receiveMessage());
+        // Initiate OTR by sending query message.
+        c.clientAlice.session.startSession();
+        assertNull(c.clientBob.receiveMessage());
+        // Expecting Identity message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        // Expecting AUTH_R message from Alice.
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        c.clientBob.sendMessage("Bob's early message 1");
+        c.clientBob.sendMessage("Bob's early message 2");
+
+        // Expecting AUTH_I message from Bob.
+        assertNull(c.clientAlice.receiveMessage());
+        assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
+        c.clientAlice.sendMessage("Alice's early message 1");
+        c.clientAlice.sendMessage("Alice's early message 2");
+        // Receive messages out-of-order.
+        c.clientAlice.receiptChannel.add(c.clientAlice.receiptChannel.remove());
+        assertEquals("Bob's early message 2", c.clientAlice.receiveMessage());
+        assertEquals("Bob's early message 1", c.clientAlice.receiveMessage());
+        c.clientBob.receiptChannel.add(c.clientBob.receiptChannel.remove());
+        assertEquals("Alice's early message 2", c.clientBob.receiveMessage());
+        assertEquals("Alice's early message 1", c.clientBob.receiveMessage());
+        c.clientBob.sendMessage("Hello Alice, I got your messages.");
+        assertEquals("Hello Alice, I got your messages.", c.clientAlice.receiveMessage());
+        assertEquals(0, c.clientBob.receiptChannel.size());
+        assertEquals(0, c.clientAlice.receiptChannel.size());
+        c.clientAlice.session.endSession();
+        assertEquals(PLAINTEXT, c.clientAlice.session.getSessionStatus());
+        assertEquals(ENCRYPTED, c.clientBob.session.getSessionStatus());
+        assertNull(c.clientBob.receiveMessage());
+        assertEquals(FINISHED, c.clientBob.session.getSessionStatus());
+    }
+
     @Test
     public void testEstablishOTR4SessionThenDisallowSendingQueryMessage() throws OtrException {
         final Conversation c = new Conversation(1);
