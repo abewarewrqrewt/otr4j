@@ -124,10 +124,10 @@ public final class Ed448 {
             if (p.y().compareTo(ZERO) < 0 || p.y().compareTo(MODULUS) >= 0) {
                 return false;
             }
-            return checkIdentity(point.multiply(primeOrder()));
         } catch (final Points.InvalidDataException e) {
             return false;
         }
+        return checkIdentity(point.multiply(primeOrder()));
     }
 
     /**

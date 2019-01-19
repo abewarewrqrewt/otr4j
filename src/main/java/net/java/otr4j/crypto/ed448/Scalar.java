@@ -51,8 +51,6 @@ public final class Scalar implements Comparable<Scalar>, AutoCloseable {
      * @param encoded encoded scalar value
      * @return Returns scalar instance.
      */
-    // FIXME verify that indeed all decoded scalars must be executed `mod q`. Most likely true.
-    // TODO NOTE: decodeScalar now also ensures `mod q`. Ensure that optimized implementation provide an alternative for this, even if implemented outside of `decodeScalar`.
     @Nonnull
     public static Scalar decodeScalar(@Nonnull final byte[] encoded) {
         return fromBigInteger(new BigInteger(1, reverse(encoded)));
