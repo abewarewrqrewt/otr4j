@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
+import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
 import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
@@ -324,12 +325,6 @@ final class SessionImpl implements Session, Context {
         return this.profilePayload;
     }
 
-    @Nonnull
-    @Override
-    public AuthState getAuthState() {
-        return this.sessionState.getAuthState();
-    }
-
     @Override
     public void setAuthState(@Nonnull final AuthState state) {
         this.sessionState.setAuthState(state);
@@ -527,12 +522,14 @@ final class SessionImpl implements Session, Context {
         try {
             final Message m = parse(reassembledText);
             if (!(m instanceof EncodedMessage)) {
-                // TODO consider returning null i.s.o. throwing OtrException.
-                throw new OtrException("Only OTR-encoded message is a valid result from reconstructed message fragments.");
+                logger.fine("Expected fragments to combine into an encoded message, but was something else. "
+                        + m.getClass().getName());
+                return null;
             }
             message = (EncodedMessage) m;
         } catch (final ProtocolException e) {
-            throw new OtrException("Protocol violation encountered while processing reassembled OTR-encoded message.", e);
+            logger.log(WARNING, "Reassembled message violates the OTR protocol for encoded messages.", e);
+            return null;
         }
         // There is no good reason why the reassembled message should have any other protocol version, sender
         // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
@@ -665,21 +662,21 @@ final class SessionImpl implements Session, Context {
             try {
                 respondAuth(FOUR, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
-                logger.log(Level.WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
+                logger.log(WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
         } else if (plainTextMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
                 respondAuth(THREE, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
-                logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
+                logger.log(WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
         } else if (plainTextMessage.getVersions().contains(TWO) && policy.isAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
                 respondAuth(TWO, ZERO_TAG, plainTextMessage.getTag());
             } catch (final OtrException e) {
-                logger.log(Level.WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
+                logger.log(WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }
         } else {
             logger.info("Message with whitespace tags received, but none of the tags are useful. They are either excluded by policy or by lack of support.");

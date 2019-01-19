@@ -41,13 +41,6 @@ public interface Context extends AuthContext {
     OtrEngineHost getHost();
 
     /**
-     * Get protocol version of session context.
-     *
-     * @return Returns version of OTR, or 0 if session is not secured.
-     */
-    int getProtocolVersion();
-
-    /**
      * Inject message into IM transport channel.
      *
      * @param msg message

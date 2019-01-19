@@ -241,7 +241,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 this.ratchet.forgetRemainingMACsToReveal();
                 context.transition(this, new StateFinished(getAuthState()));
                 break;
-            // TODO extend with other TLVs that need to be handled. Ensure right TLV codes are used, as they are changed in OTRv4.
             default:
                 logger.log(INFO, "Unsupported TLV #{0} received. Ignoring.", tlv.type);
                 break;

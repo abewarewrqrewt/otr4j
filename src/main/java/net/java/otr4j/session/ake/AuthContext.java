@@ -53,14 +53,6 @@ public interface AuthContext {
     DSAKeyPair getLocalKeyPair();
 
     /**
-     * Get the current authentication (AKE) state of the AKE state machine.
-     *
-     * @return Returns the AuthState instance.
-     */
-    @Nonnull
-    AuthState getAuthState();
-
-    /**
      * Update AKE state in context.
      *
      * @param state The new AKE state.

@@ -84,7 +84,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   * ☑ OTRv3
   * OTRv4
     * ☐ Base "Extra Symmetric Key" available for use.
-    * ☐ Derived keys based on OTRv4 prescribed key derivation
+    * ☐ Derived keys according to OTRv4 prescribed derivation
 * API support:
   * ☐ verify if API still fully suitable for clients to adopt.
   * ☐ ability to import/export EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
