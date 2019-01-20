@@ -151,6 +151,7 @@ public final class Ed448 {
      */
     // FIXME move this method out, this method does not rely on internals.
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
+        // FIXME OTRv4 now documents that you should always hash the random value, so we should make it part of this.
         return decodeScalar(randomBytes(random, new byte[SCALAR_LENGTH_BYTES]));
     }
 }

@@ -2,7 +2,7 @@
 
 This document records the structure and design considerations of otr4j.
 
-# Architectural considerations
+# Architectural guidelines
 
 A limited number of architectural considerations have been chosen, ordered by priority.
 
@@ -13,11 +13,13 @@ Cryptographic material should be protected from accidents, misuse and abuse.
 1. __Design that prevents or makes obvious programming errors__  
 Write the code in such a way that unexpected behavior becomes as obvious as possible
 1. __Simplicity__  
-Introduce complexity only at those points where we can clearly benefit.
+Introduce complexity only at those points where we can clearly benefit. This includes both simplicity from the adopting user's point-of-view and the otr4j developer's point-of-view.
 
 `TODO: refer to architectural considerations and clarify how we satisfy the various constraints.`
 
-# Design decisions
+# Design considerations
+
+The design considerations that have been taken into account. These relate to the stated architectural guidelines.
 
 ## Correctness
 
@@ -56,18 +58,18 @@ Introduce complexity only at those points where we can clearly benefit.
 
 - As few "moving parts" as possible. Extensive use of `final` fields. Avoid unnecessary reuse.
 - Only a single "top-level" checked exception `OtrException`, such that you're not forced into unnecessarily complicated exception handling.
-- No need to take into account unchecked exceptions. (If they occur: either incorrect use of library or bug in library. In both cases, needs to be fixed.)
-- Classes should not need an extensive user manual, way to use should be obvious.
+- No need to take into account unchecked exceptions. (If they occur: either incorrect use of library or bug in library itself. In both cases, it indicates something that needs to be fixed, not something that needs to be handled.)
+- Classes should not need an extensive user manual, usage should be obvious.
 - Documentation for anything that is part of the public API.
-- Use public fields for classes that are only used as "data carriers", preferably with `final` fields to mitigate mutability.
+- Use public fields for classes that are only used as "data carriers", preferably with `final` fields to prevent mutability.
 
 # Structure
 
 The layered structure present in otr4j.
 
-The `user application` adopts the functionality of `otr4j`. `user application` itself is not part of this project. The user application depends on `otr4j` for providing the functionality of the Off-the-Record protocol.
+The `user (chat) app` adopts the functionality of `otr4j`. `user (chat) app` itself is not part of this project, but it does depend on `otr4j` for providing the functionality of the Off-the-Record protocol.
 
-`otr4j` consists of a number of different packages. These packages are shortly discussed here. In-depth details for each package should be found in the package itself, either through `package-info.java` or javadoc for code.
+`otr4j` consists of a number of different packages. These packages are shortly discussed here. In-depth details for each package should be found in the package documentation (javadoc).
 
 - `net.java.otr4j.api`: Classes that are part of the general otr4j api.
 - `net.java.otr4j.crypto`: Classes that encapsulate low-level cryptographic logic to provide a simple, fool-proof API. In addition it abstracts away the actual crypto implementation logic.
@@ -84,7 +86,7 @@ The `user application` adopts the functionality of `otr4j`. `user application` i
 
 ```
 +===================+
-| user application  |
+|  user (chat) app  |
 +========+==========+
          |
          |

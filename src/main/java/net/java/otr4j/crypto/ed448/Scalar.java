@@ -66,6 +66,7 @@ public final class Scalar implements Comparable<Scalar>, AutoCloseable {
      */
     @Nonnull
     static Scalar fromBigInteger(@Nonnull final BigInteger value) {
+        // FIXME is it a problem if `value mod q` again contains pruned bits?
         return new Scalar(reverse(asUnsignedByteArray(SCALAR_LENGTH_BYTES, value.mod(primeOrder()))));
     }
 
