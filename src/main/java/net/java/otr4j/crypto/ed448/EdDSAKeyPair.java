@@ -112,7 +112,6 @@ public final class EdDSAKeyPair implements AutoCloseable {
      *
      * @return Returns secret key.
      */
-    // FIXME verify that secret key is cleared after use
     @Nonnull
     public Scalar getSecretKey() {
         requireNotCleared();

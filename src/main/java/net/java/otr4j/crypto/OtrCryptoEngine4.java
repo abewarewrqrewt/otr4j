@@ -443,7 +443,10 @@ public final class OtrCryptoEngine4 {
             // "Compute c1 = c - c2 - c3 (mod q)."
             final Scalar ci = c.subtract(cj).subtract(ck).mod(q);
             // "Compute r1 = t1 - c1 * a1 (mod q)."
-            final Scalar ri = ti.subtract(ci.multiply(longTermKeyPair.getSecretKey())).mod(q);
+            final Scalar ri;
+            try (Scalar ai = longTermKeyPair.getSecretKey()) {
+                ri = ti.subtract(ci.multiply(ai)).mod(q);
+            }
             // TODO replace with constant-time selection
             if (eq1) {
                 // "Send sigma = (c1, r1, c2, r2, c3, r3)."

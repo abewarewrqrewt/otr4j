@@ -15,8 +15,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.math.BigInteger.ZERO;
+import static net.java.otr4j.crypto.ed448.Scalar.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
-import static net.java.otr4j.util.ByteArrays.constantTimeEqualsOrSame;
+import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
@@ -29,7 +30,7 @@ public final class Ed448 {
     /**
      * Identity (or neutral element) of the curve.
      */
-    private static final Point IDENTITY = new Point(new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+    private static final byte[] IDENTITY = new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     /**
      * Prime p of the Ed448-Goldilocks curve. (Used as modulus.)
@@ -39,14 +40,12 @@ public final class Ed448 {
     /**
      * Base Point of the curve.
      */
-    // FIXME Point constants at risk of being cleared after use, thus manipulating the class constants.
-    private static final Point G = new Point(new byte[] {20, -6, 48, -14, 91, 121, 8, -104, -83, -56, -41, 78, 44, 19, -67, -3, -60, 57, 124, -26, 28, -1, -45, 58, -41, -62, -96, 5, 30, -100, 120, -121, 64, -104, -93, 108, 115, 115, -22, 75, 98, -57, -55, 86, 55, 32, 118, -120, 36, -68, -74, 110, 113, 70, 63, 105, 0});
+    private static final byte[] G = new byte[] {20, -6, 48, -14, 91, 121, 8, -104, -83, -56, -41, 78, 44, 19, -67, -3, -60, 57, 124, -26, 28, -1, -45, 58, -41, -62, -96, 5, 30, -100, 120, -121, 64, -104, -93, 108, 115, 115, -22, 75, 98, -57, -55, 86, 55, 32, 118, -120, 36, -68, -74, 110, 113, 70, 63, 105, 0};
 
     /**
      * Prime order.
      */
-    // FIXME Scalar constants at risk of being cleared after use, thus manipulating the class constants.
-    private static final Scalar Q = new Scalar(new byte[] {-13, 68, 88, -85, -110, -62, 120, 35, 85, -113, -59, -115, 114, -62, 108, 33, -112, 54, -42, -82, 73, -37, 78, -60, -23, 35, -54, 124, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 63, 0});
+    private static final byte[] Q = new byte[] {-13, 68, 88, -85, -110, -62, 120, 35, 85, -113, -59, -115, 114, -62, 108, 33, -112, 54, -42, -82, 73, -37, 78, -60, -23, 35, -54, 124, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 63, 0};
 
     private Ed448() {
         // No need to instantiate utility class.
@@ -59,7 +58,7 @@ public final class Ed448 {
      */
     @Nonnull
     public static Point basePoint() {
-        return G;
+        return new Point(G.clone());
     }
 
     /**
@@ -69,7 +68,7 @@ public final class Ed448 {
      */
     @Nonnull
     public static Scalar primeOrder() {
-        return Q;
+        return new Scalar(Q.clone());
     }
 
     /**
@@ -79,7 +78,7 @@ public final class Ed448 {
      */
     @Nonnull
     public static Point identity() {
-        return IDENTITY;
+        return new Point(IDENTITY.clone());
     }
 
     /**
@@ -141,7 +140,7 @@ public final class Ed448 {
     @CheckReturnValue
     public static boolean checkIdentity(@Nonnull final Point point) {
         requireLengthExactly(PUBLIC_KEY_SIZE, point.getEncoded());
-        return constantTimeEqualsOrSame(IDENTITY.getEncoded(), point.getEncoded());
+        return constantTimeEquals(IDENTITY, point.getEncoded());
     }
 
     /**
@@ -150,7 +149,8 @@ public final class Ed448 {
      * @param random SecureRandom instance
      * @return Returns a newly generated random value.
      */
+    // FIXME move this method out, this method does not rely on internals.
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        return decodeScalar(randomBytes(random, new byte[57]));
+        return decodeScalar(randomBytes(random, new byte[SCALAR_LENGTH_BYTES]));
     }
 }
