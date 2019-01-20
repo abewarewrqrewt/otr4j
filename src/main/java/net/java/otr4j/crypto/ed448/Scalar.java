@@ -52,6 +52,9 @@ public final class Scalar implements Comparable<Scalar>, AutoCloseable {
      */
     @Nonnull
     public static Scalar decodeScalar(@Nonnull final byte[] encoded) {
+        assert (encoded[0] & 0b00000011) == 0 : "Expected encoded scalar value to be pruned, but contains small value!";
+        assert encoded[56] == 0 : "Expected encoded scalar value to be pruned, but has non-zero value for 57th byte.";
+        assert (encoded[55] & 0b10000000) == 0b10000000 : "Expected encoded scalar value to be pruned, but is missing high bit for 56th byte.";
         return fromBigInteger(new BigInteger(1, reverse(encoded)));
     }
 
