@@ -17,6 +17,7 @@ import static net.java.otr4j.crypto.ed448.ECDHKeyPair.generate;
 import static net.java.otr4j.crypto.ed448.Ed448.identity;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.Scalars.prune;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -93,9 +94,7 @@ public class ECDHKeyPairTest {
     @Test(expected = ValidationException.class)
     public void testSharedSecretWithIllegalPoint() throws ValidationException {
         final byte[] otherScalar = randomBytes(RANDOM, new byte[57]);
-        otherScalar[0] |= 0b00000011;
-        otherScalar[56] = 0;
-        otherScalar[55] |= 0b10000000;
+        prune(otherScalar);
         final Point other = multiplyByBase(Scalar.decodeScalar(otherScalar));
         final ECDHKeyPair keypair = ECDHKeyPair.generate(RANDOM);
         keypair.generateSharedSecret(other);

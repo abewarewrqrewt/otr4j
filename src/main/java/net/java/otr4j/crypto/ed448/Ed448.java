@@ -12,14 +12,10 @@ import nl.dannyvanheumen.joldilocks.Points;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 
 import static java.math.BigInteger.ZERO;
-import static net.java.otr4j.crypto.ed448.Scalar.SCALAR_LENGTH_BYTES;
-import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.math.ec.rfc8032.Ed448.PUBLIC_KEY_SIZE;
 
 /**
@@ -141,17 +137,5 @@ public final class Ed448 {
     public static boolean checkIdentity(@Nonnull final Point point) {
         requireLengthExactly(PUBLIC_KEY_SIZE, point.getEncoded());
         return constantTimeEquals(IDENTITY, point.getEncoded());
-    }
-
-    /**
-     * Generate a new random value in Z_q.
-     *
-     * @param random SecureRandom instance
-     * @return Returns a newly generated random value.
-     */
-    // FIXME move this method out, this method does not rely on internals.
-    public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        // FIXME OTRv4 now documents that you should always hash the random value, so we should make it part of this.
-        return decodeScalar(randomBytes(random, new byte[SCALAR_LENGTH_BYTES]));
     }
 }
