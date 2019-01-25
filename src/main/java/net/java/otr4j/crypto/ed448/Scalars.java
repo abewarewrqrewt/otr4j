@@ -58,9 +58,8 @@ public final class Scalars {
      * @param random SecureRandom instance
      * @return Returns a newly generated random value.
      */
-    // FIXME move this method out, this method does not rely on internals.
     public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        // FIXME OTRv4 now documents that you should always hash the random value, so we should make it part of this.
+        // FIXME OTRv4 now documents that you should always prune and hash the random value, so we should make it part of this.
         return decodeScalar(randomBytes(random, new byte[SCALAR_LENGTH_BYTES]));
     }
 
