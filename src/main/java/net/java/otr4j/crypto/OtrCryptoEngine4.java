@@ -59,7 +59,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Length of HashToScalar array of bytes.
      */
-    private static final int HASH_TO_SCALAR_LENGTH_BYTES = 64;
+    private static final int HASH_TO_SCALAR_LENGTH_BYTES = 57;
 
     /**
      * Prefix used in key derivation functions.
