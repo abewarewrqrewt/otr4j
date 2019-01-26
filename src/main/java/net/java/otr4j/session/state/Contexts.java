@@ -14,8 +14,8 @@ import net.java.otr4j.io.ErrorMessage;
 
 import javax.annotation.Nonnull;
 
-import static net.java.otr4j.api.OtrEngineHostUtil.getReplyForUnreadableMessage;
-import static net.java.otr4j.api.OtrEngineHostUtil.unreadableMessageReceived;
+import static net.java.otr4j.api.OtrEngineHosts.getReplyForUnreadableMessage;
+import static net.java.otr4j.api.OtrEngineHosts.unreadableMessageReceived;
 
 /**
  * Utility class for Context interface.

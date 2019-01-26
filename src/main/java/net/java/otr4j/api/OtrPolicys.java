@@ -16,9 +16,9 @@ import javax.annotation.Nonnull;
  *
  * @author Danny van Heumen
  */
-public final class OtrPolicyUtil {
+public final class OtrPolicys {
 
-    private OtrPolicyUtil() {
+    private OtrPolicys() {
         // utility class, should not be instantiated
     }
 

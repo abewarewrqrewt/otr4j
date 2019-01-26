@@ -10,7 +10,7 @@ package net.java.otr4j.session;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineListener;
-import net.java.otr4j.api.OtrEngineListenerUtil;
+import net.java.otr4j.api.OtrEngineListeners;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
+import static net.java.otr4j.api.OtrEngineListeners.duplicate;
 
 /**
  * The OTR session manager.
@@ -96,17 +96,17 @@ public final class OtrSessionManager {
 
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiverTag) {
-            OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), sessionID, receiverTag);
+            OtrEngineListeners.sessionStatusChanged(duplicate(listeners), sessionID, receiverTag);
         }
 
         @Override
         public void multipleInstancesDetected(@Nonnull final SessionID sessionID) {
-            OtrEngineListenerUtil.multipleInstancesDetected(duplicate(listeners), sessionID);
+            OtrEngineListeners.multipleInstancesDetected(duplicate(listeners), sessionID);
         }
 
         @Override
         public void outgoingSessionChanged(@Nonnull final SessionID sessionID) {
-            OtrEngineListenerUtil.outgoingSessionChanged(duplicate(listeners), sessionID);
+            OtrEngineListeners.outgoingSessionChanged(duplicate(listeners), sessionID);
         }
     };
 

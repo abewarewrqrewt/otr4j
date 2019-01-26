@@ -11,12 +11,12 @@ import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OfferStatus;
 import net.java.otr4j.api.OtrEngineHost;
-import net.java.otr4j.api.OtrEngineHostUtil;
+import net.java.otr4j.api.OtrEngineHosts;
 import net.java.otr4j.api.OtrEngineListener;
-import net.java.otr4j.api.OtrEngineListenerUtil;
+import net.java.otr4j.api.OtrEngineListeners;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
-import net.java.otr4j.api.OtrPolicyUtil;
+import net.java.otr4j.api.OtrPolicys;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
@@ -61,10 +61,10 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
-import static net.java.otr4j.api.OtrEngineHostUtil.messageFromAnotherInstanceReceived;
-import static net.java.otr4j.api.OtrEngineListenerUtil.duplicate;
-import static net.java.otr4j.api.OtrEngineListenerUtil.outgoingSessionChanged;
-import static net.java.otr4j.api.OtrEngineListenerUtil.sessionStatusChanged;
+import static net.java.otr4j.api.OtrEngineHosts.messageFromAnotherInstanceReceived;
+import static net.java.otr4j.api.OtrEngineListeners.duplicate;
+import static net.java.otr4j.api.OtrEngineListeners.outgoingSessionChanged;
+import static net.java.otr4j.api.OtrEngineListeners.sessionStatusChanged;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.Session.Version.TWO;
@@ -229,7 +229,7 @@ final class SessionImpl implements Session, Context {
         @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
         @Override
         public void sessionStatusChanged(@Nonnull final SessionID sessionID, @Nonnull final InstanceTag receiver) {
-            OtrEngineListenerUtil.sessionStatusChanged(duplicate(listeners), sessionID, receiver);
+            OtrEngineListeners.sessionStatusChanged(duplicate(listeners), sessionID, receiver);
         }
 
         @Override
@@ -627,7 +627,7 @@ final class SessionImpl implements Session, Context {
 
     @Nonnull
     private String getFallbackMessage(final SessionID sessionId) {
-        String fallback = OtrEngineHostUtil.getFallbackMessage(this.host, sessionId);
+        String fallback = OtrEngineHosts.getFallbackMessage(this.host, sessionId);
         if (fallback == null || fallback.isEmpty()) {
             fallback = DEFAULT_FALLBACK_MESSAGE;
         }
@@ -749,7 +749,7 @@ final class SessionImpl implements Session, Context {
         }
         logger.finest("Enquiring to start Authenticated Key Exchange, sending query message");
         final OtrPolicy policy = this.getSessionPolicy();
-        final Set<Integer> allowedVersions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> allowedVersions = OtrPolicys.allowedVersions(policy);
         if (allowedVersions.isEmpty()) {
             throw new OtrException("Current OTR policy declines all supported versions of OTR. There is no way to start an OTR session that complies with the policy.");
         }

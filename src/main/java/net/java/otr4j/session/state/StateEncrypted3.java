@@ -39,10 +39,10 @@ import java.util.logging.Logger;
 
 import static java.util.Collections.singletonList;
 import static java.util.logging.Level.FINE;
-import static net.java.otr4j.api.OtrEngineHostUtil.extraSymmetricKeyDiscovered;
-import static net.java.otr4j.api.OtrEngineHostUtil.showError;
-import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
-import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
+import static net.java.otr4j.api.OtrEngineHosts.extraSymmetricKeyDiscovered;
+import static net.java.otr4j.api.OtrEngineHosts.showError;
+import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
+import static net.java.otr4j.api.OtrPolicys.allowedVersions;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hmac;

@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
  * listeners.
  */
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
-public final class OtrEngineListenerUtil {
+public final class OtrEngineListeners {
 
-    private static final Logger LOGGER = Logger.getLogger(OtrEngineListenerUtil.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OtrEngineListeners.class.getName());
 
-    private OtrEngineListenerUtil() {
+    private OtrEngineListeners() {
         // static methods only. No need to instantiate this utility class.
     }
 

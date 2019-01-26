@@ -6,15 +6,15 @@
  */
 package net.java.otr4j.api;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.security.interfaces.DSAPublicKey;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 
 /**
  * Interface that defines the OTR session.
@@ -51,11 +51,11 @@ public interface Session {
         /**
          * Set of all supported OTR protocol versions.
          */
-        Set<Integer> SUPPORTED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(TWO, THREE, FOUR)));
+        Set<Integer> SUPPORTED = unmodifiableSet(new HashSet<>(asList(TWO, THREE, FOUR)));
         /**
          * Set of all known OTR protocol versions.
          */
-        Set<Integer> KNOWN = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(ONE, TWO, THREE, FOUR)));
+        Set<Integer> KNOWN = unmodifiableSet(new HashSet<>(asList(ONE, TWO, THREE, FOUR)));
     }
 
     /* Methods that provide session information. */

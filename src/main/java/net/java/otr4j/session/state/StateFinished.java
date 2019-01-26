@@ -27,8 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.INFO;
-import static net.java.otr4j.api.OtrEngineHostUtil.finishedSessionMessage;
-import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
+import static net.java.otr4j.api.OtrEngineHosts.finishedSessionMessage;
+import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
 
 /**
  * Message state FINISHED. This message state is initiated through events

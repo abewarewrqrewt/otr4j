@@ -18,20 +18,20 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Danny van Heumen
  */
-public class OtrPolicyUtilTest {
+public class OtrPolicysTest {
 
-    public OtrPolicyUtilTest() {
+    public OtrPolicysTest() {
     }
 
     @Test(expected = NullPointerException.class)
     public void testAllowedVersionsNullPolicy() {
-        OtrPolicyUtil.allowedVersions(null);
+        OtrPolicys.allowedVersions(null);
     }
 
     @Test
     public void testAllowedVersionsDefaultPolicy() {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.OTRL_POLICY_DEFAULT);
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> versions = OtrPolicys.allowedVersions(policy);
         assertEquals(3, versions.size());
         assertTrue(versions.contains(Session.Version.TWO));
         assertTrue(versions.contains(Session.Version.THREE));
@@ -41,14 +41,14 @@ public class OtrPolicyUtilTest {
     @Test
     public void testAllowedVersionsNoVersionPolicy() {
         final OtrPolicy policy = new OtrPolicy(0);
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> versions = OtrPolicys.allowedVersions(policy);
         assertEquals(0, versions.size());
     }
 
     @Test
     public void testAllowedVersionsMinimalPolicy() {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V3);
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> versions = OtrPolicys.allowedVersions(policy);
         assertEquals(1, versions.size());
         assertTrue(versions.contains(Session.Version.THREE));
     }
@@ -56,7 +56,7 @@ public class OtrPolicyUtilTest {
     @Test
     public void testAllowedVersionsCustomPolicy() {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V2 | OtrPolicy.ALLOW_V3 | OtrPolicy.WHITESPACE_START_AKE);
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> versions = OtrPolicys.allowedVersions(policy);
         assertEquals(2, versions.size());
         assertTrue(versions.contains(Session.Version.TWO));
         assertTrue(versions.contains(Session.Version.THREE));
@@ -65,7 +65,7 @@ public class OtrPolicyUtilTest {
     @Test
     public void testAllowedVersionOneHasNoEffect() {
         final OtrPolicy policy = new OtrPolicy(OtrPolicy.ALLOW_V1);
-        final Set<Integer> versions = OtrPolicyUtil.allowedVersions(policy);
+        final Set<Integer> versions = OtrPolicys.allowedVersions(policy);
         assertEquals(0, versions.size());
     }
 }

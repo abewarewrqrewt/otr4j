@@ -20,8 +20,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.logging.Logger;
 
-import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
-import static net.java.otr4j.api.OtrEngineHostUtil.showError;
+import static net.java.otr4j.api.OtrEngineHosts.requireEncryptedMessage;
+import static net.java.otr4j.api.OtrEngineHosts.showError;
 import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 
 abstract class AbstractCommonState extends AbstractOTR4State {

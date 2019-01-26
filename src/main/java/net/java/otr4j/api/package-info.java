@@ -7,6 +7,5 @@
 /**
  * The API for otr4j.
  */
-// FIXME rename -Util classes to plural form for consistency with other packages.
 // TODO Can we implement some mechanism that we are ensured that either: 1. all sessions are disconnected stopping use/closing application (needed to reveal remaining MACs), or 2. warn user that library is not used appropriately? (I.e. need to programmatically end sessions first.)
 package net.java.otr4j.api;

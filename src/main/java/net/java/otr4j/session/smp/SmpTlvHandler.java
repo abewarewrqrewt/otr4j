@@ -24,11 +24,11 @@ import java.security.interfaces.DSAPublicKey;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.api.SmpEngineHostUtil.askForSecret;
-import static net.java.otr4j.api.SmpEngineHostUtil.smpAborted;
-import static net.java.otr4j.api.SmpEngineHostUtil.smpError;
-import static net.java.otr4j.api.SmpEngineHostUtil.unverify;
-import static net.java.otr4j.api.SmpEngineHostUtil.verify;
+import static net.java.otr4j.api.SmpEngineHosts.askForSecret;
+import static net.java.otr4j.api.SmpEngineHosts.smpAborted;
+import static net.java.otr4j.api.SmpEngineHosts.smpError;
+import static net.java.otr4j.api.SmpEngineHosts.unverify;
+import static net.java.otr4j.api.SmpEngineHosts.verify;
 import static net.java.otr4j.crypto.OtrCryptoEngine.getFingerprintRaw;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
 import static net.java.otr4j.session.api.SMPStatus.CHEATED;

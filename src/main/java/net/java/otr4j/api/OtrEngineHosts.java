@@ -38,11 +38,11 @@ import javax.annotation.Nonnull;
  * @author Danny van Heumen
  */
 @SuppressWarnings({"PMD.AvoidCatchingGenericException", "PMD.AvoidDuplicateLiterals"})
-public final class OtrEngineHostUtil {
+public final class OtrEngineHosts {
 
-    private static final Logger LOGGER = Logger.getLogger(OtrEngineHostUtil.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OtrEngineHosts.class.getName());
 
-    private OtrEngineHostUtil() {
+    private OtrEngineHosts() {
         // static methods only. No need to instantiate this utility class.
     }
 

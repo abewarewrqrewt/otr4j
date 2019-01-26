@@ -31,8 +31,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.INFO;
-import static net.java.otr4j.api.OtrEngineHostUtil.requireEncryptedMessage;
-import static net.java.otr4j.api.OtrPolicyUtil.allowedVersions;
+import static net.java.otr4j.api.OtrEngineHosts.requireEncryptedMessage;
+import static net.java.otr4j.api.OtrPolicys.allowedVersions;
 
 /**
  * Message state PLAINTEXT. This is the only message state that is publicly

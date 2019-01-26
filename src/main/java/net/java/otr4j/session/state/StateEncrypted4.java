@@ -40,7 +40,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
-import static net.java.otr4j.api.OtrEngineHostUtil.unencryptedMessageReceived;
+import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
