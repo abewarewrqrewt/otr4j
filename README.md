@@ -94,6 +94,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   _Although not explicitly document that this is necessary, it should not break any existing applications. This makes implementations of OTRv3 and OTRv4 more similar and promotes better behavior in general, being: the other party is not needlessly warned for (lost) messages that do not contain valuable content, i.e. they are part of the OTR process, but do not contain user content themselves._
   * ☐ Ability to define own, customized-per-network `phi` (shared session state) implementer addition for the `t` value calculation.  
   _Under consideration as part of the [OTRv4 client implementation recommendations](https://github.com/otrv4/otrv4-client-imp-recommendations/issues/3)._
+  * ☐ Evaluate whether there really is an advantage to having `OtrEngineHost` calls specify a session instance. (Does it make sense to make the distinction?)
 
 ## Operational
 

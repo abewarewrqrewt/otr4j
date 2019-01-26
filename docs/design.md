@@ -7,13 +7,13 @@ This document records the structure and design considerations of otr4j.
 A limited number of architectural considerations have been chosen, ordered by priority.
 
 1. __Correctness__  
-The code must implement the OTR-protocol correctly.
+The code must implement the OTR-protocol specification correctly.
 1. __Protection of cryptographic material__  
-Cryptographic material should be protected from accidents, misuse and abuse.
+Cryptographic material must be protected from accidents, misuse and abuse.
 1. __Design that prevents or makes obvious programming errors__  
-Write the code in such a way that unexpected behavior becomes as obvious as possible
+Write the code in such a way that unexpected behavior becomes obvious.
 1. __Simplicity__  
-Introduce complexity only at those points where we can clearly benefit. This includes both simplicity from the adopting user's point-of-view and the otr4j developer's point-of-view.
+Introduce complexity only at those points where it is required. This includes both simplicity from the adopting user's point-of-view and the otr4j implementation's point-of-view.
 
 `TODO: refer to architectural considerations and clarify how we satisfy the various constraints.`
 
@@ -26,12 +26,14 @@ The design considerations that have been taken into account. These relate to the
 `TODO: describe correctness`
 
 - static analysis (nullability, typical bug patterns, ...)
-- strictly separating states to ensure correct behavior independent of whether the state transition "was detected in the logic" (is transparent to the logic). --> Race conditions handled through syntax and design.
+- strictly separating states to ensure correct behavior:
+  - handle race conditions in syntax: independent of whether the state transition "was detected in the logic" (is transparent to the logic).
+  - avoids mixing up and messing up data manipulations due to sudden, "unexpected" state changes.
 
 ## Protection of cryptographic material
 
-- Cryptographic implementations are isolated to the `crypto` package and subpackages. (Guarded by import-control.)
-- Sensitive / secret cryptographic material is not exposed, i.e. internal state of class inside `crypto` package.
+- Cryptographic implementations are isolated to the `crypto` package and subpackages. (Guarded by [import-control](https://checkstyle.org/config_imports.html#ImportControl).)
+- Sensitive / secret cryptographic material is not exposed, i.e. internal state, managed by a class inside `crypto` package.
 - Classes designed to support `java.lang.AutoCloseable` to clear sensitive material after use.
 - Public API chosen such that mistakes are not possible: (in particular, classes should not need an extensive user manual)
   - `decrypt` --> authenticate then-if-authentication-succeeds decrypt, only succeeds if authentication and decryption both succeed.
@@ -45,7 +47,6 @@ The design considerations that have been taken into account. These relate to the
 
 - Fail-fast (bugs become apparent due to unchecked exceptions)
 - Significant error handling part of syntax (checked exceptios)
-- Handle only that which you can handle.
 - Annotations to extend static analysis.
 - Deliberately work with most-restricted scopes.
 - State machines, to make state transitions strict, inescapable events. States expressed in syntax.
