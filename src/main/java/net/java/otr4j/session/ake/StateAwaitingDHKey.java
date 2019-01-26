@@ -71,11 +71,10 @@ final class StateAwaitingDHKey extends AbstractAuthState {
         }
         if (message instanceof DHKeyMessage) {
             return handleDHKeyMessage(context, (DHKeyMessage) message);
-        } else {
-            // OTR: "Ignore the message."
-            LOGGER.log(Level.FINEST, "Only expected message is DHKeyMessage. Ignoring message with type: {0}", message.getType());
-            return new Result();
         }
+        // OTR: "Ignore the message."
+        LOGGER.log(Level.FINEST, "Only expected messages are DH-Commit and DH-Key. Ignoring message with type: {0}", message.getType());
+        return new Result();
     }
 
     @Override

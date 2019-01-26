@@ -145,7 +145,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
   * ☐ Experiment with features of [Checker Framework](https://checkerframework.org).
 * ⌛ Issue: some tests fail on a rare occasion due to the `assert` checks that are embedded in the code. These tests should be updated to assume successful execution if input would trigger the assertion.
-* ☐ Significant amount of unit tests to accompany the library. (Currently: 1100+)
+* ☐ Significant amount of unit tests to accompany the library. (Currently: 1200+)
 * ☐ Interoperability testing with other OTRv4 implementations.
 
 ## Architectural considerations

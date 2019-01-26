@@ -86,16 +86,16 @@ final class StateAwaitingSig extends AbstractAuthState {
         }
         if (message instanceof DHKeyMessage) {
             return handleDHKeyMessage((DHKeyMessage) message);
-        } else if (message instanceof SignatureMessage) {
+        }
+        if (message instanceof SignatureMessage) {
             try {
                 return handleSignatureMessage(context, (SignatureMessage) message);
             } catch (final UnsupportedTypeException e) {
                 throw new OtrException("Unsupported type of signature encountered.", e);
             }
-        } else {
-            LOGGER.log(Level.FINEST, "Only expected message types are DHKeyMessage and SignatureMessage. Ignoring message with type: {0}", message.getType());
-            return new Result(null, null);
         }
+        LOGGER.log(Level.FINEST, "Only expected message types are DHKeyMessage and SignatureMessage. Ignoring message with type: {0}", message.getType());
+        return new Result(null, null);
     }
 
     @Override

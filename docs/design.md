@@ -25,7 +25,7 @@ The design considerations that have been taken into account. These relate to the
 
 `TODO: describe correctness`
 
-- static analysis (nullability, typical bug patterns, ...)
+- static analysis (nullability, checking of critical return values, typical bug patterns, ...)
 - strictly separating states to ensure correct behavior:
   - handle race conditions in syntax: independent of whether the state transition "was detected in the logic" (is transparent to the logic).
   - avoids mixing up and messing up data manipulations due to sudden, "unexpected" state changes.

@@ -56,7 +56,6 @@ public interface AuthState {
      * @throws OtrException Throws OtrException in case of unexpected situations during message processing, such as
      * verification and validation exceptions.
      */
-    // FIXME verify that now that we transition after handling message completely, that we ensure that we *always* transition also in case some exception occurs while processing the response.
     @Nonnull
     Result handle(@Nonnull AuthContext context, @Nonnull AbstractEncodedMessage message)
             throws ProtocolException, OtrException;

@@ -29,10 +29,10 @@ import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.math.BigInteger;
 import java.net.ProtocolException;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine.SHA256_DIGEST_LENGTH_BYTES;
 import static net.java.otr4j.io.OtrEncodables.encode;
@@ -61,7 +61,7 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             @Nonnull final byte[] remotePublicKeyHash, @Nonnull final byte[] remotePublicKeyEncrypted) {
         super();
         this.version = requireInRange(Version.TWO, Version.THREE, version);
-        this.keypair = Objects.requireNonNull(keypair);
+        this.keypair = requireNonNull(keypair);
         this.remotePublicKeyHash = requireLengthExactly(SHA256_DIGEST_LENGTH_BYTES, remotePublicKeyHash);
         // TODO can we make this argument verification more strict/accurate?
         this.remotePublicKeyEncrypted = requireLengthAtLeast(1, remotePublicKeyEncrypted);
@@ -82,16 +82,16 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             // OTR: "Ignore the message."
             LOGGER.log(Level.INFO, "Ignoring DHKey message.");
             return new Result();
-        } else if (message instanceof RevealSignatureMessage) {
+        }
+        if (message instanceof RevealSignatureMessage) {
             try {
                 return handleRevealSignatureMessage(context, (RevealSignatureMessage) message);
             } catch (final UnsupportedTypeException e) {
                 throw new OtrException("Unsupported type of signature encountered.", e);
             }
-        } else {
-            LOGGER.log(Level.FINEST, "Only expected message types are DHKeyMessage and RevealSignatureMessage. Ignoring message with type: {0}", message.getType());
-            return new Result();
         }
+        LOGGER.log(Level.FINEST, "Only expected message types are DHKeyMessage and RevealSignatureMessage. Ignoring message with type: {0}", message.getType());
+        return new Result();
     }
 
     @Override
