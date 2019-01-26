@@ -7,14 +7,12 @@
 
 package net.java.otr4j.crypto.ed448;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static java.util.Arrays.fill;
-import static net.java.otr4j.crypto.ed448.Scalars.generateRandomValueInZq;
 import static net.java.otr4j.crypto.ed448.Scalars.one;
 import static net.java.otr4j.crypto.ed448.Scalars.prune;
 import static net.java.otr4j.crypto.ed448.Scalars.zero;
@@ -22,7 +20,6 @@ import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("ConstantConditions")
@@ -113,30 +110,5 @@ public final class ScalarsTest {
         fill(value, (byte) 0xff);
         prune(value);
         assertArrayEquals(expected, value);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testGenerateRandomValueInZqNullSecureRandom() {
-        generateRandomValueInZq(null);
-    }
-
-    @Ignore("generateRandomValueInZq does not yet prune (or hash) the value before decoding it as a scalar value.")
-    @Test
-    public void testGenerateRandomValueInZq() {
-        final Scalar value = generateRandomValueInZq(RANDOM);
-        final byte[] bytes = value.encode();
-        assertEquals(0, bytes[0] & 0b00000011);
-        assertEquals(0b10000000, bytes[55] & 0b10000000);
-        assertEquals(0, bytes[56]);
-    }
-
-    @Test
-    public void testGenerateRandomValueInZqNoThreeAreTheSame() {
-        final Scalar v1 = generateRandomValueInZq(RANDOM);
-        final Scalar v2 = generateRandomValueInZq(RANDOM);
-        final Scalar v3 = generateRandomValueInZq(RANDOM);
-        assertNotEquals(v1, v2);
-        assertNotEquals(v2, v3);
-        assertNotEquals(v1, v3);
     }
 }

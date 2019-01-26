@@ -23,12 +23,12 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X02;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X03;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X04;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.SMP_VALUE_0X05;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.crypto.ed448.Ed448.requireValidPoint;
-import static net.java.otr4j.crypto.ed448.Scalars.generateRandomValueInZq;
 import static org.bouncycastle.util.Arrays.concatenate;
 
 /**

@@ -26,6 +26,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateNonce;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
@@ -39,6 +40,7 @@ import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 
@@ -461,5 +463,30 @@ public class OtrCryptoEngine4Test {
         // In theory this could end up with exactly the same random value. In practice the chance should be so remove
         // that it makes sense to test this.
         assertFalse(Arrays.equals(nonce1, nonce2));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testGenerateRandomValueInZqNullSecureRandom() {
+        generateRandomValueInZq(null);
+    }
+
+    @Ignore("There is a FIXME to investigate whether this is necessary. I believe it isn't.")
+    @Test
+    public void testGenerateRandomValueInZq() {
+        final Scalar value = generateRandomValueInZq(RANDOM);
+        final byte[] bytes = value.encode();
+        assertEquals(0, bytes[0] & 0b00000011);
+        assertEquals(0b10000000, bytes[55] & 0b10000000);
+        assertEquals(0, bytes[56]);
+    }
+
+    @Test
+    public void testGenerateRandomValueInZqNoThreeAreTheSame() {
+        final Scalar v1 = generateRandomValueInZq(RANDOM);
+        final Scalar v2 = generateRandomValueInZq(RANDOM);
+        final Scalar v3 = generateRandomValueInZq(RANDOM);
+        assertNotEquals(v1, v2);
+        assertNotEquals(v2, v3);
+        assertNotEquals(v1, v3);
     }
 }

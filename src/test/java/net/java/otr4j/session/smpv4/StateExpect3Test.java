@@ -10,6 +10,7 @@ package net.java.otr4j.session.smpv4;
 import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.crypto.ed448.Scalar;
 import net.java.otr4j.crypto.ed448.Scalars;
+import net.java.otr4j.crypto.ed448.ValidationException;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.junit.Test;
 
@@ -17,7 +18,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import static java.math.BigInteger.valueOf;
+import static net.java.otr4j.crypto.ed448.Point.decodePoint;
 import static net.java.otr4j.crypto.ed448.PointTestUtils.createPoint;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.crypto.ed448.ScalarTestUtils.fromBigInteger;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static org.junit.Assert.assertEquals;
@@ -64,9 +67,7 @@ public final class StateExpect3Test {
     private static final Scalar d5 = fromBigInteger(new BigInteger("168402301387910408888564889044656243554121209615331400658802104743919568546071693427503525480092417336791762973045156197916739168241313", 10));
     private static final Scalar d6 = fromBigInteger(new BigInteger("164091252447905741784359447423080363209407831152698892830742713829575334091018414587457181999291987776278550423061209800388520373919397", 10));
     private static final Scalar cr = fromBigInteger(new BigInteger("48212869955179756863375262751674186371416622227372458498814862703043948906876869678112891347756106998961858786630233240056114069543171", 10));
-    private static final Scalar responseCr = fromBigInteger(new BigInteger("56552690208569846484767066019279120176962659824535518690139189690745687293876835490924077826911617221281921640170307321984832871226348", 10));
     private static final Scalar d7 = fromBigInteger(new BigInteger("92942743748171249034039202643159748376089330632273362315367772348633802592365130463925174120166078027659350437796406524022645144750795", 10));
-    private static final Scalar responseD7 = fromBigInteger(new BigInteger("145952570674148673490476737637065914811240433627086277391960523808477106159276648430230314099961485884566992342590501652557852798653734", 10));
     private static final Scalar r7 = fromBigInteger(new BigInteger("7600950275105416617264243473722295903011889056977042647701408849843465351892940325962184631905666782846636443769119291050099400852", 10));
 
     @Test
@@ -150,30 +151,34 @@ public final class StateExpect3Test {
     }
 
     @Test
-    public void testProcessMessageSMPSucceeded() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[57];
-        r7.encodeTo(fakeRandomData, 0);
+    public void testProcessMessageSMPSucceeded() throws SMPAbortException, ValidationException {
+        final byte[] fakeRandomData = new byte[] {-22, 34, -12, 69, -96, -45, 66, 17, -15, -81, -63, -47, -121, -22, 81, -111, 53, -12, -122, 4, 11, 108, 61, -69, -44, 49, 9, -44, -88, 17, -32, 104, -13, 49, -52, 19, -18, -31, -39, 114, 65, -61, 37, -31, -62, 16, 46, 18, 21, -39, 29, -62, -98, 110, 22, 121, 46};
+        final Point expectedRb = decodePoint(new byte[] {-43, 112, 13, 127, 113, -127, 34, -123, -111, 78, -43, 63, 53, -109, -9, -9, -55, 83, 125, -58, 53, -46, -88, -37, -35, -20, 17, -11, -56, -30, 106, 27, 95, 90, -115, -72, -120, -15, 41, 22, 123, 54, -71, 115, 40, -106, -38, -109, 77, 71, -42, -6, 22, 46, -23, 85, 0});
+        final Scalar expectedCr = decodeScalar(new byte[] {20, -66, 83, -105, 58, 36, -21, -127, 92, -117, 46, -120, 67, 30, 36, 100, -100, 123, 42, 125, 123, -4, 120, -72, 66, -26, -108, -14, -9, 23, -109, -19, -90, 9, -88, 89, 15, 53, -52, -34, -40, 22, 103, -26, -35, 117, -33, 55, 17, -127, -126, 64, 45, -123, 115, 3, 0});
+        final Scalar expectedD7 = decodeScalar(new byte[] {81, 72, 114, 69, -121, 103, -115, -52, 47, 125, -45, -108, 116, -14, 127, 105, 3, 5, 25, -94, -97, 16, -20, 101, -88, 76, 103, 40, 96, 46, -79, -122, -104, -63, 121, -22, -29, 109, 31, -32, -34, 17, 25, 83, 118, 73, -37, 28, -114, 87, 80, -94, -10, -26, 67, 32, 0});
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
         final SMPMessage4 response = state.process(context, message);
-        assertEquals(rb, response.rb);
-        assertEquals(responseCr, response.cr);
-        assertEquals(responseD7, response.d7);
+        assertEquals(expectedRb, response.rb);
+        assertEquals(expectedCr, response.cr);
+        assertEquals(expectedD7, response.d7);
         verify(context).setState(any(StateExpect4.class));
     }
 
     @Test
-    public void testProcessMessageSMPFailed() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[57];
-        r7.encodeTo(fakeRandomData, 0);
+    public void testProcessMessageSMPFailed() throws SMPAbortException, ValidationException {
+        final byte[] fakeRandomData = new byte[] {-22, 34, -12, 69, -96, -45, 66, 17, -15, -81, -63, -47, -121, -22, 81, -111, 53, -12, -122, 4, 11, 108, 61, -69, -44, 49, 9, -44, -88, 17, -32, 104, -13, 49, -52, 19, -18, -31, -39, 114, 65, -61, 37, -31, -62, 16, 46, 18, 21, -39, 29, -62, -98, 110, 22, 121, 46};
+        final Point expectedRb = decodePoint(new byte[] {-43, 112, 13, 127, 113, -127, 34, -123, -111, 78, -43, 63, 53, -109, -9, -9, -55, 83, 125, -58, 53, -46, -88, -37, -35, -20, 17, -11, -56, -30, 106, 27, 95, 90, -115, -72, -120, -15, 41, 22, 123, 54, -71, 115, 40, -106, -38, -109, 77, 71, -42, -6, 22, 46, -23, 85, 0});
+        final Scalar expectedCr = decodeScalar(new byte[] {20, -66, 83, -105, 58, 36, -21, -127, 92, -117, 46, -120, 67, 30, 36, 100, -100, 123, 42, 125, 123, -4, 120, -72, 66, -26, -108, -14, -9, 23, -109, -19, -90, 9, -88, 89, 15, 53, -52, -34, -40, 22, 103, -26, -35, 117, -33, 55, 17, -127, -126, 64, 45, -123, 115, 3, 0});
+        final Scalar expectedD7 = decodeScalar(new byte[] {81, 72, 114, 69, -121, 103, -115, -52, 47, 125, -45, -108, 116, -14, 127, 105, 3, 5, 25, -94, -97, 16, -20, 101, -88, 76, 103, 40, 96, 46, -79, -122, -104, -63, 121, -22, -29, 109, 31, -32, -34, 17, 25, 83, 118, 73, -37, 28, -114, 87, 80, -94, -10, -26, 67, 32, 0});
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb.negate(), qb, b3, g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
         final SMPMessage4 response = state.process(context, message);
-        assertEquals(rb, response.rb);
-        assertEquals(responseCr, response.cr);
-        assertEquals(responseD7, response.d7);
+        assertEquals(expectedRb, response.rb);
+        assertEquals(expectedCr, response.cr);
+        assertEquals(expectedD7, response.d7);
         // TODO investigate if following verification statement works. There seem to be some unexpected results.
         verify(context).setState(any(StateExpect1.class));
     }
@@ -189,16 +194,18 @@ public final class StateExpect3Test {
     }
 
     @Test
-    public void testProcessMessageBadb3() throws SMPAbortException {
-        final byte[] fakeRandomData = new byte[57];
-        r7.encodeTo(fakeRandomData, 0);
+    public void testProcessMessageBadb3() throws SMPAbortException, ValidationException {
+        final byte[] fakeRandomData = new byte[] {-22, 34, -12, 69, -96, -45, 66, 17, -15, -81, -63, -47, -121, -22, 81, -111, 53, -12, -122, 4, 11, 108, 61, -69, -44, 49, 9, -44, -88, 17, -32, 104, -13, 49, -52, 19, -18, -31, -39, 114, 65, -61, 37, -31, -62, 16, 46, 18, 21, -39, 29, -62, -98, 110, 22, 121, 46};
+        final Point expectedRb = decodePoint(new byte[] {-43, 112, 13, 127, 113, -127, 34, -123, -111, 78, -43, 63, 53, -109, -9, -9, -55, 83, 125, -58, 53, -46, -88, -37, -35, -20, 17, -11, -56, -30, 106, 27, 95, 90, -115, -72, -120, -15, 41, 22, 123, 54, -71, 115, 40, -106, -38, -109, 77, 71, -42, -6, 22, 46, -23, 85, 0});
+        final Scalar expectedCr = decodeScalar(new byte[] {20, -66, 83, -105, 58, 36, -21, -127, 92, -117, 46, -120, 67, 30, 36, 100, -100, 123, 42, 125, 123, -4, 120, -72, 66, -26, -108, -14, -9, 23, -109, -19, -90, 9, -88, 89, 15, 53, -52, -34, -40, 22, 103, -26, -35, 117, -33, 55, 17, -127, -126, 64, 45, -123, 115, 3, 0});
+        final Scalar expectedD7 = decodeScalar(new byte[] {81, 72, 114, 69, -121, 103, -115, -52, 47, 125, -45, -108, 116, -14, 127, 105, 3, 5, 25, -94, -97, 16, -20, 101, -88, 76, 103, 40, 96, 46, -79, -122, -104, -63, 121, -22, -29, 109, 31, -32, -34, 17, 25, 83, 118, 73, -37, 28, -114, 87, 80, -94, -10, -26, 67, 32, 0});
         final StateExpect3 state = new StateExpect3(new FixedSecureRandom(fakeRandomData), pb, qb, Scalars.one(), g3a, g2, g3);
         final SMPContext context = mock(SMPContext.class);
         final SMPMessage3 message = new SMPMessage3(pa, qa, cp, d5, d6, ra, cr, d7);
         final SMPMessage4 response = state.process(context, message);
-        assertNotEquals(rb, response.rb);
-        assertEquals(responseCr, response.cr);
-        assertNotEquals(responseD7, response.d7);
+        assertNotEquals(expectedRb, response.rb);
+        assertEquals(expectedCr, response.cr);
+        assertNotEquals(expectedD7, response.d7);
         // TODO investigate if following verification statement works. There seem to be some unexpected results.
         verify(context).setState(any(StateExpect1.class));
     }

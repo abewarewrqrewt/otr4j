@@ -8,12 +8,9 @@
 package net.java.otr4j.crypto.ed448;
 
 import javax.annotation.Nonnull;
-import java.security.SecureRandom;
 
 import static net.java.otr4j.crypto.ed448.Scalar.SCALAR_LENGTH_BYTES;
-import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static net.java.otr4j.util.SecureRandoms.randomBytes;
 
 /**
  * Utility class for {@link Scalar}.
@@ -53,17 +50,6 @@ public final class Scalars {
     }
 
     /**
-     * Generate a new random value in Z_q.
-     *
-     * @param random SecureRandom instance
-     * @return Returns a newly generated random value.
-     */
-    public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
-        // FIXME OTRv4 now documents that you should always prune and hash the random value, so we should make it part of this.
-        return decodeScalar(randomBytes(random, new byte[SCALAR_LENGTH_BYTES]));
-    }
-
-    /**
      * Pruning of private key source data.
      * <p>
      * The procedure is described in RFC 8032, section 5.2.5. "Key Generation", step 2.
@@ -76,7 +62,7 @@ public final class Scalars {
      * @param privateKeySourceData Public key source data.
      * @throws IllegalArgumentException In case of invalid length of source data.
      */
-    static void prune(@Nonnull final byte[] privateKeySourceData) {
+    public static void prune(@Nonnull final byte[] privateKeySourceData) {
         requireLengthExactly(SCALAR_LENGTH_BYTES, privateKeySourceData);
         privateKeySourceData[0] &= 0b11111100;
         privateKeySourceData[SCALAR_LENGTH_BYTES - 1] = 0;

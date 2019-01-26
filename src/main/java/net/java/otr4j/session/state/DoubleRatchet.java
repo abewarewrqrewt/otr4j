@@ -750,6 +750,6 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     private enum Purpose {
-        SENDING, RECEIVING;
+        SENDING, RECEIVING
     }
 }

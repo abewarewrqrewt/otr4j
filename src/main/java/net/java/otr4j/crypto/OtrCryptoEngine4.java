@@ -33,10 +33,12 @@ import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.containsPoint;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
+import static net.java.otr4j.crypto.ed448.Scalar.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
-import static net.java.otr4j.crypto.ed448.Scalars.generateRandomValueInZq;
+import static net.java.otr4j.crypto.ed448.Scalars.prune;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.Integers.requireAtLeast;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
@@ -261,6 +263,22 @@ public final class OtrCryptoEngine4 {
         digest.update(usageID.value);
         digest.update(input, 0, input.length);
         digest.doFinal(dst, offset, outputSize);
+    }
+
+    /**
+     * Generate a new random value in Z_q.
+     *
+     * @param random SecureRandom instance
+     * @return Returns a newly generated random value.
+     */
+    public static Scalar generateRandomValueInZq(@Nonnull final SecureRandom random) {
+        final byte[] value = randomBytes(random, new byte[SCALAR_LENGTH_BYTES]);
+        final byte[] h = new byte[SCALAR_LENGTH_BYTES];
+        final SHAKEDigest digest = new SHAKEDigest(SHAKE_256_LENGTH_BITS);
+        digest.update(value, 0, value.length);
+        digest.doFinal(h, 0, h.length);
+        prune(h);
+        return decodeScalar(h);
     }
 
     /**

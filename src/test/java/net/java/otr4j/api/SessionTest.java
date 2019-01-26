@@ -675,7 +675,7 @@ public class SessionTest {
     // TODO make this test work once Double Ratchet algorithm is redesigned.
     @Ignore("As of yet unsupported use case. Depends on redesign of Double Ratchet algorithm.")
     @Test
-    public void testEstablishOTR4SessionEaryMessaging() throws OtrException {
+    public void testEstablishOTR4SessionEarlyMessaging() throws OtrException {
         final Conversation c = new Conversation(3);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());
@@ -713,7 +713,7 @@ public class SessionTest {
     // TODO make this test work once Double Ratchet algorithm is redesigned.
     @Ignore("As of yet unsupported use case. Depends on redesign of Double Ratchet algorithm.")
     @Test
-    public void testEstablishOTR4SessionEaryMessagingOutOfOrder() throws OtrException {
+    public void testEstablishOTR4SessionEarlyMessagingOutOfOrder() throws OtrException {
         final Conversation c = new Conversation(3);
         c.clientBob.sendMessage("Hi Alice");
         assertEquals("Hi Alice", c.clientAlice.receiveMessage());

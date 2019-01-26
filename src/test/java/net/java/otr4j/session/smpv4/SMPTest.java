@@ -25,9 +25,9 @@ import java.util.Arrays;
 
 import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.ScalarTestUtils.fromBigInteger;
-import static net.java.otr4j.crypto.ed448.Scalars.generateRandomValueInZq;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.api.SMPStatus.FAILED;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
