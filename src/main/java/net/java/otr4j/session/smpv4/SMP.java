@@ -45,14 +45,13 @@ import static net.java.otr4j.session.smpv4.SMPMessage.SMP3;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP4;
 import static net.java.otr4j.session.smpv4.SMPMessage.SMP_ABORT;
 import static net.java.otr4j.session.smpv4.SMPMessages.parse;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.toHexString;
 import static org.bouncycastle.util.Arrays.clear;
 
 /**
  * OTRv4 variant of the Socialist Millionaire's Protocol.
  */
-// FIXME verify if scalar handling is correct according to recent added details (https://github.com/otrv4/otrv4/commit/74dc71b0968499c0e7fbb1314fcf963e7d4a9603)
-// FIXME verify if scalar handling is correct according to recent added details (https://github.com/otrv4/otrv4/commit/2027c00318d727f1ef911053c8f01ab32c3aa514)
 public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
 
     private static final Logger LOGGER = Logger.getLogger(SMP.class.getName());
@@ -95,6 +94,7 @@ public final class SMP implements AutoCloseable, SMPContext, SMPHandler {
         this.host = requireNonNull(host);
         this.sessionID = requireNonNull(sessionID);
         this.ssid = requireNonNull(ssid);
+        assert !allZeroBytes(ssid) : "Expected SSID to contain non-zero bytes. All-zero SSID is a highly unlikely situation.";
         this.receiverTag = requireNonNull(receiverTag);
         this.ourLongTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.theirLongTermPublicKey = requireNonNull(theirLongTermPublicKey);

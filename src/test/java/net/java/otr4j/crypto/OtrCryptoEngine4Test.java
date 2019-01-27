@@ -35,7 +35,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.verifyEdDSAPublicKey;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.identity;
 import static net.java.otr4j.crypto.ed448.PointTestUtils.createPoint;
-import static net.java.otr4j.crypto.ed448.ScalarTestUtils.fromBigInteger;
+import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -167,8 +167,9 @@ public class OtrCryptoEngine4Test {
 
     @Test
     public void testHashToScalar() {
-        final Scalar expected = fromBigInteger(new BigInteger("96087484374524584323685785786251609762425748149746679902426857618410422187801982621628535971808129387704684709624695711547862283120745", 10));
-        assertEquals(expected, hashToScalar(FINGERPRINT, "helloworld".getBytes(US_ASCII)));
+        final Scalar expected = decodeScalar(new byte[] {105, 16, -83, 85, -9, -62, -46, -92, 7, -23, 67, 50, -59, 94, -15, 91, -59, -120, -64, -43, -77, 27, 44, 3, -94, -23, 33, 64, 125, -65, -71, -50, -103, -100, 31, 100, -19, 85, 74, -13, 2, 94, -128, 70, -12, -52, 46, 126, 49, 105, 43, -65, 56, -50, -41, 33, 0});
+        final Scalar actual = hashToScalar(FINGERPRINT, "helloworld".getBytes(US_ASCII));
+        assertEquals(expected, actual);
     }
 
     @Test(expected = NullPointerException.class)

@@ -8,15 +8,16 @@
 package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session.Version;
+import org.bouncycastle.util.encoders.Base64;
 
 import javax.annotation.Nonnull;
 import java.io.StringWriter;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ENCODED;
 import static net.java.otr4j.io.EncodingConstants.HEAD_ERROR;
-import static org.bouncycastle.util.encoders.Base64.toBase64String;
 
 /**
  * Writer for various types of messages.
@@ -33,6 +34,7 @@ public final class MessageWriter {
      * @param m the message
      * @return Returns the string-representation of the provided message.
      */
+    // FIXME write tests to verify correct Base64 encoding behavior, i.e. include padding chars at the end.
     @Nonnull
     public static String writeMessage(@Nonnull final Message m) {
         final StringWriter writer = new StringWriter();
@@ -54,7 +56,8 @@ public final class MessageWriter {
         } else if (m instanceof OtrEncodable) {
             writer.write(HEAD);
             writer.write(HEAD_ENCODED);
-            writer.write(toBase64String(new OtrOutputStream().write((OtrEncodable) m).toByteArray()));
+            final byte[] encoded = Base64.encode(new OtrOutputStream().write((OtrEncodable) m).toByteArray());
+            writer.write(new String(encoded, US_ASCII));
             writer.write(".");
         } else {
             throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());

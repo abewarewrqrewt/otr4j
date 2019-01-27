@@ -722,7 +722,8 @@ final class SessionImpl implements Session, Context {
         if (m instanceof PlainTextMessage) {
             this.masterSession.queryTag = ((PlainTextMessage) m).getTag();
             return new String[] {serialized};
-        } else if (m instanceof AbstractEncodedMessage) {
+        }
+        if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
                 return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag.getValue(),
@@ -730,9 +731,8 @@ final class SessionImpl implements Session, Context {
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment message according to protocol parameters.", e);
             }
-        } else {
-            return new String[]{serialized};
         }
+        return new String[]{serialized};
     }
 
     /**

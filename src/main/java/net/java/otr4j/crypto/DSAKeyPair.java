@@ -56,7 +56,8 @@ public final class DSAKeyPair {
      * @param privateKey the private key
      * @param publicKey  the corresponding public key
      */
-    private DSAKeyPair(@Nonnull final DSAPrivateKey privateKey, @Nonnull final DSAPublicKey publicKey) {
+    // TODO consider what the nicest option is to let a client reconstruct a DSAKeyPair such that keypairs can be stored and loaded. (Should constructor remain public?)
+    public DSAKeyPair(@Nonnull final DSAPrivateKey privateKey, @Nonnull final DSAPublicKey publicKey) {
         this.privateKey = requireNonNull(privateKey);
         this.publicKey = requireNonNull(publicKey);
     }

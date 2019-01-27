@@ -318,6 +318,9 @@ public class OtrFragmenterTest {
     public void testFragmentOTRv4SpecExample() throws ProtocolException {
         final OtrEngineHost host = host(208);
         final SecureRandom fakeRandom = new SecureRandom() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public int nextInt() {
                 return 0x3c5b5f03;
