@@ -22,6 +22,7 @@ import java.security.interfaces.DSAPublicKey;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.io.EncodingConstants.DATA_LEN;
+import static net.java.otr4j.io.EncodingConstants.DSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.EDDSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.FINGERPRINT_LENGTH_BYTES;
 import static net.java.otr4j.io.EncodingConstants.MAC_OTR4_LENGTH_BYTES;
@@ -295,6 +296,7 @@ public final class OtrOutputStream {
     @Nonnull
     public OtrOutputStream writeDSASignature(@Nonnull final byte[] signature) {
         assert !allZeroBytes(signature) : "Expected DSA signature to contain non-zero bytes.";
+        requireLengthExactly(DSA_SIGNATURE_LENGTH_BYTES, signature);
         this.out.write(signature, 0, signature.length);
         return this;
     }

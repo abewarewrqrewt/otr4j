@@ -88,7 +88,7 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         case Version.TWO:
             // skipping serializing instance tags
             break;
-        case Version.THREE:
+        case Version.THREE: // fall-through intended
         case Version.FOUR:
             writer.writeInstanceTag(this.senderInstanceTag);
             writer.writeInstanceTag(this.receiverInstanceTag);

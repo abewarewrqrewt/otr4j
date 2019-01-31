@@ -398,7 +398,7 @@ public class OtrOutputStreamTest {
 
     @Test
     public void testWriteDSASignature() {
-        final byte[] signature = randomBytes(RANDOM, new byte[20]);
+        final byte[] signature = randomBytes(RANDOM, new byte[40]);
         assertArrayEquals(signature, new OtrOutputStream().writeDSASignature(signature).toByteArray());
     }
 

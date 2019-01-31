@@ -114,6 +114,7 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (dsaKeyPair == null) {
             m = partialM;
         } else {
+            // FIXME verify if signRS produces right output for ClientProfile/OTRv4! (in particular lengths of results)
             final DSASignature transitionalSignature = dsaKeyPair.signRS(partialM);
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
             fields.add(sigField);

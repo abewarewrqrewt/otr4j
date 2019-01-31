@@ -186,6 +186,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
         if (context.getMasterSession().getOutgoingSession().getSessionStatus() == PLAINTEXT) {
             LOGGER.finest("Switching to the just-secured session, as the previous outgoing session was a PLAINTEXT state.");
+            // FIXME should we signal 'session status changed' somewhere? Should we expect the engine host to check for itself?
             context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
         }
     }

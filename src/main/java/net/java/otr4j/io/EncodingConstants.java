@@ -38,6 +38,8 @@ final class EncodingConstants {
      */
     static final int PUBLIC_KEY_TYPE_DSA = 0;
 
+    static final int DSA_SIGNATURE_LENGTH_BYTES = 40;
+
     static final int EDDSA_SIGNATURE_LENGTH_BYTES = 114;
 
     static final int MAC_OTR4_LENGTH_BYTES = 64;
