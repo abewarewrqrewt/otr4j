@@ -6,7 +6,6 @@
  */
 package net.java.otr4j.messages;
 
-import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrOutputStream;
@@ -16,6 +15,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.DSAKeyPair.verifySignature;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
@@ -40,6 +40,7 @@ public final class SignatureX implements OtrEncodable {
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
             @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
+        // FIXME enforce keyID > 0 with IAE
         this.dhKeyID = ourKeyID;
         assert !allZeroBytes(signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
         this.signature = requireNonNull(signature);
@@ -110,7 +111,7 @@ public final class SignatureX implements OtrEncodable {
      * @throws OtrCryptoException In case of failures of a cryptographic nature.
      */
     public void verify(@Nonnull final byte[] expectedSignature) throws OtrCryptoException {
-        DSAKeyPair.verifySignature(expectedSignature, this.longTermPublicKey, this.signature);
+        verifySignature(expectedSignature, this.longTermPublicKey, this.signature);
     }
 
     @Override

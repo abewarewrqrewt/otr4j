@@ -146,6 +146,7 @@ final class StateAwaitingSig extends AbstractAuthState {
             final byte[] remoteXBytes = OtrCryptoEngine.aesDecrypt(s.cp(), null, message.xEncrypted);
             final SignatureX remoteX = readSignatureX(remoteXBytes);
             // OTR: "Computes MA = MACm1'(gy, gx, pubA, keyidA)"
+            // FIXME verify that keyID > 0
             final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey, this.localDHKeyPair.getPublic(),
                     remoteX.getLongTermPublicKey(), remoteX.getDhKeyID());
             final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(remoteM), s.m1p());

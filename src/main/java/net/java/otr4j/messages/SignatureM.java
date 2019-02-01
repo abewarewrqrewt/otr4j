@@ -40,6 +40,7 @@ public final class SignatureM implements OtrEncodable {
         this.localPubKey = requireNonNull(localPubKey);
         this.remotePubKey = requireNonNull(remotePublicKey);
         this.localLongTermPubKey = requireNonNull(localLongTermPublicKey);
+        // FIXME enforce keyID > 0 with IAE
         this.keyPairID = keyPairID;
     }
 
