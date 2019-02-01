@@ -18,6 +18,7 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DSAKeyPair.verifySignature;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.Integers.requireAtLeast;
 
 /**
  * The payload representing the X value.
@@ -40,8 +41,7 @@ public final class SignatureX implements OtrEncodable {
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
             @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
-        // FIXME enforce keyID > 0 with IAE
-        this.dhKeyID = ourKeyID;
+        this.dhKeyID = requireAtLeast(1, ourKeyID);
         assert !allZeroBytes(signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
         this.signature = requireNonNull(signature);
     }

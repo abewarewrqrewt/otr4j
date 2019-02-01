@@ -149,7 +149,10 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             // OTR: "Uses c to decrypt AESc(XB) to obtain XB = pubB, keyidB, sigB(MB)"
             final byte[] remoteMysteriousXBytes = OtrCryptoEngine.aesDecrypt(s.c(), null, message.xEncrypted);
             remoteMysteriousX = readSignatureX(remoteMysteriousXBytes);
-            // FIXME verify that keyID > 0
+            if (remoteMysteriousX.getDhKeyID() <= 0) {
+                throw new ProtocolException("Illegal DH key ID encountered. Must be > 0, but was "
+                        + remoteMysteriousX.getDhKeyID());
+            }
             // OTR: "Computes MB = MACm1(gx, gy, pubB, keyidB)"
             final SignatureM expectedM = new SignatureM(remoteDHPublicKey, this.keypair.getPublic(),
                     remoteMysteriousX.getLongTermPublicKey(), remoteMysteriousX.getDhKeyID());

@@ -14,6 +14,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.util.Integers.requireAtLeast;
 
 /**
  * The SignatureM payload.
@@ -40,8 +41,7 @@ public final class SignatureM implements OtrEncodable {
         this.localPubKey = requireNonNull(localPubKey);
         this.remotePubKey = requireNonNull(remotePublicKey);
         this.localLongTermPubKey = requireNonNull(localLongTermPublicKey);
-        // FIXME enforce keyID > 0 with IAE
-        this.keyPairID = keyPairID;
+        this.keyPairID = requireAtLeast(1, keyPairID);
     }
 
     @Override
@@ -49,14 +49,9 @@ public final class SignatureM implements OtrEncodable {
         final int prime = 31;
         int result = 1;
         result = prime * result + keyPairID;
-        result = prime
-                * result
-                + ((localLongTermPubKey == null) ? 0 : localLongTermPubKey
-                        .hashCode());
-        result = prime * result
-                + ((localPubKey == null) ? 0 : localPubKey.hashCode());
-        result = prime * result
-                + ((remotePubKey == null) ? 0 : remotePubKey.hashCode());
+        result = prime * result + ((localLongTermPubKey == null) ? 0 : localLongTermPubKey.hashCode());
+        result = prime * result + ((localPubKey == null) ? 0 : localPubKey.hashCode());
+        result = prime * result + ((remotePubKey == null) ? 0 : remotePubKey.hashCode());
         return result;
     }
 
