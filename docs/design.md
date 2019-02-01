@@ -8,8 +8,9 @@ A limited number of architectural considerations have been chosen, ordered by pr
 
 1. __Correctness__  
 The code must implement the OTR-protocol specification correctly.
-1. __Protection of cryptographic material__  
-Cryptographic material must be protected from accidents, misuse and abuse.
+1. __Security__  
+Care for security-sensitive parts of the code. Consideration of side-channels, protect cryptographic material from
+accidents, misuse and abuse.
 1. __Design that prevents or makes obvious programming errors__  
 Write the code in such a way that unexpected behavior becomes obvious.
 1. __Simplicity__  
@@ -30,7 +31,7 @@ The design considerations that have been taken into account. These relate to the
   - handle race conditions in syntax: independent of whether the state transition "was detected in the logic" (is transparent to the logic).
   - avoids mixing up and messing up data manipulations due to sudden, "unexpected" state changes.
 
-## Protection of cryptographic material
+## Security
 
 - Cryptographic implementations are isolated to the `crypto` package and subpackages. (Guarded by [import-control](https://checkstyle.org/config_imports.html#ImportControl).)
 - Sensitive / secret cryptographic material is not exposed, i.e. internal state, managed by a class inside `crypto` package.
