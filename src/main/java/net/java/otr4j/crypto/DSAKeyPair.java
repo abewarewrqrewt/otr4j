@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAParams;
@@ -38,6 +39,7 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 public final class DSAKeyPair {
 
     private static final String ALGORITHM_DSA = "DSA";
+    private static final int DSA_KEY_SIZE_BITS = 1024;
 
     static {
         try {
@@ -71,7 +73,8 @@ public final class DSAKeyPair {
     public static DSAKeyPair generateDSAKeyPair() {
         try {
             final KeyPairGenerator kg = KeyPairGenerator.getInstance(ALGORITHM_DSA);
-            final java.security.KeyPair keypair = kg.genKeyPair();
+            kg.initialize(DSA_KEY_SIZE_BITS);
+            final KeyPair keypair = kg.genKeyPair();
             return new DSAKeyPair((DSAPrivateKey) keypair.getPrivate(), (DSAPublicKey) keypair.getPublic());
         } catch (final NoSuchAlgorithmException e) {
             throw new UnsupportedOperationException("Failed to generate DSA key pair: DSA algorithm is unavailable.", e);
