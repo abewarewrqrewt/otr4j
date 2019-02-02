@@ -35,6 +35,21 @@ public final class Integers {
     }
 
     /**
+     * Require an integer value to be different than the forbidden value.
+     *
+     * @param forbidden the forbidden value
+     * @param value     the value to be verified
+     * @return Returns value iff not equal to the forbidden value.
+     */
+    // FIXME write unit tests
+    public static int requireNotEquals(final int forbidden, final int value) {
+        if (value == forbidden) {
+            throw new IllegalArgumentException("value must not be: " + forbidden);
+        }
+        return value;
+    }
+
+    /**
      * Verify that value is in specified range.
      *
      * @param minInclusive the minimum value (inclusive)

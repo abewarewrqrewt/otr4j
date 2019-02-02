@@ -41,7 +41,7 @@ public final class SignatureXs {
         final OtrInputStream in = new OtrInputStream(bytes);
         final DSAPublicKey pubKey = in.readPublicKey();
         final int dhKeyID = in.readInt();
-        if (dhKeyID <= 0) {
+        if (dhKeyID == 0) {
             throw new ProtocolException("Illegal DH key ID encountered. Must be > 0, but was " + dhKeyID);
         }
         final byte[] sig = in.readSignature(pubKey);

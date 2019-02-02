@@ -20,7 +20,7 @@ import static net.java.otr4j.crypto.DSAKeyPair.verifySignature;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
-import static net.java.otr4j.util.Integers.requireAtLeast;
+import static net.java.otr4j.util.Integers.requireNotEquals;
 
 /**
  * The payload representing the X value.
@@ -29,8 +29,12 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
  */
 public final class SignatureX implements OtrEncodable {
 
+    @Nonnull
     private final DSAPublicKey longTermPublicKey;
+
     private final int dhKeyID;
+
+    @Nonnull
     private final byte[] signature;
 
     /**
@@ -43,7 +47,7 @@ public final class SignatureX implements OtrEncodable {
     public SignatureX(@Nonnull final DSAPublicKey ourLongTermPublicKey, final int ourKeyID,
             @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
-        this.dhKeyID = requireAtLeast(1, ourKeyID);
+        this.dhKeyID = requireNotEquals(0, ourKeyID);
         this.signature = requireLengthExactly(DSA_SIGNATURE_LENGTH_BYTES, signature);
         assert !allZeroBytes(this.signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
     }
@@ -72,7 +76,7 @@ public final class SignatureX implements OtrEncodable {
         final int prime = 31;
         int result = 1;
         result = prime * result + dhKeyID;
-        result = prime * result + ((longTermPublicKey == null) ? 0 : longTermPublicKey.hashCode());
+        result = prime * result + longTermPublicKey.hashCode();
         result = prime * result + Arrays.hashCode(signature);
         return result;
     }
@@ -93,11 +97,7 @@ public final class SignatureX implements OtrEncodable {
         if (dhKeyID != other.dhKeyID) {
             return false;
         }
-        if (longTermPublicKey == null) {
-            if (other.longTermPublicKey != null) {
-                return false;
-            }
-        } else if (!longTermPublicKey.equals(other.longTermPublicKey)) {
+        if (!longTermPublicKey.equals(other.longTermPublicKey)) {
             return false;
         }
         return constantTimeEquals(signature, other.signature);

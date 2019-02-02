@@ -14,7 +14,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.security.interfaces.DSAPublicKey;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.util.Integers.requireAtLeast;
+import static net.java.otr4j.util.Integers.requireNotEquals;
 
 /**
  * The SignatureM payload.
@@ -23,9 +23,15 @@ import static net.java.otr4j.util.Integers.requireAtLeast;
  */
 public final class SignatureM implements OtrEncodable {
 
+    @Nonnull
     private final DHPublicKey localPubKey;
+
+    @Nonnull
     private final DHPublicKey remotePubKey;
+
+    @Nonnull
     private final DSAPublicKey localLongTermPubKey;
+
     private final int keyPairID;
 
     /**
@@ -41,7 +47,7 @@ public final class SignatureM implements OtrEncodable {
         this.localPubKey = requireNonNull(localPubKey);
         this.remotePubKey = requireNonNull(remotePublicKey);
         this.localLongTermPubKey = requireNonNull(localLongTermPublicKey);
-        this.keyPairID = requireAtLeast(1, keyPairID);
+        this.keyPairID = requireNotEquals(0, keyPairID);
     }
 
     @Override
@@ -49,9 +55,9 @@ public final class SignatureM implements OtrEncodable {
         final int prime = 31;
         int result = 1;
         result = prime * result + keyPairID;
-        result = prime * result + ((localLongTermPubKey == null) ? 0 : localLongTermPubKey.hashCode());
-        result = prime * result + ((localPubKey == null) ? 0 : localPubKey.hashCode());
-        result = prime * result + ((remotePubKey == null) ? 0 : remotePubKey.hashCode());
+        result = prime * result + localLongTermPubKey.hashCode();
+        result = prime * result + localPubKey.hashCode();
+        result = prime * result + remotePubKey.hashCode();
         return result;
     }
 
@@ -70,28 +76,13 @@ public final class SignatureM implements OtrEncodable {
         if (keyPairID != other.keyPairID) {
             return false;
         }
-        if (localLongTermPubKey == null) {
-            if (other.localLongTermPubKey != null) {
-                return false;
-            }
-        } else if (!localLongTermPubKey.equals(other.localLongTermPubKey)) {
+        if (!localLongTermPubKey.equals(other.localLongTermPubKey)) {
             return false;
         }
-        if (localPubKey == null) {
-            if (other.localPubKey != null) {
-                return false;
-            }
-        } else if (!localPubKey.equals(other.localPubKey)) {
+        if (!localPubKey.equals(other.localPubKey)) {
             return false;
         }
-        if (remotePubKey == null) {
-            if (other.remotePubKey != null) {
-                return false;
-            }
-        } else if (!remotePubKey.equals(other.remotePubKey)) {
-            return false;
-        }
-        return true;
+        return remotePubKey.equals(other.remotePubKey);
     }
 
     @Override

@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 
 /**
- * OTRv2 encrypted data message.
+ * OTRv2/3 encrypted data message.
  *
  * @author George Politis
  * @author Danny van Heumen
@@ -42,22 +42,27 @@ public final class DataMessage extends AbstractEncodedMessage {
     /**
      * Next DH public key.
      */
+    @Nonnull
     public final DHPublicKey nextDH;
     /**
      * Counter value used while encrypting this Data message.
      */
+    @Nonnull
     public final byte[] ctr;
     /**
      * The encrypted message content.
      */
+    @Nonnull
     public final byte[] encryptedMessage;
     /**
      * The MAC for the message content.
      */
+    @Nonnull
     public final byte[] mac;
     /**
      * Old MAC keys (to be) revealed.
      */
+    @Nonnull
     public final byte[] oldMACKeys;
 
     /**
@@ -125,7 +130,7 @@ public final class DataMessage extends AbstractEncodedMessage {
         result = prime * result + Arrays.hashCode(encryptedMessage);
         result = prime * result + flags;
         result = prime * result + Arrays.hashCode(mac);
-        result = prime * result + ((nextDH == null) ? 0 : nextDH.hashCode());
+        result = prime * result + nextDH.hashCode();
         result = prime * result + Arrays.hashCode(oldMACKeys);
         result = prime * result + recipientKeyID;
         result = prime * result + senderKeyID;
@@ -156,11 +161,7 @@ public final class DataMessage extends AbstractEncodedMessage {
         if (!constantTimeEquals(mac, other.mac)) {
             return false;
         }
-        if (nextDH == null) {
-            if (other.nextDH != null) {
-                return false;
-            }
-        } else if (!nextDH.equals(other.nextDH)) {
+        if (!nextDH.equals(other.nextDH)) {
             return false;
         }
         if (!constantTimeEquals(oldMACKeys, other.oldMACKeys)) {
