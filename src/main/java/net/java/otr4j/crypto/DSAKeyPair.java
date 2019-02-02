@@ -41,6 +41,9 @@ public final class DSAKeyPair {
     private static final String ALGORITHM_DSA = "DSA";
     private static final int DSA_KEY_SIZE_BITS = 1024;
 
+    /**
+     * Length of DSA signature in bytes.
+     */
     public static final int DSA_SIGNATURE_LENGTH_BYTES = 40;
 
     static {

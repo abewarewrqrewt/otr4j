@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.security.SecureRandom;
 import java.security.interfaces.DSAPublicKey;
 
+import static net.java.otr4j.crypto.DSAKeyPair.DSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.crypto.DSAKeyPair.generateDSAKeyPair;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 
@@ -30,19 +31,31 @@ public final class SignatureXTest {
 
     @Test(expected = NullPointerException.class)
     public void testConstructNullSignature() {
-        new SignatureX(publicKey, 0, null);
+        new SignatureX(publicKey, 1, null);
     }
 
     @Test
     public void testConstruct() {
-        final byte[] signature = randomBytes(RANDOM, new byte[56]);
+        final byte[] signature = randomBytes(RANDOM, new byte[DSA_SIGNATURE_LENGTH_BYTES]);
+        new SignatureX(publicKey, 1, signature);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructBadSignatureLength() {
+        final byte[] signature = randomBytes(RANDOM, new byte[DSA_SIGNATURE_LENGTH_BYTES + 1]);
+        new SignatureX(publicKey, 1, signature);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructBadDHKeyId() {
+        final byte[] signature = randomBytes(RANDOM, new byte[DSA_SIGNATURE_LENGTH_BYTES]);
         new SignatureX(publicKey, 0, signature);
     }
 
     @Test(expected = NullPointerException.class)
     public void testVerifySignatureNullSignature() throws OtrCryptoException {
-        final byte[] signature = randomBytes(RANDOM, new byte[56]);
-        final SignatureX sig = new SignatureX(publicKey, 0, signature);
+        final byte[] signature = randomBytes(RANDOM, new byte[DSA_SIGNATURE_LENGTH_BYTES]);
+        final SignatureX sig = new SignatureX(publicKey, 1, signature);
         sig.verify(null);
     }
 
@@ -50,7 +63,7 @@ public final class SignatureXTest {
     public void testVerifySignature() throws OtrCryptoException {
         final int signatureLength = publicKey.getParams().getQ().bitLength() / 8 * 2;
         final byte[] signature = randomBytes(RANDOM, new byte[signatureLength]);
-        final SignatureX sig = new SignatureX(publicKey, 0, signature);
+        final SignatureX sig = new SignatureX(publicKey, 1, signature);
         sig.verify(randomBytes(RANDOM, new byte[signatureLength]));
     }
 }

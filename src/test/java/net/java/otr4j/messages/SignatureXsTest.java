@@ -19,9 +19,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+// FIXME add a test for a correct SignatureX object to ensure that successful run still works, now that code is stricter.
 public final class SignatureXsTest {
 
-    @Test
+    @Test(expected = ProtocolException.class)
     public void testReadMysteriousXOtrInputStreamReadBehavior() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
         // This test uses nonsensicle data and as such it does not verify
         // correct parsing of the read public key material. However, it does
@@ -40,10 +41,6 @@ public final class SignatureXsTest {
                 0, 0, 0, 5, // dhKeyID
                 8, // read signature of public key
         };
-        final SignatureX sigX = readSignatureX(data);
-        assertNotNull(sigX);
-        assertNotNull(sigX.getLongTermPublicKey());
-        assertEquals(5, sigX.getDhKeyID());
-        assertArrayEquals(new byte[] {8}, (byte[]) Whitebox.getInternalState(sigX, "signature"));
+        readSignatureX(data);
     }
 }

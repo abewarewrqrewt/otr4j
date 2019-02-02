@@ -15,9 +15,11 @@ import java.security.interfaces.DSAPublicKey;
 import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.DSAKeyPair.DSA_SIGNATURE_LENGTH_BYTES;
 import static net.java.otr4j.crypto.DSAKeyPair.verifySignature;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
+import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 
 /**
@@ -42,7 +44,7 @@ public final class SignatureX implements OtrEncodable {
             @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.dhKeyID = requireAtLeast(1, ourKeyID);
-        this.signature = requireNonNull(signature);
+        this.signature = requireLengthExactly(DSA_SIGNATURE_LENGTH_BYTES, signature);
         assert !allZeroBytes(this.signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
     }
 
