@@ -10,7 +10,6 @@ package net.java.otr4j.session.ake;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.io.OtrOutputStream;
@@ -32,6 +31,10 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
+import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hmac;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hmac160;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 
@@ -140,18 +143,15 @@ final class StateAwaitingSig extends AbstractAuthState {
         try {
             // OTR: "Uses m2' to verify MACm2'(AESc'(XA))"
             final OtrOutputStream out = new OtrOutputStream().writeData(message.xEncrypted);
-            final byte[] xEncryptedMAC = OtrCryptoEngine.sha256Hmac160(out.toByteArray(), s.m2p());
-            OtrCryptoEngine.checkEquals(xEncryptedMAC, message.xEncryptedMAC, "xEncryptedMAC failed verification.");
+            final byte[] xEncryptedMAC = sha256Hmac160(out.toByteArray(), s.m2p());
+            checkEquals(xEncryptedMAC, message.xEncryptedMAC, "xEncryptedMAC failed verification.");
             // OTR: "Uses c' to decrypt AESc'(XA) to obtain XA = pubA, keyidA, sigA(MA)"
-            final byte[] remoteXBytes = OtrCryptoEngine.aesDecrypt(s.cp(), null, message.xEncrypted);
+            final byte[] remoteXBytes = aesDecrypt(s.cp(), null, message.xEncrypted);
             final SignatureX remoteX = readSignatureX(remoteXBytes);
             // OTR: "Computes MA = MACm1'(gy, gx, pubA, keyidA)"
-            if (remoteX.getDhKeyID() <= 0) {
-                throw new ProtocolException("Illegal DH key ID encountered. Must be > 0, but was " + remoteX.getDhKeyID());
-            }
             final SignatureM remoteM = new SignatureM(this.remoteDHPublicKey, this.localDHKeyPair.getPublic(),
                     remoteX.getLongTermPublicKey(), remoteX.getDhKeyID());
-            final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(remoteM), s.m1p());
+            final byte[] expectedSignature = sha256Hmac(encode(remoteM), s.m1p());
             // OTR: "Uses pubA to verify sigA(MA)"
             remoteX.verify(expectedSignature);
             // Transition to ENCRYPTED session state.

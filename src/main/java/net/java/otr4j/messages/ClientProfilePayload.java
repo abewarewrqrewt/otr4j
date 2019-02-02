@@ -190,6 +190,7 @@ public final class ClientProfilePayload implements OtrEncodable {
             case TRANSITIONAL_SIGNATURE:
                 final BigInteger r = in.readBigInt();
                 final BigInteger s = in.readBigInt();
+                // FIXME verify that length is 20 + 20 bytes, i.e. based on 1024 bits DSA public key
                 fields.add(new TransitionalSignatureField(new DSASignature(r, s)));
                 break;
             case TRANSITIONAL_DSA_PUBLIC_KEY:

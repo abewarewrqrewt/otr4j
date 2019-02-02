@@ -11,7 +11,6 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.DHKeyPairOTR3;
 import net.java.otr4j.crypto.DSAKeyPair;
-import net.java.otr4j.crypto.OtrCryptoEngine;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret;
 import net.java.otr4j.io.OtrInputStream;
@@ -35,6 +34,12 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.verifyDHPublicKey;
 import static net.java.otr4j.crypto.OtrCryptoEngine.SHA256_DIGEST_LENGTH_BYTES;
+import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
+import static net.java.otr4j.crypto.OtrCryptoEngine.checkEquals;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hash;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hmac;
+import static net.java.otr4j.crypto.OtrCryptoEngine.sha256Hmac160;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
 import static net.java.otr4j.util.ByteArrays.requireLengthAtLeast;
@@ -132,10 +137,10 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         try {
             // Start validation of Reveal Signature message.
             // OTR: "Uses r to decrypt the value of gx sent earlier"
-            final byte[] remotePublicKeyBytes = OtrCryptoEngine.aesDecrypt(message.revealedKey, null, this.remotePublicKeyEncrypted);
+            final byte[] remotePublicKeyBytes = aesDecrypt(message.revealedKey, null, this.remotePublicKeyEncrypted);
             // OTR: "Verifies that HASH(gx) matches the value sent earlier"
-            final byte[] expectedRemotePublicKeyHash = OtrCryptoEngine.sha256Hash(remotePublicKeyBytes);
-            OtrCryptoEngine.checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
+            final byte[] expectedRemotePublicKeyHash = sha256Hash(remotePublicKeyBytes);
+            checkEquals(this.remotePublicKeyHash, expectedRemotePublicKeyHash, "Remote's public key hash failed validation.");
             // OTR: "Verifies that Bob's gx is a legal value (2 <= gx <= modulus-2)"
             final BigInteger dhPublicKeyMpi = new OtrInputStream(remotePublicKeyBytes).readBigInt();
             remoteDHPublicKey = verifyDHPublicKey(DHKeyPairOTR3.fromBigInteger(dhPublicKeyMpi));
@@ -144,20 +149,16 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
             s = this.keypair.generateSharedSecret(remoteDHPublicKey);
             // OTR: "Uses m2 to verify MACm2(AESc(XB))"
             final OtrOutputStream xEncryptedEncoded = new OtrOutputStream().writeData(message.xEncrypted);
-            final byte[] expectedXEncryptedMAC = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
-            OtrCryptoEngine.checkEquals(message.xEncryptedMAC, expectedXEncryptedMAC, "xEncryptedMAC failed validation.");
+            final byte[] expectedXEncryptedMAC = sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2());
+            checkEquals(message.xEncryptedMAC, expectedXEncryptedMAC, "xEncryptedMAC failed validation.");
             // OTR: "Uses c to decrypt AESc(XB) to obtain XB = pubB, keyidB, sigB(MB)"
-            final byte[] remoteMysteriousXBytes = OtrCryptoEngine.aesDecrypt(s.c(), null, message.xEncrypted);
+            final byte[] remoteMysteriousXBytes = aesDecrypt(s.c(), null, message.xEncrypted);
             remoteMysteriousX = readSignatureX(remoteMysteriousXBytes);
-            if (remoteMysteriousX.getDhKeyID() <= 0) {
-                throw new ProtocolException("Illegal DH key ID encountered. Must be > 0, but was "
-                        + remoteMysteriousX.getDhKeyID());
-            }
             // OTR: "Computes MB = MACm1(gx, gy, pubB, keyidB)"
             final SignatureM expectedM = new SignatureM(remoteDHPublicKey, this.keypair.getPublic(),
                     remoteMysteriousX.getLongTermPublicKey(), remoteMysteriousX.getDhKeyID());
             // OTR: "Uses pubB to verify sigB(MB)"
-            final byte[] expectedSignature = OtrCryptoEngine.sha256Hmac(encode(expectedM), s.m1());
+            final byte[] expectedSignature = sha256Hmac(encode(expectedM), s.m1());
             remoteMysteriousX.verify(expectedSignature);
             LOGGER.finest("Signature verification succeeded.");
         } finally {
@@ -178,17 +179,17 @@ final class StateAwaitingRevealSig extends AbstractAuthState {
         // gy (MPI), gx (MPI), pubA (PUBKEY), keyidA (INT)"
         final SignatureM signatureM = new SignatureM(this.keypair.getPublic(), remoteDHPublicKey,
                 localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID);
-        final byte[] mhash = OtrCryptoEngine.sha256Hmac(encode(signatureM), s.m1p());
+        final byte[] mhash = sha256Hmac(encode(signatureM), s.m1p());
         // OTR: "Let XA be the following structure: pubA (PUBKEY), keyidA (INT), sigA(MA) (SIG)"
         final byte[] signature = localLongTermKeyPair.sign(mhash);
         final SignatureX mysteriousX = new SignatureX(localLongTermKeyPair.getPublic(), LOCAL_DH_PRIVATE_KEY_ID,
                 signature);
         // OTR: "Encrypt XA using AES128-CTR with key c' and initial counter value 0."
-        final byte[] xEncrypted = OtrCryptoEngine.aesEncrypt(s.cp(), null, encode(mysteriousX));
+        final byte[] xEncrypted = aesEncrypt(s.cp(), null, encode(mysteriousX));
         // OTR: "Encode this encrypted value as the DATA field."
         // OTR: "This is the SHA256-HMAC-160 (that is, the first 160 bits of the SHA256-HMAC) of the encrypted signature field (including the four-byte length), using the key m2'."
         final OtrOutputStream xEncryptedEncoded = new OtrOutputStream().writeData(xEncrypted);
-        final byte[] xEncryptedHash = OtrCryptoEngine.sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2p());
+        final byte[] xEncryptedHash = sha256Hmac160(xEncryptedEncoded.toByteArray(), s.m2p());
         LOGGER.finest("Creating signature message for response.");
         // OTR: "Sends Bob AESc'(XA), MACm2'(AESc'(XA))"
         return new Result(new SignatureMessage(this.version, xEncrypted, xEncryptedHash,

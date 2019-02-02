@@ -295,8 +295,8 @@ public final class OtrOutputStream {
      */
     @Nonnull
     public OtrOutputStream writeDSASignature(@Nonnull final byte[] signature) {
-        assert !allZeroBytes(signature) : "Expected DSA signature to contain non-zero bytes.";
         requireLengthExactly(DSA_SIGNATURE_LENGTH_BYTES, signature);
+        assert !allZeroBytes(signature) : "Expected DSA signature to contain non-zero bytes.";
         this.out.write(signature, 0, signature.length);
         return this;
     }

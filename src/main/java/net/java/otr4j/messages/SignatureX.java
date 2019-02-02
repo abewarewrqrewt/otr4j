@@ -42,8 +42,8 @@ public final class SignatureX implements OtrEncodable {
             @Nonnull final byte[] signature) {
         this.longTermPublicKey = requireNonNull(ourLongTermPublicKey);
         this.dhKeyID = requireAtLeast(1, ourKeyID);
-        assert !allZeroBytes(signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
         this.signature = requireNonNull(signature);
+        assert !allZeroBytes(this.signature) : "Expected non-zero bytes for signature. This may indicate that a critical bug is present, or it may be a false warning.";
     }
 
     /**
@@ -70,10 +70,7 @@ public final class SignatureX implements OtrEncodable {
         final int prime = 31;
         int result = 1;
         result = prime * result + dhKeyID;
-        result = prime
-                * result
-                + ((longTermPublicKey == null) ? 0 : longTermPublicKey
-                        .hashCode());
+        result = prime * result + ((longTermPublicKey == null) ? 0 : longTermPublicKey.hashCode());
         result = prime * result + Arrays.hashCode(signature);
         return result;
     }

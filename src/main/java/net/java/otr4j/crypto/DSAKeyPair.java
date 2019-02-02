@@ -34,12 +34,14 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 /**
  * Key pair to keep DSA private and corresponding public key.
  */
-// TODO check how we should restore the DSAKeyPair from the OtrEngineHost perspective. It needs to store and restore the DSAKeyPair on every execution session.
+// FIXME check how we should restore the DSAKeyPair from the OtrEngineHost perspective. It needs to store and restore the DSAKeyPair on every execution session.
 // TODO we probably should implement AutoCloseable too, even though the destroy method is not implemented for DSAPrivateKey.
 public final class DSAKeyPair {
 
     private static final String ALGORITHM_DSA = "DSA";
     private static final int DSA_KEY_SIZE_BITS = 1024;
+
+    public static final int DSA_SIGNATURE_LENGTH_BYTES = 40;
 
     static {
         try {
