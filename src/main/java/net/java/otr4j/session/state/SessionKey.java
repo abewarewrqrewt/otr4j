@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hash;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 
 // TODO consider doing lazy evaluation of generating 's', 'receivingCtr' and 'sendingCtr'. (Would save some memory/computation in case this session key combination is not actually used.)
 // TODO Does it make sense to randomly generate the initial sending counter value to further avoid reuse?
@@ -214,6 +215,7 @@ final class SessionKey implements AutoCloseable {
                 break;
             }
         }
+        assert !allZeroBytes(this.sendingCtr) : "BUG: all-zero sending counter should never be used.";
         return ByteBuffer.allocate(16).put(this.sendingCtr).array();
     }
 

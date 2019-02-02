@@ -39,7 +39,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   * ☑ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
   * ☐ OTRv4 extension to OTR error messages
   * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
-  * ☐ Queueing of messages while not in `ENCRYPTED_MESSAGES` state.
+  * ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
   * ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost
 * Cryptographic primitives:
   * Edd448-Goldilocks elliptic curve (temporary solution)
@@ -87,7 +87,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
     * ☐ Derived keys according to OTRv4 prescribed derivation
 * API support:
   * ☐ verify if API still fully suitable for clients to adopt.
-  * ☐ ability to import/export EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
+  * ☐ ability to import/export DSA and EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
   * ☐ `OtrKeyManager` was removed. Evaluate whether this is a problem for adopters. (I prefer to leave it out or put it in its own repository.)
 * Misc
   * ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  
@@ -202,8 +202,6 @@ In addition to syntactic correctness checking, we enforce javadoc for anything t
 
 * _otr4j supports message lengths up to 2^31._  
 Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed integer types, this implementation currently uses a signed integer. Therefore, the highest bit of the message length is interpreted as sign bit. Lengths over 2^31 are unsupported.
-* _Message are not queued up._  
-Messages will be rejected while the connection is being established. Once the secure connection is established, message can again be sent.
 
 # Dependency on [joldilocks][joldilocks]
 

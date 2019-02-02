@@ -47,7 +47,7 @@ The design considerations that have been taken into account. These relate to the
 ## Design that prevents or makes obvious programming errors
 
 - Fail-fast (bugs become apparent due to unchecked exceptions)
-- Significant error handling part of syntax (checked exceptios)
+- Significant error handling part of syntax (checked exceptions)
 - Annotations to extend static analysis.
 - Deliberately work with most-restricted scopes.
 - State machines, to make state transitions strict, inescapable events. States expressed in syntax.

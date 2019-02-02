@@ -126,9 +126,8 @@ public final class OtrSessionManager {
         synchronized (sessions) {
             Session session = sessions.get(sessionID);
             if (session == null) {
-                // Don't differentiate between existing but null and
-                // non-existing. If we do not get a valid instance, then we
-                // create a new instance.
+                // Don't differentiate between existing but null and non-existing. If we do not get a valid instance,
+                // then we create a new instance.
                 session = new SessionImpl(sessionID, this.host);
                 session.addOtrEngineListener(sessionManagerListener);
                 sessions.put(sessionID, session);

@@ -56,6 +56,7 @@ public final class MessageWriter {
         } else if (m instanceof OtrEncodable) {
             writer.write(HEAD);
             writer.write(HEAD_ENCODED);
+            // FIXME review if we can change to `Base64.toBase64String()` again? (Now that interop problem is fixed.)
             final byte[] encoded = Base64.encode(new OtrOutputStream().write((OtrEncodable) m).toByteArray());
             writer.write(new String(encoded, US_ASCII));
             writer.write(".");
