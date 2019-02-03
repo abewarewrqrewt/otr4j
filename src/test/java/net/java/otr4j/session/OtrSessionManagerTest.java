@@ -67,13 +67,6 @@ public class OtrSessionManagerTest {
         mgr.getSession(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetEmptySession() {
-        final OtrEngineHost host = mock(OtrEngineHost.class);
-        final OtrSessionManager mgr = new OtrSessionManager(host);
-        mgr.getSession(SessionID.EMPTY);
-    }
-
     @Test(expected = NullPointerException.class)
     public void testAddNullListener() {
         final OtrEngineHost host = mock(OtrEngineHost.class);

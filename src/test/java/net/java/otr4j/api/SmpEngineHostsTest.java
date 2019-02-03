@@ -41,7 +41,7 @@ public class SmpEngineHostsTest {
     public void testSmpErrorOnGoodHost() {
         final boolean cheated = true;
         final int type = 1;
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         SmpEngineHosts.smpError(host, sessionID, type, cheated);
         verify(host).smpError(sessionID, type, cheated);
@@ -51,7 +51,7 @@ public class SmpEngineHostsTest {
     public void testSmpErrorOnFaultyHost() {
         final boolean cheated = true;
         final int type = 1;
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).smpError(sessionID, type, cheated);
         SmpEngineHosts.smpError(host, sessionID, type, cheated);
@@ -60,7 +60,7 @@ public class SmpEngineHostsTest {
 
     @Test
     public void testSmpAbortedOnGoodHost() {
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         SmpEngineHosts.smpAborted(host, sessionID);
         verify(host).smpAborted(sessionID);
@@ -68,7 +68,7 @@ public class SmpEngineHostsTest {
 
     @Test
     public void testSmpAbortedOnFaultyHost() {
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).smpAborted(sessionID);
         SmpEngineHosts.smpAborted(host, sessionID);
@@ -78,7 +78,7 @@ public class SmpEngineHostsTest {
     @Test
     public void testVerifyOnGoodHost() {
         final String fingerprint = "myfingerprint";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         SmpEngineHosts.verify(host, sessionID, fingerprint);
         verify(host).verify(sessionID, fingerprint);
@@ -87,7 +87,7 @@ public class SmpEngineHostsTest {
     @Test
     public void testVerifyOnBadHost() {
         final String fingerprint = "myfingerprint";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         doThrow(new IllegalStateException("some bad stuff happened")).when(host).verify(sessionID, fingerprint);
         SmpEngineHosts.verify(host, sessionID, fingerprint);
@@ -97,7 +97,7 @@ public class SmpEngineHostsTest {
     @Test
     public void testUnverifyOnGoodHost() {
         final String fingerprint = "myfingerprint";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         SmpEngineHosts.unverify(host, sessionID, fingerprint);
         verify(host).unverify(sessionID, fingerprint);
@@ -106,7 +106,7 @@ public class SmpEngineHostsTest {
     @Test
     public void testUnverifyOnBadHost() {
         final String fingerprint = "myfingerprint";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         doThrow(new IllegalStateException("some bad stuff happened")).when(host).unverify(sessionID, fingerprint);
         SmpEngineHosts.unverify(host, sessionID, fingerprint);
@@ -117,7 +117,7 @@ public class SmpEngineHostsTest {
     public void testAskForSecretOnGoodHost() {
         final String question = "What's my secret?";
         final InstanceTag sender = InstanceTag.random(RANDOM);
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         SmpEngineHosts.askForSecret(host, sessionID, sender, question);
         verify(host).askForSecret(sessionID, sender, question);
@@ -127,7 +127,7 @@ public class SmpEngineHostsTest {
     public void testAskForSecretOnFaultyHost() {
         final String question = "What's my secret?";
         final InstanceTag sender = InstanceTag.random(RANDOM);
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final SmpEngineHost host = mock(SmpEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).askForSecret(sessionID, sender, question);
         SmpEngineHosts.askForSecret(host, sessionID, sender, question);

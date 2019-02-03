@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -709,7 +708,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public String[] transformSending(@Nonnull final String msgText, @Nonnull final List<TLV> tlvs)
+    public String[] transformSending(@Nonnull final String msgText, @Nonnull final Iterable<TLV> tlvs)
             throws OtrException {
         if (masterSession == this && outgoingSession != this) {
             return outgoingSession.transformSending(msgText, tlvs);
@@ -720,6 +719,7 @@ final class SessionImpl implements Session, Context {
         }
         final String serialized = writeMessage(m);
         if (m instanceof PlainTextMessage) {
+            // FIXME shouldn't this be QueryMessage i.s.o. PlainTextMessage. Because we don't capture the queryTag of a QueryMessage now, right?
             this.masterSession.queryTag = ((PlainTextMessage) m).getTag();
             return new String[] {serialized};
         }
@@ -868,6 +868,7 @@ final class SessionImpl implements Session, Context {
     @Override
     @Nonnull
     public List<SessionImpl> getInstances() {
+        // TODO guard this from being called in slave session?
         final List<SessionImpl> result = new ArrayList<>();
         result.add(this);
         result.addAll(slaveSessions.values());
@@ -883,7 +884,7 @@ final class SessionImpl implements Session, Context {
     public void setOutgoingSession(@Nonnull final InstanceTag tag) {
         if (masterSession != this) {
             // Only master session can set the outgoing session.
-            throw new IllegalStateException("Only master session is allowed to set/change the outgoing session instance.");
+            throw new UnsupportedOperationException("Only master session is allowed to set/change the outgoing session instance.");
         }
         if (tag.equals(this.receiverTag)) {
             // Instance tag belongs to master session, set master session as
@@ -894,7 +895,7 @@ final class SessionImpl implements Session, Context {
         }
         final SessionImpl newActiveSession = slaveSessions.get(tag);
         if (newActiveSession == null) {
-            throw new NoSuchElementException("no slave session exists with provided instance tag");
+            throw new IllegalArgumentException("No slave session exists with provided instance tag.");
         }
         outgoingSession = newActiveSession;
         outgoingSessionChanged(duplicate(listeners), this.sessionID);
@@ -912,13 +913,12 @@ final class SessionImpl implements Session, Context {
     public SessionStatus getSessionStatus(@Nonnull final InstanceTag tag) {
         if (tag.equals(this.receiverTag)) {
             return this.sessionState.getStatus();
-        } else {
-            final SessionImpl slave = slaveSessions.get(tag);
-            if (slave == null) {
-                throw new IllegalArgumentException("Unknown instance tag specified: " + tag.getValue());
-            }
-            return slave.getSessionStatus();
         }
+        final SessionImpl slave = slaveSessions.get(tag);
+        if (slave == null) {
+            throw new IllegalArgumentException("Unknown instance tag specified: " + tag.getValue());
+        }
+        return slave.getSessionStatus();
     }
 
     /**

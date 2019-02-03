@@ -46,7 +46,7 @@ public class OtrEngineHostsTest {
 
     @Test
     public void testMultipleInstancesDetectedOnGoodHost() {
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.multipleInstancesDetected(host, sessionID);
         verify(host).multipleInstancesDetected(sessionID);
@@ -54,7 +54,7 @@ public class OtrEngineHostsTest {
 
     @Test
     public void testMultipleInstancesDetectedOnFaultyHost() {
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).multipleInstancesDetected(sessionID);
         OtrEngineHosts.multipleInstancesDetected(host, sessionID);
@@ -63,7 +63,7 @@ public class OtrEngineHostsTest {
 
     @Test
     public void testMessageFromAnotherInstanceReceivedOnGoodHost() {
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.messageFromAnotherInstanceReceived(host, sessionID);
         verify(host).messageFromAnotherInstanceReceived(sessionID);
@@ -71,7 +71,7 @@ public class OtrEngineHostsTest {
 
     @Test
     public void testMessageFromAnotherInstanceReceivedOnFaultyHost() {
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).messageFromAnotherInstanceReceived(sessionID);
         OtrEngineHosts.messageFromAnotherInstanceReceived(host, sessionID);
@@ -79,18 +79,18 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testUnencryptedMessageReceivedOnGoodHost() throws OtrException {
+    public void testUnencryptedMessageReceivedOnGoodHost() {
         final String msg = "Unencrypted message";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.unencryptedMessageReceived(host, sessionID, msg);
         verify(host).unencryptedMessageReceived(sessionID, msg);
     }
 
     @Test
-    public void testUnencryptedMessageReceivedOnFaultyHost() throws OtrException {
+    public void testUnencryptedMessageReceivedOnFaultyHost() {
         final String msg = "Unencrypted message";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).unencryptedMessageReceived(sessionID, msg);
         OtrEngineHosts.unencryptedMessageReceived(host, sessionID, msg);
@@ -98,16 +98,16 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testUnreadableMessageReceivedOnGoodHost() throws OtrException {
-        final SessionID sessionID = new SessionID(null, null, null);
+    public void testUnreadableMessageReceivedOnGoodHost() {
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.unreadableMessageReceived(host, sessionID);
         verify(host).unreadableMessageReceived(sessionID);
     }
 
     @Test
-    public void testUnreadableMessageReceivedOnFaultyHost() throws OtrException {
-        final SessionID sessionID = new SessionID(null, null, null);
+    public void testUnreadableMessageReceivedOnFaultyHost() {
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).unreadableMessageReceived(sessionID);
         OtrEngineHosts.unreadableMessageReceived(host, sessionID);
@@ -115,9 +115,9 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testGetFallbackMessageOnGoodHost() throws OtrException {
+    public void testGetFallbackMessageOnGoodHost() {
         final String fallbackMessage = "Hey dude, get OTR to talk to me!";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         when(host.getFallbackMessage(sessionID)).thenReturn(fallbackMessage);
         assertEquals(fallbackMessage, OtrEngineHosts.getFallbackMessage(host, sessionID));
@@ -125,8 +125,8 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testGetFallbackMessageOnFaultyHost() throws OtrException {
-        final SessionID sessionID = new SessionID(null, null, null);
+    public void testGetFallbackMessageOnFaultyHost() {
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         when(host.getFallbackMessage(sessionID)).thenReturn("Hey dude, get OTR to talk to me!");
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).getFallbackMessage(sessionID);
@@ -135,18 +135,18 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testShowErrorOnGoodHost() throws OtrException {
+    public void testShowErrorOnGoodHost() {
         final String error = "My error message.";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.showError(host, sessionID, error);
         verify(host).showError(sessionID, error);
     }
 
     @Test
-    public void testShowErrorOnFaultyHost() throws OtrException {
+    public void testShowErrorOnFaultyHost() {
         final String error = "My error message.";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).showError(sessionID, error);
         OtrEngineHosts.showError(host, sessionID, error);
@@ -154,18 +154,18 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testFinishedSessionMessageOnGoodHost() throws OtrException {
+    public void testFinishedSessionMessageOnGoodHost() {
         final String msg = "My session finished message";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.finishedSessionMessage(host, sessionID, msg);
         verify(host).finishedSessionMessage(sessionID, msg);
     }
 
     @Test
-    public void testFinishedSessionMessageOnFaultyHost() throws OtrException {
+    public void testFinishedSessionMessageOnFaultyHost() {
         final String msg = "My session finished message";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).finishedSessionMessage(sessionID, msg);
         OtrEngineHosts.finishedSessionMessage(host, sessionID, msg);
@@ -173,18 +173,18 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testRequireEncryptedMessageOnGoodHost() throws OtrException {
+    public void testRequireEncryptedMessageOnGoodHost() {
         final String msg = "I require encryption";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         OtrEngineHosts.requireEncryptedMessage(host, sessionID, msg);
         verify(host).requireEncryptedMessage(sessionID, msg);
     }
 
     @Test
-    public void testRequireEncryptedMessageOnFaultyHost() throws OtrException {
+    public void testRequireEncryptedMessageOnFaultyHost() {
         final String msg = "I require encryption";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).requireEncryptedMessage(sessionID, msg);
         OtrEngineHosts.requireEncryptedMessage(host, sessionID, msg);
@@ -192,9 +192,9 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testGetReplyForUnreadableMessageOnGoodHost() throws OtrException {
+    public void testGetReplyForUnreadableMessageOnGoodHost() {
         final String replyMsg = "Hey dude, I can't ready you're message!";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         when(host.getReplyForUnreadableMessage(sessionID)).thenReturn(replyMsg);
         assertEquals(replyMsg, OtrEngineHosts.getReplyForUnreadableMessage(host, sessionID, "default message"));
@@ -202,9 +202,9 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testGetReplyForUnreadableMessageOnFaultyHost() throws OtrException {
+    public void testGetReplyForUnreadableMessageOnFaultyHost() {
         final String defaultMessage = "This message cannot be read.";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
         doThrow(new IllegalArgumentException("programming error occurred")).when(host).getReplyForUnreadableMessage(sessionID);
         assertEquals(defaultMessage, OtrEngineHosts.getReplyForUnreadableMessage(host, sessionID, defaultMessage));
@@ -212,9 +212,9 @@ public class OtrEngineHostsTest {
     }
 
     @Test
-    public void testExtraSymmetricKeyDiscoveredOnFaultyHost() throws OtrException {
+    public void testExtraSymmetricKeyDiscoveredOnFaultyHost() {
         final String message = "My message.";
-        final SessionID sessionID = new SessionID(null, null, null);
+        final SessionID sessionID = new SessionID("bob", "alice", "network");
         final byte[] key = "MyPassW0rd".getBytes(US_ASCII);
         final byte[] tlvData = "Use in file transfer!".getBytes(UTF_8);
         final OtrEngineHost host = mock(OtrEngineHost.class);

@@ -7,6 +7,10 @@
 
 package net.java.otr4j.api;
 
+import javax.annotation.Nonnull;
+
+import static java.util.Objects.requireNonNull;
+
 /**
  * Session ID. Session ID is used to identify a single session based on
  * {@code (local account, remote account, protocol)} triple.
@@ -15,14 +19,14 @@ package net.java.otr4j.api;
  */
 public final class SessionID {
 
+    @Nonnull
     private final String localAccountID;
-    private final String remoteUserID;
-    private final String protocolName;
 
-    /**
-     * Constant for indicating an EMPTY session ID.
-     */
-    public static final SessionID EMPTY = new SessionID(null, null, null);
+    @Nonnull
+    private final String remoteUserID;
+
+    @Nonnull
+    private final String protocolName;
 
     /**
      * A unique ID for an OTR session between two accounts.
@@ -31,10 +35,11 @@ public final class SessionID {
      * @param remoteUserID the remote user on the other side of the conversation
      * @param protocolName the messaging protocol used for the conversation
      */
-    public SessionID(final String localAccountID, final String remoteUserID, final String protocolName) {
-        this.localAccountID = localAccountID;
-        this.remoteUserID = remoteUserID;
-        this.protocolName = protocolName;
+    public SessionID(@Nonnull final String localAccountID, @Nonnull final String remoteUserID,
+            @Nonnull final String protocolName) {
+        this.localAccountID = requireNonNull(localAccountID);
+        this.remoteUserID = requireNonNull(remoteUserID);
+        this.protocolName = requireNonNull(protocolName);
     }
 
     /**
@@ -42,6 +47,7 @@ public final class SessionID {
      *
      * @return the {@code String} representing the local account
      */
+    @Nonnull
     public String getAccountID() {
         return localAccountID;
     }
@@ -51,6 +57,7 @@ public final class SessionID {
      *
      * @return the {@code String} representing the remote user
      */
+    @Nonnull
     public String getUserID() {
         return remoteUserID;
     }
@@ -60,6 +67,7 @@ public final class SessionID {
      *
      * @return Returns protocol name.
      */
+    @Nonnull
     public String getProtocolName() {
         return protocolName;
     }
@@ -73,11 +81,9 @@ public final class SessionID {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((localAccountID == null) ? 0 : localAccountID.hashCode());
-        result = prime * result
-                + ((protocolName == null) ? 0 : protocolName.hashCode());
-        result = prime * result + ((remoteUserID == null) ? 0 : remoteUserID.hashCode());
+        result = prime * result + localAccountID.hashCode();
+        result = prime * result + protocolName.hashCode();
+        result = prime * result + remoteUserID.hashCode();
         return result;
     }
 
@@ -93,22 +99,11 @@ public final class SessionID {
             return false;
         }
         final SessionID other = (SessionID) obj;
-        if (localAccountID == null) {
-            if (other.localAccountID != null) {
-                return false;
-            }
-        } else if (!localAccountID.equals(other.localAccountID)) {
+        if (!localAccountID.equals(other.localAccountID)) {
             return false;
         }
-        if (protocolName == null) {
-            if (other.protocolName != null) {
-                return false;
-            }
-        } else if (!protocolName.equals(other.protocolName)) {
+        if (!protocolName.equals(other.protocolName)) {
             return false;
-        }
-        if (remoteUserID == null) {
-            return other.remoteUserID == null;
         }
         return remoteUserID.equals(other.remoteUserID);
     }

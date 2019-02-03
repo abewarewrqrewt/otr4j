@@ -118,11 +118,6 @@ public final class OtrSessionManager {
      * @return Returns Session instance that corresponds to provided sessionID.
      */
     public Session getSession(@Nonnull final SessionID sessionID) {
-
-        if (sessionID.equals(SessionID.EMPTY)) {
-            throw new IllegalArgumentException();
-        }
-
         synchronized (sessions) {
             Session session = sessions.get(sessionID);
             if (session == null) {

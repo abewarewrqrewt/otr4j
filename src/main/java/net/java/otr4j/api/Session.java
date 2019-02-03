@@ -22,6 +22,7 @@ import static java.util.Collections.unmodifiableSet;
  * This the primary interface for clients (users of otr4j) to interact with. It provides access to all the (available)
  * OTR functionality. In addition, it manages the session and any (unexpected) state transitions.
  */
+// FIXME consider using interface CharSequence instead of String
 @SuppressWarnings("PMD.ConstantsInInterface")
 public interface Session {
 
@@ -215,7 +216,7 @@ public interface Session {
      * @throws OtrException Thrown in case of problems during transformation.
      */
     @Nonnull
-    String[] transformSending(@Nonnull String msgText, @Nonnull List<TLV> tlvs) throws OtrException;
+    String[] transformSending(@Nonnull String msgText, @Nonnull Iterable<TLV> tlvs) throws OtrException;
 
     /**
      * Transform (OTR encoded) message to plain text message.

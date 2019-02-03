@@ -38,7 +38,7 @@ public final class SmpEngineHosts {
             @Nonnull final InstanceTag sender, @Nullable final String question) {
         try {
             host.askForSecret(sessionID, sender, question);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.log(Level.WARNING, "Faulty OtrEngineHost! Runtime exception thrown while calling 'askForSecret' on OtrEngineHost '" + host.getClass().getCanonicalName() + "' for session " + sessionID, e);
         }
     }
@@ -64,7 +64,7 @@ public final class SmpEngineHosts {
             final int tlvType, final boolean cheated) {
         try {
             host.smpError(sessionID, tlvType, cheated);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.log(Level.WARNING, "Faulty OtrEngineHost! Runtime exception thrown while calling 'smpError' on OtrEngineHost '" + host.getClass().getCanonicalName() + "' for session " + sessionID, e);
         }
     }
@@ -86,7 +86,7 @@ public final class SmpEngineHosts {
     public static void smpAborted(@Nonnull final SmpEngineHost host, @Nonnull final SessionID sessionID) {
         try {
             host.smpAborted(sessionID);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.log(Level.WARNING, "Faulty OtrEngineHost! Runtime exception thrown while calling 'smpAborted' on OtrEngineHost '" + host.getClass().getCanonicalName() + "' for session " + sessionID, e);
         }
     }
@@ -106,7 +106,7 @@ public final class SmpEngineHosts {
             @Nonnull final String fingerprint) {
         try {
             host.verify(sessionID, fingerprint);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Faulty OtrEngineHost! Runtime exception thrown while calling 'verify' on OtrEngineHost '" + host.getClass().getCanonicalName() + "' for session " + sessionID, e);
         }
     }
@@ -126,7 +126,7 @@ public final class SmpEngineHosts {
             @Nonnull final String fingerprint) {
         try {
             host.unverify(sessionID, fingerprint);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Faulty OtrEngineHost! Runtime exception thrown while calling 'unverify' on OtrEngineHost '" + host.getClass().getCanonicalName() + "' for session " + sessionID, e);
         }
     }

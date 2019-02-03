@@ -95,6 +95,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   * ☐ Ability to define own, customized-per-network `phi` (shared session state) implementer addition for the `t` value calculation.  
   _Under consideration as part of the [OTRv4 client implementation recommendations](https://github.com/otrv4/otrv4-client-imp-recommendations/issues/3)._
   * ☐ Evaluate whether there really is an advantage to having `OtrEngineHost` calls specify a session instance. (Does it make sense to make the distinction?)
+  * ☐ Evaluate cases of `OtrException` being thrown. Reduce number of cases where user has to handle an exception without there being a real resolution.
 
 ## Operational
 

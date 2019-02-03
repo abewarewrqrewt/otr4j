@@ -31,26 +31,31 @@ public final class ClientProfile {
     /**
      * Owner's instance tag.
      */
+    @Nonnull
     private final InstanceTag instanceTag;
 
     /**
      * Public key of the long-term Ed448 keypair.
      */
+    @Nonnull
     private final Point longTermPublicKey;
 
     /**
      * Public key of the Ed448 Forging key.
      */
+    @Nonnull
     private final Point forgingKey;
 
     /**
      * List of supported versions.
      */
+    @Nonnull
     private final Set<Integer> versions;
 
     /**
      * DSA public key.
      */
+    @Nullable
     private final DSAPublicKey dsaPublicKey;
 
     /**
@@ -139,7 +144,8 @@ public final class ClientProfile {
         final ClientProfile that = (ClientProfile) o;
         return Objects.equals(instanceTag, that.instanceTag)
                 && Objects.equals(longTermPublicKey, that.longTermPublicKey)
-                && Objects.equals(forgingKey, that.forgingKey) && Objects.equals(versions, that.versions)
+                && Objects.equals(forgingKey, that.forgingKey)
+                && Objects.equals(versions, that.versions)
                 && Objects.equals(dsaPublicKey, that.dsaPublicKey);
     }
 
