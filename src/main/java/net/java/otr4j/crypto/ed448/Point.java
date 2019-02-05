@@ -153,4 +153,9 @@ public final class Point implements AutoCloseable {
             throw new IllegalStateException("Point data was already cleared.");
         }
     }
+
+    @Override
+    public String toString() {
+        return "Point{encoded=" + Arrays.toString(encoded) + '}';
+    }
 }

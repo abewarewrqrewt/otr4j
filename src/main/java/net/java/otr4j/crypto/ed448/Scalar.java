@@ -210,4 +210,9 @@ public final class Scalar implements Comparable<Scalar>, AutoCloseable {
             throw new IllegalStateException("Scalar is already cleared.");
         }
     }
+
+    @Override
+    public String toString() {
+        return "Scalar{encoded=" + Arrays.toString(encoded) + '}';
+    }
 }
