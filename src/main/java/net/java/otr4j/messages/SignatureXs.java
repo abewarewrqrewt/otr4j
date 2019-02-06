@@ -35,6 +35,7 @@ public final class SignatureXs {
      * @throws OtrCryptoException       In case of failures while processing the message content.
      * @throws UnsupportedTypeException In case of unsupported public key type.
      */
+    @SuppressWarnings("PMD.PrematureDeclaration")
     @Nonnull
     public static SignatureX readSignatureX(@Nonnull final byte[] bytes) throws ProtocolException, OtrCryptoException,
             UnsupportedTypeException {

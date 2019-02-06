@@ -7,20 +7,22 @@
 
 package net.java.otr4j.messages;
 
+import net.java.otr4j.crypto.DSAKeyPair;
 import net.java.otr4j.crypto.OtrCryptoException;
+import net.java.otr4j.io.OtrOutputStream;
 import net.java.otr4j.io.UnsupportedTypeException;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
 
 import java.net.ProtocolException;
+import java.security.SecureRandom;
 
 import static net.java.otr4j.messages.SignatureXs.readSignatureX;
-import static org.junit.Assert.assertArrayEquals;
+import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
-// FIXME add a test for a correct SignatureX object to ensure that successful run still works, now that code is stricter.
 public final class SignatureXsTest {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Test(expected = ProtocolException.class)
     public void testReadMysteriousXOtrInputStreamReadBehavior() throws OtrCryptoException, UnsupportedTypeException, ProtocolException {
@@ -42,5 +44,15 @@ public final class SignatureXsTest {
                 8, // read signature of public key
         };
         readSignatureX(data);
+    }
+
+    @Test
+    public void testReadSignatureX() throws ProtocolException, OtrCryptoException, UnsupportedTypeException {
+        final DSAKeyPair keypair = DSAKeyPair.generateDSAKeyPair();
+        final byte[] signature = keypair.sign(randomBytes(RANDOM, new byte[10]));
+        final SignatureX sigX = new SignatureX(keypair.getPublic(), 1, signature);
+        final byte[] input = new OtrOutputStream().write(sigX).toByteArray();
+        final SignatureX readSigX = readSignatureX(input);
+        assertEquals(sigX, readSigX);
     }
 }
