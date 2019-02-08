@@ -22,7 +22,6 @@ import static java.util.Collections.unmodifiableSet;
  * This the primary interface for clients (users of otr4j) to interact with. It provides access to all the (available)
  * OTR functionality. In addition, it manages the session and any (unexpected) state transitions.
  */
-// FIXME consider using interface CharSequence instead of String
 @SuppressWarnings("PMD.ConstantsInInterface")
 public interface Session {
 
@@ -53,10 +52,6 @@ public interface Session {
          * Set of all supported OTR protocol versions.
          */
         Set<Integer> SUPPORTED = unmodifiableSet(new HashSet<>(asList(TWO, THREE, FOUR)));
-        /**
-         * Set of all known OTR protocol versions.
-         */
-        Set<Integer> KNOWN = unmodifiableSet(new HashSet<>(asList(ONE, TWO, THREE, FOUR)));
     }
 
     /* Methods that provide session information. */

@@ -31,7 +31,6 @@ import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 /**
  * The Shared Secret-mechanism used in OTRv4.
  */
-// FIXME It is still possible to rotate after having called close, lacking in state checking!
 public final class SharedSecret4 implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
@@ -54,6 +53,11 @@ public final class SharedSecret4 implements AutoCloseable {
      * 'KDF_1(0x04 || K_ecdh || brace_key, 64)'.
      */
     private final byte[] k = new byte[K_LENGTH_BYTES];
+
+    /**
+     * Flag used to manage internal state: in use / closed.
+     */
+    private boolean closed = false;
 
     /**
      * Our ECDH key pair.
@@ -104,6 +108,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Override
     public void close() {
+        this.closed = true;
         clear(this.braceKey);
         clear(this.k);
         this.ecdhKeyPair.close();
@@ -117,6 +122,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public Point getECDHPublicKey() {
+        requireNotClosed();
         return this.ecdhKeyPair.getPublicKey();
     }
 
@@ -127,6 +133,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public BigInteger getDHPublicKey() {
+        requireNotClosed();
         return this.dhKeyPair.getPublicKey();
     }
 
@@ -137,6 +144,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public Point getTheirECDHPublicKey() {
+        requireNotClosed();
         return theirECDHPublicKey;
     }
 
@@ -147,6 +155,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public BigInteger getTheirDHPublicKey() {
+        requireNotClosed();
         return theirDHPublicKey;
     }
 
@@ -157,6 +166,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public byte[] getK() {
+        requireNotClosed();
         return this.k.clone();
     }
 
@@ -170,6 +180,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public byte[] generateSSID() {
+        requireNotClosed();
         return kdf1(SSID, this.k, SSID_LENGTH_BYTES);
     }
 
@@ -179,6 +190,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param regenerateDHKeyPair Indicates whether we need to regenerate the DH key pair as well.
      */
     public void rotateOurKeys(final boolean regenerateDHKeyPair) {
+        requireNotClosed();
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
         if (regenerateDHKeyPair) {
             this.dhKeyPair = DHKeyPair.generate(this.random);
@@ -196,6 +208,7 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
             @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
+        requireNotClosed();
         if (!containsPoint(requireNonNull(theirECDHPublicKey))) {
             throw new OtrCryptoException("ECDH public key failed verification.");
         }
@@ -240,5 +253,11 @@ public final class SharedSecret4 implements AutoCloseable {
         kdf1(this.k, 0, SHARED_SECRET, tempKecdhBraceKey, K_LENGTH_BYTES);
         clear(tempKecdhBraceKey);
         clear(k_ecdh);
+    }
+
+    private void requireNotClosed() {
+        if (this.closed) {
+            throw new IllegalStateException("Shared secret is already closed/disposed of.");
+        }
     }
 }
