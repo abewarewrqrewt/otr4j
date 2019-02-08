@@ -266,7 +266,9 @@ public final class OtrOutputStream {
      */
     @Nonnull
     public OtrOutputStream writeDHPublicKey(@Nonnull final DHPublicKey dhPublicKey) {
-        writeData(asUnsignedByteArray(dhPublicKey.getY()));
+        final byte[] data = asUnsignedByteArray(dhPublicKey.getY());
+        assert data[0] != 0 : "The encoded DH public key should not contain leading zeroes.";
+        writeData(data);
         return this;
     }
 

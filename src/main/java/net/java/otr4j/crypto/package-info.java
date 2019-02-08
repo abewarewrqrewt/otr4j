@@ -24,3 +24,4 @@
 package net.java.otr4j.crypto;
 // TODO ensure that all AutoCloseable instances are closed after use. (i.e. thoroughly validate destroy-implementations)
 // TODO investigate what we need to clean additionally for Point and BigInteger calculations where we use temporary instances during computation.
+// FIXME verify if this is fixed: https://github.com/jitsi/otr4j/issues/24 (assertion added in OtrOutputStream#writeDHPublicKey to verify otr4j behavior)

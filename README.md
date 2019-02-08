@@ -27,6 +27,9 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - clean up old (abandoned) message fragments
   - clean up old sessions and reveal memorized MACs
 * Full implementation of "OTRv3-compatible" + "OTRv4 Interactive" use-case (including all FIXMEs)
+  - Full review against the (finalized) OTRv4 spec.  
+    _As the specification has been modified during implementation of support in otr4j, a full review against current spec is needed._
+  - Fix and guard the public API offered by otr4j.
 * ... (OTRv4 Non-interactive, ...)
 * Clean up remaining TODOs
 * Review the many logging statements and verify if log levels are reasonable.
@@ -40,7 +43,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   * ☐ OTRv4 extension to OTR error messages
   * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
   * ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
-  * ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost
+  * ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost (Affects _Deniability_-property.)
 * Cryptographic primitives:
   * Edd448-Goldilocks elliptic curve (temporary solution)
     * ☑ Temporary working solution
@@ -181,10 +184,11 @@ Please open an issue to discuss contributions early. As OTRv4 is still in draft 
 - Helping with implementation work:
   - see the Functional/Operational/Developmental action points above.
   - look for `FIXME`/`TODO` in the code. (there are plenty to find)
-- Peer-reviewing (for correctness, security and improvements in general)
+- Peer-reviewing (for correctness, security and improvements in general)  
+  _Don't trust me. I have done most of the work, so you can contribute the fixes to make it trustworthy for you!_
 - Integration into chat clients
   - adoption
-  - feedback on the API from the usage perspective
+  - feedback on the API from the user perspective
 
 ## Build support and code style
 

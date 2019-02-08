@@ -43,8 +43,8 @@ import static org.bouncycastle.util.Arrays.concatenate;
 /**
  * The Double Ratchet. (OTRv4)
  * <p>
- * The mechanism according to which the key rotations are performed. The rotation happen in lock-step between the two
- * parties. The Double Ratchet recognizes 3 types of keys: root key, chain key (sending, receiving) and message keys.
+ * The logistics of the Double Ratchet-algorithm. The mechanism according to which the key rotations are performed. The
+ * cryptographic secrets updates are performed in {@link SharedSecret4}.
  * <p>
  * Key rotations consist of 2 cases:
  * <ol>
