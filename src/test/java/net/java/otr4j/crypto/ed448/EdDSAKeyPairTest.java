@@ -15,8 +15,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.ed448.Ed448.multiplyByBase;
 import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.generate;
 import static net.java.otr4j.crypto.ed448.EdDSAKeyPair.verify;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.internal.util.reflection.Whitebox.getInternalState;
 
 @SuppressWarnings("ConstantConditions")
 public final class EdDSAKeyPairTest {
@@ -102,6 +105,13 @@ public final class EdDSAKeyPairTest {
         final byte[] sig = keypair.sign(message);
         sig[0] = 0;
         verify(keypair.getPublicKey(), message, sig);
+    }
+
+    @Test
+    public void testClose() {
+        final EdDSAKeyPair keypair = generate(RANDOM);
+        keypair.close();
+        assertTrue(allZeroBytes((byte[]) getInternalState(keypair, "symmetricKey")));
     }
 
     @Test
