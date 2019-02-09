@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 /**
- * The OTRv3 Socialist's Millionaire Protocol implementation.
+ * The OTRv3 Socialist Millionaires Protocol implementation.
  */
 package net.java.otr4j.session.smp;
 // TODO revisit SMP implementation given that it uses BigInteger types which are not easily cleared.

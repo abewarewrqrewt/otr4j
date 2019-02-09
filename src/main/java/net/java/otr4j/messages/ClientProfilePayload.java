@@ -114,7 +114,6 @@ public final class ClientProfilePayload implements OtrEncodable {
         if (dsaKeyPair == null) {
             m = partialM;
         } else {
-            // FIXME verify if signRS produces right output for ClientProfile/OTRv4! (in particular lengths of results)
             final DSASignature transitionalSignature = dsaKeyPair.signRS(partialM);
             final TransitionalSignatureField sigField = new TransitionalSignatureField(transitionalSignature);
             fields.add(sigField);
@@ -137,6 +136,7 @@ public final class ClientProfilePayload implements OtrEncodable {
      * @throws ValidationException In case of failure to validate the client profile after reading. This indicates that
      *                             the various fields were valid but the composition of the profile is illegal.
      */
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     @Nonnull
     static ClientProfilePayload readFrom(@Nonnull final OtrInputStream in) throws OtrCryptoException, ProtocolException,
             ValidationException {
@@ -190,7 +190,6 @@ public final class ClientProfilePayload implements OtrEncodable {
             case TRANSITIONAL_SIGNATURE:
                 final BigInteger r = in.readBigInt();
                 final BigInteger s = in.readBigInt();
-                // FIXME verify that length is 20 + 20 bytes, i.e. based on 1024 bits DSA public key
                 fields.add(new TransitionalSignatureField(new DSASignature(r, s)));
                 break;
             case TRANSITIONAL_DSA_PUBLIC_KEY:

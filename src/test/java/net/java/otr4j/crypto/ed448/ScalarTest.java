@@ -18,6 +18,7 @@ import static net.java.otr4j.crypto.ed448.Ed448.primeOrder;
 import static net.java.otr4j.crypto.ed448.Scalar.SCALAR_LENGTH_BYTES;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
 import static net.java.otr4j.crypto.ed448.Scalar.fromBigInteger;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.reverse;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
@@ -25,6 +26,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.internal.util.reflection.Whitebox.getInternalState;
 
 @SuppressWarnings({"ConstantConditions", "EqualsWithItself"})
 public final class ScalarTest {
@@ -269,6 +272,13 @@ public final class ScalarTest {
     public void testScalarHashCode() {
         // not sure what thing we can test for this, for now just call the method and see that it does not fail
         Scalars.zero().hashCode();
+    }
+
+    @Test
+    public void testScalarClose() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        scalar.close();
+        assertTrue(allZeroBytes((byte[]) getInternalState(scalar, "encoded")));
     }
 
     @Test(expected = IllegalStateException.class)

@@ -41,7 +41,6 @@ public final class Integers {
      * @param value     the value to be verified
      * @return Returns value iff not equal to the forbidden value.
      */
-    // FIXME write unit tests
     public static int requireNotEquals(final int forbidden, final int value) {
         if (value == forbidden) {
             throw new IllegalArgumentException("value must not be: " + forbidden);

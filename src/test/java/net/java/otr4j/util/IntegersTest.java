@@ -12,6 +12,7 @@ import org.junit.Test;
 import static net.java.otr4j.util.Integers.parseUnsignedInt;
 import static net.java.otr4j.util.Integers.requireAtLeast;
 import static net.java.otr4j.util.Integers.requireInRange;
+import static net.java.otr4j.util.Integers.requireNotEquals;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
@@ -78,5 +79,15 @@ public class IntegersTest {
     @Test
     public void testParseUnsignedIntMaximumContainedIn32Bits() {
         assertEquals(-1, parseUnsignedInt("ffffffff", 16));
+    }
+
+    @Test
+    public void testRequireNotEqualsValueNotForbidden() {
+        assertEquals(1, requireNotEquals(0, 1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRequireNotEqualsValueForbidden() {
+        requireNotEquals(1, 1);
     }
 }

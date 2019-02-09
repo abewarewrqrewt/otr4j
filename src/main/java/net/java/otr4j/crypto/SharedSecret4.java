@@ -122,7 +122,6 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public Point getECDHPublicKey() {
-        requireNotClosed();
         return this.ecdhKeyPair.getPublicKey();
     }
 
@@ -133,7 +132,6 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public BigInteger getDHPublicKey() {
-        requireNotClosed();
         return this.dhKeyPair.getPublicKey();
     }
 
@@ -144,7 +142,6 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public Point getTheirECDHPublicKey() {
-        requireNotClosed();
         return theirECDHPublicKey;
     }
 
@@ -155,7 +152,6 @@ public final class SharedSecret4 implements AutoCloseable {
      */
     @Nonnull
     public BigInteger getTheirDHPublicKey() {
-        requireNotClosed();
         return theirDHPublicKey;
     }
 

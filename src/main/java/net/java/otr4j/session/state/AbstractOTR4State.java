@@ -55,7 +55,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
     @Override
     public String handleEncodedMessage(@Nonnull final Context context, @Nonnull final EncodedMessage message) throws OtrException {
         if (message.getVersion() != FOUR) {
-            // FIXME is it going to be an issue if we always delegate on message != OTRv4, even if DAKE in progress/finished?
+            // FIXME is it going to be an issue if we always delegate on message != OTRv4, even if (*OTRv4*) DAKE in progress/finished?
             return super.handleEncodedMessage(context, message);
         }
         final AbstractEncodedMessage encodedM;

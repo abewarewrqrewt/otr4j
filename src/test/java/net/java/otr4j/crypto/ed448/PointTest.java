@@ -17,8 +17,11 @@ import static java.math.BigInteger.valueOf;
 import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.identity;
 import static net.java.otr4j.crypto.ed448.Point.decodePoint;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.internal.util.reflection.Whitebox.getInternalState;
 
 @SuppressWarnings("ConstantConditions")
 public final class PointTest {
@@ -123,6 +126,13 @@ public final class PointTest {
     @Test(expected = IllegalStateException.class)
     public void testNegateIllegalPoint() {
         new Point(ILLEGAL_POINT_ENCODED.clone()).negate();
+    }
+
+    @Test
+    public void testClose() {
+        final Point p = new Point(BASE_POINT_ENCODED.clone());
+        p.close();
+        assertTrue(allZeroBytes((byte[]) getInternalState(p, "encoded")));
     }
 
     @Test(expected = IllegalStateException.class)

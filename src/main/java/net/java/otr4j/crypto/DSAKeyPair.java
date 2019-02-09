@@ -262,6 +262,8 @@ public final class DSAKeyPair {
         public DSASignature(@Nonnull final BigInteger r, @Nonnull final BigInteger s) {
             this.r = requireNonNull(r);
             this.s = requireNonNull(s);
+            assert this.r.bitLength() + this.s.bitLength() <= DSA_SIGNATURE_LENGTH_BYTES * 8
+                    : "Expected bit length of 'r' and 's' components to be at most 160 bits (40 bytes).";
         }
 
         @Override

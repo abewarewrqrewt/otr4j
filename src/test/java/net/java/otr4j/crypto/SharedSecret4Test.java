@@ -310,36 +310,36 @@ public class SharedSecret4Test {
         shared.rotateOurKeys(true);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetECDHPublicKeyAfterClosing() {
         final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
                 theirDHPublicKey, theirECDHPublicKey);
         shared.close();
-        shared.getECDHPublicKey();
+        assertNotNull(shared.getECDHPublicKey());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetDHPublicKeyAfterClosing() {
         final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
                 theirDHPublicKey, theirECDHPublicKey);
         shared.close();
-        shared.getDHPublicKey();
+        assertNotNull(shared.getDHPublicKey());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetTheirECDHPublicKeyAfterClosing() {
         final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
                 theirDHPublicKey, theirECDHPublicKey);
         shared.close();
-        shared.getTheirECDHPublicKey();
+        assertNotNull(shared.getTheirECDHPublicKey());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetTheirDHPublicKeyAfterClosing() {
         final SharedSecret4 shared = new SharedSecret4(RANDOM, DHKeyPair.generate(RANDOM), ECDHKeyPair.generate(RANDOM),
                 theirDHPublicKey, theirECDHPublicKey);
         shared.close();
-        shared.getTheirDHPublicKey();
+        assertNotNull(shared.getTheirDHPublicKey());
     }
 
     @Test(expected = IllegalStateException.class)

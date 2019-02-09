@@ -40,6 +40,7 @@ The design considerations that have been taken into account. These relate to the
   - `decrypt` --> authenticate then-if-authentication-succeeds decrypt, only succeeds if authentication and decryption both succeed.
   - `encrypt` --> generate the nonce then encrypt, then return both. Simple API.
   - `verify` --> throws checked exception such that you cannot forget to check the result.
+  - `ClientProfilePayload`: `ClientProfile`, i.e. individual field values of the client profile itself, are only accessible after successful validation.
 - Take into account certain side-channels, for as far as possible in Java given the JVM.
   - Constant-time comparison of sensitive data.
 - Strict state separation ensures that cryptographic code only needs to be implemented in encrypted states. (No possibility for state confusion)

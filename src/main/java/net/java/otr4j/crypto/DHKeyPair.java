@@ -26,7 +26,7 @@ public final class DHKeyPair implements AutoCloseable {
     /**
      * The expected length of DH private key.
      */
-    static final int DH_PRIVATE_KEY_LENGTH_BYTES = 80;
+    private static final int DH_PRIVATE_KEY_LENGTH_BYTES = 80;
 
     /**
      * The DH prime used as modulus.
