@@ -271,7 +271,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
     @Override
     @Nonnull
     public DataMessage transformSending(@Nonnull final Context context, @Nonnull final String msgText,
-            @Nonnull final Iterable<TLV> tlvs, final byte flags) throws OtrException {
+            @Nonnull final Iterable<TLV> tlvs, final byte flags) {
         final SessionID sessionID = context.getSessionID();
         logger.log(Level.FINEST, "{0} sends an encrypted message to {1} through {2}.",
                 new Object[]{sessionID.getAccountID(), sessionID.getUserID(), sessionID.getProtocolName()});

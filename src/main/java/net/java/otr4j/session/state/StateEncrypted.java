@@ -7,7 +7,6 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.TLV;
 import net.java.otr4j.messages.AbstractEncodedMessage;
 import net.java.otr4j.session.api.SMPHandler;
@@ -29,5 +28,5 @@ public interface StateEncrypted extends State {
     @Nonnull
     @Override
     AbstractEncodedMessage transformSending(@Nonnull Context context, @Nonnull String msgText,
-            @Nonnull Iterable<TLV> tlvs, byte flags) throws OtrException;
+            @Nonnull Iterable<TLV> tlvs, byte flags);
 }

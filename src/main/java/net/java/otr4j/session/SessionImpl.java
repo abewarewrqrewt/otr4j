@@ -1013,16 +1013,17 @@ final class SessionImpl implements Session, Context {
             logger.log(Level.INFO, "Not initiating SMP negotiation as we are currently not in an Encrypted messaging state.");
             return;
         }
+        final StateEncrypted encrypted = (StateEncrypted) session;
         // First try, we may find that we get an SMP Abort response. A running SMP negotiation was aborted.
-        final TLV tlv = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        injectMessage(session.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
-        if (!session.getSmpHandler().smpAbortedTLV(tlv)) {
+        final TLV tlv = encrypted.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
+        injectMessage(encrypted.transformSending(this, "", singletonList(tlv), FLAG_IGNORE_UNREADABLE));
+        if (!encrypted.getSmpHandler().smpAbortedTLV(tlv)) {
             return;
         }
         // Second try, in case first try aborted an open negotiation. Initiations should be possible at any moment, even
         // if this aborts a running SMP negotiation.
-        final TLV tlv2 = session.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
-        injectMessage(session.transformSending(this, "", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
+        final TLV tlv2 = encrypted.getSmpHandler().initiate(question == null ? "" : question, answer.getBytes(UTF_8));
+        injectMessage(encrypted.transformSending(this, "", singletonList(tlv2), FLAG_IGNORE_UNREADABLE));
     }
 
     /**

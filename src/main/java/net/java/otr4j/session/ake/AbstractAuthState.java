@@ -68,11 +68,7 @@ abstract class AbstractAuthState implements AuthState {
         final byte[] publicKeyEncrypted;
         // OTR: "Choose a random value r (128 bits)"
         final byte[] r = randomBytes(context.secureRandom(), new byte[OtrCryptoEngine.AES_KEY_BYTE_LENGTH]);
-        try {
-            publicKeyEncrypted = aesEncrypt(r, null, publicKeyBytes);
-        } catch (final OtrCryptoException ex) {
-            throw new IllegalStateException("Failed to encrypt public key bytes.", ex);
-        }
+        publicKeyEncrypted = aesEncrypt(r, null, publicKeyBytes);
         // OTR: "This is the SHA256 hash of gxmpi."
         final byte[] publicKeyHash = sha256Hash(publicKeyBytes);
         // OTR: "Sends Alice AESr(gx), HASH(gx)"

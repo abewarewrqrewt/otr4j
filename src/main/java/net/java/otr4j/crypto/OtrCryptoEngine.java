@@ -131,10 +131,9 @@ public final class OtrCryptoEngine {
      * @param b   the input bytes
      * @param key the salt
      * @return Returns the checksum.
-     * @throws OtrCryptoException In case of illegal key value.
      */
     @Nonnull
-    public static byte[] sha1Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key) throws OtrCryptoException {
+    public static byte[] sha1Hmac(@Nonnull final byte[] b, @Nonnull final byte[] key) {
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
         final byte[] macBytes;
@@ -145,7 +144,7 @@ public final class OtrCryptoEngine {
         } catch (final NoSuchAlgorithmException ex) {
             throw new IllegalStateException("Unsupported HMAC function specified.", ex);
         } catch (final InvalidKeyException ex) {
-            throw new OtrCryptoException("Invalid key, results in invalid keyspec.", ex);
+            throw new IllegalStateException("Invalid key, results in invalid keyspec.", ex);
         }
         // TODO verify if we need to take x bytes from the total package. Most likely HMAC_SHA1 already produces a 20-byte result.
         final byte[] bytes = new byte[MAC_LENGTH_BYTES];
@@ -249,11 +248,9 @@ public final class OtrCryptoEngine {
      * @param ctr the counter value to use
      * @param b   the plaintext content in bytes
      * @return Returns the encrypted content.
-     * @throws OtrCryptoException In case of failure to encrypt content.
      */
     @Nonnull
-    public static byte[] aesEncrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b)
-            throws OtrCryptoException {
+    public static byte[] aesEncrypt(@Nonnull final byte[] key, @Nullable final byte[] ctr, @Nonnull final byte[] b) {
         assert !allZeroBytes(key) : "Expected non-zero bytes for key. This may indicate that a critical bug is present, or it may be a false warning.";
         assert !allZeroBytes(b) : "Expected non-zero bytes for b. This may indicate that a critical bug is present, or it may be a false warning.";
         final AESEngine aesEnc = new AESEngine();
@@ -268,7 +265,7 @@ public final class OtrCryptoEngine {
         try {
             bufSicAesEnc.doFinal(aesOutLwEnc, done);
         } catch (final InvalidCipherTextException ex) {
-            throw new OtrCryptoException("Failed to encrypt content.", ex);
+            throw new IllegalStateException("Failed to encrypt content.", ex);
         }
         return aesOutLwEnc;
     }
