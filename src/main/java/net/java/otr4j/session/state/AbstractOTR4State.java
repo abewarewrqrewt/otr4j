@@ -36,7 +36,6 @@ import java.util.logging.Logger;
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
-import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.ringSign;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
 import static net.java.otr4j.messages.IdentityMessages.validate;
@@ -184,11 +183,6 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED (OTRv4).");
         }
         LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv4)");
-        if (context.getMasterSession().getOutgoingSession().getSessionStatus() == PLAINTEXT) {
-            LOGGER.finest("Switching to the just-secured session, as the previous outgoing session was a PLAINTEXT state.");
-            // FIXME should we signal 'session status changed' somewhere? Should we expect the engine host to check for itself?
-            context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
-        }
     }
 
     /**

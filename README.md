@@ -13,144 +13,145 @@ Development stages:
 
 _Note: temporary dependency on [github.com/otr4j/joldilocks][joldilocks]: see bottom of README.md_
 
-* ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving)  
+- ✔ Minimal working encryption (Interactive DAKE, message encryption/decryption, self-serving)  
 _a.k.a. "at least the bugs are symmetric in nature :-)"_
-* ✔ Socialist Millionaire's Protocol for OTRv4.
-* ✔ Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
-* ⌛ Migrate Ed448-Goldilocks implementation to Bouncy Castle.
-  * ✔ EdDSA long-term keypair
-  * ECDH keypair  
+- ✔ Socialist Millionaire's Protocol for OTRv4.
+- ✔ Migrate OTRv4 DAKE state machine into OTRv4 Message state machine.
+- ⌛ Migrate Ed448-Goldilocks implementation to Bouncy Castle.
+  - ✔ EdDSA long-term keypair
+  - ECDH keypair  
   _Requires additions to the BouncyCastle API, as certain necessary operations are not currently supplied._
-  * Verify if implementation is still concise and simple, given recent modifications to Point and Scalar internals.
-* Support for skipped messages, keeping track of skipped message keys.
-* OTRv4 maintenance tasks:
-  - clean up old (abandoned) message fragments
-  - clean up old sessions and reveal memorized MACs
-* Full implementation of "OTRv3-compatible" + "OTRv4 Interactive" use-case (including all FIXMEs)
+  - Verify if implementation is still concise and simple, given recent modifications to Point and Scalar internals.
+- Support for skipped messages, keeping track of skipped message keys.
+- OTRv4 maintenance tasks
+- Full implementation of "OTRv3-compatible" + "OTRv4 Interactive" use-case (including all FIXMEs)
   - Full review against the (finalized) OTRv4 spec.  
     _As the specification has been modified during implementation of support in otr4j, a full review against current spec is needed._
-  - Fix and guard the public API offered by otr4j.
-* ... (OTRv4 Non-interactive, ...)
-* Clean up remaining TODOs
-* Review the many logging statements and verify if log levels are reasonable.
+  - Stabilize, fix and then guard the public API offered by otr4j.
+- Clean up remaining TODOs
+- ... (OTRv4 Non-interactive, ...)
+- Review the many logging statements and verify if log levels are reasonable.
 
 ## Functionality
 
-* General Off-the-record operation:
-  * ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
-  * ☑ Persistent instance tags
-  * ☑ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
-  * ☐ OTRv4 extension to OTR error messages
-  * ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
-  * ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
-  * ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost (Affects _Deniability_-property.)
-* Cryptographic primitives:
-  * Edd448-Goldilocks elliptic curve (temporary solution)
-    * ☑ Temporary working solution
-    * ⌛ Migrate to BouncyCastle 1.60.
-  * 3072-bit Diffie-Hellman parameters
-    * ☑ Temporary working solution
-    * ☐ Verify if current solution is acceptable, otherwise migrate to JCA/BC
-  * ☑ XSalsa20 symmetric cipher
-  * ☑ SHAKE-256
-  * ☑ Ring signatures
-* Key Exchange:
-  * ☑ Interactive DAKE
-  * ☐ Non-interactive DAKE
-* Key Management:
-  * Double Ratchet:
-    * ☑ Generate next message keys (in-order messages)
-    * ☑ Generate future message keys (skip over missing messages)
-    * ☐ Store and recall skipped message keys (out-of-order messages)
-  * Shared secrets management:
-    * ☑ Ephemeral DH with 3072-bit parameters
-    * ☑ Ephemeral ECDH based on Ed448-Goldilocks
-    * ☑ Key rotation
-  * ☑ Calculate _Encryption_, _MAC_ and _Extra Symmetric Key_ keys
-  * ☑ Revealing used MAC keys
-  * ☐ Periodic clean-up of "old" skipped message keys
-  * ☐ Session expiration (and revealing remaining MAC keys)
-* Message encryption/decryption:
-  * ☑ In-order messages
-  * ☑ In-order messages with some messages missing
-  * ☐ Out-of-order messages
-* Fragmentation and re-assembly:
-  * ☑ Fragmentation
-  * ☑ Re-assembling fragmented messages
-* Socialist Millionaire's Protocol:
-  * ☑ OTRv2/OTRv3
-  * ☑ OTRv4
-* Client and PreKey Profiles:
-  * ☑ Client Profile support
-  * ☐ PreKey profile support
-* Extra Symmetric Key support:
-  * ☑ OTRv3
-  * OTRv4
-    * ☐ Base "Extra Symmetric Key" available for use.
-    * ☐ Derived keys according to OTRv4 prescribed derivation
-* API support:
-  * ☐ verify if API still fully suitable for clients to adopt.
-  * ☐ ability to import/export DSA and EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
-  * ☐ `OtrKeyManager` was removed. Evaluate whether this is a problem for adopters. (I prefer to leave it out or put it in its own repository.)
-* Misc
-  * ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  
+- General Off-the-record operation:
+  - ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
+  - ☑ Persistent instance tags
+  - ☑ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
+  - ☐ OTRv4 extension to OTR error messages
+  - ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
+  - ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
+  - ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost (Affects _Deniability_-property.)
+- Cryptographic primitives:
+  - Edd448-Goldilocks elliptic curve (temporary solution)
+    - ☑ Temporary working solution
+    - ⌛ Migrate to BouncyCastle 1.60.
+  - 3072-bit Diffie-Hellman parameters
+    - ☑ Temporary working solution
+    - ☐ Verify if current solution is acceptable, otherwise migrate to JCA/BC
+  - ☑ XSalsa20 symmetric cipher
+  - ☑ SHAKE-256
+  - ☑ Ring signatures
+- Key Exchange:
+  - ☑ Interactive DAKE
+  - ☐ Non-interactive DAKE
+- Key Management:
+  - Double Ratchet:
+    - ☑ Generate next message keys (in-order messages)
+    - ☑ Generate future message keys (skip over missing messages)
+    - ☐ Store and recall skipped message keys (out-of-order messages)
+  - Shared secrets management:
+    - ☑ Ephemeral DH with 3072-bit parameters
+    - ☑ Ephemeral ECDH based on Ed448-Goldilocks
+    - ☑ Key rotation
+  - ☑ Calculate _Encryption_, _MAC_ and _Extra Symmetric Key_ keys
+  - ☑ Revealing used MAC keys
+  - ☐ Periodic clean-up of "old" skipped message keys
+  - ☐ Session expiration (and revealing remaining MAC keys)
+- Message encryption/decryption:
+  - ☑ In-order messages
+  - ☑ In-order messages with some messages missing
+  - ☐ Out-of-order messages
+- Fragmentation and re-assembly:
+  - ☑ Fragmentation
+  - ☑ Re-assembling fragmented messages
+- Socialist Millionaire's Protocol:
+  - ☑ OTRv2/OTRv3
+  - ☑ OTRv4
+- Client and PreKey Profiles:
+  - ☑ Client Profile support
+  - ☐ PreKey profile support
+- Extra Symmetric Key support:
+  - ☑ OTRv3
+  - OTRv4
+    - ☐ Base "Extra Symmetric Key" available for use.
+    - ☐ Derived keys according to OTRv4 prescribed derivation
+- API support:
+  - ☐ verify if API still fully suitable for clients to adopt.
+  - ☐ ability to import/export DSA and EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
+  - ☐ `OtrKeyManager` was removed. Evaluate whether this is a problem for adopters. (I prefer to leave it out or put it in its own repository.)
+- Misc
+  - ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  
   _Although not explicitly document that this is necessary, it should not break any existing applications. This makes implementations of OTRv3 and OTRv4 more similar and promotes better behavior in general, being: the other party is not needlessly warned for (lost) messages that do not contain valuable content, i.e. they are part of the OTR process, but do not contain user content themselves._
-  * ☐ Ability to define own, customized-per-network `phi` (shared session state) implementer addition for the `t` value calculation.  
+  - ☐ Ability to define own, customized-per-network `phi` (shared session state) implementer addition for the `t` value calculation.  
   _Under consideration as part of the [OTRv4 client implementation recommendations](https://github.com/otrv4/otrv4-client-imp-recommendations/issues/3)._
-  * ☐ Evaluate whether there really is an advantage to having `OtrEngineHost` calls specify a session instance. (Does it make sense to make the distinction?)
-  * ☐ Evaluate cases of `OtrException` being thrown. Reduce number of cases where user has to handle an exception without there being a real resolution.
+  - ☐ Evaluate whether there really is an advantage to having `OtrEngineHost` calls specify a session instance. (Does it make sense to make the distinction?)
+  - ☐ Evaluate cases of `OtrException` being thrown. Reduce number of cases where user has to handle an exception without there being a real resolution.
+  - ☐ Maintenance: clean up old (abandoned) message fragments
+  - ☐ Maintenance: clean up old sessions and reveal memorized MACs (with specified expiration time)
+  - ☐ Maintenance: send periodic heartbeat messages
 
 ## Operational
 
-* Constant-time implementations:
-  * ☑ MAC key comparison
-  * ☑ Point and Scalar equality
-  * ☐ Scalar value comparison
-  * ☐ Ring signatures implemented fully constant-time.
-* Cleaning up data:
-  * ☑ Clearing byte-arrays containing sensitive material after use.
-  * ☐ Clean up remaining message keys instances when transitioning away from encrypted message states.
-  * ☐ Investigate effectiveness of clearing byte-arrays right before potential GC. (Maybe they are optimized away by JVM?)
-* Verify OTR-protocol obligations of other party:
-  * ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
-* In-memory representation of points and scalar values as byte-arrays:  
+- Constant-time implementations:
+  - ☑ MAC key comparison
+  - ☑ Point and Scalar equality
+  - ☐ Scalar value comparison
+  - ☐ Ring signatures implemented fully constant-time.
+- Cleaning up data:
+  - ☑ Clearing byte-arrays containing sensitive material after use.
+  - ☐ Clean up remaining message keys instances when transitioning away from encrypted message states.
+  - ☐ Investigate effectiveness of clearing byte-arrays right before potential GC. (Maybe they are optimized away by JVM?)
+- Verify OTR-protocol obligations of other party:
+  - ☑ Verify that revealed MAC keys are present when expected. (I.e. is list of revealed MAC keys larger than 0 bytes?)
+- In-memory representation of points and scalar values as byte-arrays:  
   _Note that we specifically refer to how the data is represented in memory. Operations require temporary conversion back and forth into an intermediate type._
-  * ☑ Points kept as byte-arrays.
-  * ☑ Scalar values kept as byte-arrays.
-* Mathematical operations act on byte-array representations directly:  
+  - ☑ Points kept as byte-arrays.
+  - ☑ Scalar values kept as byte-arrays.
+- Mathematical operations act on byte-array representations directly:  
   _See also [BearSSL big integer operations](https://www.bearssl.org/bigint.html)_
-  * ☐ Scalar arithmetic operations
-  * ☐ Point arithmetic operations
-* Robustness
-  * ☑ otr4j does not handle Error-type exceptions.  
+  - ☐ Scalar arithmetic operations
+  - ☐ Point arithmetic operations
+- Robustness
+  - ☑ otr4j does not handle Error-type exceptions.  
   _If critical situations occur, for instance `OutOfMemoryError`, then all bets are off._
-  * ☑ otr4j protects itself against `RuntimeException`s caused by callbacks into the host application.
+  - ☑ otr4j protects itself against `RuntimeException`s caused by callbacks into the host application.
   _Any occurrence of a `RuntimeException` is considered a bug on the host application side, and is caught and logged by otr4j._
-* Stability
-  * ☐ Profile library in execution.
-  * ☐ Measure memory usage changes under long-term use/heavy load.
-* OTRv3 - catching up:
-  * ☐ In-memory representation for OTRv3.
-  * ☐ Arithmetical operations on byte-arrays for OTRv2 and/or OTRv3 logic.
+- Stability
+  - ☐ Profile library in execution.
+  - ☐ Measure memory usage changes under long-term use/heavy load.
+- OTRv3 - catching up:
+  - ☐ In-memory representation for OTRv3.
+  - ☐ Arithmetical operations on byte-arrays for OTRv2 and/or OTRv3 logic.
 
 ## Developmental
 
-* ☑ Encapsulate cryptographic material such that design facilitates appropriate use and maintenance.
-* ☑ States, such as Message states, isolated as to prevent mistakes in mixing up variables and state management for different states.
-* ☑ Strategically placed assertions to discover mistakes such as uninitialized/cleared byte-arrays.
-* Tool support:
-  * ☑ JSR-305 annotations for static analysis
-  * ☑ Introduce compiler warnings failure at build-time
-  * ☑ Introduce pmd analysis at build-time.
-  * ☑ Introduce SpotBugs analysis at build-time
-  * ☑ Introduce checkstyle at build-time to guard formatting/style
-  * ☑ Introduce checkstyle _ImportControl_ module to guard the design structure
-  * ☐ Introduce [Animal sniffer](https://www.mojohaus.org/animal-sniffer/) build plug-in to verify that we do not break backwards-compatibility, once released.
-  * ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
-  * ☐ Experiment with features of [Checker Framework](https://checkerframework.org).
-* ⌛ Issue: some tests fail on a rare occasion due to the `assert` checks that are embedded in the code. These tests should be updated to assume successful execution if input would trigger the assertion.
-* ☐ Significant amount of unit tests to accompany the library. (Currently: 1200+)
-* ☐ Interoperability testing with other OTRv4 implementations.
+- ☑ Encapsulate cryptographic material such that design facilitates appropriate use and maintenance.
+- ☑ States, such as Message states, isolated as to prevent mistakes in mixing up variables and state management for different states.
+- ☑ Strategically placed assertions to discover mistakes such as uninitialized/cleared byte-arrays.
+- Tool support:
+  - ☑ JSR-305 annotations for static analysis
+  - ☑ Introduce compiler warnings failure at build-time
+  - ☑ Introduce pmd analysis at build-time.
+  - ☑ Introduce SpotBugs analysis at build-time
+  - ☑ Introduce checkstyle at build-time to guard formatting/style
+  - ☑ Introduce checkstyle _ImportControl_ module to guard the design structure
+  - ☐ Introduce [Animal sniffer](https://www.mojohaus.org/animal-sniffer/) build plug-in to verify that we do not break backwards-compatibility, once released.
+  - ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
+  - ☐ Experiment with features of [Checker Framework](https://checkerframework.org).
+- ⌛ Issue: some tests fail on a rare occasion due to the `assert` checks that are embedded in the code. These tests should be updated to assume successful execution if input would trigger the assertion.
+- ☐ Significant amount of unit tests to accompany the library. (Currently: 1200+)
+- ☐ Interoperability testing with other OTRv4 implementations.
 
 ## Architectural considerations
 

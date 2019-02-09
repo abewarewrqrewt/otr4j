@@ -68,6 +68,7 @@ import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
+import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
@@ -337,6 +338,16 @@ final class SessionImpl implements Session, Context {
         }
         logger.log(Level.FINE, "Transitioning to message state: " + toState);
         this.sessionState = requireNonNull(toState);
+        if (fromState.getStatus() != ENCRYPTED && toState.getStatus() == ENCRYPTED
+                && this.masterSession.getOutgoingSession().getSessionStatus() == PLAINTEXT) {
+            // This behavior is adopted to preserve behavior between otr4j before refactoring and after. Originally,
+            // the master session would contain some fields that would indicate session status even though a slave
+            // session was created. Now we ensure that once we have secured the session, we also switch to that
+            // session such that subsequently sent messages are already encrypted, even if the client does not
+            // explicitly switch.
+            logger.finest("Switching to the just-secured session, as the previous state was an insecure state.");
+            this.masterSession.setOutgoingSession(getReceiverInstanceTag());
+        }
         fromState.destroy();
         sessionStatusChanged(duplicate(listeners), this.sessionID, this.receiverTag);
     }

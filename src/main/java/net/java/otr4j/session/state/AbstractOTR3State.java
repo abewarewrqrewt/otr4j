@@ -33,7 +33,6 @@ import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
-import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.messages.EncodedMessageParser.parseEncodedMessage;
 
 /**
@@ -165,15 +164,6 @@ abstract class AbstractOTR3State implements State {
             throw new IllegalStateException("Session failed to transition to ENCRYPTED. (OTRv2/OTRv3)");
         }
         LOGGER.info("Session secured. Message state transitioned to ENCRYPTED. (OTRv2/OTRv3)");
-        if (context.getMasterSession().getOutgoingSession().getSessionStatus() == PLAINTEXT) {
-            // This behavior is adopted to preserve behavior between otr4j before refactoring and after. Originally,
-            // the master session would contain some fields that would indicate session status even though a slave
-            // session was created. Now we ensure that once we have secured the session, we also switch to that
-            // session such that subsequently sent messages are already encrypted, even if the client does not
-            // explicitly switch.
-            LOGGER.finest("Switching to the just-secured session, as the previous state was a PLAINTEXT state.");
-            context.getMasterSession().setOutgoingSession(context.getReceiverInstanceTag());
-        }
     }
 
     @Nonnull
