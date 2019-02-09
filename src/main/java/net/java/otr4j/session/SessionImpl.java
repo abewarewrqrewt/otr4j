@@ -338,6 +338,7 @@ final class SessionImpl implements Session, Context {
         }
         logger.log(Level.FINE, "Transitioning to message state: " + toState);
         this.sessionState = requireNonNull(toState);
+        // FIXME consider writing unit test to verify that we indeed switch default outgoing session to the secured session.
         if (fromState.getStatus() != ENCRYPTED && toState.getStatus() == ENCRYPTED
                 && this.masterSession.getOutgoingSession().getSessionStatus() == PLAINTEXT) {
             // This behavior is adopted to preserve behavior between otr4j before refactoring and after. Originally,
@@ -898,8 +899,6 @@ final class SessionImpl implements Session, Context {
             throw new UnsupportedOperationException("Only master session is allowed to set/change the outgoing session instance.");
         }
         if (tag.equals(this.receiverTag)) {
-            // Instance tag belongs to master session, set master session as
-            // outgoing session.
             outgoingSession = this;
             outgoingSessionChanged(duplicate(listeners), this.sessionID);
             return;

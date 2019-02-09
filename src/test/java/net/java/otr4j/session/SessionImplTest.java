@@ -9,6 +9,7 @@ package net.java.otr4j.session;
 
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.OtrEngineHost;
+import net.java.otr4j.api.OtrEngineListener;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
@@ -21,6 +22,8 @@ import java.security.SecureRandom;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
+import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
+import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -76,5 +79,26 @@ public final class SessionImplTest {
         verify(secondState, times(0)).destroy();
         session.transition(secondState, mock(State.class));
         verify(secondState, times(1)).destroy();
+    }
+
+    @Test
+    public void testTransitionToSecureSessionCallsSessionStatusChanged() {
+        final EdDSAKeyPair longTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point forgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final SessionID sessionID = new SessionID("bob@network", "alice@network", "network");
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), forgingKey,
+                singleton(Version.FOUR), null);
+        final OtrEngineHost host = mock(OtrEngineHost.class);
+        when(host.getLongTermKeyPair(eq(sessionID))).thenReturn(longTermKeyPair);
+        when(host.getClientProfile(eq(sessionID))).thenReturn(profile);
+        final SessionImpl session = new SessionImpl(sessionID, host);
+        final OtrEngineListener listener = mock(OtrEngineListener.class);
+        session.addOtrEngineListener(listener);
+        final State secondState = mock(State.class);
+        when(secondState.getStatus()).thenReturn(ENCRYPTED);
+        session.transition((State) Whitebox.getInternalState(session, "sessionState"), secondState);
+        // Testing with master session here for simplicity, so not completely representative, but does confirm that
+        // sessionStatusChanged is called.
+        verify(listener, times(1)).sessionStatusChanged(eq(sessionID), eq(ZERO_TAG));
     }
 }
