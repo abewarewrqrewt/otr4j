@@ -10,7 +10,7 @@ A limited number of architectural considerations have been chosen, ordered by pr
 The code must implement the OTR-protocol specification correctly.
 1. __Security__  
 Care for security-sensitive parts of the code. Consideration of side-channels, protect cryptographic material from
-accidents, misuse and abuse.
+accidents, misuse and abuse. This order assumes that protocol correctness includes security properties, as is reasonable to expect.
 1. __Design that prevents or makes obvious programming errors__  
 Write the code in such a way that unexpected behavior becomes obvious.
 1. __Simplicity__  
@@ -114,3 +114,7 @@ Packages must only depend on package on lower layers of the structure.
 # Public API
 
 `TODO: document what is part of the official public API.`
+
+# Code layout rules
+
+`TODO: describe the code layout rules that result in the current package structure and method distribution.`

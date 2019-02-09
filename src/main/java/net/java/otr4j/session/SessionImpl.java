@@ -338,7 +338,6 @@ final class SessionImpl implements Session, Context {
         }
         logger.log(Level.FINE, "Transitioning to message state: " + toState);
         this.sessionState = requireNonNull(toState);
-        // FIXME consider writing unit test to verify that we indeed switch default outgoing session to the secured session.
         if (fromState.getStatus() != ENCRYPTED && toState.getStatus() == ENCRYPTED
                 && this.masterSession.getOutgoingSession().getSessionStatus() == PLAINTEXT) {
             // This behavior is adopted to preserve behavior between otr4j before refactoring and after. Originally,
@@ -730,9 +729,12 @@ final class SessionImpl implements Session, Context {
             return new String[0];
         }
         final String serialized = writeMessage(m);
-        if (m instanceof PlainTextMessage) {
-            // FIXME shouldn't this be QueryMessage i.s.o. PlainTextMessage. Because we don't capture the queryTag of a QueryMessage now, right?
-            this.masterSession.queryTag = ((PlainTextMessage) m).getTag();
+        if (m instanceof QueryMessage) {
+            // We're testing for QueryMessage, but the query message does not pass through here. It is always injected
+            // through the OtrEngineHost. Even so, this makes for a more complete logic and would work for QueryMessages
+            // equally well if we ever change the control flow.
+            // TODO how should we treat manually typed OTR query messages. They will be sent to the receiving party, but we don't currently record the query tag.
+            this.masterSession.queryTag = ((QueryMessage) m).getTag();
             return new String[] {serialized};
         }
         if (m instanceof AbstractEncodedMessage) {
@@ -880,7 +882,7 @@ final class SessionImpl implements Session, Context {
     @Override
     @Nonnull
     public List<SessionImpl> getInstances() {
-        // TODO guard this from being called in slave session?
+        assert this == this.masterSession : "BUG: expected this method to be called from master session only.";
         final List<SessionImpl> result = new ArrayList<>();
         result.add(this);
         result.addAll(slaveSessions.values());
