@@ -450,18 +450,17 @@ final class SessionImpl implements Session, Context {
                 slave = this.slaveSessions.get(fragment.getSendertag());
             }
             return slave.handleFragment(fragment);
-        } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).getVersion() == THREE
-                || ((EncodedMessage) m).getVersion() == FOUR)) {
+        } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).version == THREE
+                || ((EncodedMessage) m).version == FOUR)) {
             final EncodedMessage message = (EncodedMessage) m;
 
-            if (ZERO_TAG.equals(message.getSenderTag())) {
+            if (ZERO_TAG.equals(message.senderTag)) {
                 // An encoded message without a sender instance tag is always bad.
                 logger.warning("Encoded message is missing sender instance tag. Ignoring message.");
                 return null;
             }
 
-            if (!ZERO_TAG.equals(message.getReceiverTag())
-                    && !message.getReceiverTag().equals(this.profile.getInstanceTag())) {
+            if (!ZERO_TAG.equals(message.receiverTag) && !message.receiverTag.equals(this.profile.getInstanceTag())) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received an encoded message with receiver instance tag that is different from ours. Ignore this message.");
                 messageFromAnotherInstanceReceived(this.host, sessionID);
@@ -470,17 +469,17 @@ final class SessionImpl implements Session, Context {
 
             final SessionImpl slave;
             synchronized (this.slaveSessions) {
-                if (!this.slaveSessions.containsKey(message.getSenderTag())) {
+                if (!this.slaveSessions.containsKey(message.senderTag)) {
                     final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                            message.getSenderTag(), this.secureRandom);
+                            message.senderTag, this.secureRandom);
                     newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
-                    this.slaveSessions.put(message.getSenderTag(), newSlaveSession);
+                    this.slaveSessions.put(message.senderTag, newSlaveSession);
                 }
                 // FIXME when to detect multiple instances and signal local user with message?
-                slave = this.slaveSessions.get(message.getSenderTag());
+                slave = this.slaveSessions.get(message.senderTag);
             }
             logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}",
-                    message.getSenderTag().getValue());
+                    message.senderTag.getValue());
             return slave.handleEncodedMessage(message);
         }
 
@@ -545,9 +544,8 @@ final class SessionImpl implements Session, Context {
         // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
         // inconsistencies to ensure that the inconsistencies cannot be exploited.
         // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
-        if (message.getVersion() != fragment.getVersion()
-                || !message.getSenderTag().equals(fragment.getSendertag())
-                || !message.getReceiverTag().equals(fragment.getReceivertag())) {
+        if (message.version != fragment.getVersion() || !message.senderTag.equals(fragment.getSendertag())
+                || !message.receiverTag.equals(fragment.getReceivertag())) {
             logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
             return null;
         }
@@ -563,15 +561,15 @@ final class SessionImpl implements Session, Context {
      */
     @Nullable
     private String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
-        assert this.masterSession != this || message.getVersion() == TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
-        assert !ZERO_TAG.equals(message.getSenderTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
+        assert this.masterSession != this || message.version == TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
+        assert !ZERO_TAG.equals(message.senderTag) : "BUG: No encoded message without sender instance tag should reach this point.";
         // TODO We've started replicating current (auth)State in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
-        if (message.getVersion() == THREE && checkDHKeyMessage(message.getType())) {
+        if (message.version == THREE && checkDHKeyMessage(message)) {
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             // FIXME evaluate whether this screws things up in case we *do* know the receiver instance tag in advance, as we would be copying an outdated authentication-state instance.
             // TODO verify whether this can also work if DH-Commit / Identity message is sent immediately with receiver instance tag. (As you can immediately store the query tag in the corresponding slave session.)
             this.sessionState.setAuthState(this.masterSession.sessionState.getAuthState());
-        } else if (checkAuthRMessage(message.getType())) {
+        } else if (checkAuthRMessage(message)) {
             assert this != this.masterSession : "We expected to be working inside a slave session instead of a master session.";
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             // FIXME We now copy the state whenever an Auth-R message is received. Will this screw with running encrypted sessions? (in unexpected ways, for example sudden transition to plaintext)

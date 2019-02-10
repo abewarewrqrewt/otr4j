@@ -48,54 +48,44 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@SuppressWarnings("ConstantConditions")
 public class EncodedMessageParserTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    @Test(expected = NullPointerException.class)
-    public void testParsingNullSenderTag() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(4, 0x35, null, ZERO_TAG, new OtrInputStream(new byte[0]));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testParsingNullReceiverTag() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(4, 0x35, ZERO_TAG, null, new OtrInputStream(new byte[0]));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testParsingNullInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(4, 0x35, ZERO_TAG, ZERO_TAG, null);
-    }
-
     @Test(expected = ProtocolException.class)
     public void testParsingEmptyInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(4, 0x35, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
+        parseEncodedMessage(new EncodedMessage(Version.FOUR, 0x35, ZERO_TAG, ZERO_TAG,
+                new OtrInputStream(new byte[0])));
     }
 
     @Test(expected = ProtocolException.class)
     public void testParsingIncompleteInputStream() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(3, 0x35, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[] {0x10, 0x20}));
+        parseEncodedMessage(new EncodedMessage(Version.THREE, 0x35, ZERO_TAG, ZERO_TAG,
+                new OtrInputStream(new byte[] {0x10, 0x20})));
     }
 
     @Test(expected = ProtocolException.class)
     public void testParsingUnsupportedMessageType() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(3, 0xff, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
+        parseEncodedMessage(new EncodedMessage(Version.THREE, 0xff, ZERO_TAG, ZERO_TAG,
+                new OtrInputStream(new byte[0])));
     }
 
     @Test(expected = IllegalStateException.class)
     public void testParsingUnsupportedVersion0() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(0, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
+        parseEncodedMessage(new EncodedMessage(0, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG,
+                new OtrInputStream(new byte[0])));
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testParsingUnsupportedFutureVersion() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(99, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
+        parseEncodedMessage(new EncodedMessage(99, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG,
+                new OtrInputStream(new byte[0])));
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testParsingUnsupportedOTRv1() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
-        parseEncodedMessage(1, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG, new OtrInputStream(new byte[0]));
+        parseEncodedMessage(new EncodedMessage(1, DataMessage.MESSAGE_DATA, ZERO_TAG, ZERO_TAG,
+                new OtrInputStream(new byte[0])));
     }
 
     @Test
@@ -110,8 +100,7 @@ public class EncodedMessageParserTest {
         // Parse produced message bytes.
         final EncodedMessage message = (EncodedMessage) MessageParser.parse("?OTR:"
                 + Base64.toBase64String(output.toByteArray()) + ".");
-        final AbstractEncodedMessage parsedM = parseEncodedMessage(message.getVersion(), message.getType(),
-                message.getSenderTag(), message.getReceiverTag(), message.getPayload());
+        final AbstractEncodedMessage parsedM = parseEncodedMessage(message);
         assertEquals(m, parsedM);
     }
 
@@ -120,8 +109,7 @@ public class EncodedMessageParserTest {
         final String input = "?OTR:AAQKAAAwOQCWtD8AAADA7Z2lLvD52pq9eBg1YtUPKRzDhiJbugQjqWOGKCGy9n1nV7M9+4Xoev7wgEtsUMvY9UcbaXpNLXQMlcqSpZfwRNTogXk1lOir9h8NwaURj+/ruB2jq55STMfc11E4tBmyhATStwu5VPG+5iupUjagkhsdI6I1a3ZkGXp8gAr/Utx9IB2GeXDh7HRvqRacg96X1w69IQc1lH/dVFam/OpdxCMmME1QM6N6vRRh2y34oElNhlOMGwIO9tjKr2F9m9mC.";
         // Parse produced message bytes.
         final EncodedMessage message = (EncodedMessage) MessageParser.parse(input);
-        parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderTag(), message.getReceiverTag(),
-                message.getPayload());
+        parseEncodedMessage(message);
     }
 
     @Test
@@ -139,15 +127,16 @@ public class EncodedMessageParserTest {
             // try every substring in between.
             final byte[] partial = copyOf(payload, i);
             try {
-                parseEncodedMessage(Version.THREE, DHKeyMessage.MESSAGE_DHKEY, new InstanceTag(12345),
-                        new InstanceTag(9876543), new OtrInputStream(partial));
+                parseEncodedMessage(new EncodedMessage(Version.THREE, DHKeyMessage.MESSAGE_DHKEY,
+                        new InstanceTag(12345), new InstanceTag(9876543), new OtrInputStream(partial)));
                 fail("Expected exception due to parsing an incomplete message.");
             } catch (final ProtocolException | OtrCryptoException expected) {
                 // Expected behavior for partial messages being parsed.
             }
         }
-        final AbstractEncodedMessage dhKeyMessage = parseEncodedMessage(Version.THREE, DHKeyMessage.MESSAGE_DHKEY,
-                new InstanceTag(12345), new InstanceTag(9876543), new OtrInputStream(payload));
+        final AbstractEncodedMessage dhKeyMessage = parseEncodedMessage(new EncodedMessage(Version.THREE,
+                DHKeyMessage.MESSAGE_DHKEY, new InstanceTag(12345), new InstanceTag(9876543),
+                new OtrInputStream(payload)));
         assertTrue(dhKeyMessage instanceof DHKeyMessage);
     }
 
@@ -159,8 +148,7 @@ public class EncodedMessageParserTest {
                 SMALLEST_TAG, HIGHEST_TAG);
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
-        final DHCommitMessage parsed = (DHCommitMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
+        final DHCommitMessage parsed = (DHCommitMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
 
@@ -173,8 +161,7 @@ public class EncodedMessageParserTest {
                 revealedKey, SMALLEST_TAG, HIGHEST_TAG);
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
-        final RevealSignatureMessage parsed = (RevealSignatureMessage) parseEncodedMessage(encoded.getVersion(),
-                encoded.getType(), encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
+        final RevealSignatureMessage parsed = (RevealSignatureMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
 
@@ -186,8 +173,7 @@ public class EncodedMessageParserTest {
                 HIGHEST_TAG);
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
-        final SignatureMessage parsed = (SignatureMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
+        final SignatureMessage parsed = (SignatureMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
 
@@ -204,8 +190,8 @@ public class EncodedMessageParserTest {
                 dhKeyPair.getPublic(), ctr, message, mac, oldMacKeys, SMALLEST_TAG, HIGHEST_TAG);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parseEncodedMessage(3, DataMessage.MESSAGE_DATA, SMALLEST_TAG,
-                HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parseEncodedMessage(new EncodedMessage(Version.THREE,
+                DataMessage.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload)));
         assertEquals(input, result);
     }
 
@@ -219,8 +205,8 @@ public class EncodedMessageParserTest {
                 randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG,
-                HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parseEncodedMessage(new EncodedMessage(Version.FOUR,
+                DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload)));
         assertEquals(input, result);
     }
 
@@ -233,8 +219,8 @@ public class EncodedMessageParserTest {
                 randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
-        final AbstractEncodedMessage result = parseEncodedMessage(Version.FOUR, DataMessage4.MESSAGE_DATA, SMALLEST_TAG,
-                HIGHEST_TAG, new OtrInputStream(payload));
+        final AbstractEncodedMessage result = parseEncodedMessage(new EncodedMessage(Version.FOUR,
+                DataMessage4.MESSAGE_DATA, SMALLEST_TAG, HIGHEST_TAG, new OtrInputStream(payload)));
         assertEquals(input, result);
     }
 
@@ -257,8 +243,7 @@ public class EncodedMessageParserTest {
                 ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
-        final IdentityMessage parsed = (IdentityMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
+        final IdentityMessage parsed = (IdentityMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
 
@@ -299,8 +284,7 @@ public class EncodedMessageParserTest {
                 ourA, sigma, ourFirstECDHPublicKey, ourFirstDHPublicKey);
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
-        final AuthRMessage parsed = (AuthRMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
+        final AuthRMessage parsed = (AuthRMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
 
@@ -339,8 +323,7 @@ public class EncodedMessageParserTest {
         final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
-        final AuthIMessage parsed = (AuthIMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
+        final AuthIMessage parsed = (AuthIMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
 }

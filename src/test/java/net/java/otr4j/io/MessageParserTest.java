@@ -315,32 +315,32 @@ public final class MessageParserTest {
     public void testParseCorrectOTRv4Header() throws ProtocolException {
         final EncodedMessage encoded = (EncodedMessage) parse("?OTR:" + Base64.toBase64String(
                 new byte[] {0x00, 0x04, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1}) + ".");
-        assertEquals(4, encoded.getVersion());
-        assertEquals((byte) 0xff, encoded.getType());
-        assertEquals(0x01020304, encoded.getSenderTag().getValue());
-        assertEquals(0x04030201, encoded.getReceiverTag().getValue());
+        assertEquals(4, encoded.version);
+        assertEquals((byte) 0xff, encoded.type);
+        assertEquals(0x01020304, encoded.senderTag.getValue());
+        assertEquals(0x04030201, encoded.receiverTag.getValue());
     }
 
     @Test
     public void testParseCorrectOTRv3Header() throws ProtocolException {
         final EncodedMessage encoded = (EncodedMessage) parse("?OTR:" + Base64.toBase64String(
                 new byte[] {0x00, 0x03, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1}) + ".");
-        assertEquals(3, encoded.getVersion());
-        assertEquals((byte) 0xff, encoded.getType());
-        assertEquals(0x01020304, encoded.getSenderTag().getValue());
-        assertEquals(0x04030201, encoded.getReceiverTag().getValue());
+        assertEquals(3, encoded.version);
+        assertEquals((byte) 0xff, encoded.type);
+        assertEquals(0x01020304, encoded.senderTag.getValue());
+        assertEquals(0x04030201, encoded.receiverTag.getValue());
     }
 
     @Test
     public void testParseCorrectOTRv2Header() throws ProtocolException {
         final EncodedMessage encoded = (EncodedMessage) parse("?OTR:" + Base64.toBase64String(
                 new byte[] {0x00, 0x02, (byte) 0xff, 0x1, 0x2, 0x3, 0x4, 0x4, 0x3, 0x2, 0x1}) + ".");
-        assertEquals(2, encoded.getVersion());
-        assertEquals((byte) 0xff, encoded.getType());
-        assertEquals(0, encoded.getSenderTag().getValue());
-        assertEquals(0, encoded.getReceiverTag().getValue());
+        assertEquals(2, encoded.version);
+        assertEquals((byte) 0xff, encoded.type);
+        assertEquals(0, encoded.senderTag.getValue());
+        assertEquals(0, encoded.receiverTag.getValue());
         // Ensure that what would be the instance tags in OTRv3+ are considered part of the content payload in OTRv2.
-        assertEquals(0x01020304, encoded.getPayload().readInt());
-        assertEquals(0x04030201, encoded.getPayload().readInt());
+        assertEquals(0x01020304, encoded.payload.readInt());
+        assertEquals(0x04030201, encoded.payload.readInt());
     }
 }

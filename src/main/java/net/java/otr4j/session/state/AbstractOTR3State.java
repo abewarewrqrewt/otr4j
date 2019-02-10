@@ -76,8 +76,7 @@ abstract class AbstractOTR3State implements State {
             throws OtrException {
         final AbstractEncodedMessage encodedM;
         try {
-            encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderTag(),
-                    message.getReceiverTag(), message.getPayload());
+            encodedM = parseEncodedMessage(message);
         } catch (final ProtocolException e) {
             // TODO we probably want to just drop the message, i.s.o. throwing exception.
             throw new OtrException("Invalid encoded message content.", e);

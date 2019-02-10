@@ -7,12 +7,11 @@
 
 package net.java.otr4j.messages;
 
-import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.ed448.Point;
-import net.java.otr4j.io.OtrInputStream;
+import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 
 import javax.annotation.CheckReturnValue;
@@ -22,7 +21,6 @@ import java.math.BigInteger;
 import java.net.ProtocolException;
 
 import static java.math.BigInteger.ZERO;
-import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.messages.AuthIMessage.MESSAGE_AUTH_I;
 import static net.java.otr4j.messages.AuthRMessage.MESSAGE_AUTH_R;
 import static net.java.otr4j.messages.DHCommitMessage.MESSAGE_DH_COMMIT;
@@ -48,11 +46,7 @@ public final class EncodedMessageParser {
      * constructed and returned. Any validation data that might be contained in this message is NOT processed. Message
      * received from the parser can therefore not yet be trusted on their content.
      *
-     * @param version             the protocol version
-     * @param type                the (encoded) message type
-     * @param senderInstanceTag   the sender instance tag (may be ZERO tag)
-     * @param receiverInstanceTag the receiver instance tag (may be ZERO tag)
-     * @param payload             the payload of the encoded message that corresponds with the message type
+     * @param message the encoded message instance to be parsed.
      * @return Returns an OTR-encoded message as in-memory object.
      * @throws ProtocolException          In case of issues during reading of the message bytes. (For example, missing
      *                                    bytes or unexpected values.)
@@ -65,109 +59,105 @@ public final class EncodedMessageParser {
      */
     // TODO consider making a hard split between OTRv2, OTRv3 and OTRv4 parsing based on protocol version to prevent unsupported message types from being parsed.
     @Nonnull
-    public static AbstractEncodedMessage parseEncodedMessage(final int version, final int type,
-            @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag,
-            @Nonnull final OtrInputStream payload) throws OtrCryptoException, ProtocolException,
+    public static AbstractEncodedMessage parseEncodedMessage(final EncodedMessage message) throws OtrCryptoException, ProtocolException,
             UnsupportedLengthException, ValidationException {
-        requireNonNull(senderInstanceTag);
-        requireNonNull(receiverInstanceTag);
-        requireNonNull(payload);
-        switch (type) {
+        switch (message.type) {
         case MESSAGE_DATA: {
-            switch (version) {
+            switch (message.version) {
             case 0:
                 throw new IllegalStateException("BUG: Unexpected protocol version found. Zero is not valid as a protocol version. It is used in other parts of otr4j as indicator that OTR is not active.");
             case Version.ONE:
                 throw new UnsupportedOperationException("Illegal protocol version: version 1 is no longer supported.");
             case Version.TWO: // intentional fall-through
             case Version.THREE: {
-                final byte flags = payload.readByte();
-                final int senderKeyID = payload.readInt();
-                final int recipientKeyID = payload.readInt();
-                final DHPublicKey nextDH = payload.readDHPublicKey();
-                final byte[] ctr = payload.readCtr();
-                final byte[] encryptedMessage = payload.readData();
-                final byte[] mac = payload.readMac();
-                final byte[] oldMacKeys = payload.readData();
+                final byte flags = message.payload.readByte();
+                final int senderKeyID = message.payload.readInt();
+                final int recipientKeyID = message.payload.readInt();
+                final DHPublicKey nextDH = message.payload.readDHPublicKey();
+                final byte[] ctr = message.payload.readCtr();
+                final byte[] encryptedMessage = message.payload.readData();
+                final byte[] mac = message.payload.readMac();
+                final byte[] oldMacKeys = message.payload.readData();
                 // The data message can only be validated where the current session keys are accessible. MAC validation
                 // therefore happens in a later stage. For now we return an unvalidated data message instance.
-                return new DataMessage(version, flags, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMessage, mac,
-                        oldMacKeys, senderInstanceTag, receiverInstanceTag);
+                return new DataMessage(message.version, flags, senderKeyID, recipientKeyID, nextDH, ctr, encryptedMessage, mac,
+                        oldMacKeys, message.senderTag, message.receiverTag);
             }
             case Version.FOUR: {
-                final byte flags = payload.readByte();
-                final int pn = payload.readInt();
-                final int i = payload.readInt();
-                final int j = payload.readInt();
-                final Point ecdhPublicKey = payload.readPoint();
-                final BigInteger dhPublicKey = payload.readBigInt();
-                final byte[] nonce = payload.readNonce();
-                final byte[] ciphertext = payload.readData();
-                final byte[] authenticator = payload.readMacOTR4();
-                final byte[] revealedMacs = payload.readData();
+                final byte flags = message.payload.readByte();
+                final int pn = message.payload.readInt();
+                final int i = message.payload.readInt();
+                final int j = message.payload.readInt();
+                final Point ecdhPublicKey = message.payload.readPoint();
+                final BigInteger dhPublicKey = message.payload.readBigInt();
+                final byte[] nonce = message.payload.readNonce();
+                final byte[] ciphertext = message.payload.readData();
+                final byte[] authenticator = message.payload.readMacOTR4();
+                final byte[] revealedMacs = message.payload.readData();
                 // We only verify the format of the data message, but do not perform the validation actions yet.
                 // Validation is delayed until a later point as we are missing context information for full validation.
-                return new DataMessage4(version, senderInstanceTag, receiverInstanceTag, flags, pn, i, j, ecdhPublicKey,
-                        ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext, authenticator, revealedMacs);
+                return new DataMessage4(message.version, message.senderTag, message.receiverTag, flags, pn, i, j,
+                        ecdhPublicKey, ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext, authenticator,
+                        revealedMacs);
             }
             default:
                 throw new UnsupportedOperationException("BUG: Future protocol versions are not supported. We should not have reached this state.");
             }
         }
         case MESSAGE_DH_COMMIT: {
-            requireOTR23(version);
-            final byte[] dhPublicKeyEncrypted = payload.readData();
-            final byte[] dhPublicKeyHash = payload.readData();
-            return new DHCommitMessage(version, dhPublicKeyHash, dhPublicKeyEncrypted, senderInstanceTag,
-                receiverInstanceTag);
+            requireOTR23(message.version);
+            final byte[] dhPublicKeyEncrypted = message.payload.readData();
+            final byte[] dhPublicKeyHash = message.payload.readData();
+            return new DHCommitMessage(message.version, dhPublicKeyHash, dhPublicKeyEncrypted, message.senderTag,
+                    message.receiverTag);
         }
         case MESSAGE_DHKEY: {
-            requireOTR23(version);
-            final DHPublicKey dhPublicKey = payload.readDHPublicKey();
-            return new DHKeyMessage(version, dhPublicKey, senderInstanceTag, receiverInstanceTag);
+            requireOTR23(message.version);
+            final DHPublicKey dhPublicKey = message.payload.readDHPublicKey();
+            return new DHKeyMessage(message.version, dhPublicKey, message.senderTag, message.receiverTag);
         }
         case MESSAGE_REVEALSIG: {
-            requireOTR23(version);
-            final byte[] revealedKey = payload.readData();
-            final byte[] xEncrypted = payload.readData();
-            final byte[] xEncryptedMac = payload.readMac();
-            return new RevealSignatureMessage(version, xEncrypted, xEncryptedMac, revealedKey, senderInstanceTag,
-                    receiverInstanceTag);
+            requireOTR23(message.version);
+            final byte[] revealedKey = message.payload.readData();
+            final byte[] xEncrypted = message.payload.readData();
+            final byte[] xEncryptedMac = message.payload.readMac();
+            return new RevealSignatureMessage(message.version, xEncrypted, xEncryptedMac, revealedKey, message.senderTag,
+                    message.receiverTag);
         }
         case MESSAGE_SIGNATURE: {
-            requireOTR23(version);
-            final byte[] xEncryted = payload.readData();
-            final byte[] xEncryptedMac = payload.readMac();
-            return new SignatureMessage(version, xEncryted, xEncryptedMac, senderInstanceTag, receiverInstanceTag);
+            requireOTR23(message.version);
+            final byte[] xEncryted = message.payload.readData();
+            final byte[] xEncryptedMac = message.payload.readMac();
+            return new SignatureMessage(message.version, xEncryted, xEncryptedMac, message.senderTag, message.receiverTag);
         }
         case MESSAGE_IDENTITY: {
-            requireOTR4(version);
-            final ClientProfilePayload profile = ClientProfilePayload.readFrom(payload);
-            final Point y = payload.readPoint();
-            final BigInteger b = payload.readBigInt();
-            final Point ourFirstECDHPublicKey = payload.readPoint();
-            final BigInteger ourFirstDHPublicKey = payload.readBigInt();
-            return new IdentityMessage(version, senderInstanceTag, receiverInstanceTag, profile, y, b,
-                    ourFirstECDHPublicKey, ourFirstDHPublicKey);
+            requireOTR4(message.version);
+            final ClientProfilePayload profile = ClientProfilePayload.readFrom(message.payload);
+            final Point y = message.payload.readPoint();
+            final BigInteger b = message.payload.readBigInt();
+            final Point ourFirstECDHPublicKey = message.payload.readPoint();
+            final BigInteger ourFirstDHPublicKey = message.payload.readBigInt();
+            return new IdentityMessage(message.version, message.senderTag, message.receiverTag, profile,
+                    y, b, ourFirstECDHPublicKey, ourFirstDHPublicKey);
         }
         case MESSAGE_AUTH_R: {
-            requireOTR4(version);
-            final ClientProfilePayload profile = ClientProfilePayload.readFrom(payload);
-            final Point x = payload.readPoint();
-            final BigInteger a = payload.readBigInt();
-            final Sigma sigma = Sigma.readFrom(payload);
-            final Point ourFirstECDHPublicKey = payload.readPoint();
-            final BigInteger ourFirstDHPublicKey = payload.readBigInt();
-            return new AuthRMessage(version, senderInstanceTag, receiverInstanceTag, profile, x, a, sigma,
+            requireOTR4(message.version);
+            final ClientProfilePayload profile = ClientProfilePayload.readFrom(message.payload);
+            final Point x = message.payload.readPoint();
+            final BigInteger a = message.payload.readBigInt();
+            final Sigma sigma = Sigma.readFrom(message.payload);
+            final Point ourFirstECDHPublicKey = message.payload.readPoint();
+            final BigInteger ourFirstDHPublicKey = message.payload.readBigInt();
+            return new AuthRMessage(message.version, message.senderTag, message.receiverTag, profile, x, a, sigma,
                     ourFirstECDHPublicKey, ourFirstDHPublicKey);
         }
         case MESSAGE_AUTH_I: {
-            requireOTR4(version);
-            final Sigma sigma = Sigma.readFrom(payload);
-            return new AuthIMessage(version, senderInstanceTag, receiverInstanceTag, sigma);
+            requireOTR4(message.version);
+            final Sigma sigma = Sigma.readFrom(message.payload);
+            return new AuthIMessage(message.version, message.senderTag, message.receiverTag, sigma);
         }
         default:
-            throw new ProtocolException("Illegal message type: " + type);
+            throw new ProtocolException("Illegal message type: " + message.type);
         }
     }
 
@@ -186,22 +176,22 @@ public final class EncodedMessageParser {
     /**
      * Check if the message type is of the DH-Key message.
      *
-     * @param type the message type
+     * @param message the encoded message
      * @return Returns true iff DH-Key message or false otherwise.
      */
     @CheckReturnValue
-    public static boolean checkDHKeyMessage(final int type) {
-        return type == MESSAGE_DHKEY;
+    public static boolean checkDHKeyMessage(@Nonnull final EncodedMessage message) {
+        return message.type == MESSAGE_DHKEY;
     }
 
     /**
      * Check if the message type is of the Auth-R message.
      *
-     * @param type the message type
+     * @param message the encoded message
      * @return Returns true iff Auth-R message or false otherwise.
      */
     @CheckReturnValue
-    public static boolean checkAuthRMessage(final int type) {
-        return type == MESSAGE_AUTH_R;
+    public static boolean checkAuthRMessage(@Nonnull final EncodedMessage message) {
+        return message.type == MESSAGE_AUTH_R;
     }
 }

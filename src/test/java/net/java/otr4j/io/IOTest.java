@@ -91,8 +91,7 @@ public class IOTest {
         DHKeyMessage source = new DHKeyMessage(Session.Version.THREE, pair.getPublic(), ZERO_TAG, ZERO_TAG);
         String base64 = MessageWriter.writeMessage(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
-        final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message.getVersion(), message.getType(),
-                message.getSenderTag(), message.getReceiverTag(), message.getPayload());
+        final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message);
         assertEquals(source, result);
     }
 
@@ -109,8 +108,7 @@ public class IOTest {
                 protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, ZERO_TAG, ZERO_TAG);
         String base64 = MessageWriter.writeMessage(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
-        final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message.getVersion(), message.getType(),
-                message.getSenderTag(), message.getReceiverTag(), message.getPayload());
+        final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message);
         assertEquals(source, result);
     }
 }

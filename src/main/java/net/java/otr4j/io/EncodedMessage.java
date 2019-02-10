@@ -18,65 +18,46 @@ import static java.util.Objects.requireNonNull;
  */
 public final class EncodedMessage implements Message {
 
-    private final int version;
-    private final int type;
-    private final InstanceTag senderInstanceTag;
-    private final InstanceTag receiverInstanceTag;
-    private final OtrInputStream payload;
+    /**
+     * Protocol version.
+     */
+    public final int version;
 
-    // TODO consider making constructor public (would simplify code in EncodedMessageParser significantly)
-    EncodedMessage(final int version, final int type, @Nonnull final InstanceTag senderInstanceTag,
-            @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final OtrInputStream payload) {
+    /**
+     * Message type identifier.
+     */
+    public final int type;
+
+    /**
+     * Sender tag.
+     */
+    public final InstanceTag senderTag;
+
+    /**
+     * Receiver tag.
+     */
+    public final InstanceTag receiverTag;
+
+    /**
+     * OTR-encoded payload of the message, intended for subsequent parsing.
+     */
+    public final OtrInputStream payload;
+
+    /**
+     * Constructor for the encoded message.
+     *
+     * @param version     the protocol version
+     * @param type        the message type identifier
+     * @param senderTag   the sender instance tag
+     * @param receiverTag the receiver instance tag
+     * @param payload     the OTR-encoded payload
+     */
+    public EncodedMessage(final int version, final int type, @Nonnull final InstanceTag senderTag,
+            @Nonnull final InstanceTag receiverTag, @Nonnull final OtrInputStream payload) {
         this.version = version;
         this.type = type;
-        this.senderInstanceTag = requireNonNull(senderInstanceTag);
-        this.receiverInstanceTag = requireNonNull(receiverInstanceTag);
+        this.senderTag = requireNonNull(senderTag);
+        this.receiverTag = requireNonNull(receiverTag);
         this.payload = requireNonNull(payload);
-    }
-
-    /**
-     * Protocol version to which the encoded message corresponds.
-     *
-     * @return protocol version
-     */
-    public int getVersion() {
-        return version;
-    }
-
-    /**
-     * The message type of the encoded message.
-     *
-     * @return message type
-     */
-    public int getType() {
-        return type;
-    }
-
-    /**
-     * The sender instance tag.
-     *
-     * @return sender instance tag
-     */
-    public InstanceTag getSenderTag() {
-        return senderInstanceTag;
-    }
-
-    /**
-     * The receiver instance tag.
-     *
-     * @return receiver instance tag
-     */
-    public InstanceTag getReceiverTag() {
-        return receiverInstanceTag;
-    }
-
-    /**
-     * The encoded message payload, i.e. the non-common part of the encoded message. Only the header, the common part of
-     * all encoded messages, is parsed. The remaining content is provided as opaque blob for further processing.
-     *
-     * @return the payload of the encoded message
-     */
-    public OtrInputStream getPayload() {
-        return payload;
     }
 }
