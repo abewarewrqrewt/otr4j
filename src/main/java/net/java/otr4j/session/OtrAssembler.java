@@ -80,7 +80,7 @@ final class OtrAssembler {
          */
         @Nullable
         private String accumulate(@Nonnull final Fragment fragment) throws ProtocolException {
-            final int id = fragment.getSendertag().getValue();
+            final int id = fragment.getSenderTag().getValue();
             if (fragment.getIndex() == INDEX_FIRST_FRAGMENT) {
                 // first fragment
                 final Status status = new Status(fragment.getIndex(), fragment.getTotal(), fragment.getContent());

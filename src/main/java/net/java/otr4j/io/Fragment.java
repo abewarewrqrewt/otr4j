@@ -70,18 +70,18 @@ public final class Fragment implements Message {
 
     private final int version;
     private final int identifier;
-    private final InstanceTag sendertag;
-    private final InstanceTag receivertag;
+    private final InstanceTag senderTag;
+    private final InstanceTag receiverTag;
     private final int index;
     private final int total;
     private final String content;
 
-    private Fragment(final int version, final int identifier, @Nonnull final InstanceTag sendertag,
-            @Nonnull final InstanceTag receivertag, final int index, final int total, @Nonnull final String content) {
+    private Fragment(final int version, final int identifier, @Nonnull final InstanceTag senderTag,
+            @Nonnull final InstanceTag receiverTag, final int index, final int total, @Nonnull final String content) {
         this.version = version;
         this.identifier = identifier;
-        this.sendertag = requireNonNull(sendertag);
-        this.receivertag = requireNonNull(receivertag);
+        this.senderTag = requireNonNull(senderTag);
+        this.receiverTag = requireNonNull(receiverTag);
         this.index = index;
         this.total = total;
         this.content = requireNonNull(content);
@@ -176,10 +176,9 @@ public final class Fragment implements Message {
      *
      * @return Returns the instance tag.
      */
-    // TODO consider renaming to getSenderTag for consistency
     @Nonnull
-    public InstanceTag getSendertag() {
-        return sendertag;
+    public InstanceTag getSenderTag() {
+        return senderTag;
     }
 
     /**
@@ -188,8 +187,8 @@ public final class Fragment implements Message {
      * @return Returns the instance tag.
      */
     @Nonnull
-    public InstanceTag getReceivertag() {
-        return receivertag;
+    public InstanceTag getReceiverTag() {
+        return receiverTag;
     }
 
     /**

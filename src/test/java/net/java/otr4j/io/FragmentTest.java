@@ -66,8 +66,8 @@ public final class FragmentTest {
         final Fragment fragment = parse(String.format(formatVersion4, helloWorldBase64));
         assertEquals(4, fragment.getVersion());
         assertEquals(0x3c5b5f03, fragment.getIdentifier());
-        assertEquals(new InstanceTag(0x5a73a599), fragment.getSendertag());
-        assertEquals(new InstanceTag(0x27e31597), fragment.getReceivertag());
+        assertEquals(new InstanceTag(0x5a73a599), fragment.getSenderTag());
+        assertEquals(new InstanceTag(0x27e31597), fragment.getReceiverTag());
         assertEquals(1, fragment.getIndex());
         assertEquals(1, fragment.getTotal());
         assertEquals(helloWorldBase64, fragment.getContent());
@@ -78,8 +78,8 @@ public final class FragmentTest {
         final Fragment fragment = parse(String.format("?OTR|5a73a599|27e31597,00001,00001,%s,", helloWorldBase64));
         assertEquals(3, fragment.getVersion());
         assertEquals(0, fragment.getIdentifier());
-        assertEquals(new InstanceTag(0x5a73a599), fragment.getSendertag());
-        assertEquals(new InstanceTag(0x27e31597), fragment.getReceivertag());
+        assertEquals(new InstanceTag(0x5a73a599), fragment.getSenderTag());
+        assertEquals(new InstanceTag(0x27e31597), fragment.getReceiverTag());
         assertEquals(1, fragment.getIndex());
         assertEquals(1, fragment.getTotal());
         assertEquals(helloWorldBase64, fragment.getContent());
@@ -90,8 +90,8 @@ public final class FragmentTest {
         final Fragment fragment = parse("?OTR,1,3,?OTR:AAEDAAAAAQAAAAEAAADAVf3Ei72ZgFeKqWvLMnuVPVCwxktsOZ1QdjeLp6jn62mCVtlY9nS6sRkecpjuLYHRxyTdRu2iEVtSsjZqK55ovZ35SfkOPHeFYa9BIuxWi9djHMVKQ8KOVGAVLibjZ6P8LreDSKtWDv9YQjIEnkwFVGCPfpBq2SX4VTQfJAQXHggR8izKxPvluXUdG9rIPh4cac98++VLdIuFMiEXjUIoTX2rEzunaCLMy0VIfowlRsgsKGrwhCCv7hBWyglbzwz+AAAAAAAAAAQAAAF2SOr,");
         assertEquals(2, fragment.getVersion());
         assertEquals(0, fragment.getIdentifier());
-        assertEquals(ZERO_TAG, fragment.getSendertag());
-        assertEquals(ZERO_TAG, fragment.getReceivertag());
+        assertEquals(ZERO_TAG, fragment.getSenderTag());
+        assertEquals(ZERO_TAG, fragment.getReceiverTag());
         assertEquals(1, fragment.getIndex());
         assertEquals(3, fragment.getTotal());
         assertEquals("?OTR:AAEDAAAAAQAAAAEAAADAVf3Ei72ZgFeKqWvLMnuVPVCwxktsOZ1QdjeLp6jn62mCVtlY9nS6sRkecpjuLYHRxyTdRu2iEVtSsjZqK55ovZ35SfkOPHeFYa9BIuxWi9djHMVKQ8KOVGAVLibjZ6P8LreDSKtWDv9YQjIEnkwFVGCPfpBq2SX4VTQfJAQXHggR8izKxPvluXUdG9rIPh4cac98++VLdIuFMiEXjUIoTX2rEzunaCLMy0VIfowlRsgsKGrwhCCv7hBWyglbzwz+AAAAAAAAAAQAAAF2SOr",
@@ -109,28 +109,28 @@ public final class FragmentTest {
     public void testParseSingleFragmentOTRv4HighBitSenderTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|3c5b5f03|ffffffff|27e31597,00001,00001,%s,", helloWorldBase64));
         assertEquals(Version.FOUR, fragment.getVersion());
-        assertEquals(new InstanceTag(0xffffffff), fragment.getSendertag());
+        assertEquals(new InstanceTag(0xffffffff), fragment.getSenderTag());
     }
 
     @Test
     public void testParseSingleFragmentOTRv4HighBitReceiverTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|3c5b5f03|5a73a599|ffffffff,00001,00001,%s,", helloWorldBase64));
         assertEquals(Version.FOUR, fragment.getVersion());
-        assertEquals(new InstanceTag(0xffffffff), fragment.getReceivertag());
+        assertEquals(new InstanceTag(0xffffffff), fragment.getReceiverTag());
     }
 
     @Test
     public void testParseSingleFragmentOTRv3HighBitSenderTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|ffffffff|27e31597,00001,00001,%s,", helloWorldBase64));
         assertEquals(Version.THREE, fragment.getVersion());
-        assertEquals(new InstanceTag(0xffffffff), fragment.getSendertag());
+        assertEquals(new InstanceTag(0xffffffff), fragment.getSenderTag());
     }
 
     @Test
     public void testParseSingleFragmentOTRv3HighBitReceiverTag() throws ProtocolException {
         final Fragment fragment = parse(String.format("?OTR|5a73a599|ffffffff,00001,00001,%s,", helloWorldBase64));
         assertEquals(Version.THREE, fragment.getVersion());
-        assertEquals(new InstanceTag(0xffffffff), fragment.getReceivertag());
+        assertEquals(new InstanceTag(0xffffffff), fragment.getReceiverTag());
     }
 
     @Test(expected = ProtocolException.class)

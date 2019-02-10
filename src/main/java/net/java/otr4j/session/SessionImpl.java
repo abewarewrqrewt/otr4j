@@ -425,14 +425,14 @@ final class SessionImpl implements Session, Context {
                 || ((Fragment) m).getVersion() == FOUR)) {
             final Fragment fragment = (Fragment) m;
 
-            if (ZERO_TAG.equals(fragment.getSendertag())) {
+            if (ZERO_TAG.equals(fragment.getSenderTag())) {
                 logger.log(Level.INFO, "Message fragment contains 0 sender tag. Ignoring message. (Message ID: {}, index: {}, total: {})",
                         new Object[]{fragment.getIdentifier(), fragment.getIndex(), fragment.getTotal()});
                 return null;
             }
 
-            if (!ZERO_TAG.equals(fragment.getReceivertag())
-                    && fragment.getReceivertag().getValue() != this.profile.getInstanceTag().getValue()) {
+            if (!ZERO_TAG.equals(fragment.getReceiverTag())
+                    && fragment.getReceiverTag().getValue() != this.profile.getInstanceTag().getValue()) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received a message fragment with receiver instance tag that is different from ours. Ignore this message.");
                 messageFromAnotherInstanceReceived(this.host, this.sessionID);
@@ -441,13 +441,13 @@ final class SessionImpl implements Session, Context {
 
             final SessionImpl slave;
             synchronized (this.slaveSessions) {
-                if (!this.slaveSessions.containsKey(fragment.getSendertag())) {
+                if (!this.slaveSessions.containsKey(fragment.getSenderTag())) {
                     final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                            fragment.getSendertag(), this.secureRandom);
+                            fragment.getSenderTag(), this.secureRandom);
                     newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
-                    this.slaveSessions.put(fragment.getSendertag(), newSlaveSession);
+                    this.slaveSessions.put(fragment.getSenderTag(), newSlaveSession);
                 }
-                slave = this.slaveSessions.get(fragment.getSendertag());
+                slave = this.slaveSessions.get(fragment.getSenderTag());
             }
             return slave.handleFragment(fragment);
         } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).version == THREE
@@ -524,7 +524,7 @@ final class SessionImpl implements Session, Context {
             }
         } catch (final ProtocolException e) {
             logger.log(Level.FINE, "Rejected message fragment from sender instance "
-                    + fragment.getSendertag().getValue(), e);
+                    + fragment.getSenderTag().getValue(), e);
             return null;
         }
         final EncodedMessage message;
@@ -544,8 +544,8 @@ final class SessionImpl implements Session, Context {
         // instance tag or receiver instance tag than the fragments themselves. For now, be safe and drop any
         // inconsistencies to ensure that the inconsistencies cannot be exploited.
         // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
-        if (message.version != fragment.getVersion() || !message.senderTag.equals(fragment.getSendertag())
-                || !message.receiverTag.equals(fragment.getReceivertag())) {
+        if (message.version != fragment.getVersion() || !message.senderTag.equals(fragment.getSenderTag())
+                || !message.receiverTag.equals(fragment.getReceiverTag())) {
             logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
             return null;
         }
