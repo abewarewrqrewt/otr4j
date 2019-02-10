@@ -50,6 +50,8 @@ The design considerations that have been taken into account. These relate to the
 - Fail-fast (bugs become apparent due to unchecked exceptions)
 - Significant error handling part of syntax (checked exceptions)
 - Annotations to extend static analysis.
+  - `@Nullable` / `@Nonnull` annotations to indicate intent for nullability.
+  - `@CheckReturnValue` to indicate that checking the return value is important.
 - Deliberately work with most-restricted scopes.
 - State machines, to make state transitions strict, inescapable events. States expressed in syntax.
 - Alerts in case of high-unlikely situations. (Assertions)

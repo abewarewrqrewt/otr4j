@@ -29,9 +29,7 @@ import net.java.otr4j.io.Message;
 import net.java.otr4j.io.PlainTextMessage;
 import net.java.otr4j.io.QueryMessage;
 import net.java.otr4j.messages.AbstractEncodedMessage;
-import net.java.otr4j.messages.AuthRMessage;
 import net.java.otr4j.messages.ClientProfilePayload;
-import net.java.otr4j.messages.DHKeyMessage;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.ake.StateInitial;
 import net.java.otr4j.session.state.Context;
@@ -71,6 +69,8 @@ import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
 import static net.java.otr4j.io.MessageParser.parse;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
+import static net.java.otr4j.messages.EncodedMessageParser.checkAuthRMessage;
+import static net.java.otr4j.messages.EncodedMessageParser.checkDHKeyMessage;
 import static net.java.otr4j.session.api.SMPStatus.INPROGRESS;
 import static net.java.otr4j.session.state.State.FLAG_IGNORE_UNREADABLE;
 import static net.java.otr4j.session.state.State.FLAG_NONE;
@@ -566,13 +566,12 @@ final class SessionImpl implements Session, Context {
         assert this.masterSession != this || message.getVersion() == TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
         assert !ZERO_TAG.equals(message.getSenderTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
         // TODO We've started replicating current (auth)State in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
-        // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
-        if (message.getVersion() == THREE && message.getType() == DHKeyMessage.MESSAGE_DHKEY) {
+        if (message.getVersion() == THREE && checkDHKeyMessage(message.getType())) {
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             // FIXME evaluate whether this screws things up in case we *do* know the receiver instance tag in advance, as we would be copying an outdated authentication-state instance.
             // TODO verify whether this can also work if DH-Commit / Identity message is sent immediately with receiver instance tag. (As you can immediately store the query tag in the corresponding slave session.)
             this.sessionState.setAuthState(this.masterSession.sessionState.getAuthState());
-        } else if (message.getType() == AuthRMessage.MESSAGE_AUTH_R) {
+        } else if (checkAuthRMessage(message.getType())) {
             assert this != this.masterSession : "We expected to be working inside a slave session instead of a master session.";
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             // FIXME We now copy the state whenever an Auth-R message is received. Will this screw with running encrypted sessions? (in unexpected ways, for example sudden transition to plaintext)
@@ -616,9 +615,11 @@ final class SessionImpl implements Session, Context {
         if (m instanceof QueryMessage) {
             // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
+            assert !(m instanceof PlainTextMessage)
+                    : "PlainText messages (with possible whitespace tag) should not end up here. We should not append the fallback message to a whitespace-tagged plaintext message.";
             this.masterSession.queryTag = ((QueryMessage) m).getTag();
-            // TODO consider if we really want a fallback message if this forces a large minimum message size (interferes with fragmentation capabilities)
-            fragments = new String[] {serialized + getFallbackMessage(this.sessionID)};
+            final int spaceForFallbackMessage = host.getMaxFragmentSize(this.sessionID) - 1 - serialized.length();
+            fragments = new String[] {serialized + ' ' + getFallbackMessage(this.sessionID, spaceForFallbackMessage)};
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
@@ -636,10 +637,16 @@ final class SessionImpl implements Session, Context {
     }
 
     @Nonnull
-    private String getFallbackMessage(final SessionID sessionId) {
+    private String getFallbackMessage(final SessionID sessionId, final int spaceLeft) {
+        if (spaceLeft <= 0) {
+            return "";
+        }
         String fallback = OtrEngineHosts.getFallbackMessage(this.host, sessionId);
         if (fallback == null || fallback.isEmpty()) {
             fallback = DEFAULT_FALLBACK_MESSAGE;
+        }
+        if (fallback.length() > spaceLeft) {
+            fallback = fallback.substring(0, spaceLeft);
         }
         return fallback;
     }

@@ -28,7 +28,7 @@ public final class DHKeyMessage extends AbstractEncodedMessage {
     /**
      * Byte code identifier for DH-Key message type.
      */
-    public static final int MESSAGE_DHKEY = 0x0a;
+    static final int MESSAGE_DHKEY = 0x0a;
 
     /**
      * DH public key.

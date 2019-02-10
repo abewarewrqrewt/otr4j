@@ -24,6 +24,7 @@ public final class EncodedMessage implements Message {
     private final InstanceTag receiverInstanceTag;
     private final OtrInputStream payload;
 
+    // TODO consider making constructor public (would simplify code in EncodedMessageParser significantly)
     EncodedMessage(final int version, final int type, @Nonnull final InstanceTag senderInstanceTag,
             @Nonnull final InstanceTag receiverInstanceTag, @Nonnull final OtrInputStream payload) {
         this.version = version;

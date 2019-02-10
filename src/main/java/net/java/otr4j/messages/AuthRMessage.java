@@ -28,7 +28,7 @@ public final class AuthRMessage extends AbstractEncodedMessage {
     /**
      * Byte code identifier for Auth-R message type.
      */
-    public static final byte MESSAGE_AUTH_R = (byte) 0x36;
+    static final byte MESSAGE_AUTH_R = (byte) 0x36;
 
     /**
      * The client profile payload.

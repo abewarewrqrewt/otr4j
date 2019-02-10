@@ -15,6 +15,7 @@ import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.math.BigInteger;
@@ -180,5 +181,27 @@ public final class EncodedMessageParser {
         if (version != Version.FOUR) {
             throw new ProtocolException("The protocol version is illegal for this type of message. Expected protocol version 4.");
         }
+    }
+
+    /**
+     * Check if the message type is of the DH-Key message.
+     *
+     * @param type the message type
+     * @return Returns true iff DH-Key message or false otherwise.
+     */
+    @CheckReturnValue
+    public static boolean checkDHKeyMessage(final int type) {
+        return type == MESSAGE_DHKEY;
+    }
+
+    /**
+     * Check if the message type is of the Auth-R message.
+     *
+     * @param type the message type
+     * @return Returns true iff Auth-R message or false otherwise.
+     */
+    @CheckReturnValue
+    public static boolean checkAuthRMessage(final int type) {
+        return type == MESSAGE_AUTH_R;
     }
 }

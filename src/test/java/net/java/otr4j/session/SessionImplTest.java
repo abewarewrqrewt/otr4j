@@ -10,15 +10,18 @@ package net.java.otr4j.session;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrEngineListener;
+import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.io.QueryMessage;
 import net.java.otr4j.session.state.State;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.security.SecureRandom;
+import java.util.HashSet;
 
 import static java.util.Collections.singleton;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
@@ -100,5 +103,25 @@ public final class SessionImplTest {
         // Testing with master session here for simplicity, so not completely representative, but does confirm that
         // sessionStatusChanged is called.
         verify(listener, times(1)).sessionStatusChanged(eq(sessionID), eq(ZERO_TAG));
+    }
+
+    @Test
+    public void testInjectingQueryTagWithFallbackMessageTooLarge() throws OtrException {
+        final EdDSAKeyPair longTermKeyPair = EdDSAKeyPair.generate(RANDOM);
+        final Point forgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final SessionID sessionID = new SessionID("bob@network", "alice@network", "network");
+        final ClientProfile profile = new ClientProfile(SMALLEST_TAG, longTermKeyPair.getPublicKey(), forgingKey,
+                singleton(Version.FOUR), null);
+        final OtrEngineHost host = mock(OtrEngineHost.class);
+        when(host.getLongTermKeyPair(eq(sessionID))).thenReturn(longTermKeyPair);
+        when(host.getClientProfile(eq(sessionID))).thenReturn(profile);
+        when(host.getFallbackMessage(sessionID)).thenReturn("This is a super-long message that does not fit on the transport channel.");
+        when(host.getMaxFragmentSize(sessionID)).thenReturn(51);
+        final SessionImpl session = new SessionImpl(sessionID, host);
+        final HashSet<Integer> versions = new HashSet<>();
+        versions.add(Version.THREE);
+        versions.add(Version.FOUR);
+        session.injectMessage(new QueryMessage("?OTRv34?", versions));
+        verify(host).injectMessage(sessionID, "?OTRv34? This is a super-long message that does not");
     }
 }
