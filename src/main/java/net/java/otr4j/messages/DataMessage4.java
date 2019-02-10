@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static net.java.otr4j.crypto.OtrCryptoEngine4.XSALSA20_IV_LENGTH_BYTES;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.Integers.requireInRange;
@@ -26,12 +27,11 @@ import static net.java.otr4j.util.Integers.requireInRange;
 /**
  * The OTRv4 data message.
  */
-// TODO two constants defined in duplicate, due to value needed in multiple packages: XSALSA20_IV_LENGTH_BYTES, MAC_LENGTH_BYTES
+// TODO two constants defined in duplicate, due to value needed in multiple packages: MAC_LENGTH_BYTES
 public final class DataMessage4 extends AbstractEncodedMessage {
 
     static final int MESSAGE_DATA = 0x03;
 
-    private static final int XSALSA20_IV_LENGTH_BYTES = 24;
     private static final int MAC_LENGTH_BYTES = 64;
 
     /**
@@ -171,6 +171,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         return result;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         writeDataMessageSections(writer);

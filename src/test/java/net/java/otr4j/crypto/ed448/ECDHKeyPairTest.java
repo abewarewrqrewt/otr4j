@@ -21,6 +21,8 @@ import static net.java.otr4j.crypto.ed448.Scalars.prune;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.internal.util.reflection.Whitebox.getInternalState;
 
 @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
 public class ECDHKeyPairTest {
@@ -50,7 +52,7 @@ public class ECDHKeyPairTest {
     public void testPublicKeyRegeneratable() {
         final ECDHKeyPair keypair = generate(RANDOM);
         final Point expected = keypair.getPublicKey();
-        final Point generated = multiplyByBase(keypair.getSecretKey());
+        final Point generated = multiplyByBase((Scalar) getInternalState(keypair, "secretKey"));
         assertEquals(expected, generated);
     }
 
@@ -64,14 +66,14 @@ public class ECDHKeyPairTest {
     @Test
     public void testGetSecretKey() {
         final ECDHKeyPair keypair = new ECDHKeyPair(sk);
-        assertEquals(sk, keypair.getSecretKey());
+        assertEquals(sk, getInternalState(keypair, "secretKey"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetSecretKeyAfterClose() {
         final ECDHKeyPair keypair = generate(RANDOM);
         keypair.close();
-        keypair.getSecretKey();
+        assertNull(getInternalState(keypair, "secretKey"));
     }
 
     @Test

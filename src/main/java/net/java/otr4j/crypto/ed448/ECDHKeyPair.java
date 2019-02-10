@@ -103,23 +103,6 @@ public final class ECDHKeyPair implements AutoCloseable {
     }
 
     /**
-     * Get secret key.
-     * <p>
-     * The secret key is intentionally not made public. It should only be used in a package-local logic such that we can
-     * prevent unintended exposures of secret data.
-     *
-     * @return Returns the secret key or null if resource is already closed.
-     */
-    // TODO is this method really needed?
-    @Nonnull
-    Scalar getSecretKey() {
-        if (this.secretKey == null) {
-            throw new IllegalStateException("Secret key material has been cleared. Only public key is still available.");
-        }
-        return this.secretKey;
-    }
-
-    /**
      * Generate the ECDH shared secret for other party's public key.
      *
      * @param otherPublicKey The other party's public key.

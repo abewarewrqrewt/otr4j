@@ -284,6 +284,8 @@
                 <configuration>
                     <excludeFilterFile>${project.basedir}/codecheck/spotbugs-filter.xml</excludeFilterFile>
                     <effort>max</effort>
+                    <failOnError>true</failOnError>
+                    <threshold>Low</threshold>
                 </configuration>
             </plugin>
             <plugin>

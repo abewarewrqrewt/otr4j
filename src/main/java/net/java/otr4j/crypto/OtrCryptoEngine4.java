@@ -69,7 +69,7 @@ public final class OtrCryptoEngine4 {
     /**
      * Size of IV for XSalsa20.
      */
-    private static final int XSALSA20_IV_LENGTH_BYTES = 24;
+    public static final int XSALSA20_IV_LENGTH_BYTES = 24;
 
     /**
      * KDF Usage IDs.

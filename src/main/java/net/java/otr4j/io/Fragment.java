@@ -94,8 +94,7 @@ public final class Fragment implements Message {
      * @return Returns a fragment.
      * @throws ProtocolException In case of invalid fragment format, or in case of bad data in the fragment.
      */
-    // TODO verify if suppressions are still valid (PMD.UselessParentheses should be fixed now ...)
-    @SuppressWarnings({"PMD.AssignmentInOperand", "PMD.UselessParentheses"})
+    @SuppressWarnings({"PMD.AssignmentInOperand"})
     @Nonnull
     public static Fragment parse(@Nonnull final String message) throws ProtocolException {
         final int version;

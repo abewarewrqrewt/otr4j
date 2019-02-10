@@ -146,7 +146,6 @@ public final class OtrCryptoEngine {
         } catch (final InvalidKeyException ex) {
             throw new IllegalStateException("Invalid key, results in invalid keyspec.", ex);
         }
-        // TODO verify if we need to take x bytes from the total package. Most likely HMAC_SHA1 already produces a 20-byte result.
         final byte[] bytes = new byte[MAC_LENGTH_BYTES];
         ByteBuffer.wrap(macBytes).get(bytes);
         return bytes;
