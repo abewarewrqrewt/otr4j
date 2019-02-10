@@ -7,7 +7,6 @@
 
 package net.java.otr4j.io;
 
-import net.java.otr4j.api.Session;
 import net.java.otr4j.api.Session.Version;
 
 import javax.annotation.Nonnull;
@@ -23,6 +22,7 @@ import static java.util.Objects.requireNonNull;
  */
 public final class PlainTextMessage extends QueryMessage {
 
+    @Nonnull
     private final String cleanText;
 
     /**
@@ -49,6 +49,24 @@ public final class PlainTextMessage extends QueryMessage {
         this.cleanText = requireNonNull(cleanText);
     }
 
+    @Nonnull
+    private static String generateWhitespaceTag(@Nonnull final Iterable<Integer> versions) {
+        final StringBuilder builder = new StringBuilder(58);
+        builder.append(" \t  \t\t\t\t \t \t \t  ");
+        for (final int version : versions) {
+            if (version == Version.TWO) {
+                builder.append("  \t\t  \t ");
+            }
+            if (version == Version.THREE) {
+                builder.append("  \t\t  \t\t");
+            }
+            if (version == Version.FOUR) {
+                builder.append("  \t\t \t  ");
+            }
+        }
+        return builder.toString();
+    }
+
     /**
      * The clean text, i.e. the plain text without possible embedded whitespace tag.
      *
@@ -59,31 +77,11 @@ public final class PlainTextMessage extends QueryMessage {
         return cleanText;
     }
 
-    // TODO consider if this is the best location for the whitespace tag utility
-    @Nonnull
-    private static String generateWhitespaceTag(@Nonnull final Iterable<Integer> versions) {
-        final StringBuilder builder = new StringBuilder(58);
-        builder.append(" \t  \t\t\t\t \t \t \t  ");
-        for (final int version : versions) {
-            if (version == Session.Version.TWO) {
-                builder.append("  \t\t  \t ");
-            }
-            if (version == Session.Version.THREE) {
-                builder.append("  \t\t  \t\t");
-            }
-            if (version == Version.FOUR) {
-                builder.append("  \t\t \t  ");
-            }
-        }
-        return builder.toString();
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result
-                + ((cleanText == null) ? 0 : cleanText.hashCode());
+        result = prime * result + cleanText.hashCode();
         return result;
     }
 
@@ -99,13 +97,6 @@ public final class PlainTextMessage extends QueryMessage {
             return false;
         }
         final PlainTextMessage other = (PlainTextMessage) obj;
-        if (cleanText == null) {
-            if (other.cleanText != null) {
-                return false;
-            }
-        } else if (!cleanText.equals(other.cleanText)) {
-            return false;
-        }
-        return true;
+        return cleanText.equals(other.cleanText);
     }
 }

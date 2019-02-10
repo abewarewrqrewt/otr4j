@@ -102,7 +102,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
             // to the sender of the received D-H Commit message. That way, we do
             // not needlessly trigger other OTRv2 and OTRv3 clients.
             return new Result(new DHCommitMessage(this.version, publicKeyHash, publicKeyEncrypted,
-                    context.getSenderInstanceTag(), message.senderInstanceTag), null);
+                    context.getSenderInstanceTag(), message.senderTag), null);
         } else {
             // OTR: "Otherwise: Forget your old gx value that you sent (encrypted) earlier, and pretend you're in AUTHSTATE_NONE;
             // i.e. reply with a D-H Key Message, and transition authstate to AUTHSTATE_AWAITING_REVEALSIG."

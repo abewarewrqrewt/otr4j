@@ -47,8 +47,8 @@ public final class DataMessage4Test {
         final DataMessage4 message = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ECDH_PUBLIC_KEY, DH_PUBLIC_KEY, nonce, content, authenticator, revealedMACs);
         assertEquals(Version.FOUR, message.protocolVersion);
-        assertEquals(SMALLEST_TAG, message.senderInstanceTag);
-        assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
+        assertEquals(SMALLEST_TAG, message.senderTag);
+        assertEquals(HIGHEST_TAG, message.receiverTag);
         assertEquals(0, message.flags);
         assertEquals(0, message.pn);
         assertEquals(0, message.i);
@@ -70,8 +70,8 @@ public final class DataMessage4Test {
         final DataMessage4 message = new DataMessage4(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
                 ECDH_PUBLIC_KEY, null, nonce, content, authenticator, revealedMACs);
         assertEquals(Version.FOUR, message.protocolVersion);
-        assertEquals(SMALLEST_TAG, message.senderInstanceTag);
-        assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
+        assertEquals(SMALLEST_TAG, message.senderTag);
+        assertEquals(HIGHEST_TAG, message.receiverTag);
         assertEquals(0, message.flags);
         assertEquals(0, message.pn);
         assertEquals(0, message.i);

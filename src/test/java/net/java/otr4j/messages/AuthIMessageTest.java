@@ -44,8 +44,8 @@ public final class AuthIMessageTest {
     public void testConstruction() {
         final AuthIMessage m = new AuthIMessage(4, INSTANCE_TAG, INSTANCE_TAG, SIG);
         assertEquals(Version.FOUR, m.protocolVersion);
-        assertEquals(INSTANCE_TAG, m.senderInstanceTag);
-        assertEquals(INSTANCE_TAG, m.receiverInstanceTag);
+        assertEquals(INSTANCE_TAG, m.senderTag);
+        assertEquals(INSTANCE_TAG, m.receiverTag);
         assertEquals(MESSAGE_AUTH_I, m.getType());
         assertSame(SIG, m.sigma);
     }

@@ -60,13 +60,13 @@ public final class AuthRMessages {
         } catch (final net.java.otr4j.crypto.ed448.ValidationException | OtrCryptoException e) {
             throw new ValidationException("Illegal ephemeral public key.", e);
         }
-        if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
+        if (!message.senderTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         final byte[] t = encode(AUTH_R, message.clientProfile, ourClientProfilePayload, message.x,
                 receiverECDHPublicKey, message.a, receiverDHPublicKey, message.ourFirstECDHPublicKey,
                 message.ourFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
-                message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
+                message.senderTag, message.receiverTag, queryTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
                     message.sigma, t);

@@ -454,14 +454,14 @@ final class SessionImpl implements Session, Context {
                 || ((EncodedMessage) m).getVersion() == FOUR)) {
             final EncodedMessage message = (EncodedMessage) m;
 
-            if (ZERO_TAG.equals(message.getSenderInstanceTag())) {
+            if (ZERO_TAG.equals(message.getSenderTag())) {
                 // An encoded message without a sender instance tag is always bad.
                 logger.warning("Encoded message is missing sender instance tag. Ignoring message.");
                 return null;
             }
 
-            if (!ZERO_TAG.equals(message.getReceiverInstanceTag())
-                    && !message.getReceiverInstanceTag().equals(this.profile.getInstanceTag())) {
+            if (!ZERO_TAG.equals(message.getReceiverTag())
+                    && !message.getReceiverTag().equals(this.profile.getInstanceTag())) {
                 // The message is not intended for us. Discarding...
                 logger.finest("Received an encoded message with receiver instance tag that is different from ours. Ignore this message.");
                 messageFromAnotherInstanceReceived(this.host, sessionID);
@@ -470,17 +470,17 @@ final class SessionImpl implements Session, Context {
 
             final SessionImpl slave;
             synchronized (this.slaveSessions) {
-                if (!this.slaveSessions.containsKey(message.getSenderInstanceTag())) {
+                if (!this.slaveSessions.containsKey(message.getSenderTag())) {
                     final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                            message.getSenderInstanceTag(), this.secureRandom);
+                            message.getSenderTag(), this.secureRandom);
                     newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
-                    this.slaveSessions.put(message.getSenderInstanceTag(), newSlaveSession);
+                    this.slaveSessions.put(message.getSenderTag(), newSlaveSession);
                 }
                 // FIXME when to detect multiple instances and signal local user with message?
-                slave = this.slaveSessions.get(message.getSenderInstanceTag());
+                slave = this.slaveSessions.get(message.getSenderTag());
             }
             logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}",
-                    message.getSenderInstanceTag().getValue());
+                    message.getSenderTag().getValue());
             return slave.handleEncodedMessage(message);
         }
 
@@ -546,8 +546,8 @@ final class SessionImpl implements Session, Context {
         // inconsistencies to ensure that the inconsistencies cannot be exploited.
         // TODO write unit test for fragment payload containing different metadata from fragment's metadata.
         if (message.getVersion() != fragment.getVersion()
-                || !message.getSenderInstanceTag().equals(fragment.getSendertag())
-                || !message.getReceiverInstanceTag().equals(fragment.getReceivertag())) {
+                || !message.getSenderTag().equals(fragment.getSendertag())
+                || !message.getReceiverTag().equals(fragment.getReceivertag())) {
             logger.log(Level.INFO, "Inconsistent OTR-encoded message: message contains different protocol version, sender tag or receiver tag than last received fragment. Message is ignored.");
             return null;
         }
@@ -564,7 +564,7 @@ final class SessionImpl implements Session, Context {
     @Nullable
     private String handleEncodedMessage(@Nonnull final EncodedMessage message) throws OtrException {
         assert this.masterSession != this || message.getVersion() == TWO : "BUG: We should not process encoded message in master session for protocol version 3 or higher.";
-        assert !ZERO_TAG.equals(message.getSenderInstanceTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
+        assert !ZERO_TAG.equals(message.getSenderTag()) : "BUG: No encoded message without sender instance tag should reach this point.";
         // TODO We've started replicating current (auth)State in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.
         // TODO can we do this in a nicer way such that we don't have to expose internal message type code for these messages?
         if (message.getVersion() == THREE && message.getType() == DHKeyMessage.MESSAGE_DHKEY) {
@@ -622,8 +622,8 @@ final class SessionImpl implements Session, Context {
         } else if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
-                fragments = this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag.getValue(),
-                        encoded.receiverInstanceTag.getValue(), serialized);
+                fragments = this.fragmenter.fragment(encoded.protocolVersion, encoded.senderTag.getValue(),
+                        encoded.receiverTag.getValue(), serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment OTR-encoded message to specified protocol parameters.", e);
             }
@@ -740,8 +740,8 @@ final class SessionImpl implements Session, Context {
         if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
-                return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderInstanceTag.getValue(),
-                    encoded.receiverInstanceTag.getValue(), serialized);
+                return this.fragmenter.fragment(encoded.protocolVersion, encoded.senderTag.getValue(),
+                    encoded.receiverTag.getValue(), serialized);
             } catch (final ProtocolException e) {
                 throw new OtrException("Failed to fragment message according to protocol parameters.", e);
             }

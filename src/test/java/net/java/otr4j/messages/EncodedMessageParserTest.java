@@ -111,7 +111,7 @@ public class EncodedMessageParserTest {
         final EncodedMessage message = (EncodedMessage) MessageParser.parse("?OTR:"
                 + Base64.toBase64String(output.toByteArray()) + ".");
         final AbstractEncodedMessage parsedM = parseEncodedMessage(message.getVersion(), message.getType(),
-                message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());
+                message.getSenderTag(), message.getReceiverTag(), message.getPayload());
         assertEquals(m, parsedM);
     }
 
@@ -120,7 +120,7 @@ public class EncodedMessageParserTest {
         final String input = "?OTR:AAQKAAAwOQCWtD8AAADA7Z2lLvD52pq9eBg1YtUPKRzDhiJbugQjqWOGKCGy9n1nV7M9+4Xoev7wgEtsUMvY9UcbaXpNLXQMlcqSpZfwRNTogXk1lOir9h8NwaURj+/ruB2jq55STMfc11E4tBmyhATStwu5VPG+5iupUjagkhsdI6I1a3ZkGXp8gAr/Utx9IB2GeXDh7HRvqRacg96X1w69IQc1lH/dVFam/OpdxCMmME1QM6N6vRRh2y34oElNhlOMGwIO9tjKr2F9m9mC.";
         // Parse produced message bytes.
         final EncodedMessage message = (EncodedMessage) MessageParser.parse(input);
-        parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderInstanceTag(), message.getReceiverInstanceTag(),
+        parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderTag(), message.getReceiverTag(),
                 message.getPayload());
     }
 
@@ -160,7 +160,7 @@ public class EncodedMessageParserTest {
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
         final DHCommitMessage parsed = (DHCommitMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
         assertEquals(message, parsed);
     }
 
@@ -174,7 +174,7 @@ public class EncodedMessageParserTest {
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
         final RevealSignatureMessage parsed = (RevealSignatureMessage) parseEncodedMessage(encoded.getVersion(),
-                encoded.getType(), encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+                encoded.getType(), encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
         assertEquals(message, parsed);
     }
 
@@ -187,7 +187,7 @@ public class EncodedMessageParserTest {
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
         final SignatureMessage parsed = (SignatureMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
         assertEquals(message, parsed);
     }
 
@@ -258,7 +258,7 @@ public class EncodedMessageParserTest {
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
         final IdentityMessage parsed = (IdentityMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
         assertEquals(message, parsed);
     }
 
@@ -300,7 +300,7 @@ public class EncodedMessageParserTest {
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
         final AuthRMessage parsed = (AuthRMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
         assertEquals(message, parsed);
     }
 
@@ -340,7 +340,7 @@ public class EncodedMessageParserTest {
         final String content = writeMessage(message);
         final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
         final AuthIMessage parsed = (AuthIMessage) parseEncodedMessage(encoded.getVersion(), encoded.getType(),
-                encoded.getSenderInstanceTag(), encoded.getReceiverInstanceTag(), encoded.getPayload());
+                encoded.getSenderTag(), encoded.getReceiverTag(), encoded.getPayload());
         assertEquals(message, parsed);
     }
 }

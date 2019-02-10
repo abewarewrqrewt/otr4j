@@ -117,8 +117,8 @@ public final class DataMessage extends AbstractEncodedMessage {
      * @return Returns 'T'.
      */
     public MysteriousT getT() {
-        return new MysteriousT(protocolVersion, senderInstanceTag,
-                receiverInstanceTag, flags, senderKeyID,
+        return new MysteriousT(protocolVersion, senderTag,
+                receiverTag, flags, senderKeyID,
                 recipientKeyID, nextDH, ctr, encryptedMessage);
     }
 

@@ -55,14 +55,14 @@ public final class AuthIMessages {
             @Nonnull final Point senderFirstECDHPublicKey, @Nonnull final BigInteger senderFirstDHPublicKey,
             @Nonnull final Point receiverFirstECDHPublicKey, @Nonnull final BigInteger receiverFirstDHPublicKey,
             @Nonnull final String senderAccountID, @Nonnull final String receiverAccountID) throws ValidationException {
-        if (!message.senderInstanceTag.equals(profileBob.getInstanceTag())) {
+        if (!message.senderTag.equals(profileBob.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         // We don't do extra verification of points here, as these have been verified upon receiving the Identity
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
         final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
                 senderFirstECDHPublicKey, senderFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
-                message.senderInstanceTag, message.receiverInstanceTag, queryTag, senderAccountID, receiverAccountID);
+                message.senderTag, message.receiverTag, queryTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.sigma, t);
         } catch (final OtrCryptoException e) {

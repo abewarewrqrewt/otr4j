@@ -92,7 +92,7 @@ public class IOTest {
         String base64 = MessageWriter.writeMessage(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
         final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message.getVersion(), message.getType(),
-                message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());
+                message.getSenderTag(), message.getReceiverTag(), message.getPayload());
         assertEquals(source, result);
     }
 
@@ -110,7 +110,7 @@ public class IOTest {
         String base64 = MessageWriter.writeMessage(source);
         EncodedMessage message = (EncodedMessage) MessageParser.parse(base64);
         final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message.getVersion(), message.getType(),
-                message.getSenderInstanceTag(), message.getReceiverInstanceTag(), message.getPayload());
+                message.getSenderTag(), message.getReceiverTag(), message.getPayload());
         assertEquals(source, result);
     }
 }

@@ -34,7 +34,7 @@ public final class IdentityMessages {
      */
     public static void validate(@Nonnull final IdentityMessage message, @Nonnull final ClientProfile theirProfile)
             throws ValidationException {
-        if (!message.senderInstanceTag.equals(theirProfile.getInstanceTag())) {
+        if (!message.senderTag.equals(theirProfile.getInstanceTag())) {
             throw new ValidationException("Sender instance tag does not match with owner instance tag in client profile.");
         }
         try {

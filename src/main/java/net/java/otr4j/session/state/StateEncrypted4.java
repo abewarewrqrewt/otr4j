@@ -96,7 +96,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Nonnull
     @Override
     public DSAPublicKey getRemotePublicKey() {
-        // TODO to be implemented.
+        // FIXME to be implemented.
         throw new UnsupportedOperationException("To be implemented.");
     }
 

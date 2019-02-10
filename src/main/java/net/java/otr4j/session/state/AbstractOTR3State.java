@@ -76,14 +76,14 @@ abstract class AbstractOTR3State implements State {
             throws OtrException {
         final AbstractEncodedMessage encodedM;
         try {
-            encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderInstanceTag(),
-                    message.getReceiverInstanceTag(), message.getPayload());
+            encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderTag(),
+                    message.getReceiverTag(), message.getPayload());
         } catch (final ProtocolException e) {
             // TODO we probably want to just drop the message, i.s.o. throwing exception.
             throw new OtrException("Invalid encoded message content.", e);
         }
 
-        assert !ZERO_TAG.equals(encodedM.receiverInstanceTag) || encodedM instanceof DHCommitMessage
+        assert !ZERO_TAG.equals(encodedM.receiverTag) || encodedM instanceof DHCommitMessage
                 : "BUG: receiver instance should be set for anything other than the first AKE message.";
 
         // TODO We've started replicating current authState in *all* cases where a new slave session is created. Is this indeed correct? Probably is, but needs focused verification.

@@ -59,13 +59,13 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         }
         final AbstractEncodedMessage encodedM;
         try {
-            encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderInstanceTag(),
-                    message.getReceiverInstanceTag(), message.getPayload());
+            encodedM = parseEncodedMessage(message.getVersion(), message.getType(), message.getSenderTag(),
+                    message.getReceiverTag(), message.getPayload());
         } catch (final ProtocolException e) {
             // TODO we probably want to just drop the message, i.s.o. throwing exception.
             throw new OtrException("Invalid encoded message content.", e);
         }
-        assert !ZERO_TAG.equals(encodedM.receiverInstanceTag) || encodedM instanceof IdentityMessage
+        assert !ZERO_TAG.equals(encodedM.receiverTag) || encodedM instanceof IdentityMessage
                 : "BUG: receiver instance should be set for anything other than the first AKE message.";
         try {
             final SessionID sessionID = context.getSessionID();

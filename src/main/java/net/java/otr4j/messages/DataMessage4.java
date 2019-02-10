@@ -97,7 +97,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      * @param authenticator the substitute authenticator
      */
     public DataMessage4(@Nonnull final DataMessage4 original, @Nonnull final byte[] authenticator) {
-        this(original.protocolVersion, original.senderInstanceTag, original.receiverInstanceTag, original.flags,
+        this(original.protocolVersion, original.senderTag, original.receiverTag, original.flags,
                 original.pn, original.i, original.j, original.ecdhPublicKey, original.dhPublicKey, original.nonce,
                 original.ciphertext, authenticator, original.revealedMacs);
     }

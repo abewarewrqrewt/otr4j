@@ -64,8 +64,8 @@ public final class AuthRMessageTest {
         final AuthRMessage message = new AuthRMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, PAYLOAD, X, A,
                 sigma, FIRST_ECDH_PUBLIC_KEY, FIRST_DH_PUBLIC_KEY);
         assertEquals(Version.FOUR, message.protocolVersion);
-        assertEquals(SMALLEST_TAG, message.senderInstanceTag);
-        assertEquals(HIGHEST_TAG, message.receiverInstanceTag);
+        assertEquals(SMALLEST_TAG, message.senderTag);
+        assertEquals(HIGHEST_TAG, message.receiverTag);
         assertEquals(PAYLOAD, message.clientProfile);
         assertEquals(X, message.x);
         assertEquals(A, message.a);
