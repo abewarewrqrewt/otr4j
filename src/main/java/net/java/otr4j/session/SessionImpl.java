@@ -121,14 +121,11 @@ final class SessionImpl implements Session, Context {
      * instance that contains the logic concerning message handling for both
      * incoming and outgoing messages, and everything related to this message
      * state.
-     *
-     * Field is volatile to ensure that state changes are communicated as soon
-     * as known they have been processed.
      */
     @Nonnull
-    private volatile State sessionState;
+    private State sessionState;
 
-    private volatile String queryTag = "";
+    private String queryTag = "";
 
     /**
      * Slave sessions contain the mappings of instance tags to outgoing
@@ -147,7 +144,7 @@ final class SessionImpl implements Session, Context {
      * for outgoing messages.
      */
     @Nonnull
-    private volatile SessionImpl outgoingSession;
+    private SessionImpl outgoingSession;
 
     /**
      * Flag indicating whether this instance is a master session or a slave
@@ -309,29 +306,29 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public SecureRandom secureRandom() {
+    public synchronized SecureRandom secureRandom() {
         return this.secureRandom;
     }
 
     @Nonnull
     @Override
-    public DSAKeyPair getLocalKeyPair() {
+    public synchronized DSAKeyPair getLocalKeyPair() {
         return this.host.getLocalKeyPair(this.sessionID);
     }
 
     @Nonnull
     @Override
-    public ClientProfilePayload getClientProfilePayload() {
+    public synchronized ClientProfilePayload getClientProfilePayload() {
         return this.profilePayload;
     }
 
     @Override
-    public void setAuthState(@Nonnull final AuthState state) {
+    public synchronized void setAuthState(@Nonnull final AuthState state) {
         this.sessionState.setAuthState(state);
     }
 
     @Override
-    public void transition(@Nonnull final State fromState, @Nonnull final State toState) {
+    public synchronized void transition(@Nonnull final State fromState, @Nonnull final State toState) {
         if (this.sessionState != fromState) {
             throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state. Expected "
                     + this.sessionState + ", but got " + fromState);
@@ -354,41 +351,41 @@ final class SessionImpl implements Session, Context {
 
     @Override
     @Nonnull
-    public SessionStatus getSessionStatus() {
+    public synchronized SessionStatus getSessionStatus() {
         return this.outgoingSession.sessionState.getStatus();
     }
 
     @Override
     @Nonnull
-    public SessionID getSessionID() {
+    public synchronized SessionID getSessionID() {
         return this.sessionID;
     }
 
     @Override
     @Nonnull
-    public OtrEngineHost getHost() {
+    public synchronized OtrEngineHost getHost() {
         return host;
     }
 
     @Override
     @Nonnull
-    public OfferStatus getOfferStatus() {
+    public synchronized OfferStatus getOfferStatus() {
         return this.offerStatus;
     }
 
     @Override
-    public void setOfferStatusSent() {
+    public synchronized void setOfferStatusSent() {
         this.offerStatus = OfferStatus.SENT;
     }
 
     @Override
-    public String getQueryTag() {
+    public synchronized String getQueryTag() {
         return this.masterSession.queryTag;
     }
 
     @Override
     @Nullable
-    public String transformReceiving(@Nonnull final String msgText) throws OtrException {
+    public synchronized String transformReceiving(@Nonnull final String msgText) throws OtrException {
         logger.log(Level.FINEST, "Entering {0} session.", masterSession == this ? "master" : "slave");
 
         if (msgText.length() == 0) {
@@ -607,7 +604,7 @@ final class SessionImpl implements Session, Context {
     }
 
     @Override
-    public void injectMessage(@Nonnull final Message m) throws OtrException {
+    public synchronized void injectMessage(@Nonnull final Message m) throws OtrException {
         final String serialized = writeMessage(m);
         final String[] fragments;
         if (m instanceof QueryMessage) {
@@ -708,7 +705,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public String[] transformSending(@Nonnull final String msgText)
+    public synchronized String[] transformSending(@Nonnull final String msgText)
             throws OtrException {
         return this.transformSending(msgText, Collections.<TLV>emptyList());
     }
@@ -724,7 +721,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public String[] transformSending(@Nonnull final String msgText, @Nonnull final Iterable<TLV> tlvs)
+    public synchronized String[] transformSending(@Nonnull final String msgText, @Nonnull final Iterable<TLV> tlvs)
             throws OtrException {
         if (masterSession == this && outgoingSession != this) {
             return outgoingSession.transformSending(msgText, tlvs);
@@ -761,7 +758,7 @@ final class SessionImpl implements Session, Context {
      * Query message into the host's transport channel.
      */
     @Override
-    public void startSession() throws OtrException {
+    public synchronized void startSession() throws OtrException {
         if (this.getSessionStatus() == ENCRYPTED) {
             logger.info("startSession was called, however an encrypted session is already established.");
             return;
@@ -783,7 +780,7 @@ final class SessionImpl implements Session, Context {
      * ending.
      */
     @Override
-    public void endSession() throws OtrException {
+    public synchronized void endSession() throws OtrException {
         if (this != outgoingSession) {
             outgoingSession.endSession();
             return;
@@ -805,7 +802,7 @@ final class SessionImpl implements Session, Context {
      * message.
      */
     @Override
-    public void refreshSession() throws OtrException {
+    public synchronized void refreshSession() throws OtrException {
         if (this.outgoingSession != this) {
             this.outgoingSession.refreshSession();
             return;
@@ -822,7 +819,7 @@ final class SessionImpl implements Session, Context {
 
     @Override
     @Nonnull
-    public DSAPublicKey getRemotePublicKey() throws IncorrectStateException {
+    public synchronized DSAPublicKey getRemotePublicKey() throws IncorrectStateException {
         if (this != outgoingSession) {
             return outgoingSession.getRemotePublicKey();
         }
@@ -830,7 +827,7 @@ final class SessionImpl implements Session, Context {
     }
 
     @Override
-    public void addOtrEngineListener(@Nonnull final OtrEngineListener l) {
+    public synchronized void addOtrEngineListener(@Nonnull final OtrEngineListener l) {
         synchronized (listeners) {
             if (!listeners.contains(l)) {
                 listeners.add(l);
@@ -839,7 +836,7 @@ final class SessionImpl implements Session, Context {
     }
 
     @Override
-    public void removeOtrEngineListener(@Nonnull final OtrEngineListener l) {
+    public synchronized void removeOtrEngineListener(@Nonnull final OtrEngineListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
@@ -847,19 +844,19 @@ final class SessionImpl implements Session, Context {
 
     @Override
     @Nonnull
-    public OtrPolicy getSessionPolicy() {
+    public synchronized OtrPolicy getSessionPolicy() {
         return this.host.getSessionPolicy(this.sessionID);
     }
 
     @Override
     @Nonnull
-    public InstanceTag getSenderInstanceTag() {
+    public synchronized InstanceTag getSenderInstanceTag() {
         return this.profile.getInstanceTag();
     }
 
     @Override
     @Nonnull
-    public InstanceTag getReceiverInstanceTag() {
+    public synchronized InstanceTag getReceiverInstanceTag() {
         return receiverTag;
     }
 
@@ -873,7 +870,7 @@ final class SessionImpl implements Session, Context {
      * established OTR session.
      */
     @Override
-    public int getProtocolVersion() {
+    public synchronized int getProtocolVersion() {
         return this.sessionState.getVersion();
     }
 
@@ -886,7 +883,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public List<SessionImpl> getInstances() {
+    public synchronized List<SessionImpl> getInstances() {
         assert this == this.masterSession : "BUG: expected this method to be called from master session only.";
         final List<SessionImpl> result = new ArrayList<>();
         result.add(this);
@@ -900,7 +897,7 @@ final class SessionImpl implements Session, Context {
      * master sessions.
      */
     @Override
-    public void setOutgoingSession(@Nonnull final InstanceTag tag) {
+    public synchronized void setOutgoingSession(@Nonnull final InstanceTag tag) {
         if (masterSession != this) {
             // Only master session can set the outgoing session.
             throw new UnsupportedOperationException("Only master session is allowed to set/change the outgoing session instance.");
@@ -927,7 +924,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public SessionStatus getSessionStatus(@Nonnull final InstanceTag tag) {
+    public synchronized SessionStatus getSessionStatus(@Nonnull final InstanceTag tag) {
         if (tag.equals(this.receiverTag)) {
             return this.sessionState.getStatus();
         }
@@ -949,7 +946,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public DSAPublicKey getRemotePublicKey(@Nonnull final InstanceTag tag) throws IncorrectStateException {
+    public synchronized DSAPublicKey getRemotePublicKey(@Nonnull final InstanceTag tag) throws IncorrectStateException {
         if (tag.equals(this.receiverTag)) {
             return this.sessionState.getRemotePublicKey();
         }
@@ -962,7 +959,7 @@ final class SessionImpl implements Session, Context {
 
     @Override
     @Nonnull
-    public SessionImpl getMasterSession() {
+    public synchronized SessionImpl getMasterSession() {
         return masterSession;
     }
 
@@ -974,7 +971,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public SessionImpl getOutgoingSession() {
+    public synchronized SessionImpl getOutgoingSession() {
         return outgoingSession;
     }
 
@@ -1008,7 +1005,7 @@ final class SessionImpl implements Session, Context {
      * @throws OtrException In case of failure to init SMP or transform to encoded message.
      */
     @Override
-    public void initSmp(@Nullable final String question, @Nonnull final String answer) throws OtrException {
+    public synchronized void initSmp(@Nullable final String question, @Nonnull final String answer) throws OtrException {
         if (this != outgoingSession) {
             outgoingSession.initSmp(question, answer);
             return;
@@ -1040,7 +1037,7 @@ final class SessionImpl implements Session, Context {
      * from ENCRYPTED, issues with SMP processing.
      */
     @Override
-    public void respondSmp(@Nullable final String question, @Nonnull final String secret) throws OtrException {
+    public synchronized void respondSmp(@Nullable final String question, @Nonnull final String secret) throws OtrException {
         if (this != outgoingSession) {
             outgoingSession.respondSmp(question, secret);
             return;
@@ -1057,7 +1054,7 @@ final class SessionImpl implements Session, Context {
      * @throws OtrException In case of failure.
      */
     @Override
-    public void respondSmp(@Nonnull final InstanceTag receiverTag, @Nullable final String question,
+    public synchronized void respondSmp(@Nonnull final InstanceTag receiverTag, @Nullable final String question,
             @Nonnull final String secret) throws OtrException {
         final SessionImpl session = receiverTag.equals(this.receiverTag) ? this : this.slaveSessions.get(receiverTag);
         if (session == null) {
@@ -1094,7 +1091,7 @@ final class SessionImpl implements Session, Context {
      * @throws OtrException In case session is not in ENCRYPTED message state.
      */
     @Override
-    public void abortSmp() throws OtrException {
+    public synchronized void abortSmp() throws OtrException {
         if (this != outgoingSession) {
             outgoingSession.abortSmp();
             return;
@@ -1120,7 +1117,7 @@ final class SessionImpl implements Session, Context {
      * ENCRYPTED.
      */
     @Override
-    public boolean isSmpInProgress() {
+    public synchronized boolean isSmpInProgress() {
         if (this != outgoingSession) {
             return outgoingSession.isSmpInProgress();
         }
@@ -1147,7 +1144,7 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public byte[] getExtraSymmetricKey() throws OtrException {
+    public synchronized byte[] getExtraSymmetricKey() throws OtrException {
         try {
             return this.sessionState.getExtraSymmetricKey();
         } catch (final IncorrectStateException e) {
@@ -1162,7 +1159,7 @@ final class SessionImpl implements Session, Context {
      * @throws IncorrectStateException In case the session's current state does not recognize a significant notion of
      *                                 "last activity".
      */
-    long getLastActivity() throws IncorrectStateException {
+    synchronized long getLastActivity() throws IncorrectStateException {
         return this.sessionState.getLastActivity();
     }
 
@@ -1171,7 +1168,7 @@ final class SessionImpl implements Session, Context {
      *
      * @throws OtrException Thrown in case of failure to fully expire the session.
      */
-    void expireSession() throws OtrException {
+    synchronized void expireSession() throws OtrException {
         // FIXME manage synchronized access
         final State state = this.sessionState;
         try {

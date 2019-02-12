@@ -30,7 +30,7 @@ final class SessionExpirationTimerTask extends TimerTask {
     private static final SessionExpirationTimerTask INSTANCE = new SessionExpirationTimerTask();
 
     // FIXME set sensible expiration offset (now 60 ms, is not functional)
-    private static final long SESSION_EXPIRATION_OFFSET_NANOSECONDS = 60_000_000L;
+    private static final long SESSION_EXPIRATION_OFFSET_NANOSECONDS = 7200_000_000_000L;
 
     private final List<WeakReference<SessionImpl>> registry = synchronizedList(new ArrayList<WeakReference<SessionImpl>>());
 
