@@ -16,10 +16,12 @@ import net.java.otr4j.api.SessionID;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.logging.Logger;
 
+import static java.util.Collections.synchronizedMap;
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.api.OtrEngineListeners.duplicate;
 
@@ -37,6 +39,22 @@ import static net.java.otr4j.api.OtrEngineListeners.duplicate;
  */
 public final class OtrSessionManager {
 
+    private static final Logger LOGGER = Logger.getLogger(OtrSessionManager.class.getName());
+
+    private static final long EXPIRATION_TIMER_INITIAL_DELAY = 60000L;
+
+    private static final long EXPIRATION_TIMER_PERIOD = 60000L;
+
+    /**
+     * The timer that periodically runs to check for expired OTR sessions.
+     */
+    private static final Timer timer = new Timer("otr-session-expiration-timer", true);
+
+    static {
+        timer.schedule(SessionExpirationTimerTask.instance(), EXPIRATION_TIMER_INITIAL_DELAY, EXPIRATION_TIMER_PERIOD);
+        LOGGER.info("OTR session expiration timer started.");
+    }
+
     /**
      * The OTR Engine Host instance.
      */
@@ -53,7 +71,7 @@ public final class OtrSessionManager {
     // ConcurrentHashMap has its own construct for putting conditionally. Currently, it is not worth the benefit as it
     // is a relatively minor issue compared to the introduction of OTRv4 support. For now, we'll leave it as is.
     @SuppressWarnings("PMD.UseConcurrentHashMap")
-    private final Map<SessionID, Session> sessions = Collections.synchronizedMap(new HashMap<SessionID, Session>());
+    private final Map<SessionID, SessionImpl> sessions = synchronizedMap(new HashMap<SessionID, SessionImpl>());
 
     /**
      * List for keeping track of listeners.
@@ -81,7 +99,9 @@ public final class OtrSessionManager {
      */
     @Nonnull
     public static Session createSession(@Nonnull final SessionID sessionID, @Nonnull final OtrEngineHost host) {
-        return new SessionImpl(sessionID, host);
+        final SessionImpl session = new SessionImpl(sessionID, host);
+        SessionExpirationTimerTask.instance().register(session);
+        return session;
     }
 
     /**
@@ -119,12 +139,13 @@ public final class OtrSessionManager {
      */
     public Session getSession(@Nonnull final SessionID sessionID) {
         synchronized (sessions) {
-            Session session = sessions.get(sessionID);
+            SessionImpl session = sessions.get(sessionID);
             if (session == null) {
                 // Don't differentiate between existing but null and non-existing. If we do not get a valid instance,
                 // then we create a new instance.
                 session = new SessionImpl(sessionID, this.host);
                 session.addOtrEngineListener(sessionManagerListener);
+                SessionExpirationTimerTask.instance().register(session);
                 sessions.put(sessionID, session);
             }
             return session;

@@ -42,6 +42,7 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
+import static net.java.otr4j.api.TLV.DISCONNECTED;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
@@ -63,6 +64,9 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
 
     private final SMP smp;
 
+    // FIXME update lastActivity on ratcheting (or whenever according to OTRv4 spec)
+    private long lastActivity;
+
     StateEncrypted4(@Nonnull final Context context, @Nonnull final byte[] ssid,
             @Nonnull final Point ourLongTermPublicKey, @Nonnull final Point theirLongTermPublicKey,
             @Nonnull final DoubleRatchet ratchet, @Nonnull final AuthState authState) {
@@ -72,6 +76,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         this.ratchet = requireNonNull(ratchet);
         this.smp = new SMP(context.secureRandom(), context.getHost(), sessionID, ssid, ourLongTermPublicKey,
                 theirLongTermPublicKey, context.getReceiverInstanceTag());
+        this.lastActivity = System.nanoTime();
     }
 
     @Nonnull
@@ -231,7 +236,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             case TLV.PADDING: // TLV0
                 // nothing to do here, just ignore the padding
                 break;
-            case TLV.DISCONNECTED: // TLV1
+            case DISCONNECTED: // TLV1
                 if ((message.flags & FLAG_IGNORE_UNREADABLE) != FLAG_IGNORE_UNREADABLE) {
                     logger.log(WARNING, "Other party is using a faulty OTR client: DISCONNECT messages are expected to have the IGNORE_UNREADABLE flag set.");
                 }
@@ -258,7 +263,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
         // Note: although we send a TLV 1 (DISCONNECT) here, we should not reveal remaining MACs.
-        final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, new byte[0]);
+        final TLV disconnectTlv = new TLV(DISCONNECTED, new byte[0]);
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv), FLAG_IGNORE_UNREADABLE);
         try {
             context.injectMessage(m);
@@ -270,8 +275,26 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     }
 
     @Override
+    public void expire(@Nonnull final Context context) throws OtrException {
+        // FIXME calculate MAC keys for skipped message keys.
+        final byte[] macsToReveal = this.ratchet.collectRemainingMACsToReveal();
+        final TLV disconnectTlv = new TLV(DISCONNECTED, macsToReveal);
+        final DataMessage4 m = transformSending(context, "", singletonList(disconnectTlv), FLAG_IGNORE_UNREADABLE);
+        try {
+            context.injectMessage(m);
+        } finally {
+            context.transition(this, new StatePlaintext(getAuthState()));
+        }
+    }
+
+    @Override
     public void destroy() {
         this.ratchet.close();
         this.smp.close();
+    }
+
+    @Override
+    public long getLastActivity() {
+        return this.lastActivity;
     }
 }

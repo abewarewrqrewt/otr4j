@@ -426,6 +426,7 @@ final class DoubleRatchet implements AutoCloseable {
      */
     byte[] collectRemainingMACsToReveal() {
         requireNotClosed();
+        // FIXME also generate MAC keys for skipped message keys once this is implemented.
         final byte[] revealed = this.macsToReveal.toByteArray();
         this.macsToReveal.reset();
         return revealed;

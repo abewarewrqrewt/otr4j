@@ -1154,4 +1154,31 @@ final class SessionImpl implements Session, Context {
             throw new OtrException("Cannot acquire Extra Symmetric Key, because current session is not encrypted.", e);
         }
     }
+
+    /**
+     * Get the moment of last activity relevant to this session.
+     *
+     * @return timestamp of last activity according to monotonic time ({@link System#nanoTime()})
+     * @throws IncorrectStateException In case the session's current state does not recognize a significant notion of
+     *                                 "last activity".
+     */
+    long getLastActivity() throws IncorrectStateException {
+        return this.sessionState.getLastActivity();
+    }
+
+    /**
+     * Expire the session.
+     *
+     * @throws OtrException Thrown in case of failure to fully expire the session.
+     */
+    void expireSession() throws OtrException {
+        // FIXME manage synchronized access
+        final State state = this.sessionState;
+        try {
+            state.expire(this);
+        } finally {
+            state.destroy();
+            sessionStatusChanged(duplicate(this.listeners), this.sessionID, this.receiverTag);
+        }
+    }
 }
