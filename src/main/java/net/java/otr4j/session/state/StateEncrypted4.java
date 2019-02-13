@@ -64,9 +64,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
 
     private final SMP smp;
 
-    // FIXME update lastActivity on ratcheting (or whenever according to OTRv4 spec)
-    private long lastActivity;
-
     StateEncrypted4(@Nonnull final Context context, @Nonnull final byte[] ssid,
             @Nonnull final Point ourLongTermPublicKey, @Nonnull final Point theirLongTermPublicKey,
             @Nonnull final DoubleRatchet ratchet, @Nonnull final AuthState authState) {
@@ -76,7 +73,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         this.ratchet = requireNonNull(ratchet);
         this.smp = new SMP(context.secureRandom(), context.getHost(), sessionID, ssid, ourLongTermPublicKey,
                 theirLongTermPublicKey, context.getReceiverInstanceTag());
-        this.lastActivity = System.nanoTime();
     }
 
     @Nonnull
@@ -295,6 +291,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
 
     @Override
     public long getLastActivity() {
-        return this.lastActivity;
+        return this.ratchet.getLastRotation();
     }
 }

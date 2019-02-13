@@ -103,6 +103,11 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private int pn = 0;
 
+    /**
+     * Monotonic timestamp of the last rotation activity. ({@link System#nanoTime()})
+     */
+    private long lastRotation = System.nanoTime();
+
     DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret,
             @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
         requireNonNull(role);
@@ -150,7 +155,7 @@ final class DoubleRatchet implements AutoCloseable {
      */
     @CheckReturnValue
     boolean isNeedSenderKeyRotation() {
-        return senderRatchet.needsRotation;
+        return this.senderRatchet.needsRotation;
     }
 
     /**
@@ -186,7 +191,16 @@ final class DoubleRatchet implements AutoCloseable {
      * @return Returns number of messages.
      */
     int getPn() {
-        return pn;
+        return this.pn;
+    }
+
+    /**
+     * Get the monotonic timestamp for the last sender keys rotation.
+     *
+     * @return Returns the monotonic timestamp for the last sender keys rotation. ({@link System#nanoTime()})
+     */
+    long getLastRotation() {
+        return this.lastRotation;
     }
 
     @Nonnull
@@ -206,6 +220,8 @@ final class DoubleRatchet implements AutoCloseable {
         this.sharedSecret.rotateOurKeys(performDHRatchet);
         generateRatchetKeys(Purpose.SENDING);
         this.i += 1;
+        // Update last-rotation time such that we can keep track of when the last rotation took place.
+        this.lastRotation = System.nanoTime();
         // Extract MACs to reveal.
         final byte[] revealedMacs = this.macsToReveal.toByteArray();
         this.macsToReveal.reset();
