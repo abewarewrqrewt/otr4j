@@ -110,6 +110,7 @@ public final class SharedSecret4 implements AutoCloseable {
     public void close() {
         this.closed = true;
         clear(this.braceKey);
+        // FIXME at session expiration, OTRv4 spec does not document clearing 'K' value. Probably this was intended by 'brace keys' (plural) as there is only one of those.
         clear(this.k);
         this.ecdhKeyPair.close();
         this.dhKeyPair.close();

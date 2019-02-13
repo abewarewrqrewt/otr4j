@@ -104,10 +104,11 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  * case - we copy AKE state to the (possibly newly created) slave sessions and
  * continue AKE message handling there.
  *
+ * SessionImpl is thread-safe. Thread-safety is achieved by serializing method calls of a session instance.
+ *
  * @author George Politis
  * @author Danny van Heumen
  */
-// TODO we now pretend to have some "semi"-threading-safety. Consider doing away with it, and if needed implement thread-safety thoroughly.
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
 @SuppressWarnings("PMD.TooManyFields")
 final class SessionImpl implements Session, Context {
@@ -1169,7 +1170,6 @@ final class SessionImpl implements Session, Context {
      * @throws OtrException Thrown in case of failure to fully expire the session.
      */
     synchronized void expireSession() throws OtrException {
-        // FIXME manage synchronized access
         final State state = this.sessionState;
         try {
             state.expire(this);

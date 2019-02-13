@@ -270,9 +270,9 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         }
     }
 
+    // FIXME write test for session expiration in StateEncrypted4. Needs to send message with FLAG_IGNORE_UNREADABLE, TLV, clearing, etc.
     @Override
     public void expire(@Nonnull final Context context) throws OtrException {
-        // FIXME calculate MAC keys for skipped message keys.
         final byte[] macsToReveal = this.ratchet.collectRemainingMACsToReveal();
         final TLV disconnectTlv = new TLV(DISCONNECTED, macsToReveal);
         final DataMessage4 m = transformSending(context, "", singletonList(disconnectTlv), FLAG_IGNORE_UNREADABLE);

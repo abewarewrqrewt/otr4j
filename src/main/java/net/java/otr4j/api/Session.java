@@ -8,6 +8,7 @@ package net.java.otr4j.api;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 import java.security.interfaces.DSAPublicKey;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +22,10 @@ import static java.util.Collections.unmodifiableSet;
  * <p>
  * This the primary interface for clients (users of otr4j) to interact with. It provides access to all the (available)
  * OTR functionality. In addition, it manages the session and any (unexpected) state transitions.
+ *
+ * {@link Session} must be thread-safe.
  */
+@ThreadSafe
 @SuppressWarnings("PMD.ConstantsInInterface")
 public interface Session {
 
