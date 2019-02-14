@@ -128,6 +128,7 @@ final class SessionImpl implements Session, Context {
     @Nonnull
     private volatile State sessionState;
 
+    // FIXME remove use of query tag due to https://github.com/otrv4/otrv4/issues/198
     private volatile String queryTag = "";
 
     /**
