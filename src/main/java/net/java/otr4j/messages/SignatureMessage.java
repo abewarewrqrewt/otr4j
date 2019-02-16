@@ -63,6 +63,7 @@ public final class SignatureMessage extends AbstractEncodedMessage {
         return result;
     }
 
+    @SuppressWarnings("ShortCircuitBoolean")
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {

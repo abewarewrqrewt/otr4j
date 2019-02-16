@@ -192,12 +192,14 @@ public final class OtrAssemblerTest {
 
     @Test(expected = ProtocolException.class)
     public void testFragmentReceivedMultipleTimesIgnoring() throws ProtocolException {
-        final Fragment fragment = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,,");
         final OtrAssembler assembler = new OtrAssembler();
+        final Fragment fragment;
         try {
+            fragment = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,,");
             assertNull(assembler.accumulate(fragment));
-        } catch (ProtocolException e) {
+        } catch (final ProtocolException e) {
             fail("Did not expect to fail sending message the first time.");
+            throw new IllegalStateException("Failed!");
         }
         assembler.accumulate(fragment);
     }

@@ -35,4 +35,16 @@
         <Class name="net.java.otr4j.session.SessionImpl"/>
         <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
     </And>
+    <And>
+        <Class name="net.java.otr4j.crypto.OtrCryptoEngine4"/>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </And>
+    <And>
+        <Class name="net.java.otr4j.crypto.SharedSecret4"/>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </And>
+    <And>
+        <Class name="net.java.otr4j.session.state.DoubleRatchet"/>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </And>
 </FindBugsFilter>

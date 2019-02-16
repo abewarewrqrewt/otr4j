@@ -621,11 +621,11 @@ final class SessionImpl implements Session, Context {
     }
 
     @Nonnull
-    private String getFallbackMessage(final SessionID sessionId, final int spaceLeft) {
+    private String getFallbackMessage(@Nonnull final SessionID sessionID, final int spaceLeft) {
         if (spaceLeft <= 0) {
             return "";
         }
-        String fallback = OtrEngineHosts.getFallbackMessage(this.host, sessionId);
+        String fallback = OtrEngineHosts.getFallbackMessage(this.host, sessionID);
         if (fallback == null || fallback.isEmpty()) {
             fallback = DEFAULT_FALLBACK_MESSAGE;
         }

@@ -300,7 +300,7 @@ public class SessionTest {
 
     @Test
     public void testMultipleSessions() throws OtrException {
-        final OtrPolicy policy = new OtrPolicy(ALLOW_V2 | ALLOW_V3 | OtrPolicy.ERROR_START_AKE & ~ALLOW_V4);
+        final OtrPolicy policy = new OtrPolicy(ALLOW_V2 | ALLOW_V3 | (OtrPolicy.ERROR_START_AKE & ~ALLOW_V4));
         final Conversation c = new Conversation(3);
 
         // Prepare conversation with multiple clients.

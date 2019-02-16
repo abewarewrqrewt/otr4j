@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for Socialist Millionaire Protocol.
@@ -479,6 +480,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2a(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex);
         }
@@ -512,6 +514,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2a(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
@@ -546,6 +549,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2b(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex);
         }
@@ -580,6 +584,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step2b(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
@@ -614,6 +619,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step3(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex);
         }
@@ -648,6 +654,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step3(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
@@ -682,6 +689,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step4(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex);
         }
@@ -716,6 +724,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step4(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }
@@ -749,6 +758,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step5(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex);
         }
@@ -782,6 +792,7 @@ public class SMTest {
         // prepare throwing exception on processing
         try {
             sm.step5(input);
+            fail();
         } catch (SMException ex) {
             assertSame(e, ex.getCause());
         }

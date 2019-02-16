@@ -64,8 +64,8 @@ public final class Scalars {
      */
     public static void prune(@Nonnull final byte[] privateKeySourceData) {
         requireLengthExactly(SCALAR_LENGTH_BYTES, privateKeySourceData);
-        privateKeySourceData[0] &= 0b11111100;
+        privateKeySourceData[0] = (byte) (privateKeySourceData[0] & 0b11111100);
         privateKeySourceData[SCALAR_LENGTH_BYTES - 1] = 0;
-        privateKeySourceData[SCALAR_LENGTH_BYTES - 2] |= 0b10000000;
+        privateKeySourceData[SCALAR_LENGTH_BYTES - 2] = (byte) (privateKeySourceData[SCALAR_LENGTH_BYTES - 2] | 0b10000000);
     }
 }

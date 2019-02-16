@@ -48,6 +48,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@SuppressWarnings("BadImport")
 public class EncodedMessageParserTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();

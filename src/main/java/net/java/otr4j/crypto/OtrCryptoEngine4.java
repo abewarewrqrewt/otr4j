@@ -581,6 +581,7 @@ public final class OtrCryptoEngine4 {
             out.writeScalar(this.r3);
         }
 
+        @SuppressWarnings("ShortCircuitBoolean")
         @Override
         public boolean equals(final Object o) {
             if (this == o) {

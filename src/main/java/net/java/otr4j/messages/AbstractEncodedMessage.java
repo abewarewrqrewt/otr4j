@@ -65,7 +65,7 @@ public abstract class AbstractEncodedMessage implements Message, OtrEncodable {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof AbstractEncodedMessage)) {
             return false;
         }
         final AbstractEncodedMessage other = (AbstractEncodedMessage) obj;

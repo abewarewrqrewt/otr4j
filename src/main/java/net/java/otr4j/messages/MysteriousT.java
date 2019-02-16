@@ -155,10 +155,10 @@ public final class MysteriousT implements OtrEncodable {
         if (senderKeyID != other.senderKeyID) {
             return false;
         }
-        if (senderInstanceTag != other.senderInstanceTag) {
+        if (!senderInstanceTag.equals(other.senderInstanceTag)) {
             return false;
         }
-        return receiverInstanceTag == other.receiverInstanceTag;
+        return receiverInstanceTag.equals(other.receiverInstanceTag);
     }
 
     @Override

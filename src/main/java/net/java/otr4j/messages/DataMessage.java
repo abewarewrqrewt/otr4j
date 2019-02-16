@@ -70,14 +70,14 @@ public final class DataMessage extends AbstractEncodedMessage {
      *
      * @param t                   mysterious T value
      * @param mac                 the MAC
-     * @param oldMacKeys          old MAC keys to be revealed
+     * @param oldMACKeys          old MAC keys to be revealed
      * @param senderInstanceTag   the sender instance tag
      * @param receiverInstanceTag the receiver instance tag
      */
-    public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,
+    public DataMessage(@Nonnull final MysteriousT t, @Nonnull final byte[] mac, @Nonnull final byte[] oldMACKeys,
             @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag) {
         this(t.protocolVersion, t.flags, t.senderKeyID, t.recipientKeyID, t.nextDH, t.ctr, t.encryptedMessage, mac,
-                oldMacKeys, senderInstanceTag, receiverInstanceTag);
+                oldMACKeys, senderInstanceTag, receiverInstanceTag);
     }
 
     /**
@@ -91,14 +91,14 @@ public final class DataMessage extends AbstractEncodedMessage {
      * @param ctr                 the counter value used in this Data message
      * @param encryptedMessage    the encrypted message content
      * @param mac                 the MAC for the message content
-     * @param oldMacKeys          the old MAC keys to reveal
+     * @param oldMACKeys          the old MAC keys to reveal
      * @param senderInstanceTag   the sender instance tag
      * @param receiverInstanceTag the receiver instance tag
      */
     public DataMessage(final int protocolVersion, final byte flags, final int senderKeyID,
             final int recipientKeyID, @Nonnull final DHPublicKey nextDH,
             @Nonnull final byte[] ctr, @Nonnull final byte[] encryptedMessage,
-            @Nonnull final byte[] mac, @Nonnull final byte[] oldMacKeys,
+            @Nonnull final byte[] mac, @Nonnull final byte[] oldMACKeys,
             @Nonnull final InstanceTag senderInstanceTag, @Nonnull final InstanceTag receiverInstanceTag) {
         super(protocolVersion, senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
@@ -108,7 +108,7 @@ public final class DataMessage extends AbstractEncodedMessage {
         this.ctr = requireNonNull(ctr);
         this.encryptedMessage = requireNonNull(encryptedMessage);
         this.mac = requireNonNull(mac);
-        this.oldMACKeys = requireNonNull(oldMacKeys);
+        this.oldMACKeys = requireNonNull(oldMACKeys);
     }
 
     /**

@@ -73,6 +73,7 @@ public final class RevealSignatureMessage extends AbstractEncodedMessage {
         return MESSAGE_REVEALSIG;
     }
 
+    @SuppressWarnings("ShortCircuitBoolean")
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

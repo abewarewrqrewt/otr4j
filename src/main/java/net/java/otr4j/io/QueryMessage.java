@@ -57,7 +57,7 @@ public class QueryMessage implements Message {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof QueryMessage)) {
             return false;
         }
         final QueryMessage other = (QueryMessage) obj;

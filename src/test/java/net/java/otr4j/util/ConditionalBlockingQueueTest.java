@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.singletonList;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({"ConstantConditions", "ModifiedButNotUsed"})
 public class ConditionalBlockingQueueTest {
 
     @Test(expected = NullPointerException.class)

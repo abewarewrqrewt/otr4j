@@ -172,9 +172,10 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         return result;
     }
 
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @SuppressWarnings({"MethodDoesntCallSuperMethod", "MissingSuperCall"})
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
+        // Intentionally not calling `super.writeTo(writer)`. It is already called in `writeDataMessageSections`.
         writeDataMessageSections(writer);
         assert !allZeroBytes(this.authenticator) : "BUG: the chance for an all zero-bytes authenticator is extremely low. Verify if the authenticator is embedded into the message after it has been generated.";
         writer.writeMacOTR4(this.authenticator);

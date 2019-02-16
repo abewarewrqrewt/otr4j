@@ -184,10 +184,18 @@ public final class ScalarTest {
         assertEquals(0, Scalars.one().compareTo(Scalars.one()));
     }
 
+    @SuppressWarnings("SelfComparison")
+    @Test
+    public void testScalarComparisonSame() {
+        final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
+        assertEquals(0, scalar.compareTo(scalar));
+    }
+
     @Test
     public void testScalarComparisonEqual() {
         final Scalar scalar = decodeScalar(randomBytes(RANDOM, new byte[57]));
-        assertEquals(0, scalar.compareTo(scalar));
+        final Scalar scalar2 = decodeScalar(scalar.encode());
+        assertEquals(0, scalar.compareTo(scalar2));
     }
 
     @Test

@@ -13,7 +13,7 @@ import net.java.otr4j.api.SessionID;
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import static java.util.Objects.requireNonNull;
 
@@ -178,7 +178,7 @@ final class OtrFragmenter {
         final int payloadSize = fragmentSize - computeHeaderSize(version);
         final int id = this.random.nextInt();
         int previous = 0;
-        final LinkedList<String> fragments = new LinkedList<>();
+        final ArrayList<String> fragments = new ArrayList<>(num);
         while (previous < message.length()) {
             // Either get new position or position of exact message end
             final int end = Math.min(previous + payloadSize, message.length());
