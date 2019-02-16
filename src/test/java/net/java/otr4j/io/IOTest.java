@@ -21,6 +21,7 @@ import java.security.SecureRandom;
 
 import static net.java.otr4j.api.InstanceTag.ZERO_TAG;
 import static net.java.otr4j.crypto.DHKeyPairOTR3.generateDHKeyPair;
+import static net.java.otr4j.io.MessageProcessor.writeMessage;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -89,8 +90,8 @@ public class IOTest {
     public void testIODHKeyMessage() throws Exception {
         DHKeyPairOTR3 pair = generateDHKeyPair(this.secureRandom);
         DHKeyMessage source = new DHKeyMessage(Session.Version.THREE, pair.getPublic(), ZERO_TAG, ZERO_TAG);
-        String base64 = MessageWriter.writeMessage(source);
-        EncodedMessage message = (EncodedMessage) MessageParser.parseMessage(base64);
+        String base64 = writeMessage(source);
+        EncodedMessage message = (EncodedMessage) MessageProcessor.parseMessage(base64);
         final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message);
         assertEquals(source, result);
     }
@@ -106,8 +107,8 @@ public class IOTest {
         byte[] revealedKey = new byte[] {1, 2, 3, 4};
         RevealSignatureMessage source = new RevealSignatureMessage(
                 protocolVersion, xEncrypted, xEncryptedMAC, revealedKey, ZERO_TAG, ZERO_TAG);
-        String base64 = MessageWriter.writeMessage(source);
-        EncodedMessage message = (EncodedMessage) MessageParser.parseMessage(base64);
+        String base64 = writeMessage(source);
+        EncodedMessage message = (EncodedMessage) MessageProcessor.parseMessage(base64);
         final AbstractEncodedMessage result = EncodedMessageParser.parseEncodedMessage(message);
         assertEquals(source, result);
     }

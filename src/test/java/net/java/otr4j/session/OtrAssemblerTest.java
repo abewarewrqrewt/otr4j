@@ -20,7 +20,7 @@ import java.util.Map;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.shuffle;
-import static net.java.otr4j.io.MessageParser.parseMessage;
+import static net.java.otr4j.io.MessageProcessor.parseMessage;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

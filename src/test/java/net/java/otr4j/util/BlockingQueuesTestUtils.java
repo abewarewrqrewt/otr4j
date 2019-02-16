@@ -10,7 +10,7 @@ package net.java.otr4j.util;
 import net.java.otr4j.api.Session;
 import net.java.otr4j.io.Fragment;
 import net.java.otr4j.io.Message;
-import net.java.otr4j.io.MessageParser;
+import net.java.otr4j.io.MessageProcessor;
 
 import javax.annotation.Nonnull;
 import java.net.ProtocolException;
@@ -63,7 +63,7 @@ public final class BlockingQueuesTestUtils {
         final ArrayList<FragmentEntry> fragments = new ArrayList<>();
         for (int i = 0; i < messages.size(); i++) {
             final String msg = messages.get(i);
-            final Message m = MessageParser.parseMessage(msg);
+            final Message m = MessageProcessor.parseMessage(msg);
             if (m instanceof Fragment && ((Fragment) m).getVersion() == Session.Version.THREE) {
                 fragments.add(new FragmentEntry(i, ((Fragment) m).getIndex(), msg));
             }

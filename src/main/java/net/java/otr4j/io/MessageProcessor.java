@@ -9,10 +9,13 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.Version;
+import org.bouncycastle.util.encoders.Base64;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import java.io.StringWriter;
 import java.net.ProtocolException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.Collections.sort;
 import static net.java.otr4j.api.Session.Version.SUPPORTED;
 import static net.java.otr4j.io.EncodingConstants.ERROR_PREFIX;
 import static net.java.otr4j.io.EncodingConstants.HEAD;
@@ -34,13 +38,12 @@ import static net.java.otr4j.io.EncodingConstants.TAIL_FRAGMENTED;
 import static org.bouncycastle.util.encoders.Base64.decode;
 
 /**
- * Message parser.
+ * Message processor.
  * <p>
- * The parser for the general OTR message structure. The parser processes the text representation of an OTR message and
- * returns a message instance.
+ * The processor for the general OTR message structure. The parser processes the text representation of an OTR message
+ * and returns a message instance. The writer processes object representations to generate text representations.
  */
-// FIXME merge MessageParser and MessageWriter
-public final class MessageParser {
+public final class MessageProcessor {
 
     /**
      * Index of numbers such that we can easily translate from number character
@@ -64,7 +67,7 @@ public final class MessageParser {
     private static final Pattern PATTERN_WHITESPACE = Pattern
             .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?(  \\t\\t \\t  )?");
 
-    private MessageParser() {
+    private MessageProcessor() {
         // No need to instantiate.
     }
 
@@ -167,6 +170,66 @@ public final class MessageParser {
 
         final String cleanText = matcher.replaceAll("");
         return new PlainTextMessage(versions, cleanText);
+    }
+
+    /**
+     * Serialize a Message into a string-representation.
+     *
+     * @param m the message
+     * @return Returns the string-representation of the provided message.
+     */
+    @Nonnull
+    public static String writeMessage(@Nonnull final Message m) {
+        final StringWriter writer = new StringWriter();
+        if (m instanceof ErrorMessage) {
+            writer.write(HEAD);
+            writer.write(HEAD_ERROR);
+            writer.write(ERROR_PREFIX);
+            writer.write(((ErrorMessage) m).error);
+        } else if (m instanceof PlainTextMessage) {
+            final PlainTextMessage plaintxt = (PlainTextMessage) m;
+            writer.write(plaintxt.getCleanText());
+            writer.write(generateWhitespaceTag(plaintxt.getVersions()));
+        } else if (m instanceof QueryMessage) {
+            final QueryMessage query = (QueryMessage) m;
+            if (query.getVersions().size() == 1 && query.getVersions().contains(Version.ONE)) {
+                throw new UnsupportedOperationException("OTR v1 is no longer supported. Support in the library has been removed, so the query message should not contain a version 1 entry.");
+            }
+            final ArrayList<Integer> versions = new ArrayList<>(query.getVersions());
+            sort(versions);
+            writer.write(generateQueryTag(versions));
+        } else if (m instanceof OtrEncodable) {
+            writer.write(HEAD);
+            writer.write(HEAD_ENCODED);
+            writer.write(Base64.toBase64String(new OtrOutputStream().write((OtrEncodable) m).toByteArray()));
+            writer.write(".");
+        } else {
+            throw new UnsupportedOperationException("Unsupported message type encountered: " + m.getClass().getName());
+        }
+        return writer.toString();
+    }
+
+    @Nonnull
+    private static String generateWhitespaceTag(@Nonnull final Iterable<Integer> versions) {
+        final StringBuilder builder = new StringBuilder(40);
+        for (final int version : versions) {
+            if (version == Version.TWO) {
+                builder.append("  \t\t  \t ");
+            }
+            if (version == Version.THREE) {
+                builder.append("  \t\t  \t\t");
+            }
+            if (version == Version.FOUR) {
+                builder.append("  \t\t \t  ");
+            }
+        }
+        return builder.length() == 0 ? "" : " \t  \t\t\t\t \t \t \t  " + builder.toString();
+    }
+
+    @Nonnull
+    private static String generateQueryTag(@Nonnull final Iterable<Integer> versions) {
+        final String versionsString = encodeVersionString(versions);
+        return versionsString.length() == 0 ? "" : HEAD + HEAD_QUERY_V + versionsString + HEAD_QUERY_Q;
     }
 
     /**
