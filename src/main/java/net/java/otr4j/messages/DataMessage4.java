@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.XSALSA20_IV_LENGTH_BYTES;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static net.java.otr4j.util.Integers.requireInRange;
@@ -175,6 +176,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     @Override
     public void writeTo(@Nonnull final OtrOutputStream writer) {
         writeDataMessageSections(writer);
+        assert !allZeroBytes(this.authenticator) : "BUG: the chance for an all zero-bytes authenticator is extremely low. Verify if the authenticator is embedded into the message after it has been generated.";
         writer.writeMacOTR4(this.authenticator);
         writer.writeData(this.revealedMacs);
     }

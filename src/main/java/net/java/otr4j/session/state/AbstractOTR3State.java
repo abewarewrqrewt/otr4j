@@ -52,7 +52,7 @@ abstract class AbstractOTR3State implements State {
      * State management for the AKE negotiation.
      */
     @Nonnull
-    private volatile AuthState authState;
+    private AuthState authState;
 
     AbstractOTR3State(@Nonnull final AuthState authState) {
         this.authState = requireNonNull(authState);

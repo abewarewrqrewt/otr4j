@@ -8,6 +8,7 @@
 package net.java.otr4j.api;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -17,6 +18,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author George Politis
  */
+@Immutable
 public final class SessionID {
 
     @Nonnull

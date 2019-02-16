@@ -7,30 +7,39 @@
 
 package net.java.otr4j.session.state;
 
-import net.java.otr4j.api.ClientProfile;
+import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrEngineHost;
 import net.java.otr4j.api.OtrException;
-import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
+import net.java.otr4j.io.Message;
 import net.java.otr4j.messages.DataMessage;
 import net.java.otr4j.messages.DataMessage4;
 import net.java.otr4j.session.ake.StateInitial;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.internal.util.reflection.Whitebox;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.SecureRandom;
 
-import static java.util.Collections.singleton;
-import static net.java.otr4j.api.InstanceTag.HIGHEST_TAG;
 import static net.java.otr4j.api.InstanceTag.SMALLEST_TAG;
+import static net.java.otr4j.session.state.State.FLAG_IGNORE_UNREADABLE;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("ConstantConditions")
@@ -47,14 +56,6 @@ public final class StateEncrypted4Test {
         when(CONTEXT.secureRandom()).thenReturn(RANDOM);
         when(CONTEXT.getReceiverInstanceTag()).thenReturn(SMALLEST_TAG);
     }
-
-    private static final EdDSAKeyPair LONG_TERM_KEY_PAIR = EdDSAKeyPair.generate(RANDOM);
-    private static final Point FORGING_PUBLIC_KEY = EdDSAKeyPair.generate(RANDOM).getPublicKey();
-    private static final ClientProfile MY_PROFILE = new ClientProfile(SMALLEST_TAG, LONG_TERM_KEY_PAIR.getPublicKey(),
-            FORGING_PUBLIC_KEY, singleton(Version.FOUR), null);
-    private static final ClientProfile THEIR_PROFILE = new ClientProfile(HIGHEST_TAG,
-            EdDSAKeyPair.generate(RANDOM).getPublicKey(), EdDSAKeyPair.generate(RANDOM).getPublicKey(),
-            singleton(Version.FOUR), null);
 
     @Test
     public void testConstructStateEncrypted4() {
@@ -167,5 +168,47 @@ public final class StateEncrypted4Test {
         final StateEncrypted4 state = new StateEncrypted4(CONTEXT, ssid, myPublicKey, theirPublicKey, ratchet,
                 StateInitial.instance());
         state.handleDataMessage(CONTEXT, (DataMessage4) null);
+    }
+
+    @Test
+    public void testExpiringSessionSendsDisconnectMessageWithTLV() throws OtrException {
+        final ArgumentCaptor<Message> captor = ArgumentCaptor.forClass(Message.class);
+        final OtrEngineHost host = mock(OtrEngineHost.class);
+        final Context context = mock(Context.class);
+        when(context.getSessionID()).thenReturn(new SessionID("bob", "network", "alice"));
+        when(context.secureRandom()).thenReturn(RANDOM);
+        when(context.getHost()).thenReturn(host);
+        final InstanceTag senderTag = InstanceTag.random(RANDOM);
+        when(context.getSenderInstanceTag()).thenReturn(senderTag);
+        final InstanceTag receiverTag = InstanceTag.random(RANDOM);
+        when(context.getReceiverInstanceTag()).thenReturn(receiverTag);
+        final byte[] ssid = randomBytes(RANDOM, new byte[8]);
+        final Point myPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirPublicKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
+        final ECDHKeyPair ecdhKeyPair = ECDHKeyPair.generate(RANDOM);
+        final DHKeyPair dhKeyPair = DHKeyPair.generate(RANDOM);
+        final BigInteger theirDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
+        final Point theirECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
+        final SharedSecret4 sharedSecret = new SharedSecret4(RANDOM, dhKeyPair, ecdhKeyPair, theirDHPublicKey,
+                theirECDHPublicKey);
+        final byte[] rootKey = randomBytes(RANDOM, new byte[64]);
+        final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, sharedSecret, rootKey, DoubleRatchet.Role.ALICE);
+
+        // Test StateEncrypted4 expiring
+        final byte[] artificialMACsToReveal = randomBytes(RANDOM, new byte[120]);
+        ((ByteArrayOutputStream) Whitebox.getInternalState(ratchet, "macsToReveal")).write(artificialMACsToReveal, 0,
+                artificialMACsToReveal.length);
+        final StateEncrypted4 state = new StateEncrypted4(context, ssid, myPublicKey, theirPublicKey, ratchet,
+                StateInitial.instance());
+        state.expire(context);
+
+        // Verify that state is correct after expiring.
+        verify(context, times(1)).injectMessage(captor.capture());
+        verify(context, times(1)).transition(eq(state), any(StatePlaintext.class));
+        final DataMessage4 disconnectMessage = (DataMessage4) captor.getValue();
+        assertEquals(FLAG_IGNORE_UNREADABLE, disconnectMessage.flags & FLAG_IGNORE_UNREADABLE);
+        assertTrue(disconnectMessage.ciphertext.length > 1);
+        assertArrayEquals(artificialMACsToReveal, disconnectMessage.revealedMacs);
+        assertArrayEquals(new byte[0], ratchet.collectRemainingMACsToReveal());
     }
 }

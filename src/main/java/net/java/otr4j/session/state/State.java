@@ -164,6 +164,19 @@ public interface State {
     void end(@Nonnull final Context context) throws OtrException;
 
     /**
+     * Expire the current state.
+     * <p>
+     * This assumes that there is such a concept of 'expiration' for this state. If there is, perform the necessary
+     * steps to expire the state. If there is not, throw {@link IncorrectStateException} to indicate as such.
+     *
+     * @param context the session state context
+     * @throws OtrException Thrown in case of failure during expiration of the state. (Or in the most benign case,
+     *                      {@link IncorrectStateException} is thrown to indicate expiration is not applicable to this
+     *                      state.
+     */
+    void expire(@Nonnull final Context context) throws OtrException;
+
+    /**
      * Get SMP TLV handler for use in SMP negotiations.
      *
      * The handler is only available in Encrypted states. In case another state
@@ -180,4 +193,20 @@ public interface State {
      * Securely clear the content of the state after {@link Context#transition(State, State)}-ing away from it.
      */
     void destroy();
+
+    /**
+     * Get the last moment of activity in this session. (The 'last activity' timestamp is used by the session expiration
+     * timer.)
+     * <p>
+     * This gives back a monotonic timestamp (according to {@link System#nanoTime()} that can be used to determine how
+     * much time has elapsed between events.
+     * <p>
+     * The exact semantics of "last activity" is determined by the implementing state and may vary per state and
+     * protocol version. Each state may choose their timestamps such that it most accurately represents relevant
+     * activities. (For example, in OTRv4 the rotation of ephemeral secrets are the determining factor. - 2019-02-11)
+     *
+     * @return Returns monotonic timestamp of last activity. ({@linkplain System#nanoTime()})
+     * @throws IncorrectStateException Thrown in case the current state does not have a notion of relevant activity.
+     */
+    long getLastActivity() throws IncorrectStateException;
 }

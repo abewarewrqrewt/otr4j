@@ -29,4 +29,10 @@
         <Bug code="Nm"/>
         <Bug pattern="NM_CONFUSING"/>
     </And>
+    <And>
+        <!-- For some reason, spotbugs does not detect the "synchronized" keyword in the method signature of
+        getOutgoingSession. Not sure how this happens or what to do about it. -->
+        <Class name="net.java.otr4j.session.SessionImpl"/>
+        <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
+    </And>
 </FindBugsFilter>

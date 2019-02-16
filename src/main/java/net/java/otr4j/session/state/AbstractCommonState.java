@@ -80,4 +80,14 @@ abstract class AbstractCommonState extends AbstractOTR4State {
         requireEncryptedMessage(context.getHost(), context.getSessionID(), msgText);
         return null;
     }
+
+    @Override
+    public void expire(@Nonnull final Context context) throws OtrException {
+        throw new IncorrectStateException("State " + this.getClass().getName() + " does not expire.");
+    }
+
+    @Override
+    public long getLastActivity() throws IncorrectStateException {
+        throw new IncorrectStateException("State " + this.getClass().getName() + " does not expire.");
+    }
 }
