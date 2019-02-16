@@ -7,8 +7,9 @@
 
 package net.java.otr4j.api;
 
+import com.google.errorprone.annotations.Immutable;
+
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 
 import static java.util.Objects.requireNonNull;
 
