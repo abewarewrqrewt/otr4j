@@ -41,7 +41,8 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - ☐ OTRv4 extension to OTR error messages
   - ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
   - ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
-  - ☐ Publishing of generated ClientProfile payloads through callback to OtrEngineHost (Affects _Deniability_-property.)
+  - ☐ Publishing of generated `ClientProfile` payloads through callback to `OtrEngineHost` (Affects _Deniability_-property.)
+  - ☐ Periodic heartbeat messages
 - Cryptographic primitives:
   - Edd448-Goldilocks elliptic curve (temporary solution)
     - ☑ Temporary working solution
@@ -66,8 +67,9 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
     - ☑ Key rotation
   - ☑ Calculate _Encryption_, _MAC_ and _Extra Symmetric Key_ keys
   - ☑ Revealing used MAC keys
+  - ☑ Revealing queued up MAC keys upon session expiration.
+  - ☐ Revealing MAC keys generated from memorized message keys upon session expiration.
   - ☐ Periodic clean-up of "old" skipped message keys
-  - ☐ Session expiration (and revealing remaining MAC keys)
 - Message encryption/decryption:
   - ☑ In-order messages
   - ☑ In-order messages with some messages missing
@@ -75,12 +77,13 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
 - Fragmentation and re-assembly:
   - ☑ Fragmentation
   - ☑ Re-assembling fragmented messages
+  - ☐ Periodic clean-up of "old" fragments
 - Socialist Millionaire's Protocol:
   - ☑ OTRv2/OTRv3
   - ☑ OTRv4
 - Client and PreKey Profiles:
   - ☑ Client Profile support
-  - ☐ PreKey profile support
+  - ☐ PreKey Profile support
 - Extra Symmetric Key support:
   - ☑ OTRv3
   - OTRv4
@@ -97,9 +100,6 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   _Under consideration as part of the [OTRv4 client implementation recommendations](https://github.com/otrv4/otrv4-client-imp-recommendations/issues/3)._
   - ☐ Evaluate whether there really is an advantage to having `OtrEngineHost` calls specify a session instance. (Does it make sense to make the distinction?)
   - ☐ Evaluate cases of `OtrException` being thrown. Reduce number of cases where user has to handle an exception without there being a real resolution.
-  - ☐ Maintenance: clean up old (abandoned) message fragments
-  - ☐ Maintenance: clean up old sessions and reveal memorized MACs (with specified expiration time)
-  - ☐ Maintenance: send periodic heartbeat messages
 
 ## Operational
 
@@ -133,6 +133,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
 - OTRv3 - catching up:
   - ☐ In-memory representation for OTRv3.
   - ☐ Arithmetical operations on byte-arrays for OTRv2 and/or OTRv3 logic.
+  - ☐ Periodic heartbeat messages.
 
 ## Developmental
 
