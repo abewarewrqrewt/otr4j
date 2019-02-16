@@ -146,6 +146,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - ☑ Introduce SpotBugs analysis at build-time
   - ☑ Introduce checkstyle at build-time to guard formatting/style
   - ☑ Introduce checkstyle _ImportControl_ module to guard the design structure
+  - ☐ Investigate usefulness of [ErrorProne](https://errorprone.info/docs/installation).
   - ☐ Introduce [Animal sniffer](https://www.mojohaus.org/animal-sniffer/) build plug-in to verify that we do not break backwards-compatibility, once released.
   - ☐ spotbugs-annotations to support managing clean-up of cryptographic key material
   - ☐ Experiment with features of [Checker Framework](https://checkerframework.org).

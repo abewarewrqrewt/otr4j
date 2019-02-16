@@ -110,7 +110,7 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  * @author Danny van Heumen
  */
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.TooManyFields", "PMD.AvoidSynchronizedAtMethodLevel"})
 final class SessionImpl implements Session, Context {
 
     private static final String DEFAULT_FALLBACK_MESSAGE = "Your contact is requesting to start an encrypted chat. Please install an app that supports OTR: https://github.com/otr4j/otr4j/wiki/Apps";
@@ -126,6 +126,7 @@ final class SessionImpl implements Session, Context {
     @Nonnull
     private State sessionState;
 
+    @Nonnull
     private String queryTag = "";
 
     /**
@@ -283,7 +284,7 @@ final class SessionImpl implements Session, Context {
         this.offerStatus = OfferStatus.IDLE;
         // Master session uses the map to manage slave sessions. Slave sessions do not use the map.
         slaveSessions = this.masterSession == this
-                ? Collections.synchronizedMap(new HashMap<InstanceTag, SessionImpl>(0))
+                ? new HashMap<InstanceTag, SessionImpl>(0)
                 : Collections.<InstanceTag, SessionImpl>emptyMap();
         outgoingSession = this;
         // Initialize message fragmentation support.
@@ -307,29 +308,29 @@ final class SessionImpl implements Session, Context {
      */
     @Override
     @Nonnull
-    public synchronized SecureRandom secureRandom() {
+    public SecureRandom secureRandom() {
         return this.secureRandom;
     }
 
     @Nonnull
     @Override
-    public synchronized DSAKeyPair getLocalKeyPair() {
+    public DSAKeyPair getLocalKeyPair() {
         return this.host.getLocalKeyPair(this.sessionID);
     }
 
     @Nonnull
     @Override
-    public synchronized ClientProfilePayload getClientProfilePayload() {
+    public ClientProfilePayload getClientProfilePayload() {
         return this.profilePayload;
     }
 
     @Override
-    public synchronized void setAuthState(@Nonnull final AuthState state) {
+    public void setAuthState(@Nonnull final AuthState state) {
         this.sessionState.setAuthState(state);
     }
 
     @Override
-    public synchronized void transition(@Nonnull final State fromState, @Nonnull final State toState) {
+    public void transition(@Nonnull final State fromState, @Nonnull final State toState) {
         if (this.sessionState != fromState) {
             throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state. Expected "
                     + this.sessionState + ", but got " + fromState);
@@ -358,13 +359,13 @@ final class SessionImpl implements Session, Context {
 
     @Override
     @Nonnull
-    public synchronized SessionID getSessionID() {
+    public SessionID getSessionID() {
         return this.sessionID;
     }
 
     @Override
     @Nonnull
-    public synchronized OtrEngineHost getHost() {
+    public OtrEngineHost getHost() {
         return host;
     }
 
@@ -380,7 +381,7 @@ final class SessionImpl implements Session, Context {
     }
 
     @Override
-    public synchronized String getQueryTag() {
+    public String getQueryTag() {
         return this.masterSession.queryTag;
     }
 
@@ -437,16 +438,13 @@ final class SessionImpl implements Session, Context {
                 return null;
             }
 
-            final SessionImpl slave;
-            synchronized (this.slaveSessions) {
-                if (!this.slaveSessions.containsKey(fragment.getSenderTag())) {
-                    final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                            fragment.getSenderTag(), this.secureRandom);
-                    newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
-                    this.slaveSessions.put(fragment.getSenderTag(), newSlaveSession);
-                }
-                slave = this.slaveSessions.get(fragment.getSenderTag());
+            if (!this.slaveSessions.containsKey(fragment.getSenderTag())) {
+                final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                        fragment.getSenderTag(), this.secureRandom);
+                newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
+                this.slaveSessions.put(fragment.getSenderTag(), newSlaveSession);
             }
+            final SessionImpl slave = this.slaveSessions.get(fragment.getSenderTag());
             return slave.handleFragment(fragment);
         } else if (masterSession == this && m instanceof EncodedMessage && (((EncodedMessage) m).version == THREE
                 || ((EncodedMessage) m).version == FOUR)) {
@@ -465,17 +463,14 @@ final class SessionImpl implements Session, Context {
                 return null;
             }
 
-            final SessionImpl slave;
-            synchronized (this.slaveSessions) {
-                if (!this.slaveSessions.containsKey(message.senderTag)) {
-                    final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
-                            message.senderTag, this.secureRandom);
-                    newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
-                    this.slaveSessions.put(message.senderTag, newSlaveSession);
-                }
-                // FIXME when to detect multiple instances and signal local user with message?
-                slave = this.slaveSessions.get(message.senderTag);
+            if (!this.slaveSessions.containsKey(message.senderTag)) {
+                final SessionImpl newSlaveSession = new SessionImpl(this, sessionID, this.host,
+                        message.senderTag, this.secureRandom);
+                newSlaveSession.addOtrEngineListener(this.slaveSessionsListener);
+                this.slaveSessions.put(message.senderTag, newSlaveSession);
             }
+            // FIXME when to detect multiple instances and signal local user with message?
+            final SessionImpl slave = this.slaveSessions.get(message.senderTag);
             logger.log(Level.FINEST, "Delegating to slave session for instance tag {0}",
                     message.senderTag.getValue());
             return slave.handleEncodedMessage(message);
@@ -829,18 +824,14 @@ final class SessionImpl implements Session, Context {
 
     @Override
     public synchronized void addOtrEngineListener(@Nonnull final OtrEngineListener l) {
-        synchronized (listeners) {
-            if (!listeners.contains(l)) {
-                listeners.add(l);
-            }
+        if (!listeners.contains(l)) {
+            listeners.add(l);
         }
     }
 
     @Override
     public synchronized void removeOtrEngineListener(@Nonnull final OtrEngineListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        listeners.remove(l);
     }
 
     @Override
@@ -851,13 +842,13 @@ final class SessionImpl implements Session, Context {
 
     @Override
     @Nonnull
-    public synchronized InstanceTag getSenderInstanceTag() {
+    public InstanceTag getSenderInstanceTag() {
         return this.profile.getInstanceTag();
     }
 
     @Override
     @Nonnull
-    public synchronized InstanceTag getReceiverInstanceTag() {
+    public InstanceTag getReceiverInstanceTag() {
         return receiverTag;
     }
 
@@ -961,7 +952,7 @@ final class SessionImpl implements Session, Context {
     @Override
     @Nonnull
     public synchronized SessionImpl getMasterSession() {
-        return masterSession;
+        return this.masterSession;
     }
 
     /**
@@ -973,7 +964,7 @@ final class SessionImpl implements Session, Context {
     @Override
     @Nonnull
     public synchronized SessionImpl getOutgoingSession() {
-        return outgoingSession;
+        return this.outgoingSession;
     }
 
     /**

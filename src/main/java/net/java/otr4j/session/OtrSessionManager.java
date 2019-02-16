@@ -48,10 +48,10 @@ public final class OtrSessionManager {
     /**
      * The timer that periodically runs to check for expired OTR sessions.
      */
-    private static final Timer timer = new Timer("otr-session-expiration-timer", true);
+    private static final Timer TIMER = new Timer("otr-session-expiration-timer", true);
 
     static {
-        timer.schedule(SessionExpirationTimerTask.instance(), EXPIRATION_TIMER_INITIAL_DELAY, EXPIRATION_TIMER_PERIOD);
+        TIMER.schedule(SessionExpirationTimerTask.instance(), EXPIRATION_TIMER_INITIAL_DELAY, EXPIRATION_TIMER_PERIOD);
         LOGGER.info("OTR session expiration timer started.");
     }
 

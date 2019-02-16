@@ -10,10 +10,12 @@ package net.java.otr4j.api;
 import java.security.SecureRandom;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Instance tag used in message fragments.
  */
+@Immutable
 public final class InstanceTag {
 
     /**

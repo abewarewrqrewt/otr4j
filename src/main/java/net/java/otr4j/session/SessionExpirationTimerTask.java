@@ -34,7 +34,7 @@ final class SessionExpirationTimerTask extends TimerTask {
     private final List<WeakReference<SessionImpl>> registry = synchronizedList(new ArrayList<WeakReference<SessionImpl>>());
 
     private SessionExpirationTimerTask() {
-        // No further initialization needed.
+        super();
     }
 
     static SessionExpirationTimerTask instance() {
@@ -59,7 +59,7 @@ final class SessionExpirationTimerTask extends TimerTask {
                 continue;
             }
             expireTimedOutSessions(now, master);
-            for (SessionImpl slave : master.getInstances()) {
+            for (final SessionImpl slave : master.getInstances()) {
                 expireTimedOutSessions(now, slave);
             }
         }
