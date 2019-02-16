@@ -23,51 +23,49 @@ import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@SuppressWarnings("ConstantConditions")
 public class MessageWriterTest {
 
     @Test
     public void testPlaintextMessageNoNullMangling() {
         final String data = "This is a test with \0 null \0 values.";
-        final PlainTextMessage m = new PlainTextMessage("?OTRv23?",
-                new HashSet<>(Arrays.asList(Version.TWO, Version.THREE)), data);
+        final PlainTextMessage m = new PlainTextMessage(new HashSet<>(Arrays.asList(Version.TWO, Version.THREE)), data);
         assertTrue(writeMessage(m).startsWith("This is a test with \0 null \0 values."));
     }
 
     @Test
     public void testQueryHeaderEmpty() {
         // Verify that we do not send the "bizarre claim" (as documented by otr spec) of willingness to speak otr but we accept not a single version.
-        final QueryMessage msg = new QueryMessage("", Collections.<Integer>emptySet());
+        final QueryMessage msg = new QueryMessage(Collections.<Integer>emptySet());
         assertEquals("", writeMessage(msg));
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testCorrectQueryHeaderV1() {
-        final QueryMessage msg = new QueryMessage("?OTR?", Collections.singleton(1));
+        final QueryMessage msg = new QueryMessage(Collections.singleton(1));
         assertEquals("", writeMessage(msg));
     }
 
     @Test
     public void testCorrectQueryHeaderV2() {
-        final QueryMessage msg = new QueryMessage("?OTRv2?", Collections.singleton(Session.Version.TWO));
+        final QueryMessage msg = new QueryMessage(Collections.singleton(Session.Version.TWO));
         assertEquals("?OTRv2?", writeMessage(msg));
     }
 
     @Test
     public void testCorrectQueryHeaderV3() {
-        final QueryMessage msg = new QueryMessage("?OTRv3?", Collections.singleton(Session.Version.THREE));
+        final QueryMessage msg = new QueryMessage(Collections.singleton(Session.Version.THREE));
         assertEquals("?OTRv3?", writeMessage(msg));
     }
 
     @Test
     public void testCorrectQueryHeaderV2AndV3() {
-        final QueryMessage msg = new QueryMessage("?OTRv23?", new HashSet<>(Arrays.asList(Version.TWO, Session.Version.THREE)));
+        final QueryMessage msg = new QueryMessage(new HashSet<>(Arrays.asList(Version.TWO, Session.Version.THREE)));
         assertEquals("?OTRv23?", writeMessage(msg));
     }
 
     @Test
     public void testWhitespaceTagsNoVersions() {
-        final PlainTextMessage m = new PlainTextMessage("", Collections.<Integer>emptySet(), "Hello");
+        final PlainTextMessage m = new PlainTextMessage(Collections.<Integer>emptySet(), "Hello");
         assertEquals("Hello", writeMessage(m));
     }
 

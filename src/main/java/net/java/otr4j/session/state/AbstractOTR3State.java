@@ -167,8 +167,8 @@ abstract class AbstractOTR3State implements State {
 
     @Nonnull
     @Override
-    public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version, final InstanceTag receiverInstanceTag, final String queryTag) {
-        return this.authState.initiate(context, version, receiverInstanceTag, queryTag);
+    public AbstractEncodedMessage initiateAKE(@Nonnull final Context context, final int version, final InstanceTag receiverTag) {
+        return this.authState.initiate(context, version, receiverTag);
     }
 
     /**

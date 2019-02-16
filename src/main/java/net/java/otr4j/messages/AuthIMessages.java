@@ -31,7 +31,6 @@ public final class AuthIMessages {
      * Validate an Auth-I message.
      *
      * @param message                    the Auth-I message to be validated
-     * @param queryTag                   the query tag
      * @param ourProfilePayload          our client profile (non-validated, as payload)
      * @param ourProfile                 our client profile
      * @param profileBobPayload          other party's client profile (as payload)
@@ -48,7 +47,7 @@ public final class AuthIMessages {
      * @param receiverFirstDHPublicKey   the receiver's first DH public key to use after DAKE completes
      * @throws ValidationException In case validation fails.
      */
-    public static void validate(@Nonnull final AuthIMessage message, @Nonnull final String queryTag,
+    public static void validate(@Nonnull final AuthIMessage message,
             @Nonnull final ClientProfilePayload ourProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfilePayload profileBobPayload, @Nonnull final ClientProfile profileBob,
             @Nonnull final Point x, @Nonnull final Point y, @Nonnull final BigInteger a, @Nonnull final BigInteger b,
@@ -62,7 +61,7 @@ public final class AuthIMessages {
         // message. This was the previous message that was sent. So we can assume points are trustworthy.
         final byte[] t = encode(AUTH_I, ourProfilePayload, profileBobPayload, x, y, a, b,
                 senderFirstECDHPublicKey, senderFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
-                message.senderTag, message.receiverTag, queryTag, senderAccountID, receiverAccountID);
+                message.senderTag, message.receiverTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(profileBob.getLongTermPublicKey(), ourProfile.getForgingKey(), x, message.sigma, t);
         } catch (final OtrCryptoException e) {

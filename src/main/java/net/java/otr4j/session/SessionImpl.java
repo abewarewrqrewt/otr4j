@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.WARNING;
@@ -126,10 +127,6 @@ final class SessionImpl implements Session, Context {
      */
     @Nonnull
     private State sessionState;
-
-    // FIXME remove use of query tag due to https://github.com/otrv4/otrv4/issues/198
-    @Nonnull
-    private String queryTag = "";
 
     /**
      * Slave sessions contain the mappings of instance tags to outgoing
@@ -285,9 +282,11 @@ final class SessionImpl implements Session, Context {
         this.receiverTag = requireNonNull(receiverTag);
         this.offerStatus = OfferStatus.IDLE;
         // Master session uses the map to manage slave sessions. Slave sessions do not use the map.
-        slaveSessions = this.masterSession == this
-                ? new HashMap<InstanceTag, SessionImpl>(0)
-                : Collections.<InstanceTag, SessionImpl>emptyMap();
+        if (this.masterSession == this) {
+            this.slaveSessions = new HashMap<>(0);
+        } else {
+            this.slaveSessions = emptyMap();
+        }
         outgoingSession = this;
         // Initialize message fragmentation support.
         this.profile = this.host.getClientProfile(sessionID);
@@ -380,11 +379,6 @@ final class SessionImpl implements Session, Context {
     @Override
     public synchronized void setOfferStatusSent() {
         this.offerStatus = OfferStatus.SENT;
-    }
-
-    @Override
-    public String getQueryTag() {
-        return this.masterSession.queryTag;
     }
 
     @Override
@@ -562,7 +556,6 @@ final class SessionImpl implements Session, Context {
         if (message.version == THREE && checkDHKeyMessage(message)) {
             // Copy state to slave session, as this is the earliest moment that we know the instance tag of the other party.
             // FIXME evaluate whether this screws things up in case we *do* know the receiver instance tag in advance, as we would be copying an outdated authentication-state instance.
-            // TODO verify whether this can also work if DH-Commit / Identity message is sent immediately with receiver instance tag. (As you can immediately store the query tag in the corresponding slave session.)
             this.sessionState.setAuthState(this.masterSession.sessionState.getAuthState());
         } else if (checkAuthRMessage(message)) {
             assert this != this.masterSession : "We expected to be working inside a slave session instead of a master session.";
@@ -581,13 +574,13 @@ final class SessionImpl implements Session, Context {
         final OtrPolicy policy = getSessionPolicy();
         if (queryMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("Query message with V4 support found. Sending Identity Message.");
-            respondAuth(FOUR, ZERO_TAG, queryMessage.getTag());
+            respondAuth(FOUR, ZERO_TAG);
         } else if (queryMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("Query message with V3 support found. Sending D-H Commit Message.");
-            respondAuth(THREE, ZERO_TAG, queryMessage.getTag());
+            respondAuth(THREE, ZERO_TAG);
         } else if (queryMessage.getVersions().contains(TWO) && policy.isAllowV2()) {
             logger.finest("Query message with V2 support found. Sending D-H Commit Message.");
-            respondAuth(TWO, ZERO_TAG, queryMessage.getTag());
+            respondAuth(TWO, ZERO_TAG);
         } else {
             logger.info("Query message received, but none of the versions are acceptable. They are either excluded by policy or through lack of support.");
         }
@@ -606,11 +599,9 @@ final class SessionImpl implements Session, Context {
         final String serialized = writeMessage(m);
         final String[] fragments;
         if (m instanceof QueryMessage) {
-            // TODO I don't think this holds, and I don't think we should care. Keeping it in for now because I'm curious ...
             assert this.masterSession == this : "Expected query messages to only be sent from Master session!";
             assert !(m instanceof PlainTextMessage)
                     : "PlainText messages (with possible whitespace tag) should not end up here. We should not append the fallback message to a whitespace-tagged plaintext message.";
-            this.masterSession.queryTag = ((QueryMessage) m).getTag();
             final int spaceForFallbackMessage = host.getMaxFragmentSize(this.sessionID) - 1 - serialized.length();
             fragments = new String[] {serialized + ' ' + getFallbackMessage(this.sessionID, spaceForFallbackMessage)};
         } else if (m instanceof AbstractEncodedMessage) {
@@ -665,26 +656,25 @@ final class SessionImpl implements Session, Context {
             // no policy w.r.t. starting AKE on whitespace tag
             return;
         }
-        this.masterSession.queryTag = plainTextMessage.getTag();
         logger.finest("WHITESPACE_START_AKE is set, processing whitespace-tagged message.");
         if (plainTextMessage.getVersions().contains(FOUR) && policy.isAllowV4()) {
             logger.finest("V4 tag found. Sending Identity Message.");
             try {
-                respondAuth(FOUR, ZERO_TAG, plainTextMessage.getTag());
+                respondAuth(FOUR, ZERO_TAG);
             } catch (final OtrException e) {
                 logger.log(WARNING, "An exception occurred while constructing and sending Identity message. (OTRv4)", e);
             }
         } else if (plainTextMessage.getVersions().contains(THREE) && policy.isAllowV3()) {
             logger.finest("V3 tag found. Sending D-H Commit Message.");
             try {
-                respondAuth(THREE, ZERO_TAG, plainTextMessage.getTag());
+                respondAuth(THREE, ZERO_TAG);
             } catch (final OtrException e) {
                 logger.log(WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv3)", e);
             }
         } else if (plainTextMessage.getVersions().contains(TWO) && policy.isAllowV2()) {
             logger.finest("V2 tag found. Sending D-H Commit Message.");
             try {
-                respondAuth(TWO, ZERO_TAG, plainTextMessage.getTag());
+                respondAuth(TWO, ZERO_TAG);
             } catch (final OtrException e) {
                 logger.log(WARNING, "An exception occurred while constructing and sending DH commit message. (OTRv2)", e);
             }
@@ -729,14 +719,6 @@ final class SessionImpl implements Session, Context {
             return new String[0];
         }
         final String serialized = writeMessage(m);
-        if (m instanceof QueryMessage) {
-            // We're testing for QueryMessage, but the query message does not pass through here. It is always injected
-            // through the OtrEngineHost. Even so, this makes for a more complete logic and would work for QueryMessages
-            // equally well if we ever change the control flow.
-            // TODO how should we treat manually typed OTR query messages. They will be sent to the receiving party, but we don't currently record the query tag.
-            this.masterSession.queryTag = ((QueryMessage) m).getTag();
-            return new String[] {serialized};
-        }
         if (m instanceof AbstractEncodedMessage) {
             final AbstractEncodedMessage encoded = (AbstractEncodedMessage) m;
             try {
@@ -810,8 +792,7 @@ final class SessionImpl implements Session, Context {
         if (version == 0) {
             startSession();
         } else {
-            // TODO what queryTag to assume when refreshing session, given that we perform this action without the prior QueryMessage/WhitespaceTag message. (This is related to the OTRv4-interactive-only mode.)
-            respondAuth(version, this.receiverTag, "");
+            respondAuth(version, this.receiverTag);
         }
     }
 
@@ -978,8 +959,7 @@ final class SessionImpl implements Session, Context {
      * case), specify {@link InstanceTag#ZERO_TAG}.
      * @throws OtrException In case of invalid/unsupported OTR protocol version.
      */
-    private void respondAuth(final int version, @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag)
-            throws OtrException {
+    private void respondAuth(final int version, @Nonnull final InstanceTag receiverTag) throws OtrException {
         if (!Version.SUPPORTED.contains(version)) {
             throw new OtrException("Unsupported OTR version encountered.");
         }
@@ -988,7 +968,7 @@ final class SessionImpl implements Session, Context {
         // to a D-H Commit message without receiver instance tag. (This is due to the subtle workings of the
         // implementation.)
         logger.finest("Responding to Query Message, acknowledging version " + version);
-        injectMessage(this.masterSession.sessionState.initiateAKE(this.masterSession, version, receiverTag, queryTag));
+        injectMessage(this.masterSession.sessionState.initiateAKE(this.masterSession, version, receiverTag));
     }
 
     /**

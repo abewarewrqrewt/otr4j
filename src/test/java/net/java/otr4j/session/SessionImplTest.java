@@ -121,7 +121,7 @@ public final class SessionImplTest {
         final HashSet<Integer> versions = new HashSet<>();
         versions.add(Version.THREE);
         versions.add(Version.FOUR);
-        session.injectMessage(new QueryMessage("?OTRv34?", versions));
+        session.injectMessage(new QueryMessage(versions));
         verify(host).injectMessage(sessionID, "?OTRv34? This is a super-long message that does not");
     }
 }

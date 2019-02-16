@@ -136,13 +136,6 @@ public interface Context extends AuthContext {
     void setOfferStatusSent();
 
     /**
-     * Acquire the most recent query tag in use.
-     *
-     * @return Returns the query tag.
-     */
-    String getQueryTag();
-
-    /**
      * Get the master session to which the instance belongs.
      *
      * @return Returns master session instance, may be itself ("{@code this}").

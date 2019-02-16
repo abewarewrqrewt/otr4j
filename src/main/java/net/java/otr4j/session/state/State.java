@@ -133,15 +133,13 @@ public interface State {
     /**
      * Initiate AKE.
      *
-     * @param context             The message state context.
-     * @param version             the protocol version
-     * @param receiverInstanceTag the receiver instance tag to be targeted, or {@link InstanceTag#ZERO_TAG} if unknown.
-     * @param queryTag            the query tag to which we respond
+     * @param context     The message state context.
+     * @param version     the protocol version
+     * @param receiverTag the receiver instance tag to be targeted, or {@link InstanceTag#ZERO_TAG} if unknown.
      * @return Returns the encoded message initiating the AKE, either DH-Commit (OTRv2/OTRv3) or Identity message (OTRv4).
      */
     @Nonnull
-    AbstractEncodedMessage initiateAKE(@Nonnull final Context context, int version, InstanceTag receiverInstanceTag,
-            String queryTag);
+    AbstractEncodedMessage initiateAKE(@Nonnull final Context context, int version, InstanceTag receiverTag);
 
     /**
      * Handle the received error message.

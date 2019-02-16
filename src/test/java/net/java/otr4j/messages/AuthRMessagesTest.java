@@ -65,14 +65,14 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX.getPublicKey(), ourY.getPublicKey(),
                 theirA.getPublicKey(), ourB.getPublicKey(), theirFirstECDHPublicKey, theirFirstDHPublicKey,
-                ourFirstECDHPublicKey, ourFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?",
-                "alice@network", "bob@network");
+                ourFirstECDHPublicKey, ourFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "alice@network",
+                "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
                 ourY.getPublicKey(), m);
         final AuthRMessage message = new AuthRMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload,
                 theirX.getPublicKey(), theirA.getPublicKey(), sigma, theirFirstECDHPublicKey, theirFirstDHPublicKey);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
-                ourY.getPublicKey(), ourB.getPublicKey(), ourFirstECDHPublicKey, ourFirstDHPublicKey, "?OTRv4?");
+                ourY.getPublicKey(), ourB.getPublicKey(), ourFirstECDHPublicKey, ourFirstDHPublicKey);
     }
 
     @Test(expected = ValidationException.class)
@@ -104,13 +104,13 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 theirFirstECDHPublicKey, theirFirstDHPublicKey, ourFirstECDHPublicKey, ourFirstDHPublicKey,
-                SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
+                SMALLEST_TAG, HIGHEST_TAG, "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
                 ourY, m);
         final AuthRMessage message = new AuthRMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma, theirFirstECDHPublicKey, theirFirstDHPublicKey);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
-                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey, "?OTRv4?");
+                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
     }
 
     @Test(expected = ValidationException.class)
@@ -142,13 +142,13 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 theirFirstECDHPublicKey, theirFirstDHPublicKey, ourFirstECDHPublicKey, ourFirstDHPublicKey,
-                SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
+                SMALLEST_TAG, HIGHEST_TAG, "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
                 ourY, m);
         final AuthRMessage message = new AuthRMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma, theirFirstECDHPublicKey, theirFirstDHPublicKey);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
-                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey, "?OTRv4?");
+                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
     }
 
     @Test(expected = ValidationException.class)
@@ -180,13 +180,13 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 theirFirstECDHPublicKey, theirFirstDHPublicKey, ourFirstECDHPublicKey, ourFirstDHPublicKey,
-                SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
+                SMALLEST_TAG, HIGHEST_TAG, "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
                 ourY, m);
         final AuthRMessage message = new AuthRMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma, theirFirstECDHPublicKey, theirFirstDHPublicKey);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
-                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey, "?OTRv4?");
+                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
     }
 
     @Test(expected = ValidationException.class)
@@ -218,12 +218,12 @@ public final class AuthRMessagesTest {
         // Define the message to be validated
         final byte[] m = MysteriousT4.encode(AUTH_R, theirPayload, ourPayload, theirX, ourY, theirA, ourB,
                 theirFirstECDHPublicKey, theirFirstDHPublicKey, ourFirstECDHPublicKey, ourFirstDHPublicKey,
-                SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "", "");
+                SMALLEST_TAG, HIGHEST_TAG, "", "");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, ourForgingKey, theirLongTermKeyPair.getPublicKey(),
                 ourY, m);
         final AuthRMessage message = new AuthRMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, theirPayload, theirX,
                 theirA, sigma, theirFirstECDHPublicKey, theirFirstDHPublicKey);
         validate(message, ourPayload, ourProfile, theirProfile, "alice@network", "bob@network",
-                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey, "?OTRv4?");
+                ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
     }
 }

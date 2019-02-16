@@ -39,7 +39,7 @@ abstract class AbstractAuthState implements AuthState {
     @Nonnull
     @Override
     public AbstractEncodedMessage initiate(@Nonnull final AuthContext context, final int version,
-            @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag) {
+            @Nonnull final InstanceTag receiverTag) {
         if (version == Version.TWO || version == Version.THREE) {
             return initiateVersion3(context, version, receiverTag);
         }

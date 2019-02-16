@@ -16,7 +16,6 @@ import net.java.otr4j.io.OtrOutputStream;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -67,7 +66,6 @@ public final class MysteriousT4 {
      * @param receiverFirstDHPublicKey   the receiver's first DH public key to use after DAKE completes
      * @param senderTag                  the sender instance tag
      * @param receiverTag                the receiver instance tag
-     * @param queryTag                   the query tag
      * @param senderContactID            the sender contact ID
      * @param receiverContactID          the receiver contact ID
      * @return Returns the byte-array representing the mysterious 'T' value based on provided arguments.
@@ -78,8 +76,8 @@ public final class MysteriousT4 {
             @Nonnull final BigInteger a, @Nonnull final BigInteger b, @Nonnull final Point senderFirstECDHPublicKey,
             @Nonnull final BigInteger senderFirstDHPublicKey, @Nonnull final Point receiverFirstECDHPublicKey,
             @Nonnull final BigInteger receiverFirstDHPublicKey, @Nonnull  final InstanceTag senderTag,
-            @Nonnull final InstanceTag receiverTag, @Nonnull final String queryTag,
-            @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
+            @Nonnull final InstanceTag receiverTag, @Nonnull final String senderContactID,
+            @Nonnull final String receiverContactID) {
         final KDFUsage bobsProfileUsage;
         final KDFUsage alicesProfileUsage;
         final KDFUsage phiUsage;
@@ -109,7 +107,7 @@ public final class MysteriousT4 {
         final byte[] bEncoded = new OtrOutputStream().writeBigInt(b).toByteArray();
         final byte[] aEncoded = new OtrOutputStream().writeBigInt(a).toByteArray();
         final byte[] phi = generatePhi(senderTag, receiverTag, senderFirstECDHPublicKey, senderFirstDHPublicKey,
-                receiverFirstECDHPublicKey, receiverFirstDHPublicKey, queryTag, senderContactID, receiverContactID);
+                receiverFirstECDHPublicKey, receiverFirstDHPublicKey, senderContactID, receiverContactID);
         final byte[] sharedSessionDerivative = kdf1(phiUsage, phi, PHI_DERIVATIVE_LENGTH_BYTES);
         return concatenate(new byte[][] {prefix, bobsProfileEncoded, alicesProfileEncoded, yEncoded, xEncoded,
                 bEncoded, aEncoded, sharedSessionDerivative});
@@ -128,7 +126,6 @@ public final class MysteriousT4 {
      * @param senderFirstDHPublicKey     The sender's first DH public key to use after DAKE completes
      * @param receiverFirstECDHPublicKey The receiver's first ECDH public key to use after DAKE completes
      * @param receiverFirstDHPublicKey   The receiver's first DH public key to use after DAKE completes
-     * @param queryTag                   The query message.
      * @param senderContactID            The sender's contact ID (i.e. the infrastructure's identifier such as XMPP's
      *                                   bare JID.)
      * @param receiverContactID          The receiver's contact ID (i.e. the infrastructure's identifier such as XMPP's
@@ -140,14 +137,12 @@ public final class MysteriousT4 {
     static byte[] generatePhi(@Nonnull final InstanceTag senderTag, @Nonnull final InstanceTag receiverTag,
             @Nonnull final Point senderFirstECDHPublicKey, @Nonnull final BigInteger senderFirstDHPublicKey,
             @Nonnull final Point receiverFirstECDHPublicKey, @Nonnull final BigInteger receiverFirstDHPublicKey,
-            @Nonnull final String queryTag, @Nonnull final String senderContactID,
-            @Nonnull final String receiverContactID) {
-        final byte[] queryTagBytes = queryTag.getBytes(US_ASCII);
+            @Nonnull final String senderContactID, @Nonnull final String receiverContactID) {
         final byte[] senderIDBytes = senderContactID.getBytes(UTF_8);
         final byte[] receiverIDBytes = receiverContactID.getBytes(UTF_8);
         return new OtrOutputStream().writeInstanceTag(senderTag).writeInstanceTag(receiverTag)
                 .writePoint(senderFirstECDHPublicKey).writeBigInt(senderFirstDHPublicKey)
-                .writePoint(receiverFirstECDHPublicKey).writeBigInt(receiverFirstDHPublicKey).writeData(queryTagBytes)
-                .writeData(senderIDBytes).writeData(receiverIDBytes).toByteArray();
+                .writePoint(receiverFirstECDHPublicKey).writeBigInt(receiverFirstDHPublicKey).writeData(senderIDBytes)
+                .writeData(receiverIDBytes).toByteArray();
     }
 }

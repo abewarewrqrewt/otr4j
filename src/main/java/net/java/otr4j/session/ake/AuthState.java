@@ -36,12 +36,10 @@ public interface AuthState {
      * @param version        Initiate AKE using protocol version.
      * @param receiverTag    The receiver's instance tag. This tag may not always
      *                       be known at this time, therefore providing ZERO TAG is also valid.
-     * @param queryTag       The query tag that was originally received.
      * @return Returns DHCommitMessage with which we can initiate an AKE.
      */
     @Nonnull
-    AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag,
-            @Nonnull final String queryTag);
+    AbstractEncodedMessage initiate(@Nonnull AuthContext context, int version, @Nonnull InstanceTag receiverTag);
 
     /**
      * Handle AKE message.

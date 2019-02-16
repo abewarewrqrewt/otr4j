@@ -62,13 +62,13 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
-        validate(message, "?OTRv4?", ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX,
-                theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, "alice@network", "bob@network");
+        validate(message, ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX, theirY, ourA, theirB,
+                ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey, theirFirstDHPublicKey,
+                "alice@network", "bob@network");
     }
 
     @Test(expected = ValidationException.class)
@@ -100,13 +100,13 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                ourFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
+                ourFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
-        validate(message, "?OTRv4?", ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX,
-                theirY, ourA, ZERO, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, "alice@network", "bob@network");
+        validate(message, ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX, theirY, ourA, ZERO,
+                ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey, theirFirstDHPublicKey,
+                "alice@network", "bob@network");
     }
 
     @Test(expected = ValidationException.class)
@@ -138,50 +138,12 @@ public final class AuthIMessagesTest {
         // The Auth-I message
         final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
                 theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "?OTRv4?", "alice@network", "bob@network");
+                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "alice@network", "bob@network");
         final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Session.Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
-        validate(message, "?OTRv4?", ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX,
-                theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, "alice@network", "bob@network");
-    }
-
-    @Test(expected = ValidationException.class)
-    public void testValidateBadQueryTag() throws ValidationException {
-        // Our client profile
-        final EdDSAKeyPair ourLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
-        final Point ourForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
-        final DSAKeyPair ourDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
-        final Point ourFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final BigInteger ourFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
-        final ClientProfile ourProfile = new ClientProfile(HIGHEST_TAG, ourLongTermKeyPair.getPublicKey(),
-                ourForgingKey, singleton(Version.FOUR), ourDSAKeyPair.getPublic());
-        final ClientProfilePayload ourProfilePayload = ClientProfilePayload.sign(ourProfile, Long.MAX_VALUE / 1000,
-                ourDSAKeyPair, ourLongTermKeyPair);
-        final Point ourX = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final BigInteger ourA = DHKeyPair.generate(RANDOM).getPublicKey();
-        // Their client profile
-        final EdDSAKeyPair theirLongTermKeyPair = EdDSAKeyPair.generate(RANDOM);
-        final Point theirFirstECDHPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final BigInteger theirFirstDHPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
-        final DSAKeyPair theirDSAKeyPair = DSAKeyPair.generateDSAKeyPair();
-        final Point theirForgingKey = EdDSAKeyPair.generate(RANDOM).getPublicKey();
-        final ClientProfile theirProfile = new ClientProfile(SMALLEST_TAG, theirLongTermKeyPair.getPublicKey(),
-                theirForgingKey, singleton(Session.Version.FOUR), theirDSAKeyPair.getPublic());
-        final ClientProfilePayload theirProfilePayload = ClientProfilePayload.sign(theirProfile, Long.MAX_VALUE / 1000,
-                theirDSAKeyPair, theirLongTermKeyPair);
-        final Point theirY = ECDHKeyPair.generate(RANDOM).getPublicKey();
-        final BigInteger theirB = DHKeyPair.generate(RANDOM).getPublicKey();
-        // The Auth-I message
-        final byte[] m = MysteriousT4.encode(MysteriousT4.Purpose.AUTH_I, ourProfilePayload, theirProfilePayload, ourX,
-                theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, SMALLEST_TAG, HIGHEST_TAG, "", "alice@network", "bob@network");
-        final Sigma sigma = ringSign(RANDOM, theirLongTermKeyPair, theirLongTermKeyPair.getPublicKey(),
-                ourForgingKey, ourX, m);
-        final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
-        validate(message, "?OTRv4?", ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX,
-                theirY, ourA, theirB, ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey,
-                theirFirstDHPublicKey, "alice@network", "bob@network");
+        validate(message, ourProfilePayload, ourProfile, theirProfilePayload, theirProfile, ourX, theirY, ourA, theirB,
+                ourFirstECDHPublicKey, ourFirstDHPublicKey, theirFirstECDHPublicKey, theirFirstDHPublicKey,
+                "alice@network", "bob@network");
     }
 }

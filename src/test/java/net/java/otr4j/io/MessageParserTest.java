@@ -33,7 +33,6 @@ public final class MessageParserTest {
         final Message msg = parse("Hello world");
         assertTrue(msg instanceof PlainTextMessage);
         final PlainTextMessage plainMsg = (PlainTextMessage) msg;
-        assertEquals("", plainMsg.getTag());
         assertTrue(plainMsg.getVersions().isEmpty());
         assertEquals("Hello world", plainMsg.getCleanText());
     }

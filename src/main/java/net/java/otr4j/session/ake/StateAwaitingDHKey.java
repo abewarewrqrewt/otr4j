@@ -83,8 +83,7 @@ final class StateAwaitingDHKey extends AbstractAuthState {
     }
 
     @Nonnull
-    private Result handleDHCommitMessage(@Nonnull final AuthContext context,
-            @Nonnull final DHCommitMessage message) throws OtrCryptoException {
+    private Result handleDHCommitMessage(@Nonnull final AuthContext context, @Nonnull final DHCommitMessage message) {
         // OTR: "This is the trickiest transition in the whole protocol. It indicates that you have already sent a D-H Commit message
         // to your correspondent, but that he either didn't receive it, or just didn't receive it yet, and has sent you one as well.
         // The symmetry will be broken by comparing the hashed gx you sent in your D-H Commit Message with the one you received,
@@ -116,8 +115,8 @@ final class StateAwaitingDHKey extends AbstractAuthState {
     }
 
     @Nonnull
-    private Result handleDHKeyMessage(@Nonnull final AuthContext context,
-            @Nonnull final DHKeyMessage message) throws OtrCryptoException {
+    private Result handleDHKeyMessage(@Nonnull final AuthContext context, @Nonnull final DHKeyMessage message)
+            throws OtrCryptoException {
         // OTR: "Reply with a Reveal Signature Message and transition authstate to AUTHSTATE_AWAITING_SIG."
         // OTR: "Verifies that Alice's gy is a legal value (2 <= gy <= modulus-2)"
         verifyDHPublicKey(message.dhPublicKey);

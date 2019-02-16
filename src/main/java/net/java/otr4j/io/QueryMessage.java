@@ -8,13 +8,10 @@
 package net.java.otr4j.io;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
 
-import static java.util.Collections.sort;
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.io.MessageParser.encodeVersionString;
 
 /**
  * OTRv2 OTR query message.
@@ -25,7 +22,6 @@ import static net.java.otr4j.io.MessageParser.encodeVersionString;
 public class QueryMessage implements Message {
 
     private final Set<Integer> versions;
-    private final String tag;
 
     /**
      * Constructor for query message.
@@ -33,26 +29,6 @@ public class QueryMessage implements Message {
      * @param versions the set of versions
      */
     public QueryMessage(@Nonnull final Set<Integer> versions) {
-        this.versions = requireNonNull(versions);
-        final StringBuilder tag = new StringBuilder();
-        if (!versions.isEmpty()) {
-            tag.append("?OTRv");
-            final ArrayList<Integer> sorted = new ArrayList<>(versions);
-            sort(sorted);
-            tag.append(encodeVersionString(sorted));
-            tag.append('?');
-        }
-        this.tag = tag.toString();
-    }
-
-    /**
-     * Construct a query message instance.
-     *
-     * @param tag      The original tag of the query message in its original textual representation.
-     * @param versions The versions included in the query message.
-     */
-    public QueryMessage(@Nonnull final String tag, @Nonnull final Set<Integer> versions) {
-        this.tag = requireNonNull(tag);
         this.versions = requireNonNull(versions);
     }
 
@@ -64,16 +40,6 @@ public class QueryMessage implements Message {
     @Nonnull
     public Set<Integer> getVersions() {
         return versions;
-    }
-
-    /**
-     * Get the query tag.
-     *
-     * @return Returns the query tag.
-     */
-    @Nonnull
-    public String getTag() {
-        return tag;
     }
 
     @Override

@@ -62,11 +62,6 @@ final class StateAwaitingAuthI extends AbstractCommonState {
     private static final Logger LOGGER = Logger.getLogger(StateAwaitingAuthI.class.getName());
 
     /**
-     * The query tag in use at the time DAKE was initiated.
-     */
-    private final String queryTag;
-
-    /**
      * Our ECDH key pair. (Its public key is also known as X.)
      */
     private final ECDHKeyPair ourECDHKeyPair;
@@ -96,15 +91,13 @@ final class StateAwaitingAuthI extends AbstractCommonState {
 
     private final byte[] k;
 
-    StateAwaitingAuthI(@Nonnull final AuthState authState, @Nonnull final String queryTag,
-            @Nonnull final byte[] k, @Nonnull final byte[] ssid,
+    StateAwaitingAuthI(@Nonnull final AuthState authState, @Nonnull final byte[] k, @Nonnull final byte[] ssid,
             @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final DHKeyPair ourDHKeyPair,
             @Nonnull final ECDHKeyPair ourFirstECDHKeyPair, @Nonnull final DHKeyPair ourFirstDHKeyPair,
             @Nonnull final Point theirFirstECDHPublicKey, @Nonnull final BigInteger theirFirstDHPublicKey,
             @Nonnull final Point y, @Nonnull final BigInteger b, @Nonnull final ClientProfilePayload ourProfile,
             @Nonnull final ClientProfilePayload profileBob) {
         super(authState);
-        this.queryTag = requireNonNull(queryTag);
         this.ourECDHKeyPair = requireNonNull(ourECDHKeyPair);
         this.ourDHKeyPair = requireNonNull(ourDHKeyPair);
         this.ourFirstECDHKeyPair = requireNonNull(ourFirstECDHKeyPair);
@@ -210,7 +203,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final byte[] t = encode(AUTH_R, profilePayload, message.clientProfile, this.ourECDHKeyPair.getPublicKey(),
                 message.y, this.ourDHKeyPair.getPublicKey(), message.b, this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey(), message.ourFirstECDHPublicKey, message.ourFirstDHPublicKey,
-                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), this.queryTag, sessionID.getUserID(),
+                context.getSenderInstanceTag(), context.getReceiverInstanceTag(), sessionID.getUserID(),
                 sessionID.getAccountID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(context.secureRandom(), longTermKeyPair,
                 theirNewClientProfile.getForgingKey(), longTermKeyPair.getPublicKey(), message.y, t);
@@ -219,7 +212,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 context.getReceiverInstanceTag(), profilePayload, this.ourECDHKeyPair.getPublicKey(),
                 this.ourDHKeyPair.getPublicKey(), sigma, this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey());
-        context.transition(this, new StateAwaitingAuthI(getAuthState(), this.queryTag, newK, newSSID, this.ourECDHKeyPair,
+        context.transition(this, new StateAwaitingAuthI(getAuthState(), newK, newSSID, this.ourECDHKeyPair,
                 this.ourDHKeyPair, this.ourFirstECDHKeyPair, this.ourFirstDHKeyPair, message.ourFirstECDHPublicKey,
                 message.ourFirstDHPublicKey, message.y, message.b, ourProfile, message.clientProfile));
         return authRMessage;
@@ -230,7 +223,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         // Validate message.
         final ClientProfile profileBobValidated = this.profileBob.validate();
         final ClientProfile ourProfileValidated = this.ourProfile.validate();
-        validate(message, this.queryTag, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
+        validate(message, this.ourProfile, ourProfileValidated, this.profileBob, profileBobValidated,
                 this.ourECDHKeyPair.getPublicKey(), this.y, this.ourDHKeyPair.getPublicKey(), this.b,
                 this.theirFirstECDHPublicKey, this.theirFirstDHPublicKey, this.ourFirstECDHKeyPair.getPublicKey(),
                 this.ourFirstDHKeyPair.getPublicKey(), context.getSessionID().getUserID(),

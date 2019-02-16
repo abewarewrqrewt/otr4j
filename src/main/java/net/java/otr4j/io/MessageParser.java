@@ -39,6 +39,7 @@ import static org.bouncycastle.util.encoders.Base64.decode;
  * The parser for the general OTR message structure. The parser processes the text representation of an OTR message and
  * returns a message instance.
  */
+// FIXME merge MessageParser and MessageWriter
 public final class MessageParser {
 
     /**
@@ -103,10 +104,10 @@ public final class MessageParser {
                     versionString = content.substring(0, content.indexOf('?'));
                 } else {
                     // OTR v1 ONLY query tags will be caught in this else clause and is unsupported.
-                    return new QueryMessage("", Collections.<Integer>emptySet());
+                    return new QueryMessage(Collections.<Integer>emptySet());
                 }
                 final Set<Integer> versions = parseVersionString(versionString);
-                return new QueryMessage(text.substring(idxHead, text.indexOf('?', idxHeaderBody) + 1), versions);
+                return new QueryMessage(versions);
             } else if (otrFragmented(text)) {
                 return Fragment.parse(text);
             } else if (otrEncoded(text)) {
@@ -165,8 +166,7 @@ public final class MessageParser {
         }
 
         final String cleanText = matcher.replaceAll("");
-        // TODO below could be a bug .. we try to extract the whitespace tag, but in the process we assume that the matcher matches the text completely, while above we 'find' occurrences.
-        return new PlainTextMessage(matcher.matches() ? matcher.group() : "", versions, cleanText);
+        return new PlainTextMessage(versions, cleanText);
     }
 
     /**

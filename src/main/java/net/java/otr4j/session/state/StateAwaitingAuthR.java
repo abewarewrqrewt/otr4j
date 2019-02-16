@@ -68,12 +68,6 @@ final class StateAwaitingAuthR extends AbstractCommonState {
     private final ClientProfilePayload ourProfilePayload;
 
     /**
-     * The query tag that triggered this DAKE. The query tag is part of the shared session state common knowledge that
-     * is verified.
-     */
-    private final String queryTag;
-
-    /**
      * Our ECDH key pair.
      * <p>
      * The public key from this key pair is also known as 'y'.
@@ -94,14 +88,13 @@ final class StateAwaitingAuthR extends AbstractCommonState {
     StateAwaitingAuthR(@Nonnull final AuthState authState, @Nonnull final ECDHKeyPair ecdhKeyPair,
             @Nonnull final DHKeyPair dhKeyPair, @Nonnull final ECDHKeyPair ourFirstECDHKeyPair,
             @Nonnull final DHKeyPair ourFirstDHKeyPair, @Nonnull final ClientProfilePayload ourProfilePayload,
-            @Nonnull final String queryTag, @Nonnull final IdentityMessage previousMessage) {
+            @Nonnull final IdentityMessage previousMessage) {
         super(authState);
         this.ecdhKeyPair = requireNonNull(ecdhKeyPair);
         this.dhKeyPair = requireNonNull(dhKeyPair);
         this.ourFirstECDHKeyPair = requireNonNull(ourFirstECDHKeyPair);
         this.ourFirstDHKeyPair = requireNonNull(ourFirstDHKeyPair);
         this.ourProfilePayload = requireNonNull(ourProfilePayload);
-        this.queryTag = requireNonNull(queryTag);
         this.previousMessage = requireNonNull(previousMessage);
     }
 
@@ -187,7 +180,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         final ClientProfile theirClientProfile = message.clientProfile.validate();
         validate(message, this.ourProfilePayload, ourClientProfile, theirClientProfile, sessionID.getUserID(),
                 sessionID.getAccountID(), this.ecdhKeyPair.getPublicKey(), this.dhKeyPair.getPublicKey(),
-                this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(), this.queryTag);
+                this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey());
         final SecureRandom secureRandom = context.secureRandom();
         // Prepare Auth-I message to be sent.
         final InstanceTag senderTag = context.getSenderInstanceTag();
@@ -196,7 +189,7 @@ final class StateAwaitingAuthR extends AbstractCommonState {
                 this.ecdhKeyPair.getPublicKey(), message.a, this.dhKeyPair.getPublicKey(),
                 this.ourFirstECDHKeyPair.getPublicKey(), this.ourFirstDHKeyPair.getPublicKey(),
                 message.ourFirstECDHPublicKey, message.ourFirstDHPublicKey, senderTag, receiverTag,
-                this.queryTag, sessionID.getAccountID(), sessionID.getUserID());
+                sessionID.getAccountID(), sessionID.getUserID());
         final OtrCryptoEngine4.Sigma sigma = ringSign(secureRandom, ourLongTermKeyPair,
                 ourLongTermKeyPair.getPublicKey(), theirClientProfile.getForgingKey(), message.x, t);
         final AuthIMessage reply = new AuthIMessage(FOUR, senderTag, receiverTag, sigma);

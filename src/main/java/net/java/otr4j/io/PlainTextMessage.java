@@ -7,8 +7,6 @@
 
 package net.java.otr4j.io;
 
-import net.java.otr4j.api.Session.Version;
-
 import javax.annotation.Nonnull;
 import java.util.Set;
 
@@ -28,43 +26,12 @@ public final class PlainTextMessage extends QueryMessage {
     /**
      * Constructor for plaintext message.
      *
-     * @param tag       the whitespace tag
      * @param versions  the protocol versions
      * @param cleanText the plain text message content
      */
-    public PlainTextMessage(@Nonnull final String tag, @Nonnull final Set<Integer> versions,
-            @Nonnull final String cleanText) {
-        super(tag, versions);
-        this.cleanText = requireNonNull(cleanText);
-    }
-
-    /**
-     * Construct new PlainTextMessage instance using set of versions as source to determine the whitespace tag.
-     *
-     * @param versions  the allowed OTR protocol versions
-     * @param cleanText the plain-text message
-     */
     public PlainTextMessage(@Nonnull final Set<Integer> versions, @Nonnull final String cleanText) {
-        super(versions.isEmpty() ? "" : generateWhitespaceTag(versions), versions);
+        super(versions);
         this.cleanText = requireNonNull(cleanText);
-    }
-
-    @Nonnull
-    private static String generateWhitespaceTag(@Nonnull final Iterable<Integer> versions) {
-        final StringBuilder builder = new StringBuilder(58);
-        builder.append(" \t  \t\t\t\t \t \t \t  ");
-        for (final int version : versions) {
-            if (version == Version.TWO) {
-                builder.append("  \t\t  \t ");
-            }
-            if (version == Version.THREE) {
-                builder.append("  \t\t  \t\t");
-            }
-            if (version == Version.FOUR) {
-                builder.append("  \t\t \t  ");
-            }
-        }
-        return builder.toString();
     }
 
     /**

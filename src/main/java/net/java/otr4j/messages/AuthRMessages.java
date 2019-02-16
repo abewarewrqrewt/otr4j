@@ -42,7 +42,6 @@ public final class AuthRMessages {
      * @param receiverDHPublicKey        the receiver's DH public key
      * @param receiverFirstECDHPublicKey the receiver's first ECDH public key after DAKE completes
      * @param receiverFirstDHPublicKey   the receiver's first DH public key after DAKE completes
-     * @param queryTag                   the query tag
      * @throws ValidationException In case the message fails validation.
      */
     public static void validate(@Nonnull final AuthRMessage message,
@@ -50,8 +49,7 @@ public final class AuthRMessages {
             @Nonnull final ClientProfile theirProfile, @Nonnull final String senderAccountID,
             @Nonnull final String receiverAccountID, @Nonnull final Point receiverECDHPublicKey,
             @Nonnull final BigInteger receiverDHPublicKey, @Nonnull final Point receiverFirstECDHPublicKey,
-            @Nonnull final BigInteger receiverFirstDHPublicKey, @Nonnull final String queryTag)
-            throws ValidationException {
+            @Nonnull final BigInteger receiverFirstDHPublicKey) throws ValidationException {
         try {
             verifyECDHPublicKey(message.x);
             verifyDHPublicKey(message.a);
@@ -66,7 +64,7 @@ public final class AuthRMessages {
         final byte[] t = encode(AUTH_R, message.clientProfile, ourClientProfilePayload, message.x,
                 receiverECDHPublicKey, message.a, receiverDHPublicKey, message.ourFirstECDHPublicKey,
                 message.ourFirstDHPublicKey, receiverFirstECDHPublicKey, receiverFirstDHPublicKey,
-                message.senderTag, message.receiverTag, queryTag, senderAccountID, receiverAccountID);
+                message.senderTag, message.receiverTag, senderAccountID, receiverAccountID);
         try {
             ringVerify(ourProfile.getForgingKey(), theirProfile.getLongTermPublicKey(), receiverECDHPublicKey,
                     message.sigma, t);
