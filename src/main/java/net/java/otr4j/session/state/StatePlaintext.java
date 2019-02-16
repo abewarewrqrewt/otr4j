@@ -105,7 +105,7 @@ public final class StatePlaintext extends AbstractCommonState {
 
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
             throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv3 data message in PLAINTEXT state. Message cannot be read.");
         handleUnreadableMessage(context, message);
@@ -114,7 +114,7 @@ public final class StatePlaintext extends AbstractCommonState {
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
         handleUnreadableMessage(context, message);

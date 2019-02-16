@@ -101,7 +101,7 @@ final class StateFinished extends AbstractCommonState {
 
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv2/3 data message in FINISHED state. Message cannot be read.");
         handleUnreadableMessage(context, message);
         return null;
@@ -109,7 +109,7 @@ final class StateFinished extends AbstractCommonState {
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
         handleUnreadableMessage(context, message);
         return null;

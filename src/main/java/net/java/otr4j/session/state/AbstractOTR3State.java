@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session.state;
 
+import com.google.errorprone.annotations.ForOverride;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.OtrPolicy;
@@ -179,6 +180,7 @@ abstract class AbstractOTR3State implements State {
      * @throws ProtocolException In case of I/O reading fails.
      * @throws OtrException      In case an exception occurs.
      */
+    @ForOverride
     @Nullable
     abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage message)
             throws ProtocolException, OtrException;

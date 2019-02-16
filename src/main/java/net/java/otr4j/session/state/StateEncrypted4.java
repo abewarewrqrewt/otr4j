@@ -183,7 +183,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) {
         throw new IllegalStateException("BUG: OTRv4 encrypted message state does not handle OTRv2/OTRv3 data messages.");
     }
 
@@ -191,7 +191,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     // FIXME write tests for SMP_ABORT sets UNREADABLE flag, SMP payload corrupted, SMP payload incomplete, ...
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException, ProtocolException {
         if (message.j == 0) {
             if (message.i < this.ratchet.getI()) {

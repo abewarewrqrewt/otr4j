@@ -162,7 +162,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
 
     @Override
     @Nullable
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
             throws OtrException, ProtocolException {
         logger.finest("Message state is ENCRYPTED. Trying to decrypt message.");
         // Find matching session keys.
@@ -249,7 +249,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
 
     @Nullable
     @Override
-    public String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
+    String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) {
         throw new IllegalStateException("BUG: OTRv2/OTRv3 encrypted message state does not handle OTRv4 data messages.");
     }
 

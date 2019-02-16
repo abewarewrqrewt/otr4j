@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session.state;
 
+import com.google.errorprone.annotations.ForOverride;
 import net.java.otr4j.api.ClientProfile;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.OtrException;
@@ -92,6 +93,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
      * @param message the AKE message
      * @return Returns the reply for the provided AKE message.
      */
+    @ForOverride
     @Nullable
     abstract AbstractEncodedMessage handleAKEMessage(@Nonnull final Context context, @Nonnull final AbstractEncodedMessage message);
 
@@ -191,6 +193,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
      * @throws ProtocolException In case of I/O reading failures.
      * @throws OtrException      In case of failures regarding the OTR protocol (implementation).
      */
+    @ForOverride
     @Nullable
     abstract String handleDataMessage(@Nonnull final Context context, @Nonnull DataMessage4 message)
             throws ProtocolException, OtrException;
