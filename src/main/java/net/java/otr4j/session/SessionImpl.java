@@ -110,6 +110,7 @@ import static net.java.otr4j.session.state.State.FLAG_NONE;
  * @author Danny van Heumen
  */
 // TODO *do* report an error if flag IGNORE_UNREADABLE is not set, i.e. check if this logic is in place. (unreadable message to OtrEngineHost)
+// FIXME consider refining synchronization such that multiple session instances can operate concurrently
 @SuppressWarnings({"PMD.TooManyFields", "PMD.AvoidSynchronizedAtMethodLevel"})
 final class SessionImpl implements Session, Context {
 

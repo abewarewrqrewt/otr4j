@@ -312,8 +312,8 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
 
     @Override
     public void end(@Nonnull final Context context) throws OtrException {
-        // TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of sending the data message,
-        // we already include remaining MAC keys in the Data message itself.
+        // The message carrying TLV 1 (Disconnect) is supposed to contain remaining MAC keys. However, as part of
+        // sending the data message, we already include remaining MAC keys as part of sending the Data message.
         final TLV disconnectTlv = new TLV(TLV.DISCONNECTED, TLV.EMPTY_BODY);
         final AbstractEncodedMessage m = transformSending(context, "", singletonList(disconnectTlv),
                 FLAG_IGNORE_UNREADABLE);

@@ -22,14 +22,13 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 
 // FIXME Consider transitioning expired sessions to FINISHED instead of START such that inconvenient expirations do not unintendedly reveal user messages. (https://github.com/otrv4/otrv4/blob/master/otrv4.md#session-expiration)
-// FIXME Review logic from the perspective of multi-threaded processing, taking into account use of Session instance.
 final class SessionExpirationTimerTask extends TimerTask {
 
     private static final Logger LOGGER = Logger.getLogger(SessionExpirationTimerTask.class.getName());
 
     private static final SessionExpirationTimerTask INSTANCE = new SessionExpirationTimerTask();
 
-    private static final long SESSION_EXPIRATION_TIMEOUT_NANOSECONDS = 7200_000_000_000L;
+    private static final long SESSION_TIMEOUT_NANOSECONDS = 7200_000_000_000L;
 
     private final List<WeakReference<SessionImpl>> registry = synchronizedList(new ArrayList<WeakReference<SessionImpl>>());
 
@@ -67,11 +66,12 @@ final class SessionExpirationTimerTask extends TimerTask {
 
     private void expireTimedOutSessions(final long now, @Nonnull final SessionImpl session) {
         try {
-            if (now - session.getLastActivity() > SESSION_EXPIRATION_TIMEOUT_NANOSECONDS) {
+            if (now - session.getLastActivity() > SESSION_TIMEOUT_NANOSECONDS) {
                 LOGGER.log(FINE, "Expiring session " + session.getSessionID() + " (" + session.getSenderInstanceTag() + ")");
                 session.expireSession();
             }
         } catch (final IncorrectStateException e) {
+            // TODO add session identifier (and instance tag) to make clear which session is referenced
             LOGGER.finest("Session instance's current state does not expire.");
         } catch (final OtrException e) {
             LOGGER.log(WARNING, "Failure while expiring session instance.", e);

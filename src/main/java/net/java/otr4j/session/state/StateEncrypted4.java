@@ -30,10 +30,12 @@ import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.security.interfaces.DSAPublicKey;
 import java.util.logging.Logger;
 
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.logging.Level.FINE;
@@ -46,6 +48,8 @@ import static net.java.otr4j.api.TLV.DISCONNECTED;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
 import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
+import static net.java.otr4j.util.ByteArrays.allZeroBytes;
+import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
  * The OTRv4 ENCRYPTED_MESSAGES state.
@@ -124,23 +128,38 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Override
     public DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
             @Nonnull final Iterable<TLV> tlvs, final byte flags) {
-        final RotationResult rotation;
+        return transformSending(context, msgText, tlvs, flags, new byte[0]);
+    }
+
+    @Nonnull
+    private DataMessage4 transformSending(@Nonnull final Context context, @Nonnull final String msgText,
+            @Nonnull final Iterable<TLV> tlvs, final byte flags, @Nonnull final byte[] providedMACsToReveal) {
+        assert providedMACsToReveal.length == 0 || !allZeroBytes(providedMACsToReveal)
+                : "BUG: expected providedMACsToReveal to contains some non-zero values.";
+        final BigInteger dhPublicKey;
+        final byte[] collectedMACs;
         if (this.ratchet.isNeedSenderKeyRotation()) {
-            rotation = this.ratchet.rotateSenderKeys();
+            final RotationResult rotation = this.ratchet.rotateSenderKeys();
             this.logger.log(FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
                     new Object[] {rotation.dhPublicKey != null, rotation.revealedMacs.length});
+            dhPublicKey = rotation.dhPublicKey;
+            collectedMACs = concatenate(providedMACsToReveal, rotation.revealedMacs);
         } else {
-            rotation = null;
             this.logger.log(FINEST, "Sender keys rotation is not needed.");
+            dhPublicKey = null;
+            collectedMACs = providedMACsToReveal;
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
         final EncryptionResult result = this.ratchet.encrypt(msgBytes);
         final int ratchetId = this.ratchet.getI();
         final int messageId = this.ratchet.getJ();
+        // We intentionally set the authenticator to `new byte[64]` (all zero-bytes), such that we can calculate the
+        // corresponding authenticator value. Then we construct a new DataMessage4 and substitute the real authenticator
+        // for the dummy.
         final DataMessage4 unauthenticated = new DataMessage4(VERSION, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), flags, this.ratchet.getPn(), ratchetId, messageId,
-                this.ratchet.getECDHPublicKey(), rotation == null ? null : rotation.dhPublicKey, result.nonce,
-                result.ciphertext, new byte[64], rotation == null ? new byte[0] : rotation.revealedMacs);
+                this.ratchet.getECDHPublicKey(), dhPublicKey, result.nonce, result.ciphertext, new byte[64],
+                collectedMACs);
         final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
         return new DataMessage4(unauthenticated, authenticator);
@@ -270,12 +289,12 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         }
     }
 
-    // FIXME write test for session expiration in StateEncrypted4. Needs to send message with FLAG_IGNORE_UNREADABLE, TLV, clearing, etc.
+    // FIXME suggest rephrasing of OTRv4 spec, to say: send message with old_mac_keys attached to it and include DISCONNECT TLV (TLV1) without payload.
     @Override
     public void expire(@Nonnull final Context context) throws OtrException {
-        final byte[] macsToReveal = this.ratchet.collectRemainingMACsToReveal();
-        final TLV disconnectTlv = new TLV(DISCONNECTED, macsToReveal);
-        final DataMessage4 m = transformSending(context, "", singletonList(disconnectTlv), FLAG_IGNORE_UNREADABLE);
+        final TLV disconnectTlv = new TLV(DISCONNECTED, TLV.EMPTY_BODY);
+        final DataMessage4 m = transformSending(context, "", singleton(disconnectTlv), FLAG_IGNORE_UNREADABLE,
+                this.ratchet.collectRemainingMACsToReveal());
         try {
             context.injectMessage(m);
         } finally {
