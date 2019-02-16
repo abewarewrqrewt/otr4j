@@ -76,7 +76,7 @@ public final class MessageParser {
      * @throws ProtocolException          In case of protocol violations.
      */
     @Nonnull
-    public static Message parse(@Nonnull final String text) throws ProtocolException {
+    public static Message parseMessage(@Nonnull final String text) throws ProtocolException {
         final int idxHead = text.indexOf(HEAD);
         if (idxHead > -1) {
             // Message **contains** the string "?OTR". Check to see if it is an error message, a query message or a data

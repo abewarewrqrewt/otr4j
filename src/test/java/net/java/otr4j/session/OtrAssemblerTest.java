@@ -20,7 +20,7 @@ import java.util.Map;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.shuffle;
-import static net.java.otr4j.io.MessageParser.parse;
+import static net.java.otr4j.io.MessageParser.parseMessage;
 import static org.bouncycastle.util.encoders.Base64.toBase64String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -41,7 +41,7 @@ public final class OtrAssemblerTest {
     @Test
     public void testAssembleSinglePartMessage() throws ProtocolException {
         final InstanceTag tag = InstanceTag.random(RANDOM);
-        final Fragment data = (Fragment) parse(String.format("?OTR|ff123456|%08x,00001,00001,test,", tag.getValue()));
+        final Fragment data = (Fragment) parseMessage(String.format("?OTR|ff123456|%08x,00001,00001,test,", tag.getValue()));
         final OtrAssembler ass = new OtrAssembler();
         assertEquals("test", ass.accumulate(data));
     }
@@ -50,8 +50,8 @@ public final class OtrAssemblerTest {
     public void testAssembleTwoPartMessage() throws ProtocolException {
         final InstanceTag tag = InstanceTag.random(RANDOM);
         final OtrAssembler ass = new OtrAssembler();
-        assertNull(ass.accumulate((Fragment) parse(String.format("?OTR|ff123456|%08x,00001,00002,abcdef,", tag.getValue()))));
-        assertEquals("abcdeffedcba", ass.accumulate((Fragment) parse(
+        assertNull(ass.accumulate((Fragment) parseMessage(String.format("?OTR|ff123456|%08x,00001,00002,abcdef,", tag.getValue()))));
+        assertEquals("abcdeffedcba", ass.accumulate((Fragment) parseMessage(
                 String.format("?OTR|ff123456|%08x,00002,00002,fedcba,", tag.getValue()))));
     }
 
@@ -59,13 +59,13 @@ public final class OtrAssemblerTest {
     public void testAssembleFourPartMessage() throws ProtocolException {
         final InstanceTag tag = InstanceTag.random(RANDOM);
         final OtrAssembler assembler = new OtrAssembler();
-        assertNull(assembler.accumulate((Fragment) parse(String.format("?OTR|ff123456|%08x,00001,00004,a,",
+        assertNull(assembler.accumulate((Fragment) parseMessage(String.format("?OTR|ff123456|%08x,00001,00004,a,",
                 tag.getValue()))));
-        assertNull(assembler.accumulate((Fragment) parse(String.format("?OTR|ff123456|%08x,00002,00004,b,",
+        assertNull(assembler.accumulate((Fragment) parseMessage(String.format("?OTR|ff123456|%08x,00002,00004,b,",
                 tag.getValue()))));
-        assertNull(assembler.accumulate((Fragment) parse(String.format("?OTR|ff123456|%08x,00003,00004,c,",
+        assertNull(assembler.accumulate((Fragment) parseMessage(String.format("?OTR|ff123456|%08x,00003,00004,c,",
                 tag.getValue()))));
-        assertEquals("abcd", assembler.accumulate((Fragment) parse(String.format("?OTR|ff123456|%08x,00004,00004,d,",
+        assertEquals("abcd", assembler.accumulate((Fragment) parseMessage(String.format("?OTR|ff123456|%08x,00004,00004,d,",
                 tag.getValue()))));
         assertTrue(((Map<?, ?>) Whitebox.getInternalState(Whitebox.getInternalState(assembler, "inOrder"),
                 "accumulations")).isEmpty());
@@ -84,7 +84,7 @@ public final class OtrAssemblerTest {
 
     @Test
     public void testAssemblySingleFragment() throws ProtocolException {
-        final Fragment fragment = (Fragment) parse(String.format("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s,",
+        final Fragment fragment = (Fragment) parseMessage(String.format("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,%s,",
                 helloWorldBase64));
         final OtrAssembler assembler = new OtrAssembler();
         assertEquals(helloWorldBase64, assembler.accumulate(fragment));
@@ -94,9 +94,9 @@ public final class OtrAssemblerTest {
 
     @Test
     public void testAssembleTwoPartMessageOTRv4() throws ProtocolException {
-        final Fragment part1 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,"
+        final Fragment part1 = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,"
                 + helloWorldBase64.substring(0, 8) + ",");
-        final Fragment part2 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00002,00002,"
+        final Fragment part2 = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00002,00002,"
                 + helloWorldBase64.substring(8) + ",");
         final OtrAssembler assembler = new OtrAssembler();
         assertNull(assembler.accumulate(part1));
@@ -125,9 +125,9 @@ public final class OtrAssemblerTest {
         };
         final OtrAssembler assembler = new OtrAssembler();
         for (int i = 0; i < parts.length - 1; i++) {
-            assertNull(assembler.accumulate((Fragment) parse(parts[i])));
+            assertNull(assembler.accumulate((Fragment) parseMessage(parts[i])));
         }
-        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parse(parts[parts.length - 1])));
+        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parseMessage(parts[parts.length - 1])));
         assertTrue(((Map<?, ?>) Whitebox.getInternalState(Whitebox.getInternalState(assembler, "outOfOrder"),
                 "fragments")).isEmpty());
     }
@@ -154,25 +154,25 @@ public final class OtrAssemblerTest {
         shuffle(parts);
         final OtrAssembler assembler = new OtrAssembler();
         for (int i = 0; i < parts.size() - 1; i++) {
-            assertNull(assembler.accumulate((Fragment) parse(parts.get(i))));
+            assertNull(assembler.accumulate((Fragment) parseMessage(parts.get(i))));
         }
-        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parse(parts.get(parts.size() - 1))));
+        assertEquals(helloWorldBase64, assembler.accumulate((Fragment) parseMessage(parts.get(parts.size() - 1))));
         assertTrue(((Map<?, ?>) Whitebox.getInternalState(Whitebox.getInternalState(assembler, "outOfOrder"),
                 "fragments")).isEmpty());
     }
 
     @Test
     public void testAssemblyEmptyFragment() throws ProtocolException {
-        final Fragment fragment = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,,");
+        final Fragment fragment = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00001,,");
         final OtrAssembler assembler = new OtrAssembler();
         assertEquals("", assembler.accumulate(fragment));
     }
 
     @Test(expected = ProtocolException.class)
     public void testAssembleTwoPartMessageDriftingTotalDown() throws ProtocolException {
-        final Fragment part1 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00003,"
+        final Fragment part1 = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00003,"
                 + helloWorldBase64.substring(0, 8) + ",");
-        final Fragment part2 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00002,00002,"
+        final Fragment part2 = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00002,00002,"
                 + helloWorldBase64.substring(8) + ",");
         final OtrAssembler assembler = new OtrAssembler();
         assertNull(assembler.accumulate(part1));
@@ -181,9 +181,9 @@ public final class OtrAssemblerTest {
 
     @Test(expected = ProtocolException.class)
     public void testAssembleTwoPartMessageDriftingTotalUp() throws ProtocolException {
-        final Fragment part1 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,"
+        final Fragment part1 = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,"
                 + helloWorldBase64.substring(0, 8) + ",");
-        final Fragment part2 = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00002,00003,"
+        final Fragment part2 = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00002,00003,"
                 + helloWorldBase64.substring(8) + ",");
         final OtrAssembler assembler = new OtrAssembler();
         assertNull(assembler.accumulate(part1));
@@ -192,7 +192,7 @@ public final class OtrAssemblerTest {
 
     @Test(expected = ProtocolException.class)
     public void testFragmentReceivedMultipleTimesIgnoring() throws ProtocolException {
-        final Fragment fragment = (Fragment) parse("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,,");
+        final Fragment fragment = (Fragment) parseMessage("?OTR|3c5b5f03|5a73a599|27e31597,00001,00002,,");
         final OtrAssembler assembler = new OtrAssembler();
         try {
             assertNull(assembler.accumulate(fragment));

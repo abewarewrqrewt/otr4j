@@ -68,7 +68,7 @@ import static net.java.otr4j.api.Session.Version.THREE;
 import static net.java.otr4j.api.Session.Version.TWO;
 import static net.java.otr4j.api.SessionStatus.ENCRYPTED;
 import static net.java.otr4j.api.SessionStatus.PLAINTEXT;
-import static net.java.otr4j.io.MessageParser.parse;
+import static net.java.otr4j.io.MessageParser.parseMessage;
 import static net.java.otr4j.io.MessageWriter.writeMessage;
 import static net.java.otr4j.messages.EncodedMessageParser.checkAuthRMessage;
 import static net.java.otr4j.messages.EncodedMessageParser.checkDHKeyMessage;
@@ -401,7 +401,7 @@ final class SessionImpl implements Session, Context {
 
         final Message m;
         try {
-            m = parse(msgText);
+            m = parseMessage(msgText);
         } catch (final ProtocolException e) {
             // TODO we probably want to just drop the message, i.s.o. throwing exception.
             throw new OtrException("Invalid message.", e);
@@ -518,7 +518,7 @@ final class SessionImpl implements Session, Context {
         }
         final EncodedMessage message;
         try {
-            final Message m = parse(reassembledText);
+            final Message m = parseMessage(reassembledText);
             if (!(m instanceof EncodedMessage)) {
                 logger.fine("Expected fragments to combine into an encoded message, but was something else. "
                         + m.getClass().getName());

@@ -63,7 +63,7 @@ public final class BlockingQueuesTestUtils {
         final ArrayList<FragmentEntry> fragments = new ArrayList<>();
         for (int i = 0; i < messages.size(); i++) {
             final String msg = messages.get(i);
-            final Message m = MessageParser.parse(msg);
+            final Message m = MessageParser.parseMessage(msg);
             if (m instanceof Fragment && ((Fragment) m).getVersion() == Session.Version.THREE) {
                 fragments.add(new FragmentEntry(i, ((Fragment) m).getIndex(), msg));
             }

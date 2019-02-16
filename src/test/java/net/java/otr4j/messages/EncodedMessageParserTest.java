@@ -98,7 +98,7 @@ public class EncodedMessageParserTest {
         final OtrOutputStream otrOutput = new OtrOutputStream(output);
         m.writeTo(otrOutput);
         // Parse produced message bytes.
-        final EncodedMessage message = (EncodedMessage) MessageParser.parse("?OTR:"
+        final EncodedMessage message = (EncodedMessage) MessageParser.parseMessage("?OTR:"
                 + Base64.toBase64String(output.toByteArray()) + ".");
         final AbstractEncodedMessage parsedM = parseEncodedMessage(message);
         assertEquals(m, parsedM);
@@ -108,7 +108,7 @@ public class EncodedMessageParserTest {
     public void testConstructAndParseDHKeyMessageIllegalProtocolVersion() throws IOException, OtrCryptoException, UnsupportedLengthException, ValidationException {
         final String input = "?OTR:AAQKAAAwOQCWtD8AAADA7Z2lLvD52pq9eBg1YtUPKRzDhiJbugQjqWOGKCGy9n1nV7M9+4Xoev7wgEtsUMvY9UcbaXpNLXQMlcqSpZfwRNTogXk1lOir9h8NwaURj+/ruB2jq55STMfc11E4tBmyhATStwu5VPG+5iupUjagkhsdI6I1a3ZkGXp8gAr/Utx9IB2GeXDh7HRvqRacg96X1w69IQc1lH/dVFam/OpdxCMmME1QM6N6vRRh2y34oElNhlOMGwIO9tjKr2F9m9mC.";
         // Parse produced message bytes.
-        final EncodedMessage message = (EncodedMessage) MessageParser.parse(input);
+        final EncodedMessage message = (EncodedMessage) MessageParser.parseMessage(input);
         parseEncodedMessage(message);
     }
 
@@ -147,7 +147,7 @@ public class EncodedMessageParserTest {
         final DHCommitMessage message = new DHCommitMessage(Version.THREE, dhPublicKeyHash, dhPublicKeyEncrypted,
                 SMALLEST_TAG, HIGHEST_TAG);
         final String content = writeMessage(message);
-        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parseMessage(content);
         final DHCommitMessage parsed = (DHCommitMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
@@ -160,7 +160,7 @@ public class EncodedMessageParserTest {
         final RevealSignatureMessage message = new RevealSignatureMessage(Version.THREE, xEncrypted, xEncryptedMAC,
                 revealedKey, SMALLEST_TAG, HIGHEST_TAG);
         final String content = writeMessage(message);
-        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parseMessage(content);
         final RevealSignatureMessage parsed = (RevealSignatureMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
@@ -172,7 +172,7 @@ public class EncodedMessageParserTest {
         final SignatureMessage message = new SignatureMessage(Version.THREE, xEncrypted, xEncryptedMAC, SMALLEST_TAG,
                 HIGHEST_TAG);
         final String content = writeMessage(message);
-        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parseMessage(content);
         final SignatureMessage parsed = (SignatureMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
@@ -242,7 +242,7 @@ public class EncodedMessageParserTest {
         final IdentityMessage message = new IdentityMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, ourProfilePayload,
                 ourY, ourB, ourFirstECDHPublicKey, ourFirstDHPublicKey);
         final String content = writeMessage(message);
-        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parseMessage(content);
         final IdentityMessage parsed = (IdentityMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
@@ -283,7 +283,7 @@ public class EncodedMessageParserTest {
         final AuthRMessage message = new AuthRMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, ourProfilePayload, ourX,
                 ourA, sigma, ourFirstECDHPublicKey, ourFirstDHPublicKey);
         final String content = writeMessage(message);
-        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parseMessage(content);
         final AuthRMessage parsed = (AuthRMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
@@ -322,7 +322,7 @@ public class EncodedMessageParserTest {
                 ourForgingKey, ourX, m);
         final AuthIMessage message = new AuthIMessage(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, sigma);
         final String content = writeMessage(message);
-        final EncodedMessage encoded = (EncodedMessage) MessageParser.parse(content);
+        final EncodedMessage encoded = (EncodedMessage) MessageParser.parseMessage(content);
         final AuthIMessage parsed = (AuthIMessage) parseEncodedMessage(encoded);
         assertEquals(message, parsed);
     }
