@@ -173,8 +173,6 @@
                         <configuration>
                             <compilerArgs>
                                 <arg>-Xlint:all,-options,-deprecation</arg>
-                                <arg>-XDcompilePolicy=simple</arg>
-                                <arg>-Xplugin:ErrorProne</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>
