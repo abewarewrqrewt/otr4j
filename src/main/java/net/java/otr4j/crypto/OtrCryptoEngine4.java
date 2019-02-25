@@ -221,6 +221,7 @@ public final class OtrCryptoEngine4 {
      * @param publicKey The public key to fingerprint.
      * @return Returns the fingerprint derived from the provided public key.
      */
+    // FIXME review and update logic for fingerprinting (see https://github.com/otrv4/otrv4/commit/41a731f6069adcc88f4212591ebe0fb31efd405f)
     public static byte[] fingerprint(@Nonnull final Point publicKey) {
         final byte[] dst = new byte[FINGERPRINT_LENGTH_BYTES];
         kdf1(dst, 0, FINGERPRINT, publicKey.encode(), FINGERPRINT_LENGTH_BYTES);
