@@ -4,6 +4,10 @@ The repository for otr4j OTRv4 development is [github.com/otr4j/otr4j][otr4j/otr
 
 # otr4j
 
+This is a fork of the [original otr4j](https://github.com/jitsi/otr4j). The original otr4j started development as an GSoC 2009 project. A few years ago, a attempt was made to create a "community-friendly fork" of otr4j with the intention to lower the barrier for contribution: it is not required to sign a CLA. The original attempt never took off due to most of the original otr4j developers no longer focused on further development and improvement of otr4j.
+
+This repository contains the community-friendly fork with the addition of significant refactoring effort and recently the addition of [OTRv4][OTRv4] support. As [OTRv4][OTRv4] is still in draft, the implementation of this otr4j implementation itself is not stable (or secure).
+
 ## Progress
 
 __Status__: _In active development_  
