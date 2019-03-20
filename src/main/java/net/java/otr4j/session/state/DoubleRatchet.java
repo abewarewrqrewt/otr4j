@@ -7,6 +7,7 @@
 
 package net.java.otr4j.session.state;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
@@ -256,13 +257,15 @@ final class DoubleRatchet implements AutoCloseable {
         }
     }
 
-    // FIXME add MustBeClosed annotation?
+    @MustBeClosed
     @Nonnull
     private MessageKeys generateSendingKeys() {
         final byte[] chainKey = this.senderRatchet.getChainKey();
-        final MessageKeys keys = generateMessageKeys(chainKey);
-        clear(chainKey);
-        return keys;
+        try {
+            return generateMessageKeys(chainKey);
+        } finally {
+            clear(chainKey);
+        }
     }
 
     /**
@@ -335,6 +338,7 @@ final class DoubleRatchet implements AutoCloseable {
      *                               limitation of the Double Ratchet. Matching message keys cannot be generated.
      */
     // TODO preserve message keys before rotating past ratchetId, messageId combination.
+    @MustBeClosed
     private MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws RotationLimitationException {
         requireNotClosed();
         if (this.i - 1 > ratchetId || this.receiverRatchet.messageID > messageId) {
@@ -352,9 +356,11 @@ final class DoubleRatchet implements AutoCloseable {
             // TODO store intermediate message keys for previous messages as the message may arrive out-of-order
         }
         final byte[] chainKey = this.receiverRatchet.getChainKey();
-        final MessageKeys keys = generateMessageKeys(chainKey);
-        clear(chainKey);
-        return keys;
+        try {
+            return generateMessageKeys(chainKey);
+        } finally {
+            clear(chainKey);
+        }
     }
 
     /**
@@ -449,6 +455,7 @@ final class DoubleRatchet implements AutoCloseable {
         this.macsToReveal.reset();
     }
 
+    @MustBeClosed
     private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
         assert !allZeroBytes(chainkey) : "Expected chainkey of random data instead of all zero-bytes.";
         final byte[] encrypt = kdf1(MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
@@ -598,6 +605,7 @@ final class DoubleRatchet implements AutoCloseable {
          * @param encrypt           message key for encryption
          * @param extraSymmetricKey extra symmetric key
          */
+        @MustBeClosed
         private MessageKeys(@Nonnull final SecureRandom random, @Nonnull final byte[] encrypt,
                 @Nonnull final byte[] extraSymmetricKey) {
             this.random = requireNonNull(random);
