@@ -26,7 +26,6 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.AUTHENTICATOR;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.CHAIN_KEY;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.EXTRA_SYMMETRIC_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.MAC_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.MESSAGE_KEY;
@@ -60,8 +59,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
 final class DoubleRatchet implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
-
-    private static final int DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES = 64;
 
     private static final int ROOT_KEY_LENGTH_BYTES = 64;
 
@@ -250,20 +247,16 @@ final class DoubleRatchet implements AutoCloseable {
      * @param dataMessageSectionsContent the hash of the data message sections
      * @return Returns authenticator value.
      */
-    // FIXME need to update logic on inner KDF1 calculation (https://github.com/otrv4/otrv4/issues/208)
     @Nonnull
     byte[] authenticate(@Nonnull final byte[] dataMessageSectionsContent) {
         LOGGER.log(FINEST, "Generating message keys for authentication of ratchet {0}, message {1}.",
                 new Object[]{this.i - 1, this.senderRatchet.messageID});
-        final byte[] messageMAC = kdf1(DATA_MESSAGE_SECTIONS, dataMessageSectionsContent,
-            DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
         try (MessageKeys keys = this.generateSendingKeys()) {
-            return keys.authenticate(messageMAC);
-        } finally {
-            clear(messageMAC);
+            return keys.authenticate(dataMessageSectionsContent);
         }
     }
 
+    // FIXME add MustBeClosed annotation?
     @Nonnull
     private MessageKeys generateSendingKeys() {
         final byte[] chainKey = this.senderRatchet.getChainKey();
@@ -292,11 +285,8 @@ final class DoubleRatchet implements AutoCloseable {
         LOGGER.log(FINEST, "Generating message keys for verification and decryption of ratchet {0}, message {1}.",
                 new Object[] {this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
-            final byte[] digest = kdf1(DATA_MESSAGE_SECTIONS, encodedDataMessageSections,
-                    DATA_MESSAGE_SECTIONS_HASH_LENGTH_BYTES);
-            keys.verify(digest, authenticator);
+            keys.verify(encodedDataMessageSections, authenticator);
             this.macsToReveal.write(authenticator, 0, authenticator.length);
-            clear(digest);
             return keys.decrypt(ciphertext, nonce);
         }
     }
@@ -660,19 +650,18 @@ final class DoubleRatchet implements AutoCloseable {
          * This method only performs the final hash calculation that includes the MAC key. The internal hash calculation
          * defined by OTRv4 is expected to be performed prior to calling this method:
          * <pre>
-         *     KDF_1(usageDataMessageSections || data_message_sections, 64)
+         *       Authenticator = KDF_1(usageAuthenticator || MKmac || data_message_sections, 64)
          * </pre>
          *
-         * @param dataMessageSectionsHash The hash calculation over the data message sections (excluding Authenticator
-         *                                and Revealed MACs).
+         * @param dataMessageSections The data message sections (excluding Authenticator and Revealed MACs).
          * @return Returns the MAC. (Must be cleared separately.)
          */
         @Nonnull
-        byte[] authenticate(@Nonnull final byte[] dataMessageSectionsHash) {
+        byte[] authenticate(@Nonnull final byte[] dataMessageSections) {
             final byte[] mac = generateMAC();
-            final byte[] concatMacDataMessageSectionsHash = concatenate(mac, dataMessageSectionsHash);
-            final byte[] authenticator = kdf1(AUTHENTICATOR, concatMacDataMessageSectionsHash, AUTHENTICATOR_LENGTH_BYTES);
-            clear(concatMacDataMessageSectionsHash);
+            final byte[] concatMacDataMessageSections = concatenate(mac, dataMessageSections);
+            final byte[] authenticator = kdf1(AUTHENTICATOR, concatMacDataMessageSections, AUTHENTICATOR_LENGTH_BYTES);
+            clear(concatMacDataMessageSections);
             clear(mac);
             return authenticator;
         }
@@ -680,13 +669,15 @@ final class DoubleRatchet implements AutoCloseable {
         /**
          * Verify a given authenticator against the expected authentication hash.
          *
-         * @param dataMessageSectionHash The data message section hash to be authenticated.
-         * @param authenticator          The authenticator value.
+         * @param dataMessageSection The data message section content to be authenticated.
+         * @param authenticator      The authenticator value.
+         * @throws VerificationException In case of failure to verify the authenticator against the data message section
+         *                               content.
          */
-        void verify(@Nonnull final byte[] dataMessageSectionHash, @Nonnull final byte[] authenticator)
+        void verify(@Nonnull final byte[] dataMessageSection, @Nonnull final byte[] authenticator)
                 throws VerificationException {
             requireNotClosed();
-            final byte[] expectedAuthenticator = authenticate(dataMessageSectionHash);
+            final byte[] expectedAuthenticator = authenticate(dataMessageSection);
             try {
                 if (!constantTimeEquals(expectedAuthenticator, authenticator)) {
                     throw new VerificationException("The authenticator is invalid.");

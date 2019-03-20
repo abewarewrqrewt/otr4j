@@ -23,10 +23,8 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.DATA_MESSAGE_SECTIONS;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
-import static net.java.otr4j.session.state.DoubleRatchet.Role.BOB;
 import static net.java.otr4j.session.state.DoubleRatchet.Role.ALICE;
+import static net.java.otr4j.session.state.DoubleRatchet.Role.BOB;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.SecureRandoms.randomBytes;
 import static org.bouncycastle.util.Arrays.concatenate;
@@ -162,7 +160,7 @@ public class DoubleRatchetTest {
 
     @Test(expected = IllegalStateException.class)
     public void testMessageKeysClosedFailsVerify() throws RotationLimitationException, VerificationException {
-        final byte[] message = kdf1(DATA_MESSAGE_SECTIONS, "Hello World!".getBytes(UTF_8), 64);
+        final byte[] message = "Hello World!".getBytes(UTF_8);
         final byte[] initialK = randomBytes(RANDOM, new byte[64]);
         final DoubleRatchet ratchet = new DoubleRatchet(RANDOM, generateSharedSecret(), initialK, ALICE);
         ratchet.rotateSenderKeys();

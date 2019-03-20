@@ -156,21 +156,17 @@ public final class OtrCryptoEngine4 {
          */
         EXTRA_SYMMETRIC_KEY((byte) 0x19),
         /**
-         * Usage ID for generating the hash for the Data Message sections.
-         */
-        DATA_MESSAGE_SECTIONS((byte) 0x1A),
-        /**
          * Usage ID for generating the Authenticator MAC value.
          */
-        AUTHENTICATOR((byte) 0x1B),
+        AUTHENTICATOR((byte) 0x1A),
         /**
          * Usage ID for generating the secret used in the SMP negotiation.
          */
-        SMP_SECRET((byte) 0x1C),
+        SMP_SECRET((byte) 0x1B),
         /**
          * Usage ID for generating the authentication code for the ring signatures.
          */
-        AUTH((byte) 0x1D),
+        AUTH((byte) 0x1C),
         /**
          * Usage ID for SMP value 0x01.
          */
