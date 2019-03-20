@@ -250,6 +250,7 @@ final class DoubleRatchet implements AutoCloseable {
      * @param dataMessageSectionsContent the hash of the data message sections
      * @return Returns authenticator value.
      */
+    // FIXME need to update logic on inner KDF1 calculation (https://github.com/otrv4/otrv4/issues/208)
     @Nonnull
     byte[] authenticate(@Nonnull final byte[] dataMessageSectionsContent) {
         LOGGER.log(FINEST, "Generating message keys for authentication of ratchet {0}, message {1}.",

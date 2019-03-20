@@ -353,6 +353,7 @@ public final class OtrCryptoEngine4 {
      * @param message the plaintext message to be encrypted (non-null)
      * @return Returns the encrypted content.
      */
+    // FIXME probably need to replace with ChaCha20 cipher (https://github.com/otrv4/otrv4/issues/204#issuecomment-474523642, also 6d82003..45d1e23)
     @Nonnull
     public static byte[] encrypt(@Nonnull final byte[] key, @Nonnull final byte[] iv, @Nonnull final byte[] message) {
         assert !allZeroBytes(key) : "Expected non-zero byte array for a key. Something critical might be going wrong.";
