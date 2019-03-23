@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.XSALSA20_IV_LENGTH_BYTES;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
 import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
@@ -68,12 +67,6 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     public final BigInteger dhPublicKey;
 
     /**
-     * Nonce used in the data message.
-     */
-    @Nonnull
-    public final byte[] nonce;
-
-    /**
      * Ciphertext contained in the data message.
      */
     @Nonnull
@@ -99,7 +92,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      */
     public DataMessage4(@Nonnull final DataMessage4 original, @Nonnull final byte[] authenticator) {
         this(original.protocolVersion, original.senderTag, original.receiverTag, original.flags,
-                original.pn, original.i, original.j, original.ecdhPublicKey, original.dhPublicKey, original.nonce,
+                original.pn, original.i, original.j, original.ecdhPublicKey, original.dhPublicKey,
                 original.ciphertext, authenticator, original.revealedMacs);
     }
 
@@ -115,14 +108,13 @@ public final class DataMessage4 extends AbstractEncodedMessage {
      * @param j                   the message ID
      * @param ecdhPublicKey       the ECDH public key
      * @param dhPublicKey         the DH public key (is only present every third ratchet)
-     * @param nonce               the nonce
      * @param ciphertext          the ciphertext
      * @param authenticator       the authenticator code
      * @param revealedMacs        the revealed MAC keys
      */
     public DataMessage4(final int protocolVersion, @Nonnull final InstanceTag senderInstanceTag,
             @Nonnull final InstanceTag receiverInstanceTag, final byte flags, final int pn, final int i, final int j,
-            @Nonnull final Point ecdhPublicKey, @Nullable final BigInteger dhPublicKey, @Nonnull final byte[] nonce,
+            @Nonnull final Point ecdhPublicKey, @Nullable final BigInteger dhPublicKey,
             @Nonnull final byte[] ciphertext, @Nonnull final byte[] authenticator, @Nonnull final byte[] revealedMacs) {
         super(requireInRange(Version.FOUR, Version.FOUR, protocolVersion), senderInstanceTag, receiverInstanceTag);
         this.flags = flags;
@@ -131,7 +123,6 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         this.j = j;
         this.ecdhPublicKey = requireNonNull(ecdhPublicKey);
         this.dhPublicKey = dhPublicKey;
-        this.nonce = requireLengthExactly(XSALSA20_IV_LENGTH_BYTES, nonce);
         this.ciphertext = requireNonNull(ciphertext);
         this.authenticator = requireLengthExactly(MAC_LENGTH_BYTES, authenticator);
         this.revealedMacs = requireNonNull(revealedMacs);
@@ -156,7 +147,7 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         final DataMessage4 that = (DataMessage4) o;
         return flags == that.flags && pn == that.pn && i == that.i && j == that.j
                 && Objects.equals(ecdhPublicKey, that.ecdhPublicKey) && Objects.equals(dhPublicKey, that.dhPublicKey)
-                && constantTimeEquals(nonce, that.nonce) && constantTimeEquals(ciphertext, that.ciphertext)
+                && constantTimeEquals(ciphertext, that.ciphertext)
                 && constantTimeEquals(authenticator, that.authenticator)
                 // Note: revealed MACs are not sensitive, so there is no sense in comparing constant-time
                 && Arrays.equals(revealedMacs, that.revealedMacs);
@@ -165,7 +156,6 @@ public final class DataMessage4 extends AbstractEncodedMessage {
     @Override
     public int hashCode() {
         int result = Objects.hash(super.hashCode(), flags, pn, i, j, ecdhPublicKey, dhPublicKey);
-        result = 31 * result + Arrays.hashCode(nonce);
         result = 31 * result + Arrays.hashCode(ciphertext);
         result = 31 * result + Arrays.hashCode(authenticator);
         result = 31 * result + Arrays.hashCode(revealedMacs);
@@ -199,7 +189,6 @@ public final class DataMessage4 extends AbstractEncodedMessage {
         } else {
             writer.writeBigInt(this.dhPublicKey);
         }
-        writer.writeNonce(this.nonce);
         writer.writeData(this.ciphertext);
     }
 }

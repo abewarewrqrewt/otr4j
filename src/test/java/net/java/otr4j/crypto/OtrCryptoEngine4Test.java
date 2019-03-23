@@ -25,7 +25,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.decodePoint;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.decrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.encrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.fingerprint;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.generateNonce;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.generateRandomValueInZq;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.hashToScalar;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
@@ -36,13 +35,11 @@ import static net.java.otr4j.crypto.ed448.Ed448.basePoint;
 import static net.java.otr4j.crypto.ed448.Ed448.identity;
 import static net.java.otr4j.crypto.ed448.PointTestUtils.createPoint;
 import static net.java.otr4j.crypto.ed448.Scalar.decodeScalar;
-import static net.java.otr4j.util.ByteArrays.requireLengthExactly;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 
 @SuppressWarnings({"ConstantConditions"})
 public class OtrCryptoEngine4Test {
@@ -196,23 +193,14 @@ public class OtrCryptoEngine4Test {
 
     @Test(expected = NullPointerException.class)
     public void testEncryptNullKey() {
-        final byte[] nonce = generateNonce(RANDOM);
-        encrypt(null, nonce, new byte[1]);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testEncryptNullIV() {
-        final byte[] key = new byte[32];
-        RANDOM.nextBytes(key);
-        encrypt(key, null, new byte[1]);
+        encrypt(null, new byte[1]);
     }
 
     @Test(expected = NullPointerException.class)
     public void testEncryptNullMessage() {
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
-        final byte[] nonce = generateNonce(RANDOM);
-        encrypt(key, nonce, null);
+        encrypt(key, null);
     }
 
     @Test
@@ -220,8 +208,7 @@ public class OtrCryptoEngine4Test {
         final byte[] message = "hello world".getBytes(UTF_8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
-        final byte[] nonce = generateNonce(RANDOM);
-        final byte[] ciphertext = encrypt(key, nonce, message);
+        final byte[] ciphertext = encrypt(key, message);
         assertNotNull(ciphertext);
         assertFalse(Arrays.equals(message, ciphertext));
     }
@@ -231,9 +218,7 @@ public class OtrCryptoEngine4Test {
         final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[32];
         RANDOM.nextBytes(key);
-        final byte[] iv = new byte[24];
-        RANDOM.nextBytes(iv);
-        final byte[] result = decrypt(key, iv, encrypt(key, iv, message));
+        final byte[] result = decrypt(key, encrypt(key, message));
         assertArrayEquals(message, result);
     }
 
@@ -242,19 +227,7 @@ public class OtrCryptoEngine4Test {
         final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[31];
         RANDOM.nextBytes(key);
-        final byte[] iv = new byte[24];
-        RANDOM.nextBytes(iv);
-        encrypt(key, iv, message);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testEncryptInvalidIVSize() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
-        final byte[] key = new byte[32];
-        RANDOM.nextBytes(key);
-        final byte[] iv = new byte[23];
-        RANDOM.nextBytes(iv);
-        encrypt(key, iv, message);
+        encrypt(key, message);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -262,19 +235,7 @@ public class OtrCryptoEngine4Test {
         final byte[] message = "hello, do the salsa".getBytes(UTF_8);
         final byte[] key = new byte[31];
         RANDOM.nextBytes(key);
-        final byte[] iv = new byte[24];
-        RANDOM.nextBytes(iv);
-        encrypt(key, iv, message);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testDecryptInvalidIVSize() {
-        final byte[] message = "hello, do the salsa".getBytes(UTF_8);
-        final byte[] key = new byte[32];
-        RANDOM.nextBytes(key);
-        final byte[] iv = new byte[23];
-        RANDOM.nextBytes(iv);
-        encrypt(key, iv, message);
+        decrypt(key, message);
     }
 
     @Test(expected = NullPointerException.class)
@@ -442,28 +403,6 @@ public class OtrCryptoEngine4Test {
         final byte[] wrongMessage = "hello World".getBytes(UTF_8);
         ringVerify(longTermKeyPairB.getPublicKey(), longTermKeyPairA.getPublicKey(), ephemeralKeyPair.getPublicKey(),
                 sigma, wrongMessage);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testGenerateNonceNullSecureRandom() {
-        generateNonce(null);
-    }
-
-    @Test
-    public void testGenerateNonce() {
-        final byte[] result = generateNonce(RANDOM);
-        assertNotNull(result);
-        requireLengthExactly(24, result);
-    }
-
-    @Test
-    public void testGenerateNonceIsDifferentEachCall() {
-        final byte[] nonce1 = generateNonce(RANDOM);
-        final byte[] nonce2 = generateNonce(RANDOM);
-        assertNotSame(nonce1, nonce2);
-        // In theory this could end up with exactly the same random value. In practice the chance should be so remove
-        // that it makes sense to test this.
-        assertFalse(Arrays.equals(nonce1, nonce2));
     }
 
     @Test(expected = NullPointerException.class)

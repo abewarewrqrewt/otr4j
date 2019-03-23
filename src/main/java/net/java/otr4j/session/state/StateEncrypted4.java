@@ -23,7 +23,6 @@ import net.java.otr4j.messages.IdentityMessage;
 import net.java.otr4j.messages.ValidationException;
 import net.java.otr4j.session.ake.AuthState;
 import net.java.otr4j.session.smpv4.SMP;
-import net.java.otr4j.session.state.DoubleRatchet.EncryptionResult;
 import net.java.otr4j.session.state.DoubleRatchet.RotationLimitationException;
 import net.java.otr4j.session.state.DoubleRatchet.RotationResult;
 import net.java.otr4j.session.state.DoubleRatchet.VerificationException;
@@ -150,7 +149,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             collectedMACs = providedMACsToReveal;
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
-        final EncryptionResult result = this.ratchet.encrypt(msgBytes);
+        final byte[] ciphertext = this.ratchet.encrypt(msgBytes);
         final int ratchetId = this.ratchet.getI();
         final int messageId = this.ratchet.getJ();
         // We intentionally set the authenticator to `new byte[64]` (all zero-bytes), such that we can calculate the
@@ -158,8 +157,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         // for the dummy.
         final DataMessage4 unauthenticated = new DataMessage4(VERSION, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), flags, this.ratchet.getPn(), ratchetId, messageId,
-                this.ratchet.getECDHPublicKey(), dhPublicKey, result.nonce, result.ciphertext, new byte[64],
-                collectedMACs);
+                this.ratchet.getECDHPublicKey(), dhPublicKey, ciphertext, new byte[64], collectedMACs);
         final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
         return new DataMessage4(unauthenticated, authenticator);
@@ -217,7 +215,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         final byte[] dmc;
         try {
             dmc = this.ratchet.decrypt(message.i, message.j, encodeDataMessageSections(message), message.authenticator,
-                    message.ciphertext, message.nonce);
+                    message.ciphertext);
         } catch (final RotationLimitationException e) {
             this.logger.log(INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
             handleUnreadableMessage(context, message);

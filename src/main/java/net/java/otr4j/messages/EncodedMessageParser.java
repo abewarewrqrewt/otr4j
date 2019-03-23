@@ -89,14 +89,13 @@ public final class EncodedMessageParser {
                 final int j = message.payload.readInt();
                 final Point ecdhPublicKey = message.payload.readPoint();
                 final BigInteger dhPublicKey = message.payload.readBigInt();
-                final byte[] nonce = message.payload.readNonce();
                 final byte[] ciphertext = message.payload.readData();
                 final byte[] authenticator = message.payload.readMacOTR4();
                 final byte[] revealedMacs = message.payload.readData();
                 // We only verify the format of the data message, but do not perform the validation actions yet.
                 // Validation is delayed until a later point as we are missing context information for full validation.
                 return new DataMessage4(message.version, message.senderTag, message.receiverTag, flags, pn, i, j,
-                        ecdhPublicKey, ZERO.equals(dhPublicKey) ? null : dhPublicKey, nonce, ciphertext, authenticator,
+                        ecdhPublicKey, ZERO.equals(dhPublicKey) ? null : dhPublicKey, ciphertext, authenticator,
                         revealedMacs);
             }
             default:

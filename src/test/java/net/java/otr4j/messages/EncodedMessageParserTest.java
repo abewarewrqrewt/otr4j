@@ -202,8 +202,7 @@ public class EncodedMessageParserTest {
         final BigInteger dhPublicKey = DHKeyPair.generate(RANDOM).getPublicKey();
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final DataMessage4 input = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
-                ecdhPublicKey, dhPublicKey, randomBytes(RANDOM, new byte[24]), content,
-                randomBytes(RANDOM, new byte[64]), new byte[0]);
+                ecdhPublicKey, dhPublicKey, content, randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
         final AbstractEncodedMessage result = parseEncodedMessage(new EncodedMessage(Version.FOUR,
@@ -216,8 +215,7 @@ public class EncodedMessageParserTest {
         final Point ecdhPublicKey = ECDHKeyPair.generate(RANDOM).getPublicKey();
         final byte[] content = randomBytes(RANDOM, new byte[RANDOM.nextInt(10000)]);
         final DataMessage4 input = new DataMessage4(Version.FOUR, SMALLEST_TAG, HIGHEST_TAG, (byte) 0, 0, 0, 0,
-                ecdhPublicKey, null, randomBytes(RANDOM, new byte[24]), content,
-                randomBytes(RANDOM, new byte[64]), new byte[0]);
+                ecdhPublicKey, null, content, randomBytes(RANDOM, new byte[64]), new byte[0]);
         final byte[] fullPayload = new OtrOutputStream().write(input).toByteArray();
         final byte[] payload = copyOfRange(fullPayload, 11, fullPayload.length);
         final AbstractEncodedMessage result = parseEncodedMessage(new EncodedMessage(Version.FOUR,

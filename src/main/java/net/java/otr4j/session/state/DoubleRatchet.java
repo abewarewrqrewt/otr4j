@@ -18,7 +18,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.logging.Logger;
 
 import static java.lang.Integer.MIN_VALUE;
@@ -32,7 +31,6 @@ import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.MAC_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.MESSAGE_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.NEXT_CHAIN_KEY;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.KDFUsage.ROOT_KEY;
-import static net.java.otr4j.crypto.OtrCryptoEngine4.generateNonce;
 import static net.java.otr4j.crypto.OtrCryptoEngine4.kdf1;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
@@ -79,8 +77,6 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private final Ratchet receiverRatchet = new Ratchet();
 
-    private final SecureRandom random;
-
     private final SharedSecret4 sharedSecret;
 
     /**
@@ -106,10 +102,8 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private long lastRotation = System.nanoTime();
 
-    DoubleRatchet(@Nonnull final SecureRandom random, @Nonnull final SharedSecret4 sharedSecret,
-            @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
+    DoubleRatchet(@Nonnull final SharedSecret4 sharedSecret, @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
         requireNonNull(role);
-        this.random = requireNonNull(random);
         this.sharedSecret = requireNonNull(sharedSecret);
         this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);
         assert !allZeroBytes(this.rootKey) : "Expected random data, instead of all zero-bytes. There might be something severely wrong.";
@@ -234,7 +228,7 @@ final class DoubleRatchet implements AutoCloseable {
      * @return Returns a composite result consisting of the generated nonce and the ciphertext.
      */
     @Nonnull
-    EncryptionResult encrypt(@Nonnull final byte[] data) {
+    byte[] encrypt(@Nonnull final byte[] data) {
         LOGGER.log(FINEST, "Generating message keys for encryption of ratchet {0}, message {1}.",
                 new Object[]{this.i - 1, this.senderRatchet.messageID});
         try (MessageKeys keys = this.generateSendingKeys()) {
@@ -275,7 +269,6 @@ final class DoubleRatchet implements AutoCloseable {
      * @param messageId                  ID for the receiving ratchet message ID.
      * @param encodedDataMessageSections Data message sections that need to be authenticated, encoded as byte-array.
      * @param ciphertext                 The encrypted message ciphertext.
-     * @param nonce                      The nonce used in encryption.
      * @return Returns the decrypted ciphertext.
      * @throws VerificationException       If data message fails verification, i.e. the authenticators do not match.
      * @throws RotationLimitationException In case of failure to acquire the corresponding message keys. This exception
@@ -283,14 +276,14 @@ final class DoubleRatchet implements AutoCloseable {
      *                                     cannot generate the necessary keys.
      */
     byte[] decrypt(final int ratchetId, final int messageId, @Nonnull final byte[] encodedDataMessageSections,
-            @Nonnull final byte[] authenticator, @Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce)
+            @Nonnull final byte[] authenticator, @Nonnull final byte[] ciphertext)
             throws VerificationException, RotationLimitationException {
         LOGGER.log(FINEST, "Generating message keys for verification and decryption of ratchet {0}, message {1}.",
                 new Object[] {this.i - 1, this.receiverRatchet.messageID});
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
             keys.verify(encodedDataMessageSections, authenticator);
             this.macsToReveal.write(authenticator, 0, authenticator.length);
-            return keys.decrypt(ciphertext, nonce);
+            return keys.decrypt(ciphertext);
         }
     }
 
@@ -462,7 +455,7 @@ final class DoubleRatchet implements AutoCloseable {
         final byte[] concat0xffChainKey = concatenate(new byte[] {(byte) 0xff}, chainkey);
         final byte[] extraSymmetricKey = kdf1(EXTRA_SYMMETRIC_KEY, concat0xffChainKey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
         clear(concat0xffChainKey);
-        return new MessageKeys(this.random, encrypt, extraSymmetricKey);
+        return new MessageKeys(encrypt, extraSymmetricKey);
     }
 
     private void requireNotClosed() {
@@ -581,8 +574,6 @@ final class DoubleRatchet implements AutoCloseable {
         private static final int EXTRA_SYMMETRIC_KEY_LENGTH_BYTES = 64;
         private static final int AUTHENTICATOR_LENGTH_BYTES = 64;
 
-        private final SecureRandom random;
-
         /**
          * Flag to indicate when MessageKeys instanced has been cleaned up.
          */
@@ -601,14 +592,11 @@ final class DoubleRatchet implements AutoCloseable {
         /**
          * Construct Keys instance.
          *
-         * @param random            SecureRandom instance
          * @param encrypt           message key for encryption
          * @param extraSymmetricKey extra symmetric key
          */
         @MustBeClosed
-        private MessageKeys(@Nonnull final SecureRandom random, @Nonnull final byte[] encrypt,
-                @Nonnull final byte[] extraSymmetricKey) {
-            this.random = requireNonNull(random);
+        private MessageKeys(@Nonnull final byte[] encrypt, @Nonnull final byte[] extraSymmetricKey) {
             assert !allZeroBytes(encrypt) : "Expected encryption key of \"random\" data, instead of all zero-bytes.";
             this.encrypt = requireLengthExactly(MK_ENC_LENGTH_BYTES, encrypt);
             assert !allZeroBytes(extraSymmetricKey) : "Expected extra symmetric key of \"random\" data, instead of all zero-bytes.";
@@ -632,24 +620,21 @@ final class DoubleRatchet implements AutoCloseable {
          * @return Returns a result containing the ciphertext and nonce used.
          */
         @Nonnull
-        EncryptionResult encrypt(@Nonnull final byte[] message) {
+        byte[] encrypt(@Nonnull final byte[] message) {
             requireNotClosed();
-            final byte[] nonce = generateNonce(random);
-            final byte[] ciphertext = OtrCryptoEngine4.encrypt(this.encrypt, nonce, message);
-            return new EncryptionResult(nonce, ciphertext);
+            return OtrCryptoEngine4.encrypt(this.encrypt, message);
         }
 
         /**
          * Decrypt a ciphertext.
          *
          * @param ciphertext The ciphertext.
-         * @param nonce      The nonce corresponding to the ciphertext.
          * @return Returns the plaintext message.
          */
         @Nonnull
-        byte[] decrypt(@Nonnull final byte[] ciphertext, @Nonnull final byte[] nonce) {
+        byte[] decrypt(@Nonnull final byte[] ciphertext) {
             requireNotClosed();
-            return OtrCryptoEngine4.decrypt(this.encrypt, nonce, ciphertext);
+            return OtrCryptoEngine4.decrypt(this.encrypt, ciphertext);
         }
 
         /**
@@ -716,22 +701,6 @@ final class DoubleRatchet implements AutoCloseable {
             if (this.closed) {
                 throw new IllegalStateException("BUG: Use of closed MessageKeys instance.");
             }
-        }
-    }
-
-    /**
-     * The result class representation the result of an encryption activity.
-     * <p>
-     * The instance contains the ciphertext as well as the nonce used during encryption.
-     */
-    static final class EncryptionResult {
-
-        final byte[] nonce;
-        final byte[] ciphertext;
-
-        private EncryptionResult(@Nonnull final byte[] nonce, @Nonnull final byte[] ciphertext) {
-            this.nonce = requireNonNull(nonce);
-            this.ciphertext = requireNonNull(ciphertext);
         }
     }
 

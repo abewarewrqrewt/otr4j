@@ -15,7 +15,7 @@ import net.java.otr4j.io.OtrEncodable;
 import net.java.otr4j.io.OtrInputStream;
 import net.java.otr4j.io.OtrOutputStream;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
-import org.bouncycastle.crypto.engines.XSalsa20Engine;
+import org.bouncycastle.crypto.engines.ChaCha7539Engine;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
@@ -69,14 +69,19 @@ public final class OtrCryptoEngine4 {
     private static final byte[] OTR4_PREFIX = new byte[]{'O', 'T', 'R', 'v', '4'};
 
     /**
-     * Size of IV for XSalsa20.
+     * Length of the ChaCha20 encryption/decryption key in bytes.
      */
-    public static final int XSALSA20_IV_LENGTH_BYTES = 24;
+    private static final int CHACHA20_KEY_LENGTH_BYTES = 32;
 
     /**
-     * Size of the key for XSalsa20.
+     * Length of the ChaCha20 IV in bytes.
      */
-    private static final int XSALSA20_KEY_LENGTH_BYTES = 32;
+    private static final int CHACHA20_IV_LENGTH_BYTES = 12;
+
+    /**
+     * Fixed IV of all zero-bytes.
+     */
+    private static final byte[] IV = new byte[CHACHA20_IV_LENGTH_BYTES];
 
     /**
      * KDF Usage IDs.
@@ -336,38 +341,22 @@ public final class OtrCryptoEngine4 {
     }
 
     /**
-     * Generate a random IV for use in XSalsa20 encryption.
-     *
-     * @param random a SecureRandom instance
-     * @return Returns random nonce for use in XSalsa20 encryption.
-     */
-    @Nonnull
-    public static byte[] generateNonce(@Nonnull final SecureRandom random) {
-        final byte[] nonce = new byte[XSALSA20_IV_LENGTH_BYTES];
-        random.nextBytes(nonce);
-        return nonce;
-    }
-
-    /**
-     * Encrypt a message using XSalsa20, given the specified IV and key.
+     * Encrypt a message using ChaCha20 defined by RFC7539, given the specified key. The nonce is fixed to all
+     * zero-bytes, as we expect to use a new key for every encryption operation.
      *
      * @param mkEnc   the secret key used for encryption (at least 32 bytes)
-     * @param iv      the initialization vector (nonce, 24 bytes)
      * @param message the plaintext message to be encrypted (non-null)
      * @return Returns the encrypted content.
      */
-    // FIXME probably need to replace with ChaCha20 cipher (https://github.com/otrv4/otrv4/issues/204#issuecomment-474523642, also 6d82003..45d1e23)
     @Nonnull
-    public static byte[] encrypt(@Nonnull final byte[] mkEnc, @Nonnull final byte[] iv, @Nonnull final byte[] message) {
-        requireLengthAtLeast(XSALSA20_KEY_LENGTH_BYTES, mkEnc);
-        requireNonNull(iv);
-        assert !allZeroBytes(iv) : "Expected non-zero byte array for a iv. Something critical might be going wrong.";
+    public static byte[] encrypt(@Nonnull final byte[] mkEnc, @Nonnull final byte[] message) {
+        requireLengthAtLeast(CHACHA20_KEY_LENGTH_BYTES, mkEnc);
         requireNonNull(message);
-        final byte[] key = Arrays.copyOf(mkEnc, XSALSA20_KEY_LENGTH_BYTES);
+        final byte[] key = Arrays.copyOf(mkEnc, CHACHA20_KEY_LENGTH_BYTES);
         assert !allZeroBytes(key) : "Expected non-zero byte array for a key. Something critical might be going wrong.";
         try {
-            final XSalsa20Engine engine = new XSalsa20Engine();
-            engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length), iv));
+            final ChaCha7539Engine engine = new ChaCha7539Engine();
+            engine.init(true, new ParametersWithIV(new KeyParameter(key, 0, key.length), IV));
             final byte[] out = new byte[message.length];
             if (engine.processBytes(message, 0, message.length, out, 0) != message.length) {
                 throw new IllegalStateException("Expected to process exactly full size of the message.");
@@ -379,24 +368,21 @@ public final class OtrCryptoEngine4 {
     }
 
     /**
-     * Decrypt a ciphertext using XSalsa20, given the specified IV and key.
+     * Decrypt a ciphertext using ChaCha20 defined by RFC7539, given the specified key.
      *
      * @param mkEnc      the secret key used for decryption (at least 32 bytes)
-     * @param iv         the initialization vector (nonce, 24 bytes)
      * @param ciphertext te ciphertext to be decrypted (non-null)
      * @return Returns the decrypted (plaintext) content.
      */
     @Nonnull
-    public static byte[] decrypt(@Nonnull final byte[] mkEnc, @Nonnull final byte[] iv, @Nonnull final byte[] ciphertext) {
-        requireLengthAtLeast(XSALSA20_KEY_LENGTH_BYTES, mkEnc);
-        requireNonNull(iv);
-        assert !allZeroBytes(iv) : "Expected non-zero byte array for a iv. Something critical might be going wrong.";
+    public static byte[] decrypt(@Nonnull final byte[] mkEnc, @Nonnull final byte[] ciphertext) {
+        requireLengthAtLeast(CHACHA20_KEY_LENGTH_BYTES, mkEnc);
         requireNonNull(ciphertext);
-        final byte[] key = Arrays.copyOf(mkEnc, XSALSA20_KEY_LENGTH_BYTES);
+        final byte[] key = Arrays.copyOf(mkEnc, CHACHA20_KEY_LENGTH_BYTES);
         assert !allZeroBytes(key) : "Expected non-zero byte array for a key. Something critical might be going wrong.";
         try {
-            final XSalsa20Engine engine = new XSalsa20Engine();
-            engine.init(false, new ParametersWithIV(new KeyParameter(key, 0, key.length), iv));
+            final ChaCha7539Engine engine = new ChaCha7539Engine();
+            engine.init(false, new ParametersWithIV(new KeyParameter(key, 0, key.length), IV));
             final byte[] out = new byte[ciphertext.length];
             if (engine.processBytes(ciphertext, 0, ciphertext.length, out, 0) != ciphertext.length) {
                 throw new IllegalStateException("Expected to process exactly full size of the message.");
