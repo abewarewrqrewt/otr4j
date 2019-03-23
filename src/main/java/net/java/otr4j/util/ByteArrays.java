@@ -18,6 +18,8 @@ import static org.bouncycastle.util.Arrays.constantTimeAreEqual;
 /**
  * Utility methods for byte arrays.
  */
+// FIXME adopt CanIgnoreReturnValue.
+// FIXME adopt CheckReturnValue from Error-Prone.
 public final class ByteArrays {
 
     /**

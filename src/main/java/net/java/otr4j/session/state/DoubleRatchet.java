@@ -576,9 +576,9 @@ final class DoubleRatchet implements AutoCloseable {
     // TODO write tests that inspect private fields to discover if cleaning was successful.
     private static final class MessageKeys implements AutoCloseable {
 
-        private static final int MK_ENC_LENGTH_BYTES = 32;
+        private static final int MK_ENC_LENGTH_BYTES = 64;
         private static final int MK_MAC_LENGTH_BYTES = 64;
-        private static final int EXTRA_SYMMETRIC_KEY_LENGTH_BYTES = 32;
+        private static final int EXTRA_SYMMETRIC_KEY_LENGTH_BYTES = 64;
         private static final int AUTHENTICATOR_LENGTH_BYTES = 64;
 
         private final SecureRandom random;
