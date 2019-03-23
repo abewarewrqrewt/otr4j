@@ -7,7 +7,8 @@
 
 package net.java.otr4j.util;
 
-import javax.annotation.CheckReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
+
 import javax.annotation.Nonnull;
 
 import static java.util.Objects.requireNonNull;

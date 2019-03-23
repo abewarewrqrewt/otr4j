@@ -7,9 +7,10 @@
 
 package net.java.otr4j.crypto.ed448;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
 import nl.dannyvanheumen.joldilocks.Points;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
@@ -94,6 +95,7 @@ public final class Ed448 {
      * @param point the point to validate
      * @return Returns the same point iff it is valid.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static Point requireValidPoint(@Nonnull final Point point) {
         if (!containsPoint(point)) {

@@ -7,10 +7,10 @@
 
 package net.java.otr4j.api;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Immutable;
 
 import java.security.SecureRandom;
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
 /**

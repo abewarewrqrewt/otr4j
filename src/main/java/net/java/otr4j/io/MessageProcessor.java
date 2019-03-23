@@ -7,11 +7,11 @@
 
 package net.java.otr4j.io;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import net.java.otr4j.api.InstanceTag;
 import net.java.otr4j.api.Session.Version;
 import org.bouncycastle.util.encoders.Base64;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.io.StringWriter;
 import java.net.ProtocolException;

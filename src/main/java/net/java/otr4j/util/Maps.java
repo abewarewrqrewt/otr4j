@@ -7,6 +7,8 @@
 
 package net.java.otr4j.util;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
 import javax.annotation.Nonnull;
 import java.util.Map;
 
@@ -29,6 +31,7 @@ public final class Maps {
      * @return Returns the same map iff it meets specified requirements.
      * @throws IllegalArgumentException In case provided map does not meet minimum requirements.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static <K, V> Map<K, V> requireMinEntries(final int minimum, @Nonnull final Map<K, V> map) {
         final int size = map.size();

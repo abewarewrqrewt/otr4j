@@ -7,7 +7,8 @@
 
 package net.java.otr4j.crypto;
 
-import javax.annotation.CheckReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
+
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.security.SecureRandom;

@@ -7,6 +7,8 @@
 
 package net.java.otr4j.util;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 
@@ -27,6 +29,7 @@ public final class Integers {
      * @return Returns same value as provided iff it passes minimum bound check.
      * @throws IllegalArgumentException Throws IllegalArgumentException in case value does not pass check.
      */
+    @CanIgnoreReturnValue
     public static int requireAtLeast(final int minInclusive, final int value) {
         if (value < minInclusive) {
             throw new IllegalArgumentException("value is expected to be at minimum " + minInclusive + ", but was " + value);
@@ -41,6 +44,7 @@ public final class Integers {
      * @param value     the value to be verified
      * @return Returns value iff not equal to the forbidden value.
      */
+    @CanIgnoreReturnValue
     public static int requireNotEquals(final int forbidden, final int value) {
         if (value == forbidden) {
             throw new IllegalArgumentException("value must not be: " + forbidden);
@@ -57,6 +61,7 @@ public final class Integers {
      * @return Returns {@code value} in case in range.
      * @throws IllegalArgumentException In case of illegal value.
      */
+    @CanIgnoreReturnValue
     public static int requireInRange(final int minInclusive, final int maxInclusive, final int value) {
         if (value < minInclusive || value > maxInclusive) {
             throw new IllegalArgumentException("Illegal value: " + value);

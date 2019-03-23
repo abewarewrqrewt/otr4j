@@ -7,6 +7,7 @@
 
 package net.java.otr4j.messages;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import net.java.otr4j.api.Session.Version;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
 import net.java.otr4j.crypto.OtrCryptoException;
@@ -14,7 +15,6 @@ import net.java.otr4j.crypto.ed448.Point;
 import net.java.otr4j.io.EncodedMessage;
 import net.java.otr4j.io.OtrInputStream.UnsupportedLengthException;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.crypto.interfaces.DHPublicKey;
 import java.math.BigInteger;

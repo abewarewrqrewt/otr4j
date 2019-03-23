@@ -7,7 +7,9 @@
 
 package net.java.otr4j.util;
 
-import javax.annotation.CheckReturnValue;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
+
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.util.Locale;
@@ -18,8 +20,6 @@ import static org.bouncycastle.util.Arrays.constantTimeAreEqual;
 /**
  * Utility methods for byte arrays.
  */
-// FIXME adopt CanIgnoreReturnValue.
-// FIXME adopt CheckReturnValue from Error-Prone.
 public final class ByteArrays {
 
     /**
@@ -45,6 +45,7 @@ public final class ByteArrays {
      * @return Returns same byte-array iff it matches length requirement.
      * @throws IllegalArgumentException Thrown in case the length requirement is not met.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static byte[] requireLengthExactly(final int length, @Nonnull final byte[] bytes) {
         if (bytes.length != length) {
@@ -60,6 +61,7 @@ public final class ByteArrays {
      * @param bytes     The source bytes to verify.
      * @return Returns same byte-array iff it matches length requirements.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static byte[] requireLengthAtLeast(final int minLength, @Nonnull final byte[] bytes) {
         if (bytes.length < minLength) {

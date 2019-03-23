@@ -7,13 +7,13 @@
 
 package net.java.otr4j.session.state;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.MustBeClosed;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
 import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.Point;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;

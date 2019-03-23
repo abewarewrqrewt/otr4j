@@ -7,6 +7,8 @@
 
 package net.java.otr4j.util;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
@@ -32,6 +34,7 @@ public final class Collections {
      * @return Returns same collection as provided iff no illegal values are present.
      * @throws IllegalArgumentException In case illegal values are present.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static <S, T extends Collection<S>> T requireNoIllegalValues(@Nonnull final Collection<S> blacklist,
             @Nonnull final T collection) {
@@ -53,6 +56,7 @@ public final class Collections {
      * @return Returns same collection as provided iff minimum bound is satisfied.
      * @throws IllegalArgumentException In case minimum bound is not satisfied.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static <T extends Collection<?>> T requireMinElements(final int minimum, @Nonnull final T collection) {
         final int size = collection.size();
@@ -72,6 +76,7 @@ public final class Collections {
      * @return Returns same collection as provided iff all expected elements are present.
      * @throws IllegalArgumentException In case expected elements are not present.
      */
+    @CanIgnoreReturnValue
     @Nonnull
     public static <E, T extends Collection<? super E>> T requireElements(@Nonnull final Collection<E> elements,
             @Nonnull final T collection) {
