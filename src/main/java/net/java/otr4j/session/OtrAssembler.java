@@ -156,12 +156,13 @@ final class OtrAssembler {
                         new Object[]{parts.length, fragment.getTotal()});
                 throw new ProtocolException("Rejecting fragment with different total value than other fragments of the same series.");
             }
-            if (parts[fragment.getIndex() - 1] != null) {
+            final int zeroBasedIndex = fragment.getIndex() - 1;
+            if (parts[zeroBasedIndex] != null) {
                 LOGGER.log(Level.FINEST, "Fragment with index {0} is already present. Ignoring this fragment.",
                         new Object[]{fragment.getIndex()});
                 throw new ProtocolException("Rejecting fragment with index that is already present.");
             }
-            parts[fragment.getIndex() - 1] = fragment.getContent();
+            parts[zeroBasedIndex] = fragment.getContent();
             if (containsEmpty(parts)) {
                 // Not all message parts are present. Return null and wait for next message part before continuing.
                 return null;
