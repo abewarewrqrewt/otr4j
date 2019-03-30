@@ -54,7 +54,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * DoubleRatchet is NOT thread-safe.
  */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
-// FIXME adopt second-redesigned Double Ratchet algorithm (removed `i` - ratchet ID)
+// FIXME adopt second-redesigned Double Ratchet algorithm (then enable SessionTest test with early message sending)
 final class DoubleRatchet implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
@@ -97,6 +97,10 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private int pn = 0;
 
+    private int sinceLastDH = 0;
+
+    private int maxRemoteISeen = -1;
+
     /**
      * Monotonic timestamp of the last rotation activity. ({@link System#nanoTime()})
      */
@@ -111,15 +115,12 @@ final class DoubleRatchet implements AutoCloseable {
         case BOB:
             generateRatchetKeys(Purpose.RECEIVING);
             this.senderRatchet.needsRotation = true;
-            // As we set the `needsRotation` flag on the sender ratchet, next time a message is sent new ratchet keys
-            // will be generated. According to the Double Ratchet initialization in OTRv4 spec, we should do this
-            // immediately. However, the steps are exactly the same and generating them here means we need to find a way
-            // to put the public keys into the next data message. This makes things a lot more complicated and in the
-            // end achieves the exact same effect.
+            rotateSenderKeys();
             break;
         case ALICE:
             generateRatchetKeys(Purpose.SENDING);
             this.senderRatchet.needsRotation = false;
+            this.i += 1;
             break;
         default:
             throw new UnsupportedOperationException("Unsupported purpose.");
@@ -211,6 +212,7 @@ final class DoubleRatchet implements AutoCloseable {
         final boolean performDHRatchet = this.i % 3 == 0;
         this.sharedSecret.rotateOurKeys(performDHRatchet);
         generateRatchetKeys(Purpose.SENDING);
+        this.sinceLastDH += 1;
         this.i += 1;
         // Update last-rotation time such that we can keep track of when the last rotation took place.
         this.lastRotation = System.nanoTime();

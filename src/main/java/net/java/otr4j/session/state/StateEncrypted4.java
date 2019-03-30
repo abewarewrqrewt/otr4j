@@ -153,13 +153,11 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
         final byte[] ciphertext = this.ratchet.encrypt(msgBytes);
-        final int ratchetId = this.ratchet.getI();
-        final int messageId = this.ratchet.getJ();
         // We intentionally set the authenticator to `new byte[64]` (all zero-bytes), such that we can calculate the
         // corresponding authenticator value. Then we construct a new DataMessage4 and substitute the real authenticator
         // for the dummy.
         final DataMessage4 unauthenticated = new DataMessage4(VERSION, context.getSenderInstanceTag(),
-                context.getReceiverInstanceTag(), flags, this.ratchet.getPn(), ratchetId, messageId,
+                context.getReceiverInstanceTag(), flags, this.ratchet.getPn(), this.ratchet.getI(), this.ratchet.getJ(),
                 this.ratchet.getECDHPublicKey(), dhPublicKey, ciphertext, new byte[64], collectedMACs);
         final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
