@@ -9,9 +9,9 @@ package net.java.otr4j.session.state;
 
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.MustBeClosed;
+import net.java.otr4j.crypto.MixedSharedSecret;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
 import net.java.otr4j.crypto.OtrCryptoException;
-import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.Point;
 
 import javax.annotation.Nonnull;
@@ -42,7 +42,7 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * The Double Ratchet. (OTRv4)
  * <p>
  * The logistics of the Double Ratchet-algorithm. The mechanism according to which the key rotations are performed. The
- * cryptographic secrets updates are performed in {@link SharedSecret4}.
+ * cryptographic secrets updates are performed in {@link MixedSharedSecret}.
  * <p>
  * Key rotations consist of 2 cases:
  * <ol>
@@ -77,7 +77,7 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private final Ratchet receiverRatchet = new Ratchet();
 
-    private final SharedSecret4 sharedSecret;
+    private final MixedSharedSecret sharedSecret;
 
     /**
      * The 'root key' in the Double Ratchet. The root key is shared between sender and receiver ratchets.
@@ -102,7 +102,7 @@ final class DoubleRatchet implements AutoCloseable {
      */
     private long lastRotation = System.nanoTime();
 
-    DoubleRatchet(@Nonnull final SharedSecret4 sharedSecret, @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
+    DoubleRatchet(@Nonnull final MixedSharedSecret sharedSecret, @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
         requireNonNull(role);
         this.sharedSecret = requireNonNull(sharedSecret);
         this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);

@@ -212,10 +212,10 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         // If a new message from the current receiving ratchet is received, any message keys corresponding to skipped
         // messages from the same ratchet are stored, and a symmetric-key ratchet is performed to derive the current
         // message key and the next receiving chain key. The message is then verified and decrypted.
-        final byte[] dmc;
+        final byte[] decrypted;
         try {
-            dmc = this.ratchet.decrypt(message.i, message.j, encodeDataMessageSections(message), message.authenticator,
-                    message.ciphertext);
+            decrypted = this.ratchet.decrypt(message.i, message.j, encodeDataMessageSections(message),
+                    message.authenticator, message.ciphertext);
         } catch (final RotationLimitationException e) {
             this.logger.log(INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
             handleUnreadableMessage(context, message);
@@ -227,7 +227,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         }
         this.ratchet.rotateReceivingChainKey();
         // Process decrypted message contents. Extract and process TLVs.
-        final Content content = extractContents(dmc);
+        final Content content = extractContents(decrypted);
         for (final TLV tlv : content.tlvs) {
             logger.log(FINE, "Received TLV type {0}", tlv.type);
             if (smpPayload(tlv)) {
@@ -296,7 +296,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         try {
             context.injectMessage(m);
         } finally {
-            context.transition(this, new StatePlaintext(getAuthState()));
+            context.transition(this, new StateFinished(getAuthState()));
         }
     }
 

@@ -14,7 +14,7 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4.Sigma;
-import net.java.otr4j.crypto.SharedSecret4;
+import net.java.otr4j.crypto.MixedSharedSecret;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -120,7 +120,7 @@ abstract class AbstractOTR4State extends AbstractOTR3State {
         final EdDSAKeyPair longTermKeyPair = context.getHost().getLongTermKeyPair(sessionID);
         final byte[] k;
         final byte[] ssid;
-        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, a, x, message.b, message.y)) {
+        try (MixedSharedSecret sharedSecret = new MixedSharedSecret(secureRandom, a, x, message.b, message.y)) {
             k = sharedSecret.getK();
             ssid = sharedSecret.generateSSID();
         }

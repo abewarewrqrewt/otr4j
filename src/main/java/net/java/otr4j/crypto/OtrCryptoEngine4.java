@@ -262,6 +262,7 @@ public final class OtrCryptoEngine4 {
      * @param input      The input data to KDF_1.
      * @param outputSize The size of the derivative output.
      */
+    // FIXME https://github.com/otrv4/otrv4/blob/master/otrv4.md#key-derivation-function-hash-function-and-MAC-function
     public static void kdf1(@Nonnull final byte[] dst, final int offset, @Nonnull final KDFUsage usageID,
             @Nonnull final byte[] input, final int outputSize) {
         requireNonNull(dst);

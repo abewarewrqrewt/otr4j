@@ -40,7 +40,7 @@
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
     </And>
     <And>
-        <Class name="net.java.otr4j.crypto.SharedSecret4"/>
+        <Class name="net.java.otr4j.crypto.MixedSharedSecret"/>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
     </And>
     <And>

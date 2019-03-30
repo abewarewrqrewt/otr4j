@@ -13,8 +13,8 @@ import net.java.otr4j.api.OtrException;
 import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.crypto.DHKeyPair;
+import net.java.otr4j.crypto.MixedSharedSecret;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
-import net.java.otr4j.crypto.SharedSecret4;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.messages.AbstractEncodedMessage;
@@ -196,13 +196,13 @@ final class StateAwaitingAuthR extends AbstractCommonState {
         // Calculate mixed shared secret and SSID.
         final byte[] k;
         final byte[] ssid;
-        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.dhKeyPair, this.ecdhKeyPair, message.a,
+        try (MixedSharedSecret sharedSecret = new MixedSharedSecret(secureRandom, this.dhKeyPair, this.ecdhKeyPair, message.a,
                 message.x)) {
             k = sharedSecret.getK();
             ssid = sharedSecret.generateSSID();
         }
         // Initialize Double Ratchet.
-        final SharedSecret4 firstRatchetSecret = new SharedSecret4(secureRandom, ourFirstDHKeyPair, ourFirstECDHKeyPair,
+        final MixedSharedSecret firstRatchetSecret = new MixedSharedSecret(secureRandom, ourFirstDHKeyPair, ourFirstECDHKeyPair,
                 message.ourFirstDHPublicKey, message.ourFirstECDHPublicKey);
         final DoubleRatchet ratchet = new DoubleRatchet(firstRatchetSecret, kdf1(FIRST_ROOT_KEY, k, 64), BOB);
         secure(context, ssid, ratchet, ourClientProfile.getLongTermPublicKey(), theirClientProfile.getLongTermPublicKey());

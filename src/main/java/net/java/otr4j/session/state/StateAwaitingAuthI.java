@@ -13,7 +13,7 @@ import net.java.otr4j.api.SessionID;
 import net.java.otr4j.api.SessionStatus;
 import net.java.otr4j.crypto.DHKeyPair;
 import net.java.otr4j.crypto.OtrCryptoEngine4;
-import net.java.otr4j.crypto.SharedSecret4;
+import net.java.otr4j.crypto.MixedSharedSecret;
 import net.java.otr4j.crypto.ed448.ECDHKeyPair;
 import net.java.otr4j.crypto.ed448.EdDSAKeyPair;
 import net.java.otr4j.crypto.ed448.Point;
@@ -192,7 +192,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final byte[] newK;
         final byte[] newSSID;
         // FIXME we cannot reuse ourDHKeyPair and ourECDHKeyPair as they will have been closed already. (As of yet unresolved issue in Double Ratchet init redesign.)
-        try (SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourDHKeyPair, this.ourECDHKeyPair,
+        try (MixedSharedSecret sharedSecret = new MixedSharedSecret(secureRandom, this.ourDHKeyPair, this.ourECDHKeyPair,
                 message.b, message.y)) {
             newK = sharedSecret.getK();
             newSSID = sharedSecret.generateSSID();
@@ -230,8 +230,9 @@ final class StateAwaitingAuthI extends AbstractCommonState {
                 context.getSessionID().getAccountID());
         final SecureRandom secureRandom = context.secureRandom();
         // Initialize Double Ratchet.
-        final SharedSecret4 sharedSecret = new SharedSecret4(secureRandom, this.ourFirstDHKeyPair,
+        final MixedSharedSecret sharedSecret = new MixedSharedSecret(secureRandom, this.ourFirstDHKeyPair,
                 this.ourFirstECDHKeyPair, this.theirFirstDHPublicKey, this.theirFirstECDHPublicKey);
+        // FIXME replace literal `64` with constant for root key length
         final DoubleRatchet ratchet = new DoubleRatchet(sharedSecret, kdf1(FIRST_ROOT_KEY, this.k, 64), ALICE);
         secure(context, this.ssid, ratchet, ourProfileValidated.getLongTermPublicKey(),
                 profileBobValidated.getLongTermPublicKey());

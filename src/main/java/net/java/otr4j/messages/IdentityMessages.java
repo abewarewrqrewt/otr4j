@@ -32,6 +32,7 @@ public final class IdentityMessages {
      *                     independently such that we can avoid validating the profile multiple times.
      * @throws ValidationException Validation failure of parts of the Identity message.
      */
+    // TODO verify that the forced order (validate client profile first) is not an issue according to the spec.
     public static void validate(@Nonnull final IdentityMessage message, @Nonnull final ClientProfile theirProfile)
             throws ValidationException {
         if (!message.senderTag.equals(theirProfile.getInstanceTag())) {

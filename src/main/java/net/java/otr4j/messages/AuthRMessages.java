@@ -44,6 +44,7 @@ public final class AuthRMessages {
      * @param receiverFirstDHPublicKey   the receiver's first DH public key after DAKE completes
      * @throws ValidationException In case the message fails validation.
      */
+    // TODO verify that the forced order (validate client profile first) is not an issue according to the spec.
     public static void validate(@Nonnull final AuthRMessage message,
             @Nonnull final ClientProfilePayload ourClientProfilePayload, @Nonnull final ClientProfile ourProfile,
             @Nonnull final ClientProfile theirProfile, @Nonnull final String senderAccountID,

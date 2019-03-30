@@ -29,9 +29,9 @@ import static org.bouncycastle.util.Arrays.concatenate;
 import static org.bouncycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
- * The Shared Secret-mechanism used in OTRv4.
+ * The OTRv4 Mixed Shared Secret-mechanism.
  */
-public final class SharedSecret4 implements AutoCloseable {
+public final class MixedSharedSecret implements AutoCloseable {
 
     private static final int SSID_LENGTH_BYTES = 8;
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
@@ -92,7 +92,7 @@ public final class SharedSecret4 implements AutoCloseable {
      * @param theirDHPublicKey   their DH public key
      * @param theirECDHPublicKey their ECDH public key
      */
-    public SharedSecret4(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
+    public MixedSharedSecret(@Nonnull final SecureRandom random, @Nonnull final DHKeyPair ourDHKeyPair,
             @Nonnull final ECDHKeyPair ourECDHKeyPair, @Nonnull final BigInteger theirDHPublicKey,
             @Nonnull final Point theirECDHPublicKey) {
         this.random = requireNonNull(random);
@@ -104,7 +104,7 @@ public final class SharedSecret4 implements AutoCloseable {
     }
 
     /**
-     * Close SharedSecret4 instance by securely clearing used memory that contains sensitive data.
+     * Close MixedSharedSecret instance by securely clearing used memory that contains sensitive data.
      */
     @Override
     public void close() {
