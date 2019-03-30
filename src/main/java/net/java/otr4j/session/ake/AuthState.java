@@ -27,6 +27,7 @@ import java.net.ProtocolException;
  * @author Danny van Heumen
  */
 // TODO consider implementing destroying AuthState data upon transitioning. (It this really applicable for generic handling, or should it be handled on a case-by-case basis?)
+// FIXME check at what times we allow OTRv3 AKE messages to be processed. (Check with spec, probably not clear.)
 public interface AuthState {
 
     /**

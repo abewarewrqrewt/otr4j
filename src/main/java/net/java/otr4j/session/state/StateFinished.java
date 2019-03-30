@@ -37,6 +37,7 @@ import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
  *
  * @author Danny van Heumen
  */
+// TODO currently `StateFinished` is shared among OTRv2/3/4. In OTRv4 spec, separate `FINISHED` states exist for OTRv3 and OTRv4. Consider separating as well.
 // FIXME write additional unit tests for StateFinished
 final class StateFinished extends AbstractCommonState {
 

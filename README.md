@@ -34,6 +34,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - Stabilize, fix and then guard the public API offered by otr4j.
 - Clean up remaining TODOs
 - ... (OTRv4 Non-interactive, ...)
+- Review comments to spot out-of-date quotes from the spec. (Probably better to ignore or generalize.)
 - Review the many logging statements and verify if log levels are reasonable.
 
 ## Functionality
