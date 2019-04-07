@@ -54,7 +54,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
  * DoubleRatchet is NOT thread-safe.
  */
 // TODO DoubleRatchet currently does not keep history. Therefore it is not possible to decode out-of-order messages from previous ratchets. (Also needed to keep MessageKeys instances for messages failing verification.)
-// FIXME adopt second-redesigned Double Ratchet algorithm (then enable SessionTest test with early message sending)
 final class DoubleRatchet implements AutoCloseable {
 
     private static final Logger LOGGER = Logger.getLogger(DoubleRatchet.class.getName());
@@ -93,20 +92,26 @@ final class DoubleRatchet implements AutoCloseable {
     private int i = 0;
 
     /**
+     * The maximum value of i (ratchet ID) from remote party seen.
+     */
+    private int maxRemoteISeen = -1;
+
+    /**
      * The number of messages in the previous ratchet, i.e. sender ratchet message number.
      */
     private int pn = 0;
 
-    private int sinceLastDH = 0;
-
-    private int maxRemoteISeen = -1;
+    /**
+     * dhRatchet indicates that the last ratchet also ratcheted the DH key pair.
+     */
+    private boolean dhRatchet;
 
     /**
      * Monotonic timestamp of the last rotation activity. ({@link System#nanoTime()})
      */
     private long lastRotation = System.nanoTime();
 
-    DoubleRatchet(@Nonnull final MixedSharedSecret sharedSecret, @Nonnull final byte[] initialRootKey, @Nonnull final Role role) {
+    DoubleRatchet(@Nonnull final Role role, @Nonnull final MixedSharedSecret sharedSecret, @Nonnull final byte[] initialRootKey) {
         requireNonNull(role);
         this.sharedSecret = requireNonNull(sharedSecret);
         this.rootKey = requireLengthExactly(ROOT_KEY_LENGTH_BYTES, initialRootKey);
@@ -115,6 +120,11 @@ final class DoubleRatchet implements AutoCloseable {
         case BOB:
             generateRatchetKeys(Purpose.RECEIVING);
             this.senderRatchet.needsRotation = true;
+            // As we immediately perform sender key rotation here, we leave it to the user to ensure that the ECDH and
+            // DH public keys are queried and attached to the next message to be sent. Previously we signaled this by
+            // providing as part of the RotationResult, however this makes no sense at initialization-time, as no
+            // message is being sent yet.
+            // FIXME we need to verify/ensure that rotation ensures/forces a DH ratchet
             rotateSenderKeys();
             break;
         case ALICE:
@@ -188,6 +198,21 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     /**
+     * isDhRatchet indicates that the last performed ratchet also ratcheted the DH key pair.
+     * <p>
+     * This is necessary for one particular use case: during Double Ratchet initialization for Bob, we immediately need
+     * to rotate the sender keys. However, as this is performed during initialization, we cannot yet send Bob's new
+     * public keys as there is no message sent yet.
+     * By introducing this boolean, we can ask after-the-fact whether or not the ratchet was a DH ratchet and if so
+     * request and send the DH public key with the message that we are intending to send.
+     *
+     * @return Returns true iff last ratchet performed was a DH ratchet.
+     */
+    boolean isDhRatchet() {
+        return dhRatchet;
+    }
+
+    /**
      * Get the monotonic timestamp for the last sender keys rotation.
      *
      * @return Returns the monotonic timestamp for the last sender keys rotation. ({@link System#nanoTime()})
@@ -202,6 +227,11 @@ final class DoubleRatchet implements AutoCloseable {
     }
 
     @Nonnull
+    BigInteger getDHPublicKey() {
+        return this.sharedSecret.getDHPublicKey();
+    }
+
+    @Nonnull
     RotationResult rotateSenderKeys() {
         requireNotClosed();
         if (!this.senderRatchet.needsRotation) {
@@ -209,17 +239,17 @@ final class DoubleRatchet implements AutoCloseable {
         }
         // Perform sender key rotation.
         LOGGER.log(FINEST, "Rotating root key and sending chain key for ratchet " + this.i);
-        final boolean performDHRatchet = this.i % 3 == 0;
-        this.sharedSecret.rotateOurKeys(performDHRatchet);
+        final BigInteger previousDH = this.sharedSecret.getDHPublicKey();
+        this.sharedSecret.rotateOurKeys();
         generateRatchetKeys(Purpose.SENDING);
-        this.sinceLastDH += 1;
         this.i += 1;
         // Update last-rotation time such that we can keep track of when the last rotation took place.
         this.lastRotation = System.nanoTime();
         // Extract MACs to reveal.
         final byte[] revealedMacs = this.macsToReveal.toByteArray();
         this.macsToReveal.reset();
-        return new RotationResult(performDHRatchet ? this.sharedSecret.getDHPublicKey() : null, revealedMacs);
+        this.dhRatchet = !previousDH.equals(this.sharedSecret.getDHPublicKey());
+        return new RotationResult(this.dhRatchet, revealedMacs);
     }
 
     /**
@@ -282,6 +312,7 @@ final class DoubleRatchet implements AutoCloseable {
             throws VerificationException, RotationLimitationException {
         LOGGER.log(FINEST, "Generating message keys for verification and decryption of ratchet {0}, message {1}.",
                 new Object[] {this.i - 1, this.receiverRatchet.messageID});
+        // TODO it is possible to attempt decrypting before rotating first Receiver Keys. Should we make an effort to prevent this. It can't really hurt, because we would simply fail to decrypt.
         try (MessageKeys keys = generateReceivingKeys(ratchetId, messageId)) {
             keys.verify(encodedDataMessageSections, authenticator);
             this.macsToReveal.write(authenticator, 0, authenticator.length);
@@ -336,20 +367,18 @@ final class DoubleRatchet implements AutoCloseable {
     @MustBeClosed
     private MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws RotationLimitationException {
         requireNotClosed();
-        if (this.i - 1 > ratchetId || this.receiverRatchet.messageID > messageId) {
+        if (this.maxRemoteISeen > ratchetId || this.receiverRatchet.messageID > messageId) {
             throw new UnsupportedOperationException("Retrieval of previous Message Keys has not been implemented yet. Only current Message Keys can be generated.");
-        } else if (this.i - 1 < ratchetId) {
-            // The first message in the new ratchet provides us with the information we need to generate missing message
-            // keys in previous ratchet, as well as necessary key material to decrypt and authenticate the message.
-            // There is no way to process this message given that this information is missing.
-            throw new RotationLimitationException("Cannot fast-forward-rotate receiving keys over first message in new ratchet. We have not encountered the first message in the new ratchet.");
         }
+        // FIXME shouldn't we first identify if we can skip ahead far enough to the specified ratchet ID? Now it seems we don't care, but we cannot do this realistically because we don't have the public keys for it.
+        this.maxRemoteISeen = ratchetId;
         // TODO verify that number of messages needing to fast-forward is acceptable. (max_skip in OTRv4 spec)
         while (this.receiverRatchet.messageID < messageId) {
             LOGGER.log(FINEST, "Fast-forward rotating receiving chain key to catch up with message ID: " + messageId);
             this.receiverRatchet.rotateChainKey();
             // TODO store intermediate message keys for previous messages as the message may arrive out-of-order
         }
+        // FIXME need to check messageId < receiverRatchet.messageID then duplicate message, discard.
         final byte[] chainKey = this.receiverRatchet.getChainKey();
         try {
             return generateMessageKeys(chainKey);
@@ -374,16 +403,17 @@ final class DoubleRatchet implements AutoCloseable {
 
     /**
      * Rotate the receiver key.
-     *
+     * <p>
      * For convenience, it is allowed to pass in null for each of the keys. Depending on the input, a key rotation will
      * be performed, or it will be skipped.
      *
-     * @param nextECDH The other party's ECDH public key.
-     * @param nextDH   The other party's DH public key.
+     * @param ratchetId The message's ratchet ID.
+     * @param nextECDH  The other party's ECDH public key.
+     * @param nextDH    The other party's DH public key.
      */
     // TODO preserve message keys in previous ratchet before rotating away.
     // FIXME need to verify that public keys (ECDH and DH) were not encountered previously.
-    void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
+    void rotateReceiverKeys(final int ratchetId, @Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
         requireNotClosed();
         LOGGER.log(FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});
@@ -396,12 +426,10 @@ final class DoubleRatchet implements AutoCloseable {
             LOGGER.log(FINE, "Skipping rotating receiver keys as DH public key is already known.");
             return;
         }
-        final boolean performDHRatchet = this.i % 3 == 0;
-        this.sharedSecret.rotateTheirKeys(performDHRatchet, nextECDH, nextDH);
+        this.sharedSecret.rotateTheirKeys(nextECDH, nextDH);
         this.pn = this.senderRatchet.messageID;
         generateRatchetKeys(Purpose.RECEIVING);
         this.senderRatchet.needsRotation = true;
-        this.i += 1;
     }
 
     private void generateRatchetKeys(@Nonnull final Purpose purpose) {
@@ -475,11 +503,11 @@ final class DoubleRatchet implements AutoCloseable {
      */
     static final class RotationResult {
 
-        final BigInteger dhPublicKey;
+        final boolean dhRatchet;
         final byte[] revealedMacs;
 
-        private RotationResult(@Nullable final BigInteger dhPublicKey, @Nonnull final byte[] revealedMacs) {
-            this.dhPublicKey = dhPublicKey;
+        private RotationResult(final boolean dhRatchet, @Nonnull final byte[] revealedMacs) {
+            this.dhRatchet = dhRatchet;
             this.revealedMacs = requireNonNull(revealedMacs);
         }
     }

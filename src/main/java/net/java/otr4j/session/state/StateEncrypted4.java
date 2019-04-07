@@ -138,17 +138,18 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
             @Nonnull final Iterable<TLV> tlvs, final byte flags, @Nonnull final byte[] providedMACsToReveal) {
         assert providedMACsToReveal.length == 0 || !allZeroBytes(providedMACsToReveal)
                 : "BUG: expected providedMACsToReveal to contains some non-zero values.";
-        final BigInteger dhPublicKey;
         final byte[] collectedMACs;
         if (this.ratchet.isNeedSenderKeyRotation()) {
+            // Although `isNeedSenderKeyRotation` is a good indicator for when (potentially) a DH ratchet will be
+            // performed, i.e. it is not guaranteed but if it happens it will happen if this is true. However, on the
+            // Double Ratchet initialization, we will miss the moment as we rotate sender keys as part of initialization
+            // already.
             final RotationResult rotation = this.ratchet.rotateSenderKeys();
-            this.logger.log(FINEST, "Sender keys rotated. DH public key: {0}, revealed MACs size: {1}.",
-                    new Object[] {rotation.dhPublicKey != null, rotation.revealedMacs.length});
-            dhPublicKey = rotation.dhPublicKey;
+            this.logger.log(FINEST, "Sender keys rotated. DH ratchet: {0}, revealed MACs size: {1}.",
+                    new Object[] {rotation.dhRatchet, rotation.revealedMacs.length});
             collectedMACs = concatenate(providedMACsToReveal, rotation.revealedMacs);
         } else {
             this.logger.log(FINEST, "Sender keys rotation is not needed.");
-            dhPublicKey = null;
             collectedMACs = providedMACsToReveal;
         }
         final byte[] msgBytes = new OtrOutputStream().writeMessage(msgText).writeByte(0).writeTLV(tlvs).toByteArray();
@@ -156,6 +157,8 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         // We intentionally set the authenticator to `new byte[64]` (all zero-bytes), such that we can calculate the
         // corresponding authenticator value. Then we construct a new DataMessage4 and substitute the real authenticator
         // for the dummy.
+        final BigInteger dhPublicKey = this.ratchet.getJ() == 0 && this.ratchet.isDhRatchet()
+                ? this.ratchet.getDHPublicKey() : null;
         final DataMessage4 unauthenticated = new DataMessage4(VERSION, context.getSenderInstanceTag(),
                 context.getReceiverInstanceTag(), flags, this.ratchet.getPn(), this.ratchet.getI(), this.ratchet.getJ(),
                 this.ratchet.getECDHPublicKey(), dhPublicKey, ciphertext, new byte[64], collectedMACs);
@@ -207,7 +210,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
             }
-            this.ratchet.rotateReceiverKeys(message.ecdhPublicKey, message.dhPublicKey);
+            this.ratchet.rotateReceiverKeys(message.i, message.ecdhPublicKey, message.dhPublicKey);
         }
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.

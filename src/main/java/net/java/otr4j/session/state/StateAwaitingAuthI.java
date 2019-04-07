@@ -234,7 +234,7 @@ final class StateAwaitingAuthI extends AbstractCommonState {
         final MixedSharedSecret sharedSecret = new MixedSharedSecret(context.secureRandom(), this.ourFirstDHKeyPair,
                 this.ourFirstECDHKeyPair, this.theirFirstDHPublicKey, this.theirFirstECDHPublicKey);
         // FIXME replace literal `64` with constant for root key length
-        final DoubleRatchet ratchet = new DoubleRatchet(sharedSecret, kdf1(FIRST_ROOT_KEY, this.k, 64), ALICE);
+        final DoubleRatchet ratchet = new DoubleRatchet(ALICE, sharedSecret, kdf1(FIRST_ROOT_KEY, this.k, 64));
         secure(context, this.ssid, ratchet, ourProfileValidated.getLongTermPublicKey(),
                 profileBobValidated.getLongTermPublicKey());
     }

@@ -55,6 +55,12 @@ public final class MixedSharedSecret implements AutoCloseable {
     private final byte[] k = new byte[K_LENGTH_BYTES];
 
     /**
+     * Number of ratchets since last DH ratchet.
+     */
+    // TODO set initial value to 3, such that first-time generating K follows the DH-ratchet path as is expected by spec.
+    private int sinceLastDH = 3;
+
+    /**
      * Flag used to manage internal state: in use / closed.
      */
     private boolean closed = false;
@@ -100,7 +106,7 @@ public final class MixedSharedSecret implements AutoCloseable {
         this.theirECDHPublicKey = requireNonNull(theirECDHPublicKey);
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
-        regenerateK(true);
+        regenerateK();
     }
 
     /**
@@ -183,28 +189,25 @@ public final class MixedSharedSecret implements AutoCloseable {
 
     /**
      * Rotate our key pairs in the shared secret.
-     *
-     * @param regenerateDHKeyPair Indicates whether we need to regenerate the DH key pair as well.
      */
-    public void rotateOurKeys(final boolean regenerateDHKeyPair) {
+    public void rotateOurKeys() {
         requireNotClosed();
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
-        if (regenerateDHKeyPair) {
+        if (this.sinceLastDH % 3 == 0) {
             this.dhKeyPair = DHKeyPair.generate(this.random);
         }
-        regenerateK(regenerateDHKeyPair);
+        regenerateK();
     }
 
     /**
      * Rotate their public keys in the shared secret.
      *
-     * @param performDHRatchet   Indicates whether we need to perform a DH ratchet.
      * @param theirECDHPublicKey Their ECDH public key.
      * @param theirDHPublicKey   Their DH public key. (Optional)
      * @throws OtrCryptoException In case of failure to rotate the public keys.
      */
-    public void rotateTheirKeys(final boolean performDHRatchet, @Nonnull final Point theirECDHPublicKey,
-            @Nullable final BigInteger theirDHPublicKey) throws OtrCryptoException {
+    public void rotateTheirKeys(@Nonnull final Point theirECDHPublicKey, @Nullable final BigInteger theirDHPublicKey)
+            throws OtrCryptoException {
         requireNotClosed();
         if (!containsPoint(requireNonNull(theirECDHPublicKey))) {
             throw new OtrCryptoException("ECDH public key failed verification.");
@@ -216,13 +219,16 @@ public final class MixedSharedSecret implements AutoCloseable {
             throw new OtrCryptoException("A new, different DH public key is expected for initializing the new ratchet.");
         }
         this.theirECDHPublicKey = theirECDHPublicKey;
+        final boolean performDHRatchet = this.sinceLastDH % 3 == 0;
         if (performDHRatchet) {
             if (!checkPublicKey(requireNonNull(theirDHPublicKey))) {
                 throw new OtrCryptoException("DH public key failed verification.");
             }
             this.theirDHPublicKey = theirDHPublicKey;
         }
-        regenerateK(performDHRatchet);
+        regenerateK();
+        // FIXME in case performDHRatchet == false, we do 2 increments of sinceLastDH. Is this expected behavior?
+//        this.sinceLastDH += 1;
         // FIXME check if this is sufficient to clear the key pairs in all cases, even if part of Double Ratchet initialization.
         this.ecdhKeyPair.close();
         if (performDHRatchet) {
@@ -232,19 +238,21 @@ public final class MixedSharedSecret implements AutoCloseable {
     }
 
     @SuppressWarnings("PMD.LocalVariableNamingConventions")
-    private void regenerateK(final boolean performDHRatchet) {
+    private void regenerateK() {
         final byte[] k_ecdh;
         try (Point sharedSecret = this.ecdhKeyPair.generateSharedSecret(this.theirECDHPublicKey)) {
             k_ecdh = sharedSecret.encode();
         } catch (final ValidationException e) {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }
-        if (performDHRatchet) {
+        if (this.sinceLastDH % 3 == 0) {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, THIRD_BRACE_KEY, k_dh, BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);
+            this.sinceLastDH = 0;
         } else {
             kdf1(this.braceKey, 0, BRACE_KEY, this.braceKey, BRACE_KEY_LENGTH_BYTES);
+            this.sinceLastDH += 1;
         }
         final byte[] tempKecdhBraceKey = concatenate(k_ecdh, this.braceKey);
         kdf1(this.k, 0, SHARED_SECRET, tempKecdhBraceKey, K_LENGTH_BYTES);
