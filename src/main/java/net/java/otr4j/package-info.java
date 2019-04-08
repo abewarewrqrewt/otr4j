@@ -5,11 +5,8 @@
  * See terms of license at gnu.org.
  */
 // TODO verify that logging with parameters ('{}') works correctly.
-// TODO migrate to using SpotBugs annotations, instead of dormant JSR-305. (Are these supported in IntelliJ?)
-// TODO use @CleanupObligation to verify correct clean-up of cryptographically sensitive material.
 // TODO Review rule exclusions for maven-compiler-plugin, SpotBugs, pmd, ...
 // TODO Use maven-site-plugin (or similar) to generate a full report on the status of otr4j project.
-// TODO Investigate use of SpotBugs and its annotation to manage "resources" and correct closing.
 // TODO Upgrade to use of JUnit5 for unit tests. (May not be possible due to language level restrictions, Java 8+?)
 // TODO consistent naming of constants used in OTRv4 parts of implementation. (Sometimes LENGTH is at the start of the constant, sometimes at the end.)
 // TODO Verify that mitigation for OTRv2 MAC revalation bug is in place. (Refer to documentation about revealing MAC keys.)
