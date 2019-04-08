@@ -197,6 +197,8 @@ public final class MixedSharedSecret implements AutoCloseable {
             this.dhKeyPair = DHKeyPair.generate(this.random);
         }
         regenerateK();
+        // FIXME in case performDHRatchet == false, we do 2 increments of sinceLastDH. Is this expected behavior?
+        this.sinceLastDH += 1;
     }
 
     /**
@@ -228,7 +230,7 @@ public final class MixedSharedSecret implements AutoCloseable {
         }
         regenerateK();
         // FIXME in case performDHRatchet == false, we do 2 increments of sinceLastDH. Is this expected behavior?
-//        this.sinceLastDH += 1;
+        this.sinceLastDH += 1;
         // FIXME check if this is sufficient to clear the key pairs in all cases, even if part of Double Ratchet initialization.
         this.ecdhKeyPair.close();
         if (performDHRatchet) {
@@ -246,13 +248,16 @@ public final class MixedSharedSecret implements AutoCloseable {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }
         if (this.sinceLastDH % 3 == 0) {
+            // FIXME debugging code
+            new RuntimeException("PERFORMING DH RATCHET: " + this.sinceLastDH).printStackTrace(); System.err.flush();
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, THIRD_BRACE_KEY, k_dh, BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);
             this.sinceLastDH = 0;
         } else {
             kdf1(this.braceKey, 0, BRACE_KEY, this.braceKey, BRACE_KEY_LENGTH_BYTES);
-            this.sinceLastDH += 1;
+            // FIXME disabled for now, suspect that spec is very inaccurate about the sinceLastDH increments.
+//            this.sinceLastDH += 1;
         }
         final byte[] tempKecdhBraceKey = concatenate(k_ecdh, this.braceKey);
         kdf1(this.k, 0, SHARED_SECRET, tempKecdhBraceKey, K_LENGTH_BYTES);
