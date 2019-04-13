@@ -210,7 +210,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 assert false : "CHECK: Shouldn't there always be at least one MAC code to reveal?";
                 logger.warning("Expected other party to reveal recently used MAC codes, but no MAC codes are revealed! (This may be a bug in the other party's OTR implementation.)");
             }
-            this.ratchet.rotateReceiverKeys(message.i, message.ecdhPublicKey, message.dhPublicKey);
+            this.ratchet.rotateReceiverKeys(message.ecdhPublicKey, message.dhPublicKey);
         }
         // If the encrypted message corresponds to an stored message key corresponding to an skipped message, the
         // message is verified and decrypted with that key which is deleted from the storage.

@@ -407,13 +407,12 @@ final class DoubleRatchet implements AutoCloseable {
      * For convenience, it is allowed to pass in null for each of the keys. Depending on the input, a key rotation will
      * be performed, or it will be skipped.
      *
-     * @param ratchetId The message's ratchet ID.
      * @param nextECDH  The other party's ECDH public key.
      * @param nextDH    The other party's DH public key.
      */
     // TODO preserve message keys in previous ratchet before rotating away.
     // FIXME need to verify that public keys (ECDH and DH) were not encountered previously.
-    void rotateReceiverKeys(final int ratchetId, @Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
+    void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
         requireNotClosed();
         LOGGER.log(FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});

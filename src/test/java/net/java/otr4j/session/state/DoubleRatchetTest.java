@@ -190,7 +190,7 @@ public class DoubleRatchetTest {
         final byte[] ciphertext = bobRatchet.encrypt(message);
         final byte[] authenticator = bobRatchet.authenticate(message);
         // Start decrypting and verifying using Alice's double ratchet.
-        aliceRatchet.rotateReceiverKeys(1, bobRatchet.getECDHPublicKey(), bobRatchet.getDHPublicKey());
+        aliceRatchet.rotateReceiverKeys(bobRatchet.getECDHPublicKey(), bobRatchet.getDHPublicKey());
         assertArrayEquals(message, aliceRatchet.decrypt(1, 0, message, authenticator, ciphertext));
     }
 
@@ -210,7 +210,7 @@ public class DoubleRatchetTest {
         final DoubleRatchet aliceRatchet = new DoubleRatchet(BOB,
                 new MixedSharedSecret(RANDOM, aliceFirstDH, aliceFirstECDH, bobFirstDH.getPublicKey(),
                         bobFirstECDH.getPublicKey()), initialRootKey.clone());
-        bobRatchet.rotateReceiverKeys(1, aliceRatchet.getECDHPublicKey(), aliceRatchet.getDHPublicKey());
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), aliceRatchet.getDHPublicKey());
         bobRatchet.decrypt(1, 0, message, randomBytes(RANDOM, new byte[64]), randomBytes(RANDOM, new byte[100]));
     }
 
@@ -235,7 +235,7 @@ public class DoubleRatchetTest {
         final byte[] authenticator = aliceRatchet.authenticate(message);
         final byte[] ciphertext = aliceRatchet.encrypt(message);
         // Start decrypting and verifying using Alice's double ratchet.
-        bobRatchet.rotateReceiverKeys(1, aliceRatchet.getECDHPublicKey(), rotation.dhRatchet ? aliceRatchet.getDHPublicKey() : null);
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation.dhRatchet ? aliceRatchet.getDHPublicKey() : null);
         bobRatchet.decrypt(1, 0, message, authenticator, ciphertext);
         bobRatchet.close();
     }
@@ -262,7 +262,7 @@ public class DoubleRatchetTest {
         final byte[] ciphertext2 = aliceRatchet.encrypt(message);
         final byte[] authenticator2 = aliceRatchet.authenticate(message);
         // Start decrypting and verifying using Alice's double ratchet.
-        bobRatchet.rotateReceiverKeys(1, aliceRatchet.getECDHPublicKey(), aliceRatchet.isDhRatchet() ? aliceRatchet.getDHPublicKey() : null);
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), aliceRatchet.isDhRatchet() ? aliceRatchet.getDHPublicKey() : null);
         assertArrayEquals(message, bobRatchet.decrypt(1, 2, message, authenticator2, ciphertext2));
     }
 
@@ -289,7 +289,7 @@ public class DoubleRatchetTest {
         aliceRatchet.rotateSendingChainKey();
         aliceRatchet.rotateSendingChainKey();
         // Start decrypting and verifying using Alice's double ratchet.
-        bobRatchet.rotateReceiverKeys(1, aliceRatchet.getECDHPublicKey(), aliceRatchet.isDhRatchet() ? aliceRatchet.getDHPublicKey() : null);
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), aliceRatchet.isDhRatchet() ? aliceRatchet.getDHPublicKey() : null);
         bobRatchet.rotateReceivingChainKey();
         bobRatchet.rotateReceivingChainKey();
         assertArrayEquals(message, bobRatchet.decrypt(1, 0, message, authenticator, ciphertext));
@@ -402,7 +402,7 @@ public class DoubleRatchetTest {
         assertEquals(3, aliceRatchet.getJ());
         assertEquals(0, aliceRatchet.getK());
         assertTrue(bobRatchet.isDhRatchet());
-        aliceRatchet.rotateReceiverKeys(0, bobRatchet.getECDHPublicKey(), bobRatchet.getDHPublicKey());
+        aliceRatchet.rotateReceiverKeys(bobRatchet.getECDHPublicKey(), bobRatchet.getDHPublicKey());
         assertArrayEquals(message, aliceRatchet.decrypt(0, 0, message, authenticator4, ciphertext4));
         assertArrayEquals(extraSymmKey4, aliceRatchet.extraSymmetricReceivingKey(0, 0));
         aliceRatchet.rotateReceivingChainKey();
@@ -438,7 +438,7 @@ public class DoubleRatchetTest {
         assertArrayEquals(new byte[0], aliceRatchet.collectRemainingMACsToReveal());
         aliceRatchet.close();
         assertFalse(bobRatchet.isNeedSenderKeyRotation());
-        bobRatchet.rotateReceiverKeys(1, aliceRatchet.getECDHPublicKey(), rotation3.dhRatchet ? aliceRatchet.getDHPublicKey() : null);
+        bobRatchet.rotateReceiverKeys(aliceRatchet.getECDHPublicKey(), rotation3.dhRatchet ? aliceRatchet.getDHPublicKey() : null);
         assertTrue(bobRatchet.isNeedSenderKeyRotation());
         assertEquals(3, bobRatchet.getPn());
         assertEquals(0, bobRatchet.getI());
@@ -461,7 +461,7 @@ public class DoubleRatchetTest {
         assertNotNull(extraSymmSendingKey);
         assertFalse(allZeroBytes(extraSymmSendingKey));
         // Rotate receiver keys and generate receiver extra symmetric key
-        ratchet.rotateReceiverKeys(1, ECDHKeyPair.generate(RANDOM).getPublicKey(), DHKeyPair.generate(RANDOM).getPublicKey());
+        ratchet.rotateReceiverKeys(ECDHKeyPair.generate(RANDOM).getPublicKey(), DHKeyPair.generate(RANDOM).getPublicKey());
         final byte[] extraSymmReceivingKey = ratchet.extraSymmetricReceivingKey(1, 0);
         assertNotNull(extraSymmReceivingKey);
         assertFalse(allZeroBytes(extraSymmReceivingKey));
