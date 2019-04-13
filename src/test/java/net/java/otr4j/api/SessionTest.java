@@ -768,6 +768,7 @@ public class SessionTest {
         // Start sending messages
         c.clientBob.sendMessage("Hello Alice!");
         assertNotEquals("Hello Alice!", c.clientAlice.receiptChannel.peek());
+        // FIXME verify if alice's reception below should trigger DH ratchet. And subsequently, does it trigger DH ratchet if Alice then starts sending?
         assertEquals("Hello Alice!", c.clientAlice.receiveMessage());
         // Even though encrypted now, start a new session. This should not follow through.
         c.clientBob.session.startSession();

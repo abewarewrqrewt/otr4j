@@ -37,6 +37,8 @@ public final class MixedSharedSecret implements AutoCloseable {
     private static final int BRACE_KEY_LENGTH_BYTES = 32;
     private static final int K_LENGTH_BYTES = 64;
 
+    private static final int SINCE_LAST_DH_MAX = 3;
+
     /**
      * SecureRandom instance.
      */
@@ -58,7 +60,7 @@ public final class MixedSharedSecret implements AutoCloseable {
      * Number of ratchets since last DH ratchet.
      */
     // TODO set initial value to 3, such that first-time generating K follows the DH-ratchet path as is expected by spec.
-    private int sinceLastDH = 3;
+    private int sinceLastDH = SINCE_LAST_DH_MAX; // <== not redundant as `regenerateK()` called in ctor already modifies this before the constructor is finished.
 
     /**
      * Flag used to manage internal state: in use / closed.
@@ -107,6 +109,11 @@ public final class MixedSharedSecret implements AutoCloseable {
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         regenerateK();
+        // We immediately ensure that one set sending-/receiving-keys is generated. That way, both parties can start
+        // sending. To realize this we need to perform a DH ratchet. However, then we must perform another ratchet which
+        // also needs to include DH public keys. Therefore we reset the variable `sinceLastDH` after generating the
+        // first set of keys.
+        this.sinceLastDH = SINCE_LAST_DH_MAX;
     }
 
     /**
@@ -193,11 +200,10 @@ public final class MixedSharedSecret implements AutoCloseable {
     public void rotateOurKeys() {
         requireNotClosed();
         this.ecdhKeyPair = ECDHKeyPair.generate(this.random);
-        if (this.sinceLastDH % 3 == 0) {
+        if (this.sinceLastDH == SINCE_LAST_DH_MAX) {
             this.dhKeyPair = DHKeyPair.generate(this.random);
         }
         regenerateK();
-        // FIXME in case performDHRatchet == false, we do 2 increments of sinceLastDH. Is this expected behavior?
         this.sinceLastDH += 1;
     }
 
@@ -211,7 +217,7 @@ public final class MixedSharedSecret implements AutoCloseable {
     public void rotateTheirKeys(@Nonnull final Point theirECDHPublicKey, @Nullable final BigInteger theirDHPublicKey)
             throws OtrCryptoException {
         requireNotClosed();
-        if (!containsPoint(requireNonNull(theirECDHPublicKey))) {
+        if (!containsPoint(theirECDHPublicKey)) {
             throw new OtrCryptoException("ECDH public key failed verification.");
         }
         if (this.ecdhKeyPair.getPublicKey().equals(theirECDHPublicKey) || this.theirECDHPublicKey.equals(theirECDHPublicKey)) {
@@ -221,7 +227,7 @@ public final class MixedSharedSecret implements AutoCloseable {
             throw new OtrCryptoException("A new, different DH public key is expected for initializing the new ratchet.");
         }
         this.theirECDHPublicKey = theirECDHPublicKey;
-        final boolean performDHRatchet = this.sinceLastDH % 3 == 0;
+        final boolean performDHRatchet = this.sinceLastDH == SINCE_LAST_DH_MAX;
         if (performDHRatchet) {
             if (!checkPublicKey(requireNonNull(theirDHPublicKey))) {
                 throw new OtrCryptoException("DH public key failed verification.");
@@ -229,7 +235,6 @@ public final class MixedSharedSecret implements AutoCloseable {
             this.theirDHPublicKey = theirDHPublicKey;
         }
         regenerateK();
-        // FIXME in case performDHRatchet == false, we do 2 increments of sinceLastDH. Is this expected behavior?
         this.sinceLastDH += 1;
         // FIXME check if this is sufficient to clear the key pairs in all cases, even if part of Double Ratchet initialization.
         this.ecdhKeyPair.close();
@@ -247,9 +252,7 @@ public final class MixedSharedSecret implements AutoCloseable {
         } catch (final ValidationException e) {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }
-        if (this.sinceLastDH % 3 == 0) {
-            // FIXME debugging code
-            new RuntimeException("PERFORMING DH RATCHET: " + this.sinceLastDH).printStackTrace(); System.err.flush();
+        if (this.sinceLastDH == SINCE_LAST_DH_MAX) {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, THIRD_BRACE_KEY, k_dh, BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);

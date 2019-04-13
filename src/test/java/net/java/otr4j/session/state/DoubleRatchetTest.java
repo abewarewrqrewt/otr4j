@@ -397,13 +397,12 @@ public class DoubleRatchetTest {
         assertEquals(3, bobRatchet.getJ());
         assertEquals(3, bobRatchet.getK());
         // Alice starts decrypting and verifying the responses.
-        assertFalse(aliceRatchet.isNeedSenderKeyRotation());
         assertEquals(0, aliceRatchet.getPn());
         assertEquals(0, aliceRatchet.getI());
         assertEquals(3, aliceRatchet.getJ());
         assertEquals(0, aliceRatchet.getK());
         assertTrue(bobRatchet.isDhRatchet());
-        aliceRatchet.rotateReceiverKeys(1, bobRatchet.getECDHPublicKey(), bobRatchet.getDHPublicKey());
+        aliceRatchet.rotateReceiverKeys(0, bobRatchet.getECDHPublicKey(), bobRatchet.getDHPublicKey());
         assertArrayEquals(message, aliceRatchet.decrypt(0, 0, message, authenticator4, ciphertext4));
         assertArrayEquals(extraSymmKey4, aliceRatchet.extraSymmetricReceivingKey(0, 0));
         aliceRatchet.rotateReceivingChainKey();
