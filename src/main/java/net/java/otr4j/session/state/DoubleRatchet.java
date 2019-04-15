@@ -94,7 +94,7 @@ final class DoubleRatchet implements AutoCloseable {
     /**
      * The maximum value of i (ratchet ID) from remote party seen.
      */
-    private int maxRemoteISeen = -1;
+    private int maxRemoteISeen;
 
     /**
      * The number of messages in the previous ratchet, i.e. sender ratchet message number.
@@ -119,18 +119,20 @@ final class DoubleRatchet implements AutoCloseable {
         switch (role) {
         case BOB:
             generateRatchetKeys(Purpose.RECEIVING);
+            // FIXME confirm as this deviates from spec: set max_remote_i_seen to 0 given that we already acquired the ECDH and DH public keys and have performed the ratchet.
+            this.maxRemoteISeen = 0;
             this.senderRatchet.needsRotation = true;
             // As we immediately perform sender key rotation here, we leave it to the user to ensure that the ECDH and
             // DH public keys are queried and attached to the next message to be sent. Previously we signaled this by
             // providing as part of the RotationResult, however this makes no sense at initialization-time, as no
             // message is being sent yet.
-            // FIXME we need to verify/ensure that rotation ensures/forces a DH ratchet
             rotateSenderKeys();
             break;
         case ALICE:
             generateRatchetKeys(Purpose.SENDING);
             this.senderRatchet.needsRotation = false;
             this.i += 1;
+            this.maxRemoteISeen = -1;
             break;
         default:
             throw new UnsupportedOperationException("Unsupported purpose.");
@@ -368,10 +370,12 @@ final class DoubleRatchet implements AutoCloseable {
     private MessageKeys generateReceivingKeys(final int ratchetId, final int messageId) throws RotationLimitationException {
         requireNotClosed();
         if (this.maxRemoteISeen > ratchetId || this.receiverRatchet.messageID > messageId) {
-            throw new UnsupportedOperationException("Retrieval of previous Message Keys has not been implemented yet. Only current Message Keys can be generated.");
+            throw new UnsupportedOperationException("Retrieval of previous message keys has not been implemented yet. Only current message keys can be generated.");
         }
-        // FIXME shouldn't we first identify if we can skip ahead far enough to the specified ratchet ID? Now it seems we don't care, but we cannot do this realistically because we don't have the public keys for it.
-        this.maxRemoteISeen = ratchetId;
+        // FIXME spec documents that max_remote_i_seen should be set to -1 by default. I'm not sure this makes sense, given that we already
+        if (this.maxRemoteISeen < ratchetId && messageId > 0) {
+            throw new RotationLimitationException("Cannot retrieve message keys for follow up messages in new ratchet, as we have not been able to perform the ratchet yet.");
+        }
         // TODO verify that number of messages needing to fast-forward is acceptable. (max_skip in OTRv4 spec)
         while (this.receiverRatchet.messageID < messageId) {
             LOGGER.log(FINEST, "Fast-forward rotating receiving chain key to catch up with message ID: " + messageId);
@@ -407,12 +411,13 @@ final class DoubleRatchet implements AutoCloseable {
      * For convenience, it is allowed to pass in null for each of the keys. Depending on the input, a key rotation will
      * be performed, or it will be skipped.
      *
+     * @param ratchetId The message's ratchet ID to which the new public keys belong.
      * @param nextECDH  The other party's ECDH public key.
      * @param nextDH    The other party's DH public key.
      */
     // TODO preserve message keys in previous ratchet before rotating away.
     // FIXME need to verify that public keys (ECDH and DH) were not encountered previously.
-    void rotateReceiverKeys(@Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
+    void rotateReceiverKeys(final int ratchetId, @Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
         requireNotClosed();
         LOGGER.log(FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
                 new Object[]{this.i, nextDH != null});
@@ -429,6 +434,7 @@ final class DoubleRatchet implements AutoCloseable {
         this.pn = this.senderRatchet.messageID;
         generateRatchetKeys(Purpose.RECEIVING);
         this.senderRatchet.needsRotation = true;
+        this.maxRemoteISeen = ratchetId;
     }
 
     private void generateRatchetKeys(@Nonnull final Purpose purpose) {

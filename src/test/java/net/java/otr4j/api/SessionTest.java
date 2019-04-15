@@ -731,7 +731,7 @@ public class SessionTest {
         assertEquals(ENCRYPTED, c.clientAlice.session.getSessionStatus());
         c.clientAlice.sendMessage("Alice's early message 1");
         c.clientAlice.sendMessage("Alice's early message 2");
-        // Receive messages out-of-order.
+        // Receive messages out-of-order (swap messages 1 and 2).
         c.clientAlice.receiptChannel.add(c.clientAlice.receiptChannel.remove());
         assertEquals("Bob's early message 2", c.clientAlice.receiveMessage());
         assertEquals("Bob's early message 1", c.clientAlice.receiveMessage());
