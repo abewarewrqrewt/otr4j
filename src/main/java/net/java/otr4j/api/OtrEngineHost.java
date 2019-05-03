@@ -160,11 +160,16 @@ public interface OtrEngineHost extends SmpEngineHost {
      * example the session keys are lost/deleted already, then the Engine Host
      * is asked to provide a suitable reply to send back as an OTR error
      * message.
+     * <p>
+     * OTRv4 specifies an identifier that can be used to identify distinct types of errors and as such allow localizing
+     * error messages based on the identifier. If case is custom / not predefined by OTRv4, an empty string will be
+     * provided.
      *
-     * @param sessionID the session ID
+     * @param sessionID  the session ID
+     * @param identifier the OTRv4 error identifier, or empty-string.
      * @return Returns an error message.
      */
-    String getReplyForUnreadableMessage(@Nonnull SessionID sessionID);
+    String getReplyForUnreadableMessage(@Nonnull SessionID sessionID, @Nonnull String identifier);
 
     /**
      * Return the localized message that explains to the recipient how to get an

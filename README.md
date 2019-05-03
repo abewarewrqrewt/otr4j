@@ -43,7 +43,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - ☑ Maintain mixed OTRv2, OTRv3, OTRv4 sessions.
   - ☑ Persistent instance tags
   - ☑ 'Interactive DAKE' implemented as Message states i.s.o. AKE states.
-  - ☐ OTRv4 extension to OTR error messages
+  - ☑ OTRv4 extension to OTR error messages
   - ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
   - ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
   - ☐ Publishing of generated `ClientProfile` payloads through callback to `OtrEngineHost` (Affects _Deniability_-property.)
@@ -65,6 +65,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - Double Ratchet:
     - ☑ Generate next message keys (in-order messages)
     - ☑ Generate future message keys (skip over missing messages)
+    - ☐ Implementation of Double Ratchet algorithm redesign.
     - ☐ Store and recall skipped message keys (out-of-order messages)
   - Shared secrets management:
     - ☑ Ephemeral DH with 3072-bit parameters
@@ -95,8 +96,8 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
     - ☐ Base "Extra Symmetric Key" available for use.
     - ☐ Derived keys according to OTRv4 prescribed derivation
 - API support:
-  - ☐ verify if API still fully suitable for clients to adopt.
-  - ☐ ability to import/export DSA and EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
+  - ☐ Verify if API still fully suitable for clients to adopt.
+  - ☐ Ability to import/export DSA and EdDSA key pairs, such that `ClientProfile`s can be persisted/restored.
   - ☐ `OtrKeyManager` was removed. Evaluate whether this is a problem for adopters. (I prefer to leave it out or put it in its own repository.)
 - Misc
   - ☑ Set flag `IGNORE_UNREADABLE` also for OTRv3 DISCONNECT and all SMP messages.  

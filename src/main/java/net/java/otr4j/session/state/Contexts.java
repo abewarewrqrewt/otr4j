@@ -39,7 +39,7 @@ public final class Contexts {
         final OtrEngineHost host = context.getHost();
         final SessionID sessionID = context.getSessionID();
         unreadableMessageReceived(host, sessionID);
-        final String replymsg = getReplyForUnreadableMessage(host, sessionID, message);
+        final String replymsg = getReplyForUnreadableMessage(host, sessionID, identifier, message);
         context.injectMessage(new ErrorMessage(identifier, replymsg));
     }
 }

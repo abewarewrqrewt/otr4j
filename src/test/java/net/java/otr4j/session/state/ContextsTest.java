@@ -53,7 +53,7 @@ public final class ContextsTest {
         final Context context = mock(Context.class);
         when(context.getSessionID()).thenReturn(sessionID);
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        when(host.getReplyForUnreadableMessage(eq(sessionID))).thenReturn(message);
+        when(host.getReplyForUnreadableMessage(eq(sessionID), eq(ERROR_ID_UNREADABLE_MESSAGE))).thenReturn(message);
         when(context.getHost()).thenReturn(host);
         ArgumentCaptor<ErrorMessage> captor = ArgumentCaptor.forClass(ErrorMessage.class);
         signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
@@ -68,7 +68,7 @@ public final class ContextsTest {
         final Context context = mock(Context.class);
         when(context.getSessionID()).thenReturn(sessionID);
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        when(host.getReplyForUnreadableMessage(eq(sessionID))).thenThrow(RuntimeException.class);
+        when(host.getReplyForUnreadableMessage(eq(sessionID), eq(ERROR_ID_UNREADABLE_MESSAGE))).thenThrow(RuntimeException.class);
         when(context.getHost()).thenReturn(host);
         ArgumentCaptor<ErrorMessage> captor = ArgumentCaptor.forClass(ErrorMessage.class);
         signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
@@ -84,7 +84,7 @@ public final class ContextsTest {
         final Context context = mock(Context.class);
         when(context.getSessionID()).thenReturn(sessionID);
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        when(host.getReplyForUnreadableMessage(eq(sessionID))).thenReturn("Cannot read message.");
+        when(host.getReplyForUnreadableMessage(eq(sessionID), eq(ERROR_ID_UNREADABLE_MESSAGE))).thenReturn("Cannot read message.");
         doThrow(RuntimeException.class).when(host).unreadableMessageReceived(eq(sessionID));
         when(context.getHost()).thenReturn(host);
         ArgumentCaptor<ErrorMessage> captor = ArgumentCaptor.forClass(ErrorMessage.class);
@@ -102,8 +102,8 @@ public final class ContextsTest {
         when(context.getSessionID()).thenReturn(sessionID);
         doThrow(OtrException.class).when(context).injectMessage(any(ErrorMessage.class));
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        when(host.getReplyForUnreadableMessage(eq(sessionID))).thenReturn("Cannot read message.");
+        when(host.getReplyForUnreadableMessage(eq(sessionID), eq(""))).thenReturn("Cannot read message.");
         when(context.getHost()).thenReturn(host);
-        signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
+        signalUnreadableMessage(context, "", ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
     }
 }

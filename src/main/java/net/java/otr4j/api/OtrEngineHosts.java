@@ -216,13 +216,14 @@ public final class OtrEngineHosts {
      *
      * @param host the Engine Host
      * @param sessionID the session ID
+     * @param identifier the error identifier as defined by OTRv4, or empty-string if unknown/custom.
      * @param defaultMessage the default message to use in case call to OtrEngineHost fails
      * @return Returns the reply for unreadable message to send as error to other party.
      */
     public static String getReplyForUnreadableMessage(@Nonnull final OtrEngineHost host,
-            @Nonnull final SessionID sessionID, @Nonnull final String defaultMessage) {
+            @Nonnull final SessionID sessionID, @Nonnull final String identifier, @Nonnull final String defaultMessage) {
         try {
-            return host.getReplyForUnreadableMessage(sessionID);
+            return host.getReplyForUnreadableMessage(sessionID, identifier);
         } catch (final RuntimeException e) {
             LOGGER.log(Level.WARNING, "Faulty OtrEngineHost! Runtime exception thrown while calling 'getReplyForUnreadableMessage' on OtrEngineHost '" + host.getClass().getCanonicalName() + "' for session " + sessionID, e);
         }

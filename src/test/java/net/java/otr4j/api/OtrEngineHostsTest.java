@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.java.otr4j.api.OtrEngineHosts.getReplyForUnreadableMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doThrow;
@@ -196,9 +197,9 @@ public class OtrEngineHostsTest {
         final String replyMsg = "Hey dude, I can't ready you're message!";
         final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        when(host.getReplyForUnreadableMessage(sessionID)).thenReturn(replyMsg);
-        assertEquals(replyMsg, OtrEngineHosts.getReplyForUnreadableMessage(host, sessionID, "default message"));
-        verify(host).getReplyForUnreadableMessage(sessionID);
+        when(host.getReplyForUnreadableMessage(sessionID, "")).thenReturn(replyMsg);
+        assertEquals(replyMsg, getReplyForUnreadableMessage(host, sessionID, "", "default message"));
+        verify(host).getReplyForUnreadableMessage(sessionID, "");
     }
 
     @Test
@@ -206,9 +207,9 @@ public class OtrEngineHostsTest {
         final String defaultMessage = "This message cannot be read.";
         final SessionID sessionID = new SessionID("bob", "alice", "network");
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        doThrow(new IllegalArgumentException("programming error occurred")).when(host).getReplyForUnreadableMessage(sessionID);
-        assertEquals(defaultMessage, OtrEngineHosts.getReplyForUnreadableMessage(host, sessionID, defaultMessage));
-        verify(host).getReplyForUnreadableMessage(sessionID);
+        doThrow(new IllegalArgumentException("programming error occurred")).when(host).getReplyForUnreadableMessage(sessionID, "");
+        assertEquals(defaultMessage, getReplyForUnreadableMessage(host, sessionID, "", defaultMessage));
+        verify(host).getReplyForUnreadableMessage(sessionID, "");
     }
 
     @Test
@@ -218,7 +219,7 @@ public class OtrEngineHostsTest {
         final byte[] key = "MyPassW0rd".getBytes(US_ASCII);
         final byte[] tlvData = "Use in file transfer!".getBytes(UTF_8);
         final OtrEngineHost host = mock(OtrEngineHost.class);
-        doThrow(new IllegalArgumentException("programming error occurred")).when(host).getReplyForUnreadableMessage(sessionID);
+        doThrow(new IllegalArgumentException("programming error occurred")).when(host).getReplyForUnreadableMessage(sessionID, "");
         OtrEngineHosts.extraSymmetricKeyDiscovered(host, sessionID, message, key, tlvData);
         verify(host).extraSymmetricKeyDiscovered(sessionID, message, key, tlvData);
     }

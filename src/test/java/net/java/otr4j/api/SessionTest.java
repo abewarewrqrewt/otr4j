@@ -1466,7 +1466,7 @@ public class SessionTest {
         }
 
         @Override
-        public String getReplyForUnreadableMessage(@Nonnull final SessionID sessionID) {
+        public String getReplyForUnreadableMessage(@Nonnull final SessionID sessionID, @Nonnull final String identifier) {
             return "The message is unreadable. (Session: " + sessionID + ")";
         }
 
