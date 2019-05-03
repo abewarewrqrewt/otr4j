@@ -1218,9 +1218,9 @@ final class SessionImpl implements Session, Context {
      * @throws IncorrectStateException In case the session's current state does not recognize a significant notion of
      *                                 "last activity".
      */
-    long getLastActivity() throws IncorrectStateException {
+    long getLastActivityTimestamp() throws IncorrectStateException {
         synchronized (this.masterSession) {
-            return this.sessionState.getLastActivity();
+            return this.sessionState.getLastActivityTimestamp();
         }
     }
 

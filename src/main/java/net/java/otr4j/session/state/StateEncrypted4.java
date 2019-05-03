@@ -309,7 +309,7 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     }
 
     @Override
-    public long getLastActivity() {
+    public long getLastActivityTimestamp() {
         return this.ratchet.getLastRotation();
     }
 }

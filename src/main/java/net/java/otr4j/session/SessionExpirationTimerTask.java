@@ -68,8 +68,7 @@ final class SessionExpirationTimerTask extends TimerTask {
 
     private void expireTimedOutSessions(final long now, @Nonnull final SessionImpl session) {
         try {
-            // FIXME rename method to include timestamp
-            if (now - session.getLastActivity() > SESSION_TIMEOUT_NANOSECONDS) {
+            if (now - session.getLastActivityTimestamp() > SESSION_TIMEOUT_NANOSECONDS) {
                 LOGGER.log(FINE, "Expiring session " + session.getSessionID() + " (" + session.getSenderInstanceTag() + ")");
                 session.expireSession();
             }

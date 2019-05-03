@@ -206,5 +206,5 @@ public interface State {
      * @return Returns monotonic timestamp of last activity. ({@linkplain System#nanoTime()})
      * @throws IncorrectStateException Thrown in case the current state does not have a notion of relevant activity.
      */
-    long getLastActivity() throws IncorrectStateException;
+    long getLastActivityTimestamp() throws IncorrectStateException;
 }
