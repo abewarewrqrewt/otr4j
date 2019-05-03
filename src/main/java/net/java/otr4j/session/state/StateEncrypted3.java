@@ -196,7 +196,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         } catch (final SessionKey.ReceivingCounterValidationFailed ex) {
             logger.log(Level.WARNING, "Receiving ctr value failed validation, ignoring message: {0}", ex.getMessage());
             showError(context.getHost(), context.getSessionID(), "Counter value of received message failed validation.");
-            context.injectMessage(new ErrorMessage("Message's counter value failed validation."));
+            context.injectMessage(new ErrorMessage("", "Message's counter value failed validation."));
             return null;
         }
 

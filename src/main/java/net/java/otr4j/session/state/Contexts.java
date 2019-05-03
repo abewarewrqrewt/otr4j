@@ -39,6 +39,6 @@ public final class Contexts {
         final SessionID sessionID = context.getSessionID();
         unreadableMessageReceived(host, sessionID);
         final String replymsg = getReplyForUnreadableMessage(host, sessionID, DEFAULT_REPLY_UNREADABLE_MESSAGE);
-        context.injectMessage(new ErrorMessage(replymsg));
+        context.injectMessage(new ErrorMessage("", replymsg));
     }
 }

@@ -10,6 +10,8 @@ package net.java.otr4j.io;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * OTRv2 OTR error message.
  *
@@ -19,17 +21,24 @@ import javax.annotation.Nonnull;
 public final class ErrorMessage implements Message {
 
     /**
+     * Identifier in case of predefined OTRv4 error message.
+     */
+    public final String identifier;
+
+    /**
      * The error message.
      */
     public final String error;
 
     /**
-     * Constructor for error message.
+     * Constructor for Error Message type.
      *
-     * @param error the error message itself
+     * @param identifier The OTRv4 identifier for predefined error messages. Use empty-string if custom error message.
+     * @param error      The error message.
      */
-    public ErrorMessage(@Nonnull final String error) {
-        this.error = Objects.requireNonNull(error);
+    public ErrorMessage(@Nonnull final String identifier, @Nonnull final String error) {
+        this.identifier = requireNonNull(identifier);
+        this.error = requireNonNull(error);
     }
 
     @Override

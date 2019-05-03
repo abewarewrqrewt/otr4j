@@ -9,6 +9,7 @@ package net.java.otr4j.io;
 
 import net.java.otr4j.api.Session;
 import org.bouncycastle.util.encoders.Base64;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -159,7 +160,29 @@ public final class MessageProcessorTest {
     @Test
     public void testParseOTRError() throws ProtocolException {
         final ErrorMessage msg = (ErrorMessage) parseMessage("?OTR Error:Hello world of errors!");
+        assertEquals("", msg.identifier);
         assertEquals("Hello world of errors!", msg.error);
+    }
+
+    @Ignore("Currently still an issue. See FIXME in MessageProcessor.")
+    @Test
+    public void testParseOTRFakeError() throws ProtocolException {
+        final PlainTextMessage msg = (PlainTextMessage) parseMessage("My message with injected ?OTR Error: Hello world of errors!");
+        assertEquals("My message with injected ?OTR Error: Hello world of errors!", msg.getCleanText());
+    }
+
+    @Test
+    public void testParseOTR4Error() throws ProtocolException {
+        final ErrorMessage msg = (ErrorMessage) parseMessage("?OTR Error: ERROR_1: Hello world of errors!");
+        assertEquals("ERROR_1", msg.identifier);
+        assertEquals("Hello world of errors!", msg.error);
+    }
+
+    @Ignore("Currently still an issue. See FIXME in MessageProcessor.")
+    @Test
+    public void testParseOTR4FakeError() throws ProtocolException {
+        final PlainTextMessage msg = (PlainTextMessage) parseMessage("My message with injected ?OTR Error: ERROR_1: Hello world of errors!");
+        assertEquals("My message with injected ?OTR Error: ERROR_1: Hello world of errors!", msg.getCleanText());
     }
 
     @Test
@@ -421,8 +444,15 @@ public final class MessageProcessorTest {
 
     @Test
     public void testWriteErrorMessage() {
-        final ErrorMessage errorMessage = new ErrorMessage("Hello, you did something wrong, but I'm not gonna tell you what.");
+        final ErrorMessage errorMessage = new ErrorMessage("", "Hello, you did something wrong, but I'm not gonna tell you what.");
         assertEquals("?OTR Error:Hello, you did something wrong, but I'm not gonna tell you what.",
+                writeMessage(errorMessage));
+    }
+
+    @Test
+    public void testWriteOTRv4ErrorMessage() {
+        final ErrorMessage errorMessage = new ErrorMessage("ERROR_2", "Hello, you did something wrong, but I'm not gonna tell you what.");
+        assertEquals("?OTR Error: ERROR_2: Hello, you did something wrong, but I'm not gonna tell you what.",
                 writeMessage(errorMessage));
     }
 

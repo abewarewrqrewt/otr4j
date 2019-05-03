@@ -67,6 +67,8 @@ public final class MessageProcessor {
     private static final Pattern PATTERN_WHITESPACE = Pattern
             .compile(" \\t  \\t\\t\\t\\t \\t \\t \\t  ( \\t \\t  \\t )?(  \\t\\t  \\t )?(  \\t\\t  \\t\\t)?(  \\t\\t \\t  )?");
 
+    private static final Pattern PATTERN_ERROR_FORMAT = Pattern.compile("(:?ERROR_\\d+):\\s(.*)");
+
     private MessageProcessor() {
         // No need to instantiate.
     }
@@ -90,8 +92,14 @@ public final class MessageProcessor {
             final String content = text.substring(idxHeaderBody);
 
             if (contentType == HEAD_ERROR && content.startsWith(ERROR_PREFIX)) {
+                // FIXME we require "?OTR Error:" string to be at the start of the message. Currently we search for starting point using indexOf which means we violate the OTRv4 spec.
                 // Error tag found.
-                return new ErrorMessage(content.substring(idxHead + ERROR_PREFIX.length()));
+                final String message = content.substring(idxHead + ERROR_PREFIX.length()).trim();
+                final Matcher result = PATTERN_ERROR_FORMAT.matcher(message);
+                if (result.matches()) {
+                    return new ErrorMessage(result.group(1), result.group(2));
+                }
+                return new ErrorMessage("", message);
             } else if (contentType == HEAD_QUERY_V || contentType == HEAD_QUERY_Q) {
                 // TODO This code assumes the closing '?' for the query string exists. This may not always be the case.
                 // Query tag found.
@@ -185,7 +193,13 @@ public final class MessageProcessor {
             writer.write(HEAD);
             writer.write(HEAD_ERROR);
             writer.write(ERROR_PREFIX);
-            writer.write(((ErrorMessage) m).error);
+            final ErrorMessage errorMessage = (ErrorMessage) m;
+            if (!errorMessage.identifier.isEmpty()) {
+                writer.write(' ');
+                writer.write(errorMessage.identifier);
+                writer.write(": ");
+            }
+            writer.write(errorMessage.error);
         } else if (m instanceof PlainTextMessage) {
             final PlainTextMessage plaintxt = (PlainTextMessage) m;
             writer.write(plaintxt.getCleanText());
