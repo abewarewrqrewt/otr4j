@@ -44,22 +44,24 @@ abstract class AbstractCommonState extends AbstractOTR4State {
         showError(context.getHost(), context.getSessionID(), errorMessage.error);
     }
 
-    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
+    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage message,
+            @Nonnull final String identifier, @Nonnull final String error)
             throws OtrException {
         if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
             LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
             return;
         }
-        signalUnreadableMessage(context);
+        signalUnreadableMessage(context, identifier, error);
     }
 
-    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
+    void handleUnreadableMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message,
+            @Nonnull final String identifier, @Nonnull final String error)
             throws OtrException {
         if ((message.flags & FLAG_IGNORE_UNREADABLE) == FLAG_IGNORE_UNREADABLE) {
             LOGGER.fine("Unreadable message received with IGNORE_UNREADABLE flag set. Ignoring silently.");
             return;
         }
-        signalUnreadableMessage(context);
+        signalUnreadableMessage(context, identifier, error);
     }
 
     /**

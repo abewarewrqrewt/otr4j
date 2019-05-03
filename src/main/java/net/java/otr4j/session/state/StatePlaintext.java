@@ -33,6 +33,8 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 import static net.java.otr4j.api.OtrEngineHosts.requireEncryptedMessage;
 import static net.java.otr4j.api.OtrPolicys.allowedVersions;
+import static net.java.otr4j.io.ErrorMessage.ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE;
+import static net.java.otr4j.io.ErrorMessage.ERROR_ID_NOT_IN_PRIVATE_STATE;
 
 /**
  * Message state PLAINTEXT. This is the only message state that is publicly
@@ -108,7 +110,7 @@ public final class StatePlaintext extends AbstractCommonState {
     String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message)
             throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv3 data message in PLAINTEXT state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(context, message, ERROR_ID_NOT_IN_PRIVATE_STATE, ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE);
         return null;
     }
 
@@ -117,7 +119,7 @@ public final class StatePlaintext extends AbstractCommonState {
     String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message)
             throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in PLAINTEXT state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(context, message, ERROR_ID_NOT_IN_PRIVATE_STATE, ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE);
         return null;
     }
 

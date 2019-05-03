@@ -13,12 +13,32 @@ import javax.annotation.Nonnull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * OTRv2 OTR error message.
+ * OTRv2/3/4 OTR error message.
  *
  * @author George Politis
  * @author Danny van Heumen
  */
 public final class ErrorMessage implements Message {
+
+    /**
+     * Identifier for error case "Unreadable message."
+     */
+    public static final String ERROR_ID_UNREADABLE_MESSAGE = "ERROR_1";
+
+    /**
+     * Identifier for error case "Not in private state."
+     */
+    public static final String ERROR_ID_NOT_IN_PRIVATE_STATE = "ERROR_2";
+
+    /**
+     * Message for error case "Unreadable message."
+     */
+    public static final String ERROR_1_MESSAGE_UNREADABLE_MESSAGE = "The message is undecryptable.";
+
+    /**
+     * Message for error case "Not in private state."
+     */
+    public static final String ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE = "The message arrived in a state that is not encrypted messages.";
 
     /**
      * Identifier in case of predefined OTRv4 error message.

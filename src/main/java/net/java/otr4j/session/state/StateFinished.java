@@ -29,6 +29,8 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 import static net.java.otr4j.api.OtrEngineHosts.finishedSessionMessage;
 import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
+import static net.java.otr4j.io.ErrorMessage.ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE;
+import static net.java.otr4j.io.ErrorMessage.ERROR_ID_NOT_IN_PRIVATE_STATE;
 
 /**
  * Message state FINISHED. This message state is initiated through events
@@ -104,7 +106,7 @@ final class StateFinished extends AbstractCommonState {
     @Nullable
     String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv2/3 data message in FINISHED state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(context, message, ERROR_ID_NOT_IN_PRIVATE_STATE, ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE);
         return null;
     }
 
@@ -112,7 +114,7 @@ final class StateFinished extends AbstractCommonState {
     @Override
     String handleDataMessage(@Nonnull final Context context, @Nonnull final DataMessage4 message) throws OtrException {
         LOGGER.log(Level.FINEST, "Received OTRv4 data message in FINISHED state. Message cannot be read.");
-        handleUnreadableMessage(context, message);
+        handleUnreadableMessage(context, message, ERROR_ID_NOT_IN_PRIVATE_STATE, ERROR_2_NOT_IN_PRIVATE_STATE_MESSAGE);
         return null;
     }
 

@@ -47,6 +47,7 @@ import static net.java.otr4j.crypto.OtrCryptoEngine.aesDecrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.aesEncrypt;
 import static net.java.otr4j.crypto.OtrCryptoEngine.sha1Hmac;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
+import static net.java.otr4j.io.ErrorMessage.ERROR_1_MESSAGE_UNREADABLE_MESSAGE;
 import static net.java.otr4j.io.OtrEncodables.encode;
 import static net.java.otr4j.session.smp.SmpTlvHandler.smpPayload;
 import static net.java.otr4j.util.ByteArrays.constantTimeEquals;
@@ -171,7 +172,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
             matchingKeys = sessionKeyManager.get(message.recipientKeyID, message.senderKeyID);
         } catch (final SessionKeyManager.SessionKeyUnavailableException ex) {
             logger.finest("No matching keys found.");
-            handleUnreadableMessage(context, message);
+            handleUnreadableMessage(context, message, "", ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
             return null;
         }
 
@@ -181,7 +182,7 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
         final byte[] computedMAC = sha1Hmac(encode(message.getT()), matchingKeys.receivingMAC());
         if (!constantTimeEquals(computedMAC, message.mac)) {
             logger.finest("MAC verification failed, ignoring message");
-            handleUnreadableMessage(context, message);
+            handleUnreadableMessage(context, message, "", ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
             return null;
         }
 

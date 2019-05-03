@@ -14,6 +14,8 @@ import net.java.otr4j.io.ErrorMessage;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import static net.java.otr4j.io.ErrorMessage.ERROR_1_MESSAGE_UNREADABLE_MESSAGE;
+import static net.java.otr4j.io.ErrorMessage.ERROR_ID_UNREADABLE_MESSAGE;
 import static net.java.otr4j.session.state.Contexts.signalUnreadableMessage;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -29,7 +31,19 @@ public final class ContextsTest {
 
     @Test(expected = NullPointerException.class)
     public void testSignalUnreadableMessageNullContext() throws OtrException {
-        signalUnreadableMessage(null);
+        signalUnreadableMessage(null, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testSignalUnreadableMessageNullIdentifier() throws OtrException {
+        final Context context = mock(Context.class);
+        signalUnreadableMessage(context, null, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testSignalUnreadableMessageNullMessage() throws OtrException {
+        final Context context = mock(Context.class);
+        signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, null);
     }
 
     @Test
@@ -42,7 +56,7 @@ public final class ContextsTest {
         when(host.getReplyForUnreadableMessage(eq(sessionID))).thenReturn(message);
         when(context.getHost()).thenReturn(host);
         ArgumentCaptor<ErrorMessage> captor = ArgumentCaptor.forClass(ErrorMessage.class);
-        signalUnreadableMessage(context);
+        signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
         verify(host, times(1)).unreadableMessageReceived(eq(sessionID));
         verify(context, times(1)).injectMessage(captor.capture());
         assertEquals(message, captor.getValue().error);
@@ -57,10 +71,11 @@ public final class ContextsTest {
         when(host.getReplyForUnreadableMessage(eq(sessionID))).thenThrow(RuntimeException.class);
         when(context.getHost()).thenReturn(host);
         ArgumentCaptor<ErrorMessage> captor = ArgumentCaptor.forClass(ErrorMessage.class);
-        signalUnreadableMessage(context);
+        signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
         verify(host, times(1)).unreadableMessageReceived(eq(sessionID));
         verify(context, times(1)).injectMessage(captor.capture());
-        assertEquals("This message cannot be read.", captor.getValue().error);
+        assertEquals(ERROR_ID_UNREADABLE_MESSAGE, captor.getValue().identifier);
+        assertEquals(ERROR_1_MESSAGE_UNREADABLE_MESSAGE, captor.getValue().error);
     }
 
     @Test
@@ -73,9 +88,10 @@ public final class ContextsTest {
         doThrow(RuntimeException.class).when(host).unreadableMessageReceived(eq(sessionID));
         when(context.getHost()).thenReturn(host);
         ArgumentCaptor<ErrorMessage> captor = ArgumentCaptor.forClass(ErrorMessage.class);
-        signalUnreadableMessage(context);
+        signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
         verify(host, times(1)).unreadableMessageReceived(eq(sessionID));
         verify(context, times(1)).injectMessage(captor.capture());
+        assertEquals(ERROR_ID_UNREADABLE_MESSAGE, captor.getValue().identifier);
         assertEquals("Cannot read message.", captor.getValue().error);
     }
 
@@ -88,6 +104,6 @@ public final class ContextsTest {
         final OtrEngineHost host = mock(OtrEngineHost.class);
         when(host.getReplyForUnreadableMessage(eq(sessionID))).thenReturn("Cannot read message.");
         when(context.getHost()).thenReturn(host);
-        signalUnreadableMessage(context);
+        signalUnreadableMessage(context, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
     }
 }

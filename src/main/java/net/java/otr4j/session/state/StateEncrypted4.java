@@ -45,6 +45,8 @@ import static net.java.otr4j.api.OtrEngineHosts.unencryptedMessageReceived;
 import static net.java.otr4j.api.Session.Version.FOUR;
 import static net.java.otr4j.api.TLV.DISCONNECTED;
 import static net.java.otr4j.io.EncryptedMessage.extractContents;
+import static net.java.otr4j.io.ErrorMessage.ERROR_1_MESSAGE_UNREADABLE_MESSAGE;
+import static net.java.otr4j.io.ErrorMessage.ERROR_ID_UNREADABLE_MESSAGE;
 import static net.java.otr4j.messages.DataMessage4s.encodeDataMessageSections;
 import static net.java.otr4j.session.smpv4.SMP.smpPayload;
 import static net.java.otr4j.util.ByteArrays.allZeroBytes;
@@ -218,11 +220,11 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                     message.authenticator, message.ciphertext);
         } catch (final RotationLimitationException e) {
             this.logger.log(INFO, "Message received that is part of next ratchet. As we do not have the public keys for that ratchet yet, the message cannot be decrypted. This message is now lost.");
-            handleUnreadableMessage(context, message);
+            handleUnreadableMessage(context, message, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
             return null;
         } catch (final VerificationException e) {
             this.logger.log(FINE, "Received message fails verification. Rejecting the message.");
-            handleUnreadableMessage(context, message);
+            handleUnreadableMessage(context, message, ERROR_ID_UNREADABLE_MESSAGE, ERROR_1_MESSAGE_UNREADABLE_MESSAGE);
             return null;
         }
         this.ratchet.rotateReceivingChainKey();
