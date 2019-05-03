@@ -1240,4 +1240,36 @@ final class SessionImpl implements Session, Context {
             }
         }
     }
+
+    /**
+     * Get the timestamp of the last message sent.
+     * <p>
+     * Returns a monotonic timestamp of the moment when the most recent message was sent. The message sent is
+     * specifically a DataMessage, i.e. a message sent when a private messaging session is established.
+     *
+     * @return Returns the monotonic timestamp ({@link System#nanoTime()} of most recently sent message.
+     * @throws IncorrectStateException In case session is not in private messaging state.
+     */
+    long getLastMessageSentTimestamp() throws IncorrectStateException {
+        synchronized (this.masterSession) {
+            return this.sessionState.getLastMessageSentTimestamp();
+        }
+    }
+
+    /**
+     * Send heartbeat message.
+     *
+     * @throws OtrException In case of failure to inject the heartbeat message into the communication channel.
+     */
+    void sendHeartbeat() throws OtrException {
+        synchronized (this.masterSession) {
+            final State state = this.sessionState;
+            if (!(state instanceof StateEncrypted)) {
+                return;
+            }
+            final AbstractEncodedMessage heartbeat = ((StateEncrypted) state).transformSending(this, "",
+                    Collections.<TLV>emptyList(), FLAG_IGNORE_UNREADABLE);
+            injectMessage(heartbeat);
+        }
+    }
 }

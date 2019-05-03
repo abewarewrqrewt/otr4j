@@ -45,14 +45,27 @@ public final class OtrSessionManager {
 
     private static final long EXPIRATION_TIMER_PERIOD = 60000L;
 
+    private static final long HEARTBEAT_TIMER_INITIAL_DELAY = 60000L;
+
+    private static final long HEARTBEAT_TIMER_PERIOD = 60000L;
+
     /**
      * The timer that periodically runs to check for expired OTR sessions.
      */
-    private static final Timer TIMER = new Timer("otr-session-expiration-timer", true);
+    private static final Timer EXPIRATION_TIMER = new Timer("otr-session-expiration-timer", true);
+
+    /**
+     * The timer that periodically checks to see if we need to send a heartbeat message for instance sessions that are
+     * in private messaging state.
+     */
+    private static final Timer HEARTBEAT_TIMER = new Timer("otr-heartbeat-timer", true);
 
     static {
-        TIMER.schedule(SessionExpirationTimerTask.instance(), EXPIRATION_TIMER_INITIAL_DELAY, EXPIRATION_TIMER_PERIOD);
+        EXPIRATION_TIMER.schedule(SessionExpirationTimerTask.instance(), EXPIRATION_TIMER_INITIAL_DELAY,
+                EXPIRATION_TIMER_PERIOD);
         LOGGER.info("OTR session expiration timer started.");
+        HEARTBEAT_TIMER.schedule(HeartBeatTimerTask.instance(), HEARTBEAT_TIMER_INITIAL_DELAY, HEARTBEAT_TIMER_PERIOD);
+        LOGGER.info("OTR heartbeat timer started.");
     }
 
     /**
@@ -146,6 +159,7 @@ public final class OtrSessionManager {
                 session = new SessionImpl(sessionID, this.host);
                 session.addOtrEngineListener(sessionManagerListener);
                 SessionExpirationTimerTask.instance().register(session);
+                HeartBeatTimerTask.instance().register(session);
                 sessions.put(sessionID, session);
             }
             return session;

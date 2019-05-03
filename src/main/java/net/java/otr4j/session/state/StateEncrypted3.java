@@ -102,6 +102,8 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
      */
     private final SessionKeyManager sessionKeyManager;
 
+    private long lastMessageSentTimestamp = System.nanoTime();
+
     StateEncrypted3(@Nonnull final Context context, @Nonnull final AuthState state, @Nonnull final SecurityParameters params) throws OtrCryptoException {
         super(state);
         final SessionID sessionID = context.getSessionID();
@@ -308,7 +310,10 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
 
         // Get old MAC keys to be revealed.
         final byte[] oldKeys = this.sessionKeyManager.collectOldMacKeys();
-        return new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag(), context.getReceiverInstanceTag());
+        final DataMessage message = new DataMessage(t, mac, oldKeys, context.getSenderInstanceTag(),
+                context.getReceiverInstanceTag());
+        this.lastMessageSentTimestamp = System.nanoTime();
+        return message;
     }
 
     @Override
@@ -331,5 +336,10 @@ final class StateEncrypted3 extends AbstractCommonState implements StateEncrypte
     public void destroy() {
         this.smpTlvHandler.close();
         this.sessionKeyManager.close();
+    }
+
+    @Override
+    public long getLastMessageSentTimestamp() {
+        return this.lastMessageSentTimestamp;
     }
 }

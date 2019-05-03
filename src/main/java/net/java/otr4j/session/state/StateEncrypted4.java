@@ -55,7 +55,6 @@ import static org.bouncycastle.util.Arrays.concatenate;
 /**
  * The OTRv4 ENCRYPTED_MESSAGES state.
  */
-// TODO signal errors in data message using ERROR_2 indicator.
 // FIXME write additional unit tests for StateEncrypted4
 // TODO decide whether or not we can drop the AuthState instance. Relies on fact that we need to know up to what point we should handle OTRv2/3 AKE messages.
 final class StateEncrypted4 extends AbstractCommonState implements StateEncrypted {
@@ -68,6 +67,8 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     private final DoubleRatchet ratchet;
 
     private final SMP smp;
+
+    private long lastMessageSentTimestamp = System.nanoTime();
 
     StateEncrypted4(@Nonnull final Context context, @Nonnull final byte[] ssid,
             @Nonnull final Point ourLongTermPublicKey, @Nonnull final Point theirLongTermPublicKey,
@@ -162,7 +163,9 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
                 this.ratchet.getECDHPublicKey(), dhPublicKey, ciphertext, new byte[64], collectedMACs);
         final byte[] authenticator = this.ratchet.authenticate(encodeDataMessageSections(unauthenticated));
         this.ratchet.rotateSendingChainKey();
-        return new DataMessage4(unauthenticated, authenticator);
+        final DataMessage4 message = new DataMessage4(unauthenticated, authenticator);
+        this.lastMessageSentTimestamp = System.nanoTime();
+        return message;
     }
 
     @Nullable
@@ -289,7 +292,6 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
         }
     }
 
-    // FIXME suggest rephrasing of OTRv4 spec, to say: send message with old_mac_keys attached to it and include DISCONNECT TLV (TLV1) without payload.
     @Override
     public void expire(@Nonnull final Context context) throws OtrException {
         final TLV disconnectTlv = new TLV(DISCONNECTED, TLV.EMPTY_BODY);
@@ -311,5 +313,10 @@ final class StateEncrypted4 extends AbstractCommonState implements StateEncrypte
     @Override
     public long getLastActivityTimestamp() {
         return this.ratchet.getLastRotation();
+    }
+
+    @Override
+    public long getLastMessageSentTimestamp() {
+        return this.lastMessageSentTimestamp;
     }
 }

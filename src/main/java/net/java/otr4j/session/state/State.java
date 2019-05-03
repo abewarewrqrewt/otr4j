@@ -196,7 +196,7 @@ public interface State {
      * Get the last moment of activity in this session. (The 'last activity' timestamp is used by the session expiration
      * timer.)
      * <p>
-     * This gives back a monotonic timestamp (according to {@link System#nanoTime()} that can be used to determine how
+     * This returns a monotonic timestamp (according to {@link System#nanoTime()} that can be used to determine how
      * much time has elapsed between events.
      * <p>
      * The exact semantics of "last activity" is determined by the implementing state and may vary per state and
@@ -207,4 +207,16 @@ public interface State {
      * @throws IncorrectStateException Thrown in case the current state does not have a notion of relevant activity.
      */
     long getLastActivityTimestamp() throws IncorrectStateException;
+
+    /**
+     * Get the timestamp of the most recently sent data message of this state. (The 'last message sent timestamp' is
+     * used by the Heartbeat timer.)
+     * <p>
+     * This returns a monotonic timestamp (according to {@link System#nanoTime()} that can be used to determine how much
+     * time has elapsed between events.
+     *
+     * @return Returns the monotonic timestamp of most recently sent message. ({@link System#nanoTime()})
+     * @throws IncorrectStateException Thrown in case the current state does not do private messaging.
+     */
+    long getLastMessageSentTimestamp() throws IncorrectStateException;
 }

@@ -92,4 +92,9 @@ abstract class AbstractCommonState extends AbstractOTR4State {
     public long getLastActivityTimestamp() throws IncorrectStateException {
         throw new IncorrectStateException("State " + this.getClass().getName() + " does not expire.");
     }
+
+    @Override
+    public long getLastMessageSentTimestamp() throws IncorrectStateException {
+        throw new IncorrectStateException("State " + this.getClass().getName() + " is not an encrypted state.");
+    }
 }
