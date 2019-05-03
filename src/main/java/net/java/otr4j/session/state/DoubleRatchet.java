@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static java.lang.Integer.MIN_VALUE;
@@ -416,7 +417,6 @@ final class DoubleRatchet implements AutoCloseable {
      * @param nextDH    The other party's DH public key.
      */
     // TODO preserve message keys in previous ratchet before rotating away.
-    // FIXME need to verify that public keys (ECDH and DH) were not encountered previously.
     void rotateReceiverKeys(final int ratchetId, @Nonnull final Point nextECDH, @Nullable final BigInteger nextDH) throws OtrCryptoException {
         requireNotClosed();
         LOGGER.log(FINEST, "Rotating root key and receiving chain key for ratchet {0} (nextDH = {1})",
@@ -486,6 +486,8 @@ final class DoubleRatchet implements AutoCloseable {
     @MustBeClosed
     private MessageKeys generateMessageKeys(@Nonnull final byte[] chainkey) {
         assert !allZeroBytes(chainkey) : "Expected chainkey of random data instead of all zero-bytes.";
+        // FIXME debugging code
+        System.err.println("Chainkey: " + Arrays.toString(chainkey));
         final byte[] encrypt = kdf1(MESSAGE_KEY, chainkey, MessageKeys.MK_ENC_LENGTH_BYTES);
         final byte[] concat0xffChainKey = concatenate(new byte[] {(byte) 0xff}, chainkey);
         final byte[] extraSymmetricKey = kdf1(EXTRA_SYMMETRIC_KEY, concat0xffChainKey, MessageKeys.EXTRA_SYMMETRIC_KEY_LENGTH_BYTES);
@@ -657,6 +659,8 @@ final class DoubleRatchet implements AutoCloseable {
         @Nonnull
         byte[] encrypt(@Nonnull final byte[] message) {
             requireNotClosed();
+            // FIXME debugging code
+            System.err.println("Encryption code: " + Arrays.toString(this.encrypt));
             return OtrCryptoEngine4.encrypt(this.encrypt, message);
         }
 
@@ -686,11 +690,13 @@ final class DoubleRatchet implements AutoCloseable {
          */
         @Nonnull
         byte[] authenticate(@Nonnull final byte[] dataMessageSections) {
+            System.err.println("DataMessageSections: " + Arrays.toString(dataMessageSections));
             final byte[] mac = generateMAC();
             final byte[] concatMacDataMessageSections = concatenate(mac, dataMessageSections);
             final byte[] authenticator = kdf1(AUTHENTICATOR, concatMacDataMessageSections, AUTHENTICATOR_LENGTH_BYTES);
             clear(concatMacDataMessageSections);
             clear(mac);
+            System.err.println("Authenticator: " + Arrays.toString(authenticator));
             return authenticator;
         }
 

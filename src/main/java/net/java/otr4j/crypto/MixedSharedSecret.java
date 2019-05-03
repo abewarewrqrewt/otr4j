@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
 import static net.java.otr4j.crypto.DHKeyPair.checkPublicKey;
@@ -60,7 +61,7 @@ public final class MixedSharedSecret implements AutoCloseable {
      * Number of ratchets since last DH ratchet.
      */
     // TODO set initial value to 3, such that first-time generating K follows the DH-ratchet path as is expected by spec.
-    private int sinceLastDH = SINCE_LAST_DH_MAX; // <== not redundant as `regenerateK()` called in ctor already modifies this before the constructor is finished.
+    public int sinceLastDH = SINCE_LAST_DH_MAX;
 
     /**
      * Flag used to manage internal state: in use / closed.
@@ -109,11 +110,6 @@ public final class MixedSharedSecret implements AutoCloseable {
         this.dhKeyPair = requireNonNull(ourDHKeyPair);
         this.theirDHPublicKey = requireNonNull(theirDHPublicKey);
         regenerateK();
-        // We immediately ensure that one set sending-/receiving-keys is generated. That way, both parties can start
-        // sending. To realize this we need to perform a DH ratchet. However, then we must perform another ratchet which
-        // also needs to include DH public keys. Therefore we reset the variable `sinceLastDH` after generating the
-        // first set of keys.
-        this.sinceLastDH = SINCE_LAST_DH_MAX;
     }
 
     /**
@@ -203,8 +199,11 @@ public final class MixedSharedSecret implements AutoCloseable {
         if (this.sinceLastDH == SINCE_LAST_DH_MAX) {
             this.dhKeyPair = DHKeyPair.generate(this.random);
         }
+        System.err.println("Sender key rotation, new DH public key: " + this.dhKeyPair.getPublicKey());
         regenerateK();
-        this.sinceLastDH += 1;
+        System.err.println("Sender key rotation, new brace key: " + Arrays.toString(this.braceKey));
+        this.sinceLastDH = this.sinceLastDH < SINCE_LAST_DH_MAX ? this.sinceLastDH + 1 : 0;
+        System.err.println("Sender key rotation, sinceLastDH = " + this.sinceLastDH);
     }
 
     /**
@@ -232,10 +231,14 @@ public final class MixedSharedSecret implements AutoCloseable {
             if (!checkPublicKey(requireNonNull(theirDHPublicKey))) {
                 throw new OtrCryptoException("DH public key failed verification.");
             }
+            System.err.println("Receiver key rotation, received DH public key: " + theirDHPublicKey);
             this.theirDHPublicKey = theirDHPublicKey;
         }
         regenerateK();
-        this.sinceLastDH += 1;
+        System.err.println("Receiver key rotation, new brace key: " + Arrays.toString(this.braceKey));
+        if (this.sinceLastDH < SINCE_LAST_DH_MAX) {
+            this.sinceLastDH += 1;
+        }
         // FIXME check if this is sufficient to clear the key pairs in all cases, even if part of Double Ratchet initialization.
         this.ecdhKeyPair.close();
         if (performDHRatchet) {
@@ -252,15 +255,13 @@ public final class MixedSharedSecret implements AutoCloseable {
         } catch (final ValidationException e) {
             throw new IllegalStateException("BUG: ECDH public keys should have been verified. No unexpected failures should happen at this point.", e);
         }
+        System.err.println("sinceLastDH: " + this.sinceLastDH);
         if (this.sinceLastDH == SINCE_LAST_DH_MAX) {
             final byte[] k_dh = asUnsignedByteArray(this.dhKeyPair.generateSharedSecret(this.theirDHPublicKey));
             kdf1(this.braceKey, 0, THIRD_BRACE_KEY, k_dh, BRACE_KEY_LENGTH_BYTES);
             clear(k_dh);
-            this.sinceLastDH = 0;
         } else {
             kdf1(this.braceKey, 0, BRACE_KEY, this.braceKey, BRACE_KEY_LENGTH_BYTES);
-            // FIXME disabled for now, suspect that spec is very inaccurate about the sinceLastDH increments.
-//            this.sinceLastDH += 1;
         }
         final byte[] tempKecdhBraceKey = concatenate(k_ecdh, this.braceKey);
         kdf1(this.k, 0, SHARED_SECRET, tempKecdhBraceKey, K_LENGTH_BYTES);
