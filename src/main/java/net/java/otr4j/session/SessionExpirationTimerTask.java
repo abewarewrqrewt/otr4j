@@ -22,7 +22,6 @@ import static java.util.Collections.synchronizedList;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 
-// FIXME Consider transitioning expired sessions to FINISHED instead of START such that unfortunately timed expirations do not unintendedly cause reveal of user messages. (https://github.com/otrv4/otrv4/blob/master/otrv4.md#session-expiration)
 final class SessionExpirationTimerTask extends TimerTask {
 
     private static final Logger LOGGER = Logger.getLogger(SessionExpirationTimerTask.class.getName());
