@@ -13,6 +13,7 @@ import net.java.otr4j.session.state.IncorrectStateException;
 import javax.annotation.Nonnull;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.logging.Logger;
@@ -51,10 +52,11 @@ final class SessionExpirationTimerTask extends TimerTask {
             duplicatedRegistry = new ArrayList<>(this.registry);
         }
         final long now = System.nanoTime();
-        for (final WeakReference<SessionImpl> ref : duplicatedRegistry) {
-            final SessionImpl master = ref.get();
+        final Iterator<WeakReference<SessionImpl>> it = duplicatedRegistry.iterator();
+        while (it.hasNext()) {
+            final SessionImpl master = it.next().get();
             if (master == null) {
-                // TODO we should remove references once they have been GCed.
+                it.remove();
                 continue;
             }
             expireTimedOutSessions(now, master);
@@ -66,6 +68,7 @@ final class SessionExpirationTimerTask extends TimerTask {
 
     private void expireTimedOutSessions(final long now, @Nonnull final SessionImpl session) {
         try {
+            // FIXME rename method to include timestamp
             if (now - session.getLastActivity() > SESSION_TIMEOUT_NANOSECONDS) {
                 LOGGER.log(FINE, "Expiring session " + session.getSessionID() + " (" + session.getSenderInstanceTag() + ")");
                 session.expireSession();
