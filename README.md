@@ -139,7 +139,6 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
 - OTRv3 - catching up:
   - ☐ In-memory representation for OTRv3.
   - ☐ Arithmetical operations on byte-arrays for OTRv2 and/or OTRv3 logic.
-  - ☐ Periodic heartbeat messages.
 
 ## Developmental
 
