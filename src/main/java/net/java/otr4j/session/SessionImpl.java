@@ -255,6 +255,9 @@ final class SessionImpl implements Session, Context {
         }
     };
 
+    @GuardedBy("masterSession")
+    private final ArrayList<String> messageQueue = new ArrayList<>();
+
     /**
      * Constructor.
      * <p>
@@ -352,6 +355,9 @@ final class SessionImpl implements Session, Context {
             throw new IllegalArgumentException("BUG: provided \"from\" state is not the current state. Expected "
                     + this.sessionState + ", but got " + fromState);
         }
+        if (toState instanceof StateEncrypted) {
+            sendQueuedMessages((StateEncrypted) toState);
+        }
         logger.log(Level.FINE, "Transitioning to message state: " + toState);
         this.sessionState = requireNonNull(toState);
         if (fromState.getStatus() != ENCRYPTED && toState.getStatus() == ENCRYPTED
@@ -366,6 +372,20 @@ final class SessionImpl implements Session, Context {
         }
         fromState.destroy();
         sessionStatusChanged(duplicate(listeners), this.sessionID, this.receiverTag);
+    }
+
+    @GuardedBy("masterSession")
+    private void sendQueuedMessages(@Nonnull final StateEncrypted toState) {
+        while (!this.messageQueue.isEmpty()) {
+            final String message = this.messageQueue.remove(0);
+            try {
+                final AbstractEncodedMessage encrypted = toState.transformSending(this, message,
+                        Collections.<TLV>emptyList(), (byte) 0);
+                injectMessage(encrypted);
+            } catch (final OtrException e) {
+                logger.log(WARNING, "Failed to send queued message due to network failure.", e);
+            }
+        }
     }
 
     @Override
@@ -1270,6 +1290,14 @@ final class SessionImpl implements Session, Context {
             final AbstractEncodedMessage heartbeat = ((StateEncrypted) state).transformSending(this, "",
                     Collections.<TLV>emptyList(), FLAG_IGNORE_UNREADABLE);
             injectMessage(heartbeat);
+        }
+    }
+
+    // TODO make queuing messages configurable.
+    @Override
+    public void queueMessage(@Nonnull final String message) {
+        synchronized (this.masterSession) {
+            this.messageQueue.add(message);
         }
     }
 }
