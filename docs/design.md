@@ -92,10 +92,12 @@ The `user (chat) app` adopts the functionality of `otr4j`. `user (chat) app` its
 ```
 +===================+
 |  user (chat) app  |
-+========+==========+
-         |
-         |
-+--------v----------+
++========+=====|====+
+         |     |
+         |     0 OtrEngineHost
+         |     ^
+         |     |
++--------v-----+----+
 |   <<session>>     |
 |      state        |
 | ake | smp | smpv4 |

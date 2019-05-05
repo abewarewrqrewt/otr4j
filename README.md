@@ -46,7 +46,7 @@ _a.k.a. "at least the bugs are symmetric in nature :-)"_
   - ☑ OTRv4 extension to OTR error messages
   - ☑ Periodic heartbeat messages
   - ☐ OTRv4 operating modes (OTRv3-compatible, OTRv4-standalone, OTRv4-interactive-only).
-  - ☐ Queuing up messages while not in `ENCRYPTED_MESSAGES` state.
+  - ☐ [Queuing up messages](docs/message-queueing.md) while not in `ENCRYPTED_MESSAGES` state.
   - ☐ Publishing of generated `ClientProfile` payloads through callback to `OtrEngineHost` (Affects _Deniability_-property.)
 - Cryptographic primitives:
   - Edd448-Goldilocks elliptic curve (temporary solution)
@@ -219,6 +219,7 @@ Message sizes in OTR are defined as 4-byte _unsigned_. Due to Java's signed inte
 # Dependency on [joldilocks][joldilocks]
 
 Due to initial lack of support for Ed448-Goldilocks, a _very_ basic, limited Java library was written to support Ed448-Goldilocks. This library is by no means production-ready, does not provide any of the operational requirements necessary for security purposes and is not even guaranteed to be functionally correct. It did however enable further implementation of otr4j. We aim to completely migrate away from _joldilocks_ for otr4j. At most, we may keep it as a second opinion in unit testing code. _joldilocks_ needs Java 9 to compile so this dependency also raises our minimum required Java version for otr4j.
+
 
 
   [OTR]: https://otr.cypherpunks.ca/
